@@ -1,0 +1,23 @@
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 70px;
+    padding: 0 20px;
+    background: #fff;
+    border-bottom: 1px solid #e5e5e5;
+    margin-left: 250px;
+}
+
+header .right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+header .profile {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+

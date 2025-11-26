@@ -1,0 +1,9 @@
+/* @import './layout/sidebar.css';
+@import './layout/header.css';
+@import './layout/content.css';
+
+@import './components/card.css'; */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

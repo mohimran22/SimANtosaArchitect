@@ -1,0 +1,486 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use App\Models\Religion;
+use App\Models\Employee;
+use App\Models\Province;
+use App\Models\City;
+use App\Models\District;
+use App\Models\SubDistrict;
+use App\Models\PostalCode;
+use Illuminate\Support\Carbon;
+use App\Models\User;
+use Spatie\Permission\Models\Role;
+use Yajra\DataTables\Facades\DataTables;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+
+class EmployeeController extends Controller
+{
+    
+    public function index(Request $request)
+    {
+        $auth = auth()->user();
+
+        $query = Employee::with(['user.roles']);
+
+        if ($auth->can('lihat data karyawan') && !$auth->can('lihat daftar karyawan')) {
+            $query->where('user_id', $auth->id);
+        }
+
+        if ($request->ajax()) {
+            $employees = $query->get();
+
+        return DataTables::of($employees)
+                ->addIndexColumn()
+                ->addColumn('fullname', function ($row) {
+                    return $row->user->fullname ?? '-';
+                })
+                ->addColumn('email', function ($row) {
+                    return $row->user->email ?? '-';
+                })
+                ->addColumn('roles', function ($row) {
+                    return $row->user->roles->pluck('name')->implode(', ') ?: '-';
+                })
+                ->editColumn('fullname', function ($row) {
+                    $url = route('employees.show', $row->id);
+                    $name = Str::title($row->user->fullname ?? '-');
+                    return '<a href="'.$url.'">'.e($name).'</a>';
+                })
+                ->editColumn('contract_letter_file', function ($row) {
+                    if ($row->contract_letter_file) {
+                        // Ambil URL file lewat Storage::url
+                        $url = Storage::url($row->contract_letter_file);
+
+                        return '<a href="' . $url . '" target="_blank">
+                                    <i class="ti ti-file-text"></i> Lihat Dokumen
+                                </a>';
+                    }
+
+                    return '<span class="text-muted">Belum ada</span>';
+                })
+                ->editColumn('training_certificate', function ($row) {
+                    if ($row->training_certificate) {
+                        // Ambil URL file lewat Storage::url
+                        $url = Storage::url($row->training_certificate);
+
+                        return '<a href="' . $url . '" target="_blank">
+                                    <i class="ti ti-file-text"></i> Lihat Dokumen
+                                </a>';
+                    }
+
+                    return '<span class="text-muted">Belum ada</span>';
+                })
+                ->addColumn('action', function ($employee) {
+                    $buttons = '';
+                    if (auth()->user()->can('ubah data karyawan')) {
+                        $buttons .= '<a href="' . route('employees.edit', $employee->id) . '" class="btn btn-icon btn-sm btn-dark me-1" title="Ubah">
+                                        <i class="ti ti-edit"></i>
+                                    </a>';
+                    }
+                    if (auth()->user()->can('lihat data karyawan')) {
+                        $buttons .= '<a href="' . route('employees.show', $employee->id) . '" class="btn btn-icon btn-sm btn-dark me-1" title="Lihat">
+                                        <i class="ti ti-eye"></i>
+                                    </a>';
+
+                    }
+                    if (auth()->user()->can('hapus data karyawan')) {
+                        $buttons .= '<button data-id="' . $employee->id . '" class="btn btn-icon btn-sm btn-dark delete-employee" title="Hapus">
+                                        <i class="ti ti-trash"></i>
+                                    </button>';
+                    }
+                    return $buttons;
+                })
+                ->rawColumns(['fullname', 'action', 'contract_letter_file', 'training_certificate'])
+                ->make(true);
+        }
+
+        return view('employees.index');
+    }
+
+//     private function getEmployeesQuery()
+// {
+//     $auth = auth()->user();
+
+
+//     $query = \DB::table('users')
+//     ->join('employees', 'employees.user_id', '=', 'users.id')
+//     ->leftJoin('religions', 'users.religion_id', '=', 'religions.id')
+//     ->leftJoin('provinces', 'users.province_id', '=', 'provinces.id')
+//     ->leftJoin('cities', 'users.city_id', '=', 'cities.id')
+//     ->leftJoin('districts', 'users.district_id', '=', 'districts.id')
+//     ->leftJoin('sub_districts', 'users.sub_district_id', '=', 'sub_districts.id')
+//     ->leftJoin('postal_codes', 'users.postal_code_id', '=', 'postal_codes.id')
+//     ->select(
+//         'employees.id as employee_id',
+//         'employees.nik',
+//         'users.fullname',
+//         'users.nickname',
+//         'users.gender',
+//         'users.birth_place',
+//         'users.birth_date',
+//         'users.identity_number',
+//         'users.address',
+//         'users.phone',
+//         'employees.marital_status',
+//         'religions.name as religion_name',
+//         'users.email as user_email',
+//         'provinces.name as province_name',
+//         'cities.name as city_name',
+//         'districts.name as district_name',
+//         'sub_districts.name as sub_district_name',
+//         'postal_codes.postal_code',
+//         'employees.position',
+//         'employees.department',
+//         'employees.unit',
+//         'employees.employment_status',
+//         'employees.start_date',
+//         'employees.basic_salary',
+//         'employees.allowance',
+//         'employees.deduction',
+//         'employees.bonus',
+//         'employees.thr',
+//         'employees.contract_letter_file',
+//         'employees.photo'
+//     );
+
+//     //   $query = Employee::with([
+//     //     'user.fullname',
+//     //     'user.nickname',
+//     //     'user.gender',
+//     //     'user.birth_place',
+//     //     'user.birth_date',
+//     //     'user.email',
+//     //     'user.address',
+//     //     'user.phone',
+//     //     'user.religion',
+//     //     'user.province',
+//     //     'user.city',
+//     //     'user.district',
+//     //     'user.subDistrict',
+//     //     'user.postalCode',
+//     // ]);
+
+//     return $query;
+// }
+
+    public function create()
+    {
+        $user = auth()->user();
+        $religions = Religion::all();
+        $provinces = Province::all();
+        $roles = Role::all();
+        return view('employees.create', compact('user', 'roles', 'religions', 'provinces'));
+    }
+
+    public function store(Request $request)
+{
+
+    $validated = $request->validate([
+        // --- data user (optional user_id)
+        'user_id' => 'nullable|exists:users,id',
+        'fullname' => 'required|string|max:255',
+        'nickname' => 'nullable|string|max:100',
+        'gender' => 'required|in:1,2',
+        'email' => 'required|email|unique:users,email',
+        'birth_place' => 'nullable|string|max:100',
+        'birth_date' => 'required|date_format:Y-m-d',
+        'identity_number' => 'required|string|max:16',
+        'religion_id' => 'required|exists:religions,id',
+        'npwp' => 'nullable|string|max:30',
+        'phone' => 'required|string|max:20',
+        'address' => 'nullable|string|max:255',
+        'province_id' => 'required|exists:provinces,id',
+        'city_id' => 'required|exists:cities,id',
+        'district_id' => 'required|exists:districts,id',
+        'sub_district_id' => 'required|exists:sub_districts,id',
+        'postal_code_id' => 'required|exists:postal_codes,id',
+        'bank_id' => 'nullable|uuid|exists:banks,id',
+        'account_number' => 'nullable|string|max:50',
+        'account_holder' => 'nullable|max:50',
+        'photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+
+        // --- data employee ---
+        'nik' => 'required|unique:employees,nik',
+        'role' => 'required|array',
+        'role.*' => 'string|exists:roles,name',
+        'marital_status' => 'nullable|in:1,2,3,4',
+        'employment_status' => 'required|in:Tetap,Kontrak,Harian,Honorer',
+        'start_date' => ['nullable', 'date_format:Y-m-d'],
+        'basic_salary' => ['required', 'numeric', 'min:0'],
+        'allowance' => ['nullable', 'numeric', 'min:0'],
+        'deduction' => ['nullable', 'numeric', 'min:0'],
+        'bonus' => ['nullable', 'numeric', 'min:0'],
+        'thr' => ['nullable', 'numeric', 'min:0'],
+
+        // --- file ---
+        'contract_letter_file' => ['required', 'file', 'mimes:pdf', 'max:2048'],
+        'training_certificate' => ['nullable', 'file', 'mimes:pdf', 'max:2048'],
+    ]);
+
+    // 🔹 Upload foto karyawan (kalau ada)
+    if ($request->hasFile('photo')) {
+        $file = $request->file('photo');
+        $filename = Str::uuid().'.'.$file->getClientOriginalExtension();
+        $file->storeAs('photos', $filename, 'public');
+        $validated['photo'] = $filename;
+    }
+
+    // 🔹 Upload dokumen lain
+    if ($request->hasFile('contract_letter_file')) {
+        $file = $request->file('contract_letter_file');
+        $filename = Str::uuid().'_'.$file->getClientOriginalName();
+        $file->storeAs('contracts', $filename, 'public');
+        $validated['contract_letter_file'] = $filename;
+    }
+
+    if ($request->hasFile('training_certificate')) {
+        $file = $request->file('training_certificate');
+        $filename = Str::uuid().'_'.$file->getClientOriginalName();
+        $file->storeAs('certificates', $filename, 'public');
+        $validated['training_certificate'] = $filename;
+    }
+
+    DB::transaction(function () use ($validated, $request) {
+
+        // 🔹 Cek apakah ada user_id (kalau tidak, buat user baru)
+        if (!empty($validated['user_id'])) {
+            $user = User::find($validated['user_id']);
+        } else {
+            // Generate username sederhana dan password random
+            $username = Str::slug($validated['fullname']);
+            $password = '12345678'; // bisa diganti jadi 'default123' kalau mau
+
+            // Buat user baru
+            $user = User::create([
+                'id' => Str::uuid(),
+                'fullname' => $validated['fullname'],
+                'nickname' => $validated['nickname'],
+                'birth_place' => $validated['birth_place'],
+                'birth_date' => $validated['birth_date'],
+                'identity_number' => $validated['identity_number'],
+                'npwp' => $validated['npwp'],
+                'address' => $validated['address'],
+                'religion_id' => $validated['religion_id'],
+                'province_id' => $validated['province_id'],
+                'city_id' => $validated['city_id'],
+                'district_id' => $validated['district_id'],
+                'sub_district_id' => $validated['sub_district_id'],
+                'postal_code_id' => $validated['postal_code_id'],
+                'email' => $validated['email'],
+                'password' => Hash::make($password),
+                'phone' => $validated['phone'] ?? null,
+                'gender' => $validated['gender'] ?? null,
+                'photo' => $validated['photo'] ?? null,
+                'bank_id' => $validated['bank_id'] ?? null,
+                'account_number' => $validated['account_number'] ?? null,
+                'account_holder' => $validated['account_holder'] ?? null,
+            ]);
+
+            // Simpan password plain-nya di session supaya admin bisa lihat
+            session()->flash('new_user_password', $password);
+        }
+
+        // 🔹 Assign role
+        $user->assignRole($validated['role']);
+
+        // 🔹 Simpan employee
+        Employee::create([
+            'id' => Str::uuid(),
+            'user_id' => $user->id,
+            'nik' =>  $validated['nik'],
+            'marital_status' => $validated['marital_status'],
+            'employment_status' => $validated['employment_status'],
+            'start_date' => $validated['start_date'],
+            'basic_salary' => $validated['basic_salary'],
+            'allowance' => $validated['allowance'],
+            'deduction' => $validated['deduction'],
+            'bonus' => $validated['bonus'],
+            'thr' => $validated['thr'],
+            'contract_letter_file' => $validated['contract_letter_file'] ?? null,
+            'training_certificate' => $validated['training_certificate'] ?? null,
+            'photo' => $validated['photo'] ?? null,
+        ]);
+    });
+
+    return redirect()
+        ->route('employees.index')
+        ->with('success', 'Data karyawan berhasil ditambahkan.' . 
+            (session('new_user_password') ? ' Akun user baru dibuat. Password: ' . session('new_user_password') : '')
+        );
+}
+
+public function generateNikAjax()
+{
+    $lastNumber = Employee::selectRaw("MAX(CAST(SUBSTRING(nik, 3) AS INTEGER)) as max_nik")->value('max_nik');
+    $newNumber = ($lastNumber ?? 0) + 1;
+
+    $newNik = 'E-' . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
+
+    return response()->json([
+        'nik' => $newNik
+    ]);
+}
+
+     public function show(Employee $employee)
+    {
+        $employee->load('user');
+        return view('sdm.employees.show', [
+            'user' => $employee->user,
+            'employee' => $employee
+        ]);
+    }
+
+    public function edit($id)
+    {
+        $employee = Employee::findOrFail($id);
+        $user = $employee->user()->with('bank')->first();
+        $religions = Religion::all();
+        $provinces = Province::all();
+        $roles = Role::all();
+        $selectedRoles = $user->roles->pluck('name')->toArray();
+        $cities = City::where('province_id', $user->province_id)->get();
+        $districts = District::where('city_id', $user->city_id)->get();
+        $subDistricts = SubDistrict::where('district_id', $user->district_id)->get();
+        $postalCodes = PostalCode::where('sub_district_id', $user->sub_district_id)->get();
+        
+
+        return view('employees.edit', compact('user', 'roles', 'selectedRoles', 'employee',
+        'religions', 'provinces', 'cities', 'districts', 'subDistricts', 'postalCodes'));
+    }
+
+    public function update(Request $request, Employee $employee)
+{
+    $validated = $request->validate([
+        // --- data user ---
+        'fullname' => 'required|string|max:255',
+        'birth_place' => 'nullable|string|max:255',
+        'birth_date' => 'nullable|date',
+        'gender' => 'nullable|in:1,2',
+        'phone' => 'nullable|string|max:20',
+        'address' => 'nullable|string',
+        'province_id' => 'required|exists:provinces,id',
+        'city_id' => 'required|exists:cities,id',
+        'district_id' => 'required|exists:districts,id',
+        'sub_district_id' => 'required|exists:sub_districts,id',
+        'postal_code_id' => 'required|exists:postal_codes,id',
+        'bank_id' => 'nullable|uuid|exists:banks,id',
+        'account_number' => 'nullable|string|max:50',
+        'account_holder' => 'nullable|string|max:100',
+
+        // --- data employee ---
+        'nik' => 'required|unique:employees,nik,' . $employee->id,
+        'role' => 'required|array',
+        'role.*' => 'string|exists:roles,name',
+        'marital_status' => 'nullable|in:1,2,3,4',
+        'employment_status' => 'required',
+        'start_date' => ['nullable', 'date_format:Y-m-d'],
+        'basic_salary' => ['required', 'numeric', 'min:0'],
+        'allowance' => ['nullable', 'numeric', 'min:0'],
+        'deduction' => ['nullable', 'numeric', 'min:0'],
+        'bonus' => ['nullable', 'numeric', 'min:0'],
+        'thr' => ['nullable', 'numeric', 'min:0'],
+
+        // --- file ---
+        'contract_letter_file' => ['nullable', 'file', 'mimes:pdf', 'max:2048'],
+        'training_certificate' => ['nullable', 'file', 'mimes:pdf', 'max:2048'],
+        'photo' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
+    ]);
+
+    // 🔹 Ambil user terkait employee
+    $user = $employee->user;
+
+    // 🔹 Update data user
+    $user->update([
+        'fullname' => $validated['fullname'],
+        'birth_place' => $validated['birth_place'] ?? null,
+        'birth_date' => $validated['birth_date'] ?? null,
+        'gender' => $validated['gender'] ?? null,
+        'phone' => $validated['phone'] ?? null,
+        'address' => $validated['address'] ?? null,
+        'province_id' => $validated['province_id'],
+        'city_id' => $validated['city_id'],
+        'district_id' => $validated['district_id'],
+        'sub_district_id' => $validated['sub_district_id'],
+        'postal_code_id' => $validated['postal_code_id'],
+        'bank_id' => $validated['bank_id'] ?? null,
+        'account_number' => $validated['account_number'] ?? null,
+        'account_holder' => $validated['account_holder'] ?? null,
+    ]);
+
+    // 🔹 Update role user (hapus role lama → assign role baru)
+    $user->syncRoles([$validated['role']]);
+
+    // 🔹 Upload ulang file jika ada
+    if ($request->hasFile('photo')) {
+        // hapus foto lama jika ada
+        if ($user->photo && Storage::disk('public')->exists('photos/'.$user->photo)) {
+            Storage::disk('public')->delete('photos/'.$user->photo);
+        }
+
+        $file = $request->file('photo');
+        $filename = Str::uuid().'.'.$file->getClientOriginalExtension();
+        $file->storeAs('photos', $filename, 'public');
+        $validated['photo'] = $filename;
+    }
+
+    if ($request->hasFile('contract_letter_file')) {
+        if ($employee->contract_letter_file && Storage::disk('public')->exists('contracts/'.$employee->contract_letter_file)) {
+            Storage::disk('public')->delete('contracts/'.$employee->contract_letter_file);
+        }
+
+        $file = $request->file('contract_letter_file');
+        $filename = Str::uuid().'_'.$file->getClientOriginalName();
+        $file->storeAs('contracts', $filename, 'public');
+        $validated['contract_letter_file'] = $filename;
+    }
+
+    if ($request->hasFile('training_certificate')) {
+        if ($employee->training_certificate && Storage::disk('public')->exists('certificates/'.$employee->training_certificate)) {
+            Storage::disk('public')->delete('certificates/'.$employee->training_certificate);
+        }
+
+        $file = $request->file('training_certificate');
+        $filename = Str::uuid().'_'.$file->getClientOriginalName();
+        $file->storeAs('certificates', $filename, 'public');
+        $validated['training_certificate'] = $filename;
+    }
+
+    // 🔹 Update tabel employees
+    $employee->update([
+        'nik' => $validated['nik'],
+        'marital_status' => $validated['marital_status'],
+        'employment_status' => $validated['employment_status'],
+        'start_date' => $validated['start_date'],
+        'basic_salary' => $validated['basic_salary'],
+        'allowance' => $validated['allowance'],
+        'deduction' => $validated['deduction'],
+        'bonus' => $validated['bonus'],
+        'thr' => $validated['thr'],
+        'contract_letter_file' => $validated['contract_letter_file'] ?? $employee->contract_letter_file,
+        'training_certificate' => $validated['training_certificate'] ?? $employee->training_certificate,
+        'photo' => $validated['photo'] ?? $employee->photo,
+    ]);
+
+    return redirect()->route('employees.index')->with('success', 'Data karyawan berhasil diperbarui.');
+}
+
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(Employee $employee)
+    {
+            if ($employee) {
+            $employee->delete();
+            return response()->json(['status' => 'success', 'message' => 'Employee deleted successfully']);
+        }
+
+        return response()->json(['status' => 'failed', 'message' => 'Unable to delete']);
+    }
+}
