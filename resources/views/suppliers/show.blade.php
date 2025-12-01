@@ -52,11 +52,11 @@
                     <div class="row align-items-center mb-4">
                         <div class="col-md-3 text-center">
                             @if ($user->photo)
-                            <img id="previewImage" src="{{ asset('storage/photos/'.$user->photo) }}" alt="Profile" 
+                            <img id="profilePreviewImage" src="{{ asset('storage/photos/'.$user->photo) }}" alt="Profile" 
                                  class="rounded-3 shadow-sm border" width="150" height="150"
                                  style="object-fit: cover;">
                         @else
-                            <div id="previewImage"
+                            <div id="profilePreviewImage"
                                  class="rounded-3 shadow-sm bg-light d-flex align-items-center justify-content-center"
                                  style="width:150px; height:150px;">
                                  <i class="ti ti-user" style="font-size: 64px; color:#aaa;"></i>
@@ -162,7 +162,7 @@
                     <h3 class="card-title mb-0">Katalog Produk</h3>
                 </div>
                 <div class="d-flex justify-content-between mb-3">
-                    <div class="col-md-4">
+                    <div class="p-3 text-center">
                         <button class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#modalAddProduct">
                             <i class="ti ti-plus"></i> Tambah Produk
                         </button>       
@@ -174,16 +174,43 @@
                         <div class="col-md-4 col-lg-3 mb-4">
                             <div class="card shadow-sm border-0 h-100">
 
-                                @if ($product->photo)
-                                    <img src="{{ asset('storage/' . $product->photo) }}"
-                                        class="rounded me-3"
-                                        style="width: 60px; height: 60px; object-fit: cover;">
-                                @else
-                                    <div class="rounded me-3 bg-light d-flex align-items-center justify-content-center"
-                                        style="width:60px; height:60px;">
-                                        <i class="ti ti-photo" style="font-size:28px; color:#999;"></i>
+                                <div class="position-relative p-3 text-center product-image-wrapper">
+
+                                    {{-- BADGE STOK --}}
+                                    @if ($product->pivot->stock == 0)
+                                        <span class="badge bg-danger position-absolute top-0 start-0 m-2">
+                                            Stok Habis
+                                        </span>
+                                    @elseif ($product->pivot->stock <= 10)
+                                        <span class="badge bg-warning text-dark position-absolute top-0 start-0 m-2">
+                                            Stok Terbatas
+                                        </span>
+                                    @endif
+
+                                    {{-- FOTO --}}
+                                    @if ($product->photo)
+                                        <img src="{{ asset('storage/' . $product->photo) }}"
+                                            class="img-fluid rounded shadow-sm product-image"
+                                            style="width:180px;height:180px;object-fit:cover;">
+                                    @else
+                                        <div class="bg-light rounded d-flex align-items-center justify-content-center shadow-sm product-image"
+                                            style="width:180px;height:180px;margin:auto;">
+                                            <i class="ti ti-photo" style="font-size:32px;color:#999;"></i>
+                                        </div>
+                                    @endif
+
+                                    {{-- HOVER ACTION --}}
+                                    <div class="product-hover-action">
+
+                                        <form action="#" method="POST" class="d-inline">
+                                            @csrf @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-danger">
+                                                <i class="ti ti-trash"></i>
+                                            </button>
+                                        </form>
                                     </div>
-                                @endif
+
+                                </div>
 
 
                                 <div class="card-body">
@@ -211,9 +238,42 @@
                                             $final = $spec ?: ($sell ?: $buy);
                                         @endphp
 
-                                        <p class="mb-1">
-                                            <strong class="text-dark">Rp {{ number_format($final) }}</strong>
-                                        </p>
+                                        <div class="price-wrapper"
+                                            data-supplier="{{ $supplier->id }}"
+                                            data-product="{{ $product->id }}"
+                                            data-url="{{ route('supplier-product.update-price') }}">
+
+                                            {{-- MODE TAMPIL --}}
+                                            <p class="mb-1 price-text">
+                                                <strong class="text-dark price-label">
+                                                    Rp {{ number_format($product->pivot->buying_prices) }}
+                                                </strong>
+
+                                                <button type="button"
+                                                        class="btn btn-xs btn-warning ms-2 btn-edit-price">
+                                                    <i class="ti ti-pencil"></i>
+                                                </button>
+                                            </p>
+
+                                            {{-- MODE EDIT --}}
+                                            <div class="price-edit d-none">
+                                                <input type="number"
+                                                    class="form-control form-control-sm price-input"
+                                                    value="{{ $product->pivot->buying_prices }}">
+
+                                                <div class="mt-1 d-flex gap-1">
+                                                    <button type="button" class="btn btn-xs btn-success btn-save-price">
+                                                        <i class="ti ti-check"></i>
+                                                    </button>
+
+                                                    <button type="button" class="btn btn-xs btn-danger btn-cancel-price">
+                                                        <i class="ti ti-x"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+
 
                                         <p class="mb-1">
                                             <strong class="text-dark">Stok: {{ $product->pivot->stock }}</strong>
@@ -233,29 +293,11 @@
                                             Harga Beli: Rp {{ number_format($buy) }}
                                         </div> --}}
                                     </div>
-                                </div>
-
-                                {{-- FOOTER --}}
-                                <div class="card-footer bg-white border-0 d-flex justify-content-between">
-                                    <a href="#" class="btn btn-sm btn-dark">
-                                        <button class="btn btn-sm btn-dark">
-                                            <i class="ti ti-eye"></i>
-                                        </button>
-                                    </a>
-                                    <form action="#" method="POST">
-                                        @csrf @method('DELETE')
-                                        <button class="btn btn-sm btn-dark">
-                                            <i class="ti ti-trash"></i>
-                                        </button>
-                                    </form>
-                                </div>
-
+                                </div> 
                             </div>
                         </div>
                     @endforeach
-
                 </div>
-
             </div>
         </div>
 
@@ -365,21 +407,44 @@
                         </div>
 
                         <div class="mb-3">
-                            <label>Harga</label>
-                            <input type="number" class="form-control" name="buying_prices" required>
-                        </div>
+    <label>Harga Dasar Supplier</label>
+    <input type="text" class="form-control" id="base_price"
+           placeholder="Masukkan harga dasar">
+</div>
 
-                        <div class="mb-3">
-                            <label>PPN</label>
-                            <input type="number" class="form-control" name="tax_percentage">
-                        </div>
+<div class="mb-3">
+    <label>PPN (%)</label>
+    <input type="number" class="form-control" id="tax" name="tax_percentage">
+</div>
 
-                        <div class="mb-3">
-                            <label>Diskon</label>
-                            <input type="number" class="form-control" name="discount">
-                        </div>
+<div class="mb-3">
+    <label>Diskon</label>
+    <input type="number" class="form-control" id="discount" name="discount">
+    <small class="text-muted">
+        ≤ 100 = persen | > 100 = rupiah
+    </small>
+</div>
 
-                        <button class="btn btn-dark w-100" id="btnSaveSupplierProduct">
+<div class="mb-3">
+    <label>Harga Final</label>
+    <input type="text"
+       class="form-control bg-light fw-bold"
+       id="final_price_display"
+       readonly>
+
+<input type="hidden"
+       id="final_price"
+       name="buying_prices"
+       required>
+
+</div>
+
+<!-- PREVIEW RUMUS -->
+<div class="alert alert-secondary small" id="priceFormulaPreview" style="display:none;"></div>
+
+
+
+                        <button type="button" class="btn btn-dark w-100" id="btnSaveSupplierProduct">
                             Simpan Produk Supplier
                         </button>
                     </div>
@@ -394,8 +459,50 @@
 @endsection
 
 @push('js')
+
 <script>
 $(document).ready(function () {
+    function initSelect2InModal() {
+        $('#modalAddProduct .select2').each(function () {
+
+            if ($(this).hasClass("select2-hidden-accessible")) {
+                $(this).select2('destroy');
+            }
+
+            $(this).select2({
+                dropdownParent: $('#modalAddProduct .modal-content'),
+                width: '100%'
+            });
+        });
+    }
+
+    $('#modalAddProduct').on('shown.bs.modal', function () {
+        initSelect2InModal();
+
+        $('#searchProduct').val('');
+        $('#searchResult').hide().html('');
+
+        let form = document.getElementById('formCreateProduct');
+        if (form) {
+            $(form).hide();
+            form.reset();
+        }
+
+        $('#supplierFormArea, #supplierSelectedProduct').hide();
+        $("#product_id").val('');
+
+        $('#formCreateProduct input, #formCreateProduct select, #formCreateProduct textarea')
+            .prop("readonly", false)
+            .prop("disabled", false);
+
+        $('#previewImage').replaceWith(`
+            <div id="previewImage"
+                class="rounded-3 shadow-sm bg-light d-flex align-items-center justify-content-center"
+                style="width:150px;height:150px;">
+                <i class="ti ti-photo" style="font-size:64px;color:#aaa;"></i>
+            </div>
+        `);
+    });
 
     $('#searchProduct').on('keyup', function () {
         let keyword = $(this).val().trim();
@@ -413,8 +520,18 @@ $(document).ready(function () {
 
             if (!res.found) {
                 $('#formCreateProduct')[0].reset();
-                $("#previewImage").attr("src", "");
-                $("[name]").prop("readonly", false).prop("disabled", false);
+                $('#previewImage').replaceWith(`
+                    <div id="previewImage"
+                        class="rounded-3 shadow-sm bg-light d-flex align-items-center justify-content-center"
+                        style="width:150px;height:150px;">
+                        <i class="ti ti-photo" style="font-size:64px;color:#aaa;"></i>
+                    </div>
+                `);
+                $("#formCreateProduct")
+                .find("input, select, textarea")
+                .not("[name='unit_1_value']")
+                .prop("readonly", false)
+                .prop("disabled", false);
                 $('#searchResult').hide();
                 $('#formCreateProduct').show();
                 $('#supplierFormArea').show();
@@ -451,14 +568,16 @@ $(document).ready(function () {
 
             $("[name='name']").val(p.name).prop("readonly", true);
             $("[name='description']").val(p.description).prop("readonly", true);
+            $("[name='sku_code']").val(p.sku_code).prop("readonly", true);
+            $("[name='status']").val(p.status).prop("readonly", true);
+            $("[name='brand_id']").val(p.brand_id).trigger('change').prop("disabled", true);
+            $("[name='category_id']").val(p.category_id).trigger('change').prop("disabled", true);
+            $("[name='type_id']").val(p.type_id).trigger('change').prop("disabled", true);
+            $("[name='colors']").val(p.colors).trigger('change').prop("disabled", true);
 
-            $("[name='brand_id']").val(p.brand_id).prop("disabled", true);
-            $("[name='category_id']").val(p.category_id).prop("disabled", true);
-            $("[name='type_id']").val(p.type_id).prop("disabled", true);
-            $("[name='color_id']").val(p.color_id).prop("disabled", true);
 
-            $("[name='product_size']").val(p.size).prop("readonly", true);
-            $("[name='product_volume']").val(p.volume).prop("readonly", true);
+            $("[name='size']").val(p.size).prop("readonly", true);
+            $("[name='volume']").val(p.volume).prop("readonly", true);
 
             $("[name='unit_1_name']").val(p.unit_1_name).prop("readonly", true);
             $("[name='unit_1_value']").val(p.unit_1_value).prop("readonly", true);
@@ -472,55 +591,76 @@ $(document).ready(function () {
             $("[name='unit_4_name']").val(p.unit_4_name).prop("readonly", true);
             $("[name='unit_4_value']").val(p.unit_4_value).prop("readonly", true);
 
-            $("#previewImage").attr("src", p.photo_url);
+            if ($("#previewImage").is("img")) {
+                $("#previewImage").attr("src", p.photo_url);
+            } else {
+                $("#previewImage").replaceWith(`
+                    <img class="previewImage"
+                        src="${p.photo_url}"
+                        class="rounded-3 shadow-sm border"
+                        width="150" height="150"
+                        style="object-fit:cover;">
+                `);
+            }
+
 
             // FILL SUPPLIER DEFAULTS
             $("[name='buying_prices']").val(p.default_buying_prices);
             $("[name='discount']").val(p.default_discount);
             $("[name='tax_percentage']").val(p.tax_percentage);
 
+            $('#base_price').val(formatRupiah(p.default_buying_prices));
+            $('#tax').val(p.tax_percentage);
+            $('#discount').val(p.default_discount);
+
+            setTimeout(() => recalculatePrice(), 200);
+
+
             $('#supplierFormArea').show();
         });
     });
 
     $("#btnSaveSupplierProduct").click(function (e) {
-        e.preventDefault();
+    e.preventDefault();
 
-        let productId = $("#product_id").val();
+    let productId = $("#product_id").val();
 
-        if (!productId || productId === "") {
+    if (!productId || productId === "") {
 
-            let formCreate = document.getElementById("formCreateProduct");
-            let formData = new FormData(formCreate);
+        let formCreate = document.getElementById("formCreateProduct");
+        let formData = new FormData(formCreate);
 
-            $.ajax({
-                url: "{{ route('products.store.ajax') }}",
-                method: "POST",
-                data: formData,
-                processData: false,   // WAJIB untuk upload file
-                contentType: false,   // WAJIB untuk upload file
-                success: function(res) {
+        $.ajax({
+            url: "{{ route('products.store.ajax') }}",
+            method: "POST",
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(res) {
 
-                    if (!res.success) {
-                        alert("Gagal membuat produk baru.");
-                        return;
-                    }
-
-                    // SET ID PRODUK BARU
-                    $("#product_id").val(res.product_id);
-
-                    // LANJUTKAN SIMPAN SUPPLIER
-                    submitSupplierProduct();
-                },
-                error: function(xhr) {
-                    console.log(xhr.responseText);
-                    alert("Gagal membuat produk.");
+                if (!res.success) {
+                    alert("Gagal membuat produk baru.");
+                    return;
                 }
-            });
 
-        }
+                // SET ID PRODUK BARU
+                $("#product_id").val(res.product_id);
 
-    });
+                // LANJUTKAN KE SIMPAN SUPPLIER
+                submitSupplierProduct();
+            },
+            error: function(xhr) {
+                console.log(xhr.responseText);
+                alert("Gagal membuat produk.");
+            }
+        });
+
+    } else {
+        // ✅ INI YANG HILANG DI KODE KAMU
+        submitSupplierProduct();
+    }
+});
+
 
     function submitSupplierProduct() {
 
@@ -538,11 +678,147 @@ $(document).ready(function () {
             }
         });
     }
+});
+</script>
+
+<script>
+function formatRupiah(angka) {
+    return new Intl.NumberFormat('id-ID').format(angka);
+}
+
+function cleanNumber(value) {
+    return parseFloat(value.replace(/[^\d]/g, '')) || 0;
+}
+
+function recalculatePrice() {
+    let basePriceRaw = $('#base_price').val();
+    let basePrice    = cleanNumber(basePriceRaw);
+
+    let tax      = parseFloat($('#tax').val()) || 0;
+    let discount = parseFloat($('#discount').val()) || 0;
+
+    let formulaText = `Harga Dasar: Rp ${formatRupiah(basePrice)}`;
+    let finalPrice  = basePrice;
+
+    let taxValue = 0;
+    let discountValue = 0;
+
+    // ✅ TAMBAH PPN
+    if (tax > 0) {
+        taxValue = (tax / 100) * basePrice;
+        finalPrice += taxValue;
+        formulaText += ` + PPN (${tax}%) Rp ${formatRupiah(Math.round(taxValue))}`;
+    }
+
+    // ✅ KURANGI DISKON (CAMPURAN)
+    if (discount > 0) {
+        if (discount <= 100) {
+            discountValue = (discount / 100) * finalPrice;
+            formulaText += ` - Diskon (${discount}%) Rp ${formatRupiah(Math.round(discountValue))}`;
+        } else {
+            discountValue = discount;
+            formulaText += ` - Diskon Rp ${formatRupiah(discountValue)}`;
+        }
+
+        // ✅ VALIDASI DISKON
+        if (discountValue > finalPrice) {
+            discountValue = finalPrice;
+            $('#discount').val(finalPrice);
+        }
+
+        finalPrice -= discountValue;
+    }
+
+    // ✅ SAFETY
+    if (finalPrice < 0) finalPrice = 0;
+
+    let finalRounded = Math.round(finalPrice);
+
+    // ✅ TAMPILAN (PAKAI RUPIAH)
+    $('#final_price_display').val(formatRupiah(finalRounded));
+
+    // ✅ NILAI REAL KE DB (TANPA TITIK)
+    $('#final_price').val(finalRounded);
+
+    $('#priceFormulaPreview')
+        .html(`<strong>Rumus:</strong><br>${formulaText} = <strong>Rp ${formatRupiah(finalRounded)}</strong>`)
+        .hide();
+
+}
+
+// ✅ FORMAT RUPIAH SAAT KETIK
+$('#base_price').on('keyup', function () {
+    let val = cleanNumber($(this).val());
+    $(this).val(formatRupiah(val));
+    recalculatePrice();
+});
+
+// ✅ TRIGGER OTOMATIS
+$(document).on('keyup change', '#tax, #discount', function () {
+    recalculatePrice();
+});
+</script>
+
+
+<script>
+document.addEventListener('click', function(e) {
+
+    // ✅ MODE EDIT
+    if (e.target.closest('.btn-edit-price')) {
+        const wrapper = e.target.closest('.price-wrapper');
+        wrapper.querySelector('.price-text').classList.add('d-none');
+        wrapper.querySelector('.price-edit').classList.remove('d-none');
+    }
+
+    // ✅ BATAL
+    if (e.target.closest('.btn-cancel-price')) {
+        const wrapper = e.target.closest('.price-wrapper');
+        wrapper.querySelector('.price-edit').classList.add('d-none');
+        wrapper.querySelector('.price-text').classList.remove('d-none');
+    }
+
+    // ✅ SIMPAN VIA AJAX
+    if (e.target.closest('.btn-save-price')) {
+        const wrapper    = e.target.closest('.price-wrapper');
+        const url        = wrapper.dataset.url;
+        const supplierId = wrapper.dataset.supplier;
+        const productId  = wrapper.dataset.product;
+        const value      = wrapper.querySelector('.price-input').value;
+
+        fetch(url, {
+            method: 'PUT',
+            headers: {
+                'X-CSRF-TOKEN': document
+                    .querySelector('meta[name="csrf-token"]').content,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                supplier_id: supplierId,
+                product_id: productId,
+                price: value
+            })
+        })
+        .then(res => res.json())
+        .then(res => {
+            if (res.success) {
+                wrapper.querySelector('.price-label').innerText = 'Rp ' + res.price;
+
+                wrapper.querySelector('.price-edit').classList.add('d-none');
+                wrapper.querySelector('.price-text').classList.remove('d-none');
+            } else {
+                alert('Gagal update harga!');
+            }
+        })
+        .catch(() => alert('Terjadi kesalahan server'));
+    }
 
 });
 </script>
 
 @endpush
+
+
+
 
 
 @push('css')

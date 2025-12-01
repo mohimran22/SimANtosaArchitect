@@ -252,6 +252,7 @@ public function generateSupplierIdAjax()
      public function show(Supplier $supplier)
     {
         $supplier->load('user');
+        // $productColors = $product->colors->pluck('id')->toArray();
         return view('suppliers.show', [
             'user' => $supplier->user,
             'supplier' => $supplier,
@@ -454,4 +455,20 @@ public function generateSupplierIdAjax()
         'message' => 'Data supplier berhasil dihapus.'
     ]);
 }
+
+public function getProducts($id)
+{
+    $products = DB::table('supplier_products')
+        ->join('products', 'products.id', '=', 'supplier_products.product_id')
+        ->where('supplier_products.supplier_id', $id)
+        ->select(
+            'products.id',
+            'products.name',
+            'supplier_products.purchase_price'
+        )
+        ->get();
+
+    return response()->json($products);
+}
+
 }

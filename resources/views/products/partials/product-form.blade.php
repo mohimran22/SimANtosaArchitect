@@ -21,14 +21,14 @@
             <img id="previewImage" 
                  src="{{ asset('storage/'.$product->photo) }}" 
                  class="rounded-3 shadow-sm border"
-                 width="150" height="150"
+                 width="300" height="300"
                  style="object-fit: cover;">
         @else
-            <div id="previewImage"
-                 class="rounded-3 shadow-sm bg-light d-flex align-items-center justify-content-center"
-                 style="width:150px; height:150px;">
-                <i class="ti ti-photo" style="font-size: 64px; color:#aaa;"></i>
-            </div>
+                <div id="previewImage"
+                    class="rounded-3 shadow-sm bg-light d-flex align-items-center justify-content-center"
+                    style="width:300px; height:300px;">
+                    <i class="ti ti-photo" style="font-size: 28px; color:#aaa;"></i>
+                </div>
         @endif
 
         <label for="photo"
@@ -57,22 +57,38 @@
             <label class="form-label required">Nama Produk</label>
             <input type="text" name="name" 
                    class="form-control"
-                   value="{{ old('name', $product->name ?? '') }}" required>
+                   value="{{ old('name') }}" required>
         </div>
-
+        <div class="col-md-4">
+            <label class="form-label required">Kode SKU</label>
+            <input type="text" name="sku_code" 
+                   class="form-control"
+                   value="{{ old('sku_code') }}" required>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label required">Status barang</label>
+            <select name="status" class="form-select select2" required>
+                        <option value="">-- Pilih Status Barang --</option>
+                        <option value="1"  {{ $product->status == 1 ? 'selected' : '' }}>Tersedia</option>
+                        <option value="2"  {{ $product->status == 2 ? 'selected' : '' }}>Stok Terbatas</option>
+                        <option value="3"  {{ $product->status == 3 ? 'selected' : '' }}>Habis</option>
+                        <option value="4"  {{ $product->status == 4 ? 'selected' : '' }}>Pre-Order</option>
+            </select>
+        </div>
+        
         <div class="col-12">
             <label class="form-label required">Deskripsi Produk</label>
             <textarea name="description" rows="2" 
-                      class="form-control" required>{{ old('description', $product->description ?? '') }}</textarea>
+                      class="form-control" required>{{ old('description') }}</textarea>
         </div>
 
         <div class="col-md-4">
-            <label class="form-label required">Merk</label>
-            <select name="brand_id" class="form-select select2" required>
+            <label class="form-label">Merk</label>
+            <select name="brand_id" class="form-select select2">
                 <option value="">-- Pilih Merk --</option>
                 @foreach($brands as $brand)
                     <option value="{{ $brand->id }}"
-                        {{ old('brand_id', $product->brand_id ?? '') == $brand->id ? 'selected' : '' }}>
+                        {{ old('brand_id') == $brand->id ? 'selected' : '' }}>
                         {{ $brand->name }}
                     </option>
                 @endforeach
@@ -80,12 +96,12 @@
         </div>
 
         <div class="col-md-4">
-            <label class="form-label required">Kategori</label>
-            <select name="category_id" class="form-select select2" required>
+            <label class="form-label">Kategori</label>
+            <select name="category_id" class="form-select select2">
                 <option value="">-- Pilih Kategori --</option>
                 @foreach($categories as $category)
                     <option value="{{ $category->id }}"
-                        {{ old('category_id', $product->category_id ?? '') == $category->id ? 'selected' : '' }}>
+                        {{ old('category_id') == $category->id ? 'selected' : '' }}>
                         {{ $category->name }}
                     </option>
                 @endforeach
@@ -93,12 +109,12 @@
         </div>
 
         <div class="col-md-4">
-            <label class="form-label required">Tipe Produk</label>
-            <select name="type_id" class="form-select select2" required>
+            <label class="form-label">Tipe Produk</label>
+            <select name="type_id" class="form-select select2">
                 <option value="">-- Pilih Tipe --</option>
                 @foreach($types as $type)
                     <option value="{{ $type->id }}"
-                        {{ old('type_id', $product->type_id ?? '') == $type->id ? 'selected' : '' }}>
+                        {{ old('type_id') == $type->id ? 'selected' : '' }}>
                         {{ $type->name }}
                     </option>
                 @endforeach
@@ -107,25 +123,24 @@
 
         <div class="col-md-4">
             <label class="form-label">Ukuran Produk</label>
-            <input type="text" name="product_size" 
+            <input type="text" name="size" 
                    class="form-control"
-                   value="{{ old('product_size', $product->product_size ?? '') }}">
+                   value="{{ old('size') }}">
         </div>
 
         <div class="col-md-4">
             <label class="form-label">Volume</label>
-            <input type="text" name="product_volume" 
+            <input type="text" name="volume" 
                    class="form-control"
-                   value="{{ old('product_volume', $product->product_volume ?? '') }}">
+                   value="{{ old('volume') }}">
         </div>
 
         <div class="col-md-4">
-            <label class="form-label required">Warna Produk</label>
-            <select name="color_id" class="form-select select2" required>
-                <option value="">-- Pilih Warna --</option>
-                @foreach($colors as $color)
+            <label class="form-label">Warna Produk</label>
+            <select id="colors" name="colors[]" class="form-select select2" multiple>
+                @foreach ($colors as $color)
                     <option value="{{ $color->id }}"
-                        {{ old('color_id', $product->color_id ?? '') == $color->id ? 'selected' : '' }}>
+                        {{ in_array($color->id, old('colors', $productColors ?? [])) ? 'selected' : '' }}>
                         {{ $color->name }}
                     </option>
                 @endforeach
@@ -138,83 +153,109 @@
 
 {{-- UNIT SATUAN --}}
 <div class="section-block mb-4">
-                            <h3 class="fw-semibold mb-3 border-bottom pb-2">Pengaturan Satuan Unit</h3>
+    <h3 class="fw-semibold mb-3 border-bottom pb-2">Pengaturan Satuan Unit</h3>
 
-                            <div class="row g-2">
+    <div class="row g-2">
 
-                                <div class="row g-2">
-                                    <div class="col-md-3">
-                                        <label class="form-label">Satuan Level 1</label>
-                                        <input type="text" name="unit_1_name" 
-                                            class="form-control form-control-md" 
-                                            value="{{ old('unit_1_name', $product->unit_1_name ?? 'PCS') }}" >
-                                    </div>
+        <div class="row g-2">
+            <div class="col-md-3">
+                <label class="form-label">Satuan Level 1</label>
+                <input type="text" name="unit_1_name" 
+                    class="form-control form-control-md" 
+                    value="{{ old('unit_1_name', $product->unit_1_name ?? 'PCS') }}" >
+            </div>
 
-                                    <div class="col-md-3">
-                                        <label class="form-label">Nilai Unit 1</label>
-                                        <input type="number" name="unit_1_value" 
-                                            class="form-control form-control-md" 
-                                            value="1" readonly>
-                                    </div>
-                                </div>
+            <div class="col-md-3">
+                <label class="form-label">Nilai Unit 1</label>
+                <input type="number" name="unit_1_value" 
+                    class="form-control form-control-md" 
+                    value="{{ old('unit_1_value', $product->unit_1_value ?? 1) }}">
+            </div>
+        </div>
 
-                                <div class="row g-2">
-                                    <div class="col-md-3">
-                                        <label class="form-label">Satuan Level 2</label>
-                                        <input type="text" name="unit_2_name" 
-                                            class="form-control form-control-md"
-                                            value="{{ old('unit_2_name') }}">
-                                    </div>
+        <div class="row g-2">
+            <div class="col-md-3">
+                <label class="form-label">Satuan Level 2</label>
+                <input type="text" name="unit_2_name" 
+                    class="form-control form-control-md"
+                    value="{{ old('unit_2_name') }}">
+            </div>
 
-                                    <div class="col-md-3">
-                                        <label class="form-label">Konversi Unit 2</label>
-                                        <input type="number" name="unit_2_value" 
-                                            class="form-control form-control-md"
-                                            value="{{ old('unit_2_value') }}">
-                                        <small class="text-muted" id="unit_2_preview"></small>
-                                    </div>
-                                </div>
+            <div class="col-md-3">
+                <label class="form-label">Konversi Unit 2</label>
+                <input type="number" name="unit_2_value" 
+                    class="form-control form-control-md"
+                    value="{{ old('unit_2_value') }}">
+                <small class="text-muted" id="unit_2_preview"></small>
+            </div>
+        </div>
 
-                                <div class="row g-2">
-                                    <div class="col-md-3">
-                                        <label class="form-label">Satuan Level 3</label>
-                                        <input type="text" name="unit_3_name" 
-                                            class="form-control form-control-md"
-                                            value="{{ old('unit_3_name') }}">
-                                    </div>
+        <div class="row g-2">
+            <div class="col-md-3">
+                <label class="form-label">Satuan Level 3</label>
+                <input type="text" name="unit_3_name" 
+                    class="form-control form-control-md"
+                    value="{{ old('unit_3_name') }}">
+            </div>
 
-                                    <div class="col-md-3">
-                                        <label class="form-label">Konversi Unit 3</label>
-                                        <input type="number" name="unit_3_value" 
-                                            class="form-control form-control-md"
-                                            value="{{ old('unit_3_value') }}">
-                                        <small class="text-muted" id="unit_3_preview"></small>
-                                    </div>
-                                </div>
+            <div class="col-md-3">
+                <label class="form-label">Konversi Unit 3</label>
+                <input type="number" name="unit_3_value" 
+                    class="form-control form-control-md"
+                    value="{{ old('unit_3_value') }}">
+                <small class="text-muted" id="unit_3_preview"></small>
+            </div>
+        </div>
 
-                                <div class="row g-2">
-                                    <div class="col-md-3">
-                                        <label class="form-label">Satuan Level 4</label>
-                                        <input type="text" name="unit_4_name" 
-                                            class="form-control form-control-md"
-                                            value="{{ old('unit_4_name') }}">
-                                    </div>
+        <div class="row g-2">
+            <div class="col-md-3">
+                <label class="form-label">Satuan Level 4</label>
+                <input type="text" name="unit_4_name" 
+                    class="form-control form-control-md"
+                    value="{{ old('unit_4_name') }}">
+            </div>
 
-                                    <div class="col-md-3">
-                                        <label class="form-label">Konversi Unit 4</label>
-                                        <input type="number" name="unit_4_value" 
-                                            class="form-control form-control-md"
-                                            value="{{ old('unit_4_value') }}">
-                                        <small class="text-muted" id="unit_4_preview"></small>
-                                    </div>
-                                </div>
+            <div class="col-md-3">
+                <label class="form-label">Konversi Unit 4</label>
+                <input type="number" name="unit_4_value" 
+                    class="form-control form-control-md"
+                    value="{{ old('unit_4_value') }}">
+                <small class="text-muted" id="unit_4_preview"></small>
+            </div>
+        </div>
 
-                            </div>
-                        </div>
-
+    </div>
+</div>
 
 @push('js')
-    <script>
+<script>
+    $(document).on('change', '#photo', function (event) {
+    const file = event.target.files[0];
+    const previewContainer = document.getElementById('previewImage');
+
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function (e) {
+        if (previewContainer.tagName.toLowerCase() === 'div') {
+            const img = document.createElement('img');
+            img.id = 'previewImage';
+            img.src = e.target.result;
+            img.className = 'border rounded-3 shadow-sm';
+            img.width = 300;
+            img.height = 300;
+            img.style.objectFit = 'cover';
+            previewContainer.replaceWith(img);
+        } else {
+            previewContainer.src = e.target.result;
+        }
+    };
+    reader.readAsDataURL(file);
+});
+
+</script>
+
+<script>
 function updateUnitPreview() {
     let u1 = $('input[name="unit_1_name"]').val() || 'PCS';
     let v1 = parseInt($('input[name="unit_1_value"]').val()) || 1;
@@ -257,9 +298,9 @@ function updateUnitPreview() {
 $('input[name="unit_1_name"], input[name="unit_1_value"], ' +
   'input[name="unit_2_name"], input[name="unit_2_value"], ' +
   'input[name="unit_3_name"], input[name="unit_3_value"], ' +
-  'input[name="unit__4_name"], input[name="unit_4_value"]'
+  'input[name="unit_4_name"], input[name="unit_4_value"]'
 ).on('keyup change', updateUnitPreview);
 
 </script>
-@endpush
 
+@endpush

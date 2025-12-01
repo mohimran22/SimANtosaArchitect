@@ -9,7 +9,7 @@
                     <i class="ti ti-arrow-left"></i>
                 </a>
                 
-                    <h2 class="page-title mb-0">Tambah Gudang</h2>
+                    <h2 class="page-title g-4">Tambah Gudang</h2>
                 
             </div>
         </div>
@@ -60,83 +60,29 @@
                         </small>
                     </div>
 
-                    {{-- ========== SECTION 1: INFORMASI PRIBADI ========== --}}
                     <div class="section-block mb-5">
-                        <h3 class="fw-semibold mb-3 border-bottom pb-2">🧍 Informasi Pribadi</h3>
+                        <h3 class="fw-semibold mb-3 border-bottom pb-2">Informasi Gudang</h3>
                         <div class="row g-4">
-                            <div class="col-md-5">
-                                <label class="form-label required">Nama Lengkap</label>
-                                <input type="text" name="fullname" class="form-control @error('fullname') is-invalid @enderror"  value="{{ old('fullname') }}" required>
-                                @error('fullname')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                            <div class="col-md-5">
-                                <label class="form-label">Nama Panggilan</label>
-                                <input type="text" name="nickname" class="form-control @error('nickname') is-invalid @enderror" value="{{ old('nickname') }}">
-                                @error('nickname')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                            <div class="col-md-2">
-                                <label class="form-label required">Jenis Kelamin</label>
-                                <select name="gender" class="form-select" required>
-                                    <option value="">-- Pilih --</option>
-                                    <option value="1" {{ old('gender') == '1' ? 'selected' : '' }}>Laki-laki</option>
-                                    <option value="2" {{ old('gender') == '2' ? 'selected' : '' }}>Perempuan</option>
-                                </select>
-                            </div>
                             <div class="col-md-4">
-                                <label class="form-label required">Tempat Lahir</label>
-                                <input type="text" name="birth_place" class="form-control @error('birth_place') is-invalid @enderror" value="{{ old('birth_place') }}">
-                                @error('birth_place')
+                                <label class="form-label required">Nama Gudang</label>
+                                <input type="text" name="name" class="form-control @error('name') is-invalid @enderror"  value="{{ old('name') }}" required>
+                                @error('name')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label required">Tanggal Lahir</label>
-                                            <input type="date" name="birth_date" class="form-control" required
-                                                value="{{ old('birth_date') }}"
-                                                pattern="\d{4}-\d{2}-\d{2}" placeholder="YYYY-MM-DD">
-                            </div>
-                            {{-- <div class="col-md-4">
-                                <label class="form-label required">Agama</label>
-                                <select name="religion_id" class="form-select select2" required>
-                                    <option value="">-- Pilih Agama --</option>
-                                    @foreach($religions as $religion)
-                                        <option value="{{ $religion->id }}" {{ old('religion_id') == $religion->id ? 'selected' : '' }}>
-                                            {{ $religion->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                @error('religion_id')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div> --}}
-                            
-                            <div class="col-md-4">
-                                <label class="form-label required">Nomor KTP</label>
-                                <input type="text" name="identity_number" class="form-control @error('identity_number') is-invalid @enderror" value="{{ old('identity_number') }}" required>
-                                @error('identity_number')
+                                <label class="form-label required">Penanggungjawab</label>
+                                <input type="text" name="responsible_person" class="form-control @error('responsible_person') is-invalid @enderror" value="{{ old('responsible_person') }}" required>
+                                @error('responsible_person')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label">NPWP</label>
-                                <input type="text" name="npwp" class="form-control @error('npwp') is-invalid @enderror" value="{{ old('npwp') }}">
-                                @error('npwp')
+                                <label class="form-label">Deskripsi</label>
+                                <input type="text" name="description" class="form-control @error('description') is-invalid @enderror" value="{{ old('description') }}">
+                                @error('description')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
-                            </div>
-                            <div class="col-md-4">
-                                            <label class="form-label">Status Pernikahan :</label>
-                                            <select name="marital_status" class="form-select">
-                                                <option value="">-- Pilih Status --</option>
-                                                <option value="1">Lajang</option>
-                                                <option value="2">Menikah</option>
-                                                <option value="3">Duda</option>
-                                                <option value="4">Janda</option>
-                                            </select>
                             </div>
                         </div>
                     </div>
@@ -146,21 +92,21 @@
                         <h3 class="fw-semibold mb-3 border-bottom pb-2">📞 Kontak & Alamat</h3>
                         <div class="row g-4">
                             <div class="col-md-6">
-                                <label class="form-label required">Nomor Telepon</label>
-                                <input type="text" name="phone" class="form-control @error('phone') is-invalid @enderror" value="{{ old('phone') }}" required>
+                                <label class="form-label">Nomor Telepon</label>
+                                <input type="text" name="phone" class="form-control @error('phone') is-invalid @enderror" value="{{ old('phone') }}">
                                 @error('phone')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label required">Email</label>
-                                <input type="email" name="email" class="form-control @error('email') is-invalid @enderror" value="{{ old('email') }}" required>
+                                <label class="form-label">Email Gudang</label>
+                                <input type="email" name="email" class="form-control @error('email') is-invalid @enderror" value="{{ old('email') }}">
                                 @error('email')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
                             <div class="col-12">
-                                <label class="form-label required">Alamat Lengkap</label>
+                                <label class="form-label required">Alamat Lengkap Gudang</label>
                                 <textarea name="address" rows="2" class="form-control @error('address') is-invalid @enderror" required>{{ old('address') }}</textarea>
                                 @error('address')
                                     <div class="invalid-feedback">{{ $message }}</div>
@@ -227,124 +173,6 @@
                         </div>
                     </div>
 
-                    <div class="section-block mb-5">
-                        <h3 class="fw-semibold mb-3 border-bottom pb-2">🏦 Data Bank</h3>
-                        <p class="small text-muted mb-3">Diperlukan bila terjadi pengembalian dana</p>
-                        <div class="row g-4">
-                            <div class="col-md-4">
-                                <label class="form-label" for="bank_id">Nama Bank</label>
-                                <select id="bank_id" name="bank_id" class="form-select">
-                                    <option value="">Pilih Bank</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">Nomor Rekening</label>
-                                <input type="text" id="account_number" name="account_number" class="form-control @error('account_number') is-invalid @enderror" value="{{ old('account_number') }}">
-                                @error('account_number')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">Atas Nama</label>
-                                <input type="text" id="account_holder" name="account_holder" class="form-control @error('account_holder') is-invalid @enderror" value="{{ old('account_holder') }}">
-                                @error('account_holder')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- ========== SECTION 4: DATA KEPEGAWAIAN ========== --}}
-                    <div class="section-block mb-5">
-                        <h3 class="fw-semibold mb-3 border-bottom pb-2">💼 Data Kepegawaian</h3>
-                        <div class="row g-4">
-                            <div class="col-md-4">
-                                <label class="form-label required">NIK</label>
-                                <input type="text" id="nik" name="nik" class="form-control" required readonly>
-                                @error('nik')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label required">Status Gudang</label>
-                                <select name="employment_status" class="form-select" value="{{ old('employment_status') }}" required>
-                                    <option value="">-- Pilih Status --</option>
-                                    <option value="Tetap" {{ old('employment_status') == 'Tetap' ? 'selected' : '' }}>Tetap</option>
-                                    <option value="Kontrak" {{ old('employment_status') == 'Kontrak' ? 'selected' : '' }}>Kontrak</option>
-                                    <option value="Magang" {{ old('employment_status') == 'Magang' ? 'selected' : '' }}>Magang</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4">
-                                            <label class="form-label">Tanggal Mulai Kerja :</label>
-                                            <input type="date" name="start_date" class="form-control" 
-                                                value="{{ old('start_date') }}"
-                                                pattern="\d{4}-\d{2}-\d{2}" placeholder="YYYY-MM-DD">
-                                        </div>
-                            
-                            <div class="col-md-12">
-                                <label class="form-label required" for="role">Posisi :</label>
-                                <select class="form-select select2" name="role[]" multiple required>
-                                    @foreach (config('warehouse_roles.roles') as $role)
-                                        <option value="{{ $role }}" 
-                                            {{ in_array($role, old('role', [])) ? 'selected' : '' }}>
-                                            {{ ucfirst($role) }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="section-block mb-5"> 
-                                <h3 class="fw-semibold mb-3 border-bottom pb-2">📎 Dokumen Gudang</h3>   
-                                <div class="row g-4">
-                                    <div class="col-md-6 mb-3">
-                                        <label for="contract_letter_file" class="required">Upload Surat Perjanjian Kerja (PDF)</label>
-                                        <input type="file" name="contract_letter_file" class="form-control" accept="application/pdf" required>
-                                        @error('contract_letter_file')
-                                            <small class="text-danger">{{ $message }}</small>
-                                        @enderror
-                                    </div>
-
-                                    <div class="col-md-6 mb-3">
-                                        <label for="training_certificate">Upload Sertifikat (kalau ada)</label>
-                                        <input type="file" name="training_certificate" class="form-control" accept="application/pdf">
-                                        @error('training_certificate')
-                                            <small class="text-danger">{{ $message }}</small>
-                                        @enderror
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- ========== SECTION 5: PENGHASILAN ========== --}}
-                    <div class="section-block mb-4">
-                        <h3 class="fw-semibold mb-3 border-bottom pb-2">💰 Data Penghasilan</h3>
-                        <div class="row g-4">
-                            <div class="col-md">
-                                <label class="form-label">Gaji Pokok</label>
-                                <input type="number" id="basic_salary" name="basic_salary" class="form-control @error('basic_salary') is-invalid @enderror" value="{{ old('basic_salary') }}" required>
-                                @error('basic_salary')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                            <div class="col-md">
-                                <label class="form-label">Tunjangan</label>
-                                <input type="number" name="allowance" class="form-control" value="{{ old('allowance') }}">
-                            </div>
-                            <div class="col-md">
-                                <label class="form-label">Potongan</label>
-                                <input type="number" name="deduction" class="form-control" value="{{ old('deduction') }}">
-                            </div>
-                            <div class="col-md">
-                                <label class="form-label">Bonus</label>
-                                <input type="number" name="bonus" class="form-control" value="{{ old('bonus') }}">
-                            </div>
-                            <div class="col-md">
-                                <label class="form-label">THR</label>
-                                <input type="number" name="thr" class="form-control" value="{{ old('thr') }}">
-                            </div>
-                        </div>
-                    </div>
-
                     {{-- SUBMIT --}}
                     <div class="text-end mt-5">
                         <button type="submit" class="btn btn-dark px-4">
@@ -371,7 +199,7 @@
         });
     </script>
 
-    <script>
+{{-- <script>
 document.addEventListener('DOMContentLoaded', function() {
     fetch('{{ route('warehouses.generateNik') }}')
         .then(response => response.json())
@@ -380,7 +208,7 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .catch(error => console.error('Error:', error));
 });
-</script>
+</script> --}}
 
 
     <script>

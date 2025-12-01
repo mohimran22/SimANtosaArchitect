@@ -19,7 +19,7 @@ class ProductColor extends Model
     
     public function products()
 {
-    return $this->hasMany(Product::class);
+    return $this->belongsToMany(Product::class, 'product_color', 'color_id', 'product_id');
 }
 
 }

@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Support\Carbon;
 
-class EmployeeFamilyMember extends Model
+class StockAdjustmentItem  extends Model
 {
     use HasFactory, HasUuid;
 

@@ -27,27 +27,38 @@ class MenuController extends Controller
     }
 
     public function store(Request $request)
-    {
-        // dd($request->all());
+{
+    $data = $request->validate([
+        'text' => 'required|string|max:255',
+        'url' => 'nullable|string|max:255',
+        'type' => 'in:route,url,label',
+        'key' => 'nullable|string|max:255',
+        'parent_id' => 'nullable|exists:menus,id',
+        'order' => 'integer',
+        'icon' => 'nullable|string|max:255',
+        'is_active' => 'boolean',
 
-        $data = $request->validate([
-            'text' => 'required|string|max:255',
-            'url' => 'nullable|string|max:255',
-            'type' => 'in:route,url,label',
-            'key' => 'nullable|string|max:255',
-            'parent_id' => 'nullable|exists:menus,id',
-            'order' => 'integer',
-            'icon' => 'nullable|string|max:255',
-            'is_active' => 'boolean',
-        ]);
+        // ✅ UNTUK MULTIPLE
+        'permission_name'   => 'nullable|array',
+        'permission_name.*' => 'string|max:255',
+    ]);
 
-
-        $menu = Menu::create($data);
-
-        cache()->forget('menus_for_user_*');
-
-        return redirect()->route('menus.index')->with('success', 'Menu created successfully.');
+    // ✅ SIMPAN SEBAGAI "a|b|c"
+    if ($request->filled('permission_name')) {
+        $data['permission_name'] = implode('|', $request->permission_name);
+    } else {
+        $data['permission_name'] = null;
     }
+
+    Menu::create($data);
+
+    cache()->forget('menus_for_user_*');
+
+    return redirect()
+        ->route('menus.index')
+        ->with('success', 'Menu created successfully.');
+}
+
 
     public function edit(Menu $menu)
     {
@@ -67,15 +78,25 @@ class MenuController extends Controller
         'order' => 'integer',
         'icon' => 'nullable|string|max:255',
         'is_active' => 'boolean',
-        'permission_name' => 'nullable|string|max:255',
+        'permission_name'   => 'nullable|array',
+        'permission_name.*' => 'string|max:255',
     ]);
 
-    $menu = Menu::findOrFail($id);
+    // ✅ Gabungkan menjadi string "a|b|c"
+    if ($request->filled('permission_name')) {
+        $validated['permission_name'] = implode('|', $request->permission_name);
+    } else {
+        $validated['permission_name'] = null;
+    }
 
+    $menu = Menu::findOrFail($id);
     $menu->update($validated);
 
-    return redirect()->route('menus.index')->with('success', 'Menu updated successfully.');
+    return redirect()
+        ->route('menus.index')
+        ->with('success', 'Menu updated successfully.');
 }
+
 
 
     public function destroy(Menu $menu)

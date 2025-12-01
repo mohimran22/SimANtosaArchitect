@@ -34,9 +34,14 @@ public function province() {
         return $this->hasMany(WarehouseStock::class, 'warehouse_id', 'id');
     }
 
-    public function stockHistories()
+    public function outgoingTransfers()
     {
-        return $this->hasMany(StockHistory::class, 'warehouse_id', 'id');
+        return $this->hasMany(WarehouseTransfer::class, 'from_warehouse_id');
+    }
+
+    public function incomingTransfers()
+    {
+        return $this->hasMany(WarehouseTransfer::class, 'to_warehouse_id');
     }
 
     public function responsibleEmployee()

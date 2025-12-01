@@ -75,13 +75,18 @@
 
                     <div class="col-md-6 mb-3">
                         <label class="form-label" for="permission_name">Permission (opsional)</label>
-                        <select name="permission_name" id="permission_name" class="form-select select2" multiple>
+                        @php
+                            $selectedPermissions = old(
+                                'permission_name',
+                                $menu->permission_name ? explode('|', $menu->permission_name) : []
+                            );
+                        @endphp
+
+                        <select name="permission_name[]" class="form-select select2" multiple>
                             <option value="">-- Semua pengguna bisa lihat --</option>
                             @foreach ($permissions as $perm)
-                                <option 
-                                    value="{{ $perm->name }}" 
-                                    @selected(old('permission_name', $menu->permission_name ?? '') === $perm->name)
-                                >
+                                <option value="{{ $perm->name }}"
+                                    {{ in_array($perm->name, $selectedPermissions) ? 'selected' : '' }}>
                                     {{ $perm->name }}
                                 </option>
                             @endforeach

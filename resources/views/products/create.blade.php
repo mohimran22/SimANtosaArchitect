@@ -70,6 +70,21 @@
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">SKU</label>
+                                    <input type="text" id="sku" name="sku_code" class="form-control" readonly>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <label class="form-label required">Status barang</label>
+                                    <select name="status" class="form-select" required>
+                                                <option value="">-- Pilih Status Barang --</option>
+                                                <option value="1">Tersedia</option>
+                                                <option value="2">Stok Terbatas</option>
+                                                <option value="3">Habis</option>
+                                                <option value="4">Pre-Order</option>
+                                    </select>
+                                </div>
                                 
                                 <div class="col-12">
                                     <label class="form-label required">Deskripsi Produk</label>
@@ -79,8 +94,8 @@
                                     @enderror
                                 </div>
                                 <div class="col-md-4">
-                                    <label class="form-label required">Merk</label>
-                                    <select name="brand_id" class="form-select select2" required>
+                                    <label class="form-label">Merk</label>
+                                    <select id="brand_id" name="brand_id" class="form-select select2">
                                         <option value="brand_id">-- Pilih Merk --</option>
                                         @foreach($brands as $brand)
                                             <option value="{{ $brand->id }}" {{ old('brand_id') == $brand->id ? 'selected' : '' }}>
@@ -93,8 +108,8 @@
                                     @enderror
                                 </div>
                                 <div class="col-md-4">
-                                    <label class="form-label required">Kategori</label>
-                                    <select name="category_id" class="form-select select2" required>
+                                    <label class="form-label">Kategori</label>
+                                    <select id="category_id" name="category_id" class="form-select select2">
                                         <option value="category_id">-- Pilih Kategori --</option>
                                         @foreach($categories as $category)
                                             <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>
@@ -107,8 +122,8 @@
                                     @enderror
                                 </div>
                                 <div class="col-md-4">
-                                    <label class="form-label required">Tipe Produk</label>
-                                    <select name="type_id" class="form-select select2" required>
+                                    <label class="form-label">Tipe Produk</label>
+                                    <select id="type_id" name="type_id" class="form-select select2">
                                         <option value="type_id">-- Pilih Tipe --</option>
                                         @foreach($types as $type)
                                             <option value="{{ $type->id }}" {{ old('type_id') == $type->id ? 'selected' : '' }}>
@@ -122,31 +137,28 @@
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label">Ukuran Produk</label>
-                                    <input type="text" name="product_size" class="form-control @error('product_size') is-invalid @enderror" value="{{ old('product_size') }}">
-                                    @error('product_size')
+                                    <input type="text" id="size" name="size" class="form-control @error('size') is-invalid @enderror" value="{{ old('size') }}">
+                                    @error('size')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label">Volume</label>
-                                    <input type="text" name="product_volume" class="form-control @error('product_volume') is-invalid @enderror" value="{{ old('product_volume') }}">
-                                    @error('product_volume')
+                                    <input type="text" id="volume" name="volume" class="form-control @error('volume') is-invalid @enderror" value="{{ old('volume') }}">
+                                    @error('volume')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
                                 <div class="col-md-4">
-                                    <label class="form-label required">Warna Produk</label>
-                                    <select name="color_id" class="form-select select2" required>
-                                        <option value="color_id">-- Pilih Warna --</option>
-                                        @foreach($colors as $color)
-                                            <option value="{{ $color->id }}" {{ old('_id') == $color->id ? 'selected' : '' }}>
+                                    <label class="form-label">Warna Produk</label>
+                                    <select id="colors" name="colors[]" class="form-select select2" multiple>
+                                        @foreach ($colors as $color)
+                                            <option value="{{ $color->id }}"
+                                                {{ in_array($color->id, old('colors', $productColors ?? [])) ? 'selected' : '' }}>
                                                 {{ $color->name }}
                                             </option>
                                         @endforeach
                                     </select>
-                                    @error('color_id')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
                                 </div>
                             </div>
                         </div>
@@ -226,80 +238,39 @@
                             </div>
                         </div>
 
-                        {{-- <div class="section-block mb-5 mt-4">
-                            <h3 class="fw-semibold mb-3 border-bottom pb-2">Perhitungan Profit (Otomatis)</h3>
+                        <div class="section-block mb-5">
+                            <h3 class="fw-semibold mb-3 border-bottom pb-2">Estimasi Profit</h3>
 
                             <div class="row g-3">
-
                                 <div class="col-md-4">
-                                    <label class="form-label">Harga Beli</label>
-                                    <input type="number" step="0.01" id="buying_prices" name="buying_prices" 
-                                        class="form-control form-control-sm" value="{{ old('buying_prices') }}">
+                                    <label class="form-label">Harga Modal</label>
+                                    <input type="number" id="base_price" class="form-control" placeholder="Contoh: 50000">
                                 </div>
 
                                 <div class="col-md-4">
-                                    <label class="form-label">Harga Jual</label>
-                                    <input type="number" step="0.01" id="selling_prices" name="selling_prices" 
-                                        class="form-control form-control-sm" value="{{ old('selling_prices') }}">
+                                    <label class="form-label">Jenis Profit</label>
+                                    <select id="profit_type" class="form-select">
+                                        <option value="percent">Persen (%)</option>
+                                        <option value="rupiah">Rupiah (Rp)</option>
+                                    </select>
                                 </div>
 
                                 <div class="col-md-4">
-                                    <label class="form-label">Harga Spesial (Opsional)</label>
-                                    <input type="number" step="0.01" id="special_prices" name="special_prices" 
-                                        class="form-control form-control-sm" value="{{ old('special_prices') }}">
+                                    <label class="form-label">Nilai Profit</label>
+                                    <input type="number" id="profit_value" class="form-control" placeholder="Contoh: 20 atau 10000">
+                                </div>
+
+                                <div class="col-md-6 mt-3">
+                                    <label class="form-label">Harga Jual Estimasi</label>
+                                    <input type="text" id="selling_preview" class="form-control" readonly>
+                                </div>
+
+                                <div class="col-md-6 mt-3">
+                                    <label class="form-label">Profit Estimasi</label>
+                                    <input type="text" id="profit_preview" class="form-control" readonly>
                                 </div>
                             </div>
-
-                            <div class="mt-4">
-                                <h6 class="fw-semibold">Profit Normal</h6>
-                                <p class="mb-1">
-                                    Rp <span id="profit_rp">0</span>  
-                                    (<span id="profit_percent">0</span>%)
-                                </p>
-
-                                <h6 class="fw-semibold mt-3">Profit Spesial</h6>
-                                <p class="mb-1">
-                                    Rp <span id="profit_special_rp">0</span>  
-                                    (<span id="profit_special_percent">0</span>%)
-                                </p>
-
-                                <p id="profit_alert" class="text-danger fw-bold mt-3"></p>
-                            </div>
-                        </div> --}}
-
-                        {{-- <div class="section-block mt-4">
-                            <h3 class="fw-semibold mb-3 border-bottom pb-2">Perhitungan Profit</h3>
-
-                            <div class="row g-3">
-
-                                <div class="col-md-4">
-                                    <label class="form-label">Harga Beli Supplier</label>
-                                    <input type="text" class="form-control" 
-                                        value="Rp {{ number_format($product->buying_prices) }}" readonly>
-                                </div>
-
-                                <div class="col-md-4">
-                                    <label class="form-label">Harga Jual Supplier</label>
-                                    <input type="text" class="form-control" 
-                                        value="Rp {{ number_format($product->selling_prices) }}" readonly>
-                                </div>
-
-                                <div class="col-md-4">
-                                    <label class="form-label">Profit (Rp)</label>
-                                    <input type="text" class="form-control" 
-                                        value="Rp {{ number_format($profit) }}" readonly>
-                                </div>
-
-                                <div class="col-md-4">
-                                    <label class="form-label">Margin (%)</label>
-                                    <input type="text" class="form-control" 
-                                        value="{{ number_format($margin, 2) }}%" readonly>
-                                </div>
-
-                            </div>
-                        </div> --}}
-
-
+                        </div>
 
 
                             <div class="text-end mt-5">
@@ -316,15 +287,15 @@
 
                     
 
-                                    @push('js')
-                                        <script>
-                                            $(document).ready(function() {
-                                                $('.select2').select2({
-                                                    placeholder: "-- Pilih --",
-                                                    width: '100%'
-                                                });
-                                            });
-                                        </script>
+@push('js')
+<script>
+    $(document).ready(function() {
+        $('.select2').select2({
+            placeholder: "-- Pilih --",
+            width: '100%'
+        });
+    });
+</script>
 
 <script>
         document.getElementById('photo').addEventListener('change', function (event) {
@@ -355,90 +326,116 @@
 </script>
 
 <script>
-function updateUnitPreview() {
-    let u1 = $('input[name="unit_1_name"]').val() || 'PCS';
-    let v1 = parseInt($('input[name="unit_1_value"]').val()) || 1;
+    function updateUnitPreview() {
+        let u1 = $('input[name="unit_1_name"]').val() || 'PCS';
+        let v1 = parseInt($('input[name="unit_1_value"]').val()) || 1;
 
-    let u2 = $('input[name="unit_2_name"]').val();
-    let v2 = parseInt($('input[name="unit_2_value"]').val());
+        let u2 = $('input[name="unit_2_name"]').val();
+        let v2 = parseInt($('input[name="unit_2_value"]').val());
 
-    let u3 = $('input[name="unit_3_name"]').val();
-    let v3 = parseInt($('input[name="unit_3_value"]').val());
+        let u3 = $('input[name="unit_3_name"]').val();
+        let v3 = parseInt($('input[name="unit_3_value"]').val());
 
-    let u4 = $('input[name="unit_4_name"]').val();
-    let v4 = parseInt($('input[name="unit_4_value"]').val());
+        let u4 = $('input[name="unit_4_name"]').val();
+        let v4 = parseInt($('input[name="unit_4_value"]').val());
 
-    // Unit 2
-    if (u2 && v2) {
-        let result2 = v2 * v1;
-        $('#unit_2_preview').text(`1 ${u2} = ${result2} ${u1}`);
-    } else {
-        $('#unit_2_preview').text('');
-    }
-
-    // Unit 3
-    if (u3 && v3 && u2 && v2) {
-        let result3 = v3 * v2 * v1;
-        $('#unit_3_preview').text(`1 ${u3} = ${result3} ${u1}`);
-    } else {
-        $('#unit_3_preview').text('');
-    }
-
-    // Unit 4
-    if (u4 && v4 && u3 && v3 && u2 && v2) {
-        let result4 = v4 * v3 * v2 * v1;
-        $('#unit_4_preview').text(`1 ${u4} = ${result4} ${u1}`);
-    } else {
-        $('#unit_4_preview').text('');
-    }
-}
-
-// Jalankan setiap kali input berubah
-$('input[name="unit_1_name"], input[name="unit_1_value"], ' +
-  'input[name="unit_2_name"], input[name="unit_2_value"], ' +
-  'input[name="unit_3_name"], input[name="unit_3_value"], ' +
-  'input[name="unit__4_name"], input[name="unit_4_value"]'
-).on('keyup change', updateUnitPreview);
-
-</script>
-
-<script>
-    function calculateProfit() {
-        let buy = parseFloat($("#buying_prices").val()) || 0;
-        let sell = parseFloat($("#selling_prices").val()) || 0;
-        let special = parseFloat($("#special_prices").val()) || 0;
-
-        // Profit normal
-        let profit = sell - buy;
-        let margin = buy > 0 ? (profit / buy * 100) : 0;
-
-        $("#profit_rp").text(profit.toLocaleString());
-        $("#profit_percent").text(margin.toFixed(2));
-
-        // Profit spesial
-        let profitSpecial = special ? (special - buy) : 0;
-        let marginSpecial = (special && buy > 0) ? (profitSpecial / buy * 100) : 0;
-
-        $("#profit_special_rp").text(profitSpecial.toLocaleString());
-        $("#profit_special_percent").text(marginSpecial.toFixed(2));
-
-        // Warning jika profit minus
-        if (profit < 0 || profitSpecial < 0) {
-            $("#profit_alert").text("⚠️ Profit negatif! Periksa kembali harga jual.");
+        // Unit 2
+        if (u2 && v2) {
+            let result2 = v2 * v1;
+            $('#unit_2_preview').text(`1 ${u2} = ${result2} ${u1}`);
         } else {
-            $("#profit_alert").text("");
+            $('#unit_2_preview').text('');
+        }
+
+        // Unit 3
+        if (u3 && v3 && u2 && v2) {
+            let result3 = v3 * v2 * v1;
+            $('#unit_3_preview').text(`1 ${u3} = ${result3} ${u1}`);
+        } else {
+            $('#unit_3_preview').text('');
+        }
+
+        // Unit 4
+        if (u4 && v4 && u3 && v3 && u2 && v2) {
+            let result4 = v4 * v3 * v2 * v1;
+            $('#unit_4_preview').text(`1 ${u4} = ${result4} ${u1}`);
+        } else {
+            $('#unit_4_preview').text('');
         }
     }
 
-    // Trigger realtime
-    $("#buying_prices, #selling_prices, #special_prices").on("keyup change", calculateProfit);
+    // Jalankan setiap kali input berubah
+    $('input[name="unit_1_name"], input[name="unit_1_value"], ' +
+    'input[name="unit_2_name"], input[name="unit_2_value"], ' +
+    'input[name="unit_3_name"], input[name="unit_3_value"], ' +
+    'input[name="unit__4_name"], input[name="unit_4_value"]'
+    ).on('keyup change', updateUnitPreview);
+</script>
 
-    // Jalankan pertama kali
-    calculateProfit();
+<script>
+    function generateSKU() {
+        $.ajax({
+            url: "{{ route('products.generateSku') }}",
+            method: "POST",
+            data: {
+                _token: "{{ csrf_token() }}",
+                category_id: $('#category_id').val(),
+                brand_id: $('#brand_id').val(),
+                type_id: $('#type_id').val(),
+                size: $('#size').val(),
+                volume: $('#volume').val(),
+                colors: $('#colors').val()
+            },
+            success: function(res) {
+                $('#sku').val(res.sku);
+            }
+        });
+    }
+
+    // Trigger generate saat input berubah
+    $('#category_id, #brand_id, #type_id, #ukuran, #volume, #colors').on('change input', function() {
+        generateSKU();
+    });
+
+    // Generate awal saat halaman dibuka
+    $(document).ready(function() {
+        generateSKU();
+    });
+</script>
+
+<script>
+function hitungProfit() {
+    let base   = parseFloat($('#base_price').val()) || 0;
+    let type   = $('#profit_type').val();
+    let value  = parseFloat($('#profit_value').val()) || 0;
+
+    let profitRp = 0;
+    let selling  = base;
+
+    if (type === 'percent') {
+        profitRp = base * (value / 100);
+    } else {
+        profitRp = value;
+    }
+
+    selling = base + profitRp;
+
+    $('#selling_preview').val(
+        'Rp ' + selling.toLocaleString('id-ID')
+    );
+
+    let persen = base > 0 ? ((profitRp / base) * 100) : 0;
+
+    $('#profit_preview').val(
+        'Rp ' + profitRp.toLocaleString('id-ID') + 
+        ' (' + persen.toFixed(2) + '%)'
+    );
+}
+
+$('#base_price, #profit_value, #profit_type').on('keyup change', hitungProfit);
 </script>
 
 
-
-                                    @endpush
+@endpush
 
 

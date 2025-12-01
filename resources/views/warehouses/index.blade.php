@@ -38,7 +38,7 @@
                     <div class="card">
                         <div class="card-header">
                             <p class="text-center mb-4" style="font-size: 1.5rem; font-weight: 400; font-family: 'Poppins', sans-serif;">
-                                 Daftar Karyawan
+                                 Daftar Gudang
                             </p>
                         </div>
                         <div class="table-responsive">
@@ -89,7 +89,7 @@
                     { data: 'name', name: 'name'},
                     { data: 'responsible_person', name: 'responsible_person' },
                     { data: 'phone', name: 'phone' },   
-                    { data: 'email', name: 'email', orderable: false, searchable: false},
+                    { data: 'email', name: 'email'},
                     { data: 'address', name: 'address' },
                     { data: 'province_name', name: 'province.name' },
                     { data: 'city_name', name: 'city.name'},

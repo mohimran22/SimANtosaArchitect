@@ -8,9 +8,10 @@ use App\Traits\HasUuid;
 
 class Product extends Model
 {
-    public function color() {
+    public function colors() 
+{
 
-    return $this->belongsTo(ProductColor::class, 'color_id');
+    return $this->belongsToMany(ProductColor::class, 'product_color', 'product_id', 'color_id');
 }
 
     public function brand() {
@@ -32,7 +33,7 @@ public function suppliers()
 {
     return $this->belongsToMany(Supplier::class, 'product_supplier')
                 ->using(ProductSupplier::class)
-                ->withPivot(['buying_prices', 'selling_prices', 'special_prices', 'stock'])
+                ->withPivot(['buying_prices', 'discount', 'tax_percentage', 'stock'])
                 ->withTimestamps();
 }
 
@@ -41,6 +42,17 @@ public function warehouse()
 {
     return $this->belongsTo(Warehouse::class);
 }
+
+public function warehouseStocks()
+{
+    return $this->hasMany(WarehouseStock::class);
+}
+
+public function totalStock()
+{
+    return $this->warehouseStocks->sum('stock');
+}
+
 
 // public function owners()
 // {
@@ -84,11 +96,9 @@ public function warehouse()
         'unit_3_name', 'unit_3_value',
         'unit_4_name', 'unit_4_value',
         'brand_id', 'category_id', 'type_id',
-        'color_id', 'volume', 'size',
-        'buying_prices', 'selling_prices', 'special_prices',
-        'tax_percentage', 
+        'volume', 'size',
         'inventory_account_id', 'sales_account_id', 'hpp_account_id',
-        'status'
+        'status', 'sku_code'
     ];
 
 }

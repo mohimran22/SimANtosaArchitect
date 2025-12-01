@@ -24,6 +24,11 @@
             </a>
         </li>
         <li class="nav-item" role="presentation">
+            <a class="nav-link" data-bs-toggle="tab" href="#tab-catalog" role="tab">
+                <i class="ti ti-briefcase"></i> Katalog Jasa
+            </a>
+        </li>
+        <li class="nav-item" role="presentation">
             <a class="nav-link" data-bs-toggle="tab" href="#tab-employment" role="tab">
                 <i class="ti ti-briefcase"></i> Riwayat Pembayaran
             </a>
@@ -151,33 +156,13 @@
         </div>
 
         {{-- ================= TAB 2: LOYALTY ================= --}}
-        {{-- <div class="tab-pane fade" id="tab-loyalty" role="tabpanel">
-            <div class="card shadow-sm">
-                <div class="card-header">
-                    <h3 class="card-title mb-0">Membership / Loyalty Program</h3>
-                </div>
-                <div class="card-body text-center">
-                    @php
-                        $color = [
-                            'silver' => 'secondary',
-                            'gold' => 'warning',
-                            'platinum' => 'info',
-                        ][$architect->loyalty_level] ?? 'secondary';
-                    @endphp
-
-                    <div class="mb-3">
-                        <span class="avatar avatar-lg rounded-circle bg-{{ $color }}-lt">
-                            <i class="ti ti-star text-{{ $color }}"></i>
-                        </span>
-                    </div>
-
-                    {{-- <h3 class="fw-bold text-capitalize">{{ $architect->readable_loyalty_level }}</h3>
-                    <p class="text-muted">
-                        Tingkatan membership menentukan keuntungan & promo khusus pelanggan.
-                    </p> 
+        <div class="tab-pane fade" id="tab-catalog" role="tabpanel">
+            <div class="card">
+                <div class="card-body text-center text-muted">
+                    <em>Belum ada data jasa.</em>
                 </div>
             </div>
-        </div> --}}
+        </div>
 
         {{-- ================= TAB 3: SHIPPING ================= --}}
         <div class="tab-pane fade" id="tab-loyalty" role="tabpanel">

@@ -5,7 +5,6 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AccountingAccountController;
 use App\Http\Controllers\AccountingJournalController;
-use App\Http\Controllers\AccountingClosingController;
 use App\Http\Controllers\UsersController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\AccountController;
@@ -25,6 +24,7 @@ use App\Http\Controllers\ProductBrandController;
 use App\Http\Controllers\ProductTypeController;
 use App\Http\Controllers\ProductCategoryController;
 use App\Http\Controllers\SupplierCatalogController;
+use App\Http\Controllers\ProductCatalogController;
 use App\Http\Controllers\RoleSwitchController;
 use App\Http\Controllers\UserImportController;
 use App\Http\Controllers\MenuController;
@@ -98,17 +98,17 @@ Route::post('/products/store-ajax', [ProductController::class, 'storeAjax'])
 Route::post('/supplier/products/store', [SupplierCatalogController::class, 'storeSupplierProduct'])
     ->name('supplier.products.store');
 
+Route::put('/supplier-product/update-price',
+    [SupplierCatalogController::class, 'updatePrice']
+)->name('supplier-product.update-price');
+
+Route::get('/catalog/supplier', [ProductCatalogController::class, 'supplierCatalog'])
+    ->name('catalog.supplier');
+
+Route::get('/catalog/customer', [ProductCatalogController::class, 'customerCatalog'])
+    ->name('catalog.customer');
 
 
-
-// Route::get('/suppliers/{supplier}/products/{product}/edit',
-//     [SupplierProductController::class, 'edit'])->name('supplier.products.edit');
-
-// Route::get('/suppliers/{supplier}/products/{product}/edit',
-//     [SupplierProductController::class, 'edit'])->name('supplier.products.edit');
-
-// Route::delete('/suppliers/{supplier}/products/{product}',
-//     [SupplierProductController::class, 'detach'])->name('supplier.products.detach');
 
 
  Route::middleware(['auth', 'permission:lihat daftar investor|lihat data investor', 'activerole:Investor'])->group(function () {
@@ -161,13 +161,28 @@ Route::middleware(['auth', 'permission:lihat daftar produk'])->group(function ()
     Route::resource('/products', ProductController::class);
 });
 
+Route::middleware(['auth', 'permission:lihat daftar produk'])->group(function () {
+    Route::resource('/products/catalog', ProductCatalogController::class);
+});
+
+Route::post('/products/generate-sku', [ProductController::class, 'generateSku'])
+    ->name('products.generateSku');
+
+
 Route::middleware(['auth', 'permission:lihat daftar gudang'])->group(function () {
     route::resource('/warehouses', WarehouseController::class);
 });
 
-// Route::middleware(['auth', 'permission:lihat daftar proyek'])->group(function () {
-//     Route::resource('/projects', ProjectController::class);
-// });
+
+Route::get('/warehouse/search-product', [SupplierCatalogController::class, 'searchProduct'])
+    ->name('warehouse.searchProduct');
+
+Route::post('/warehouse/products/store', [SupplierCatalogController::class, 'storeSupplierProduct'])
+    ->name('warehouse.products.store');
+
+Route::middleware(['auth', 'permission:lihat daftar proyek'])->group(function () {
+    Route::resource('/projects', ProjectController::class);
+});
 
 Route::middleware(['auth', 'permission:lihat daftar user'])->group(function () {
     route::resource('/users', UsersController::class);

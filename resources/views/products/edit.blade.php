@@ -61,9 +61,8 @@
                         </small>
                     </div>
 
-                    {{-- ========== SECTION 1: INFORMASI PRIBADI ========== --}}
                     <div class="section-block mb-5">
-                        <h3 class="fw-semibold mb-3 border-bottom pb-2">🧍 Informasi Pribadi</h3>
+                        <h3 class="fw-semibold mb-3 border-bottom pb-2">Informasi Produk</h3>
                         <div class="row g-4">
                             <div class="col-md-5">
                                 <label class="form-label required">Nama Produk</label>
@@ -73,46 +72,53 @@
                                 @enderror
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label required">Kode SKU</label>
-                                <input type="text" id="sku_code" name="sku_code" class="form-control" 
-                                value="{{ old('sku_code', $product->sku_code) }}" required>
-                                @error('sku_code')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
+                                    <label class="form-label">SKU</label>
+                                    <input type="text" id="sku" name="sku_code" class="form-control" readonly>
                             </div>
-                            <div class="col-md-5">
-                                <label class="form-label">Deskripsi Produk</label>
-                                <input type="text" name="description" class="form-control @error('description') is-invalid @enderror" value="{{ old('description', $product->description) }}">
-                                @error('description')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
+                            <div class="col-md-3">
+                                            <label class="form-label">Status Barang :</label>
+                                            <select name="status" class="form-select">
+                                                <option value="">-- Pilih Status --</option>
+                                                <option value="1" {{ $product->status == 1 ? 'selected' : '' }}>Tersedia</option>
+                                                <option value="2" {{ $product->status == 2 ? 'selected' : '' }}>Stok Terbatas</option>
+                                                <option value="3" {{ $product->status == 3 ? 'selected' : '' }}>Habis</option>
+                                                <option value="4" {{ $product->status == 4 ? 'selected' : '' }}>Pre-Order</option>
+                                            </select>
                             </div>
+                            <div class="col-12">
+                                    <label class="form-label required">Deskripsi Produk</label>
+                                    <textarea name="description" rows="2" class="form-control @error('description') is-invalid @enderror" required>{{ old('description', $product->description) }}</textarea>
+                                    @error('description')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                            </div>
+                            
                             <div class="col-md-4">
                                 <label class="form-label required">Merk</label>
-                                <select name="product_brand_id" class="form-select select2">
+                                <select name="brand_id" class="form-select select2">
                                     <option value="">Pilih Brand</option>
                                     @foreach ($brands as $b)
                                         <option value="{{ $b->id }}"
-                                            {{ $b->id == old('product_brand_id', $product->product_brand_id) ? 'selected' : '' }}>
+                                            {{ $b->id == old('brand_id', $product->brand_id) ? 'selected' : '' }}>
                                             {{ $b->name }}
                                         </option>
                                     @endforeach
                                 </select>
-                                @error('product_brand_id')
+                                @error('brand_id')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label required">Kategori</label>
                                 <select name="category_id" class="form-select select2">
-                            <option value="">Pilih Kategori</option>
-                            @foreach ($categories as $c)
-                                <option value="{{ $c->id }}"
-                                    {{ $c->id == old('category_id', $product->category_id) ? 'selected' : '' }}>
-                                    {{ $c->name }}
-                                </option>
-                            @endforeach
-                        </select>
+                                    <option value="">Pilih Kategori</option>
+                                    @foreach ($categories as $c)
+                                        <option value="{{ $c->id }}"
+                                            {{ $c->id == old('category_id', $product->category_id) ? 'selected' : '' }}>
+                                            {{ $c->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
                                 @error('category_id')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -134,250 +140,160 @@
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label required">Ukuran Produk</label>
-                                <input type="text" name="product_size" class="form-control @error('product_size') is-invalid @enderror" value="{{ old('product_size', $product->product_size) }}">
-                                @error('product_size')
+                                <input type="text" name="size" class="form-control @error('size') is-invalid @enderror" value="{{ old('size', $product->size) }}">
+                                @error('size')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label required">Volume</label>
-                                <input type="text" name="product_volume" class="form-control @error('product_volume') is-invalid @enderror" value="{{ old('product_volume', $product->product_volume) }}">
-                                @error('product_volume')
+                                <input type="text" name="volume" class="form-control @error('volume') is-invalid @enderror" value="{{ old('volume', $product->volume) }}">
+                                @error('volume')
                                     <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label required">Satuan</label>
-                                <select name="color_id" class="form-select select2" required>
-                            <option value="">Pilih Satuan</option>
-                            @foreach ($colors as $p)
-                                <option value="{{ $p->id }}"
-                                    {{ $p->id == old('color_id', $product->color_id) ? 'selected' : '' }}>
-                                    {{ $p->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                                @error('color_id')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                            {{-- <div class="col-md-4">
-                                <label class="form-label required">Tanggal Lahir</label>
-                                            <input type="date" name="birth_date" class="form-control" required
-                                                value="{{ old('birth_date') }}"
-                                                pattern="\d{4}-\d{2}-\d{2}" placeholder="YYYY-MM-DD">
-                            </div> --}}
-                            
-                            
-                            <div class="col-md-4">
-                                <label class="form-label required">Warna Produk</label>
-                                <input type="text" name="product_color" class="form-control @error('product_color') is-invalid @enderror" value="{{ old('product_color', $product->product_color) }}" required>
-                                @error('product_color')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">Harga Beli</label>
-                                <input type="text" name="buying_prices" class="form-control @error('buying_prices') is-invalid @enderror" value="{{ old('buying_prices', $product->buying_prices) }}">
-                                @error('buying_prices')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">Harga Jual</label>
-                                <input type="text" name="selling_prices" class="form-control @error('selling_prices') is-invalid @enderror" value="{{ old('selling_prices', $product->selling_prices) }}">
-                                @error('selling_prices')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">Harga Spesial</label>
-                                <input type="text" name="special_prices" class="form-control @error('special_prices') is-invalid @enderror" value="{{ old('special_prices', $product->special_prices) }}">
-                                @error('special_prices')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">Pajak</label>
-                                <input type="text" name="tax_percentage" class="form-control @error('tax_percentage') is-invalid @enderror" value="{{ old('tax_percentage', $product->tax_percentage) }}">
-                                @error('tax_percentage')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                            <div class="col-md-4">
-                                            <label class="form-label">Status Barang :</label>
-                                            <select name="status" class="form-select">
-                                                <option value="">-- Pilih Status --</option>
-                                                <option value="1" {{ $product->status == 1 ? 'selected' : '' }}>Tersedia</option>
-                                                <option value="2" {{ $product->status == 2 ? 'selected' : '' }}>Stok Terbatas</option>
-                                                <option value="3" {{ $product->status == 3 ? 'selected' : '' }}>Habis</option>
-                                                <option value="4" {{ $product->status == 4 ? 'selected' : '' }}>Pre-Order</option>
-                                            </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- ========== SECTION 2: KONTAK & ALAMAT ========== --}}
-                    <div class="section-block mb-5">
-                        <h3 class="fw-semibold mb-3 border-bottom pb-2">📞 Kontak & Alamat</h3>
-                        {{-- <div class="row g-4">
-                            <div class="col-md-6">
-                                <label class="form-label required">Nomor Telepon</label>
-                                <input type="text" name="phone" class="form-control @error('phone') is-invalid @enderror" value="{{ old('phone') }}" required>
-                                @error('phone')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label required">Email</label>
-                                <input type="email" name="email" class="form-control @error('email') is-invalid @enderror" value="{{ old('email') }}" required>
-                                @error('email')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label required">Alamat Lengkap</label>
-                                <textarea name="address" rows="2" class="form-control @error('address') is-invalid @enderror" required>{{ old('address') }}</textarea>
-                                @error('address')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div> --}}
-                        {{-- <div class="row g-4 mt-2">
-                            <div class="col-md-6">
-                                <label class="form-label required">Supplier</label>
-                                <select name="supplier_id" class="form-select select2">
-                            <option value="">Pilih Supplier</option>
-                            @foreach ($suppliers as $s)
-                                <option value="{{ $s->id }}"
-                                    {{ $s->id == old('supplier_id', $product->supplier_id) ? 'selected' : '' }}>
-                                    {{ $s->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                                @error('supplier_id')
-                                    <small class="text-danger">{{ $message }}</small>
-                                @enderror
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label required">Gudang</label>
-                                <select name="warehouse_id" class="form-select select2">
-                            <option value="">Pilih Gudang</option>
-                            @foreach ($warehouses as $w)
-                                <option value="{{ $w->id }}"
-                                    {{ $w->id == old('warehouse_id', $product->warehouse_id) ? 'selected' : '' }}>
-                                    {{ $w->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                                @error('warehouse_id')
-                                    <small class="text-danger">{{ $message }}</small>
                                 @enderror
                             </div>
                             
                             
-            
-                        </div> --}}
-                    </div>
-
-                    {{-- <div class="section-block mb-5">
-                        <h3 class="fw-semibold mb-3 border-bottom pb-2">🏦 Data Bank</h3>
-                        <p class="small text-muted mb-3">Diperlukan bila terjadi pengembalian dana</p>
-                        <div class="row g-4">
-                            <div class="col-md-4">
-                                <label class="form-label" for="bank_id">Nama Bank</label>
-                                <select id="bank_id" name="bank_id" class="form-select">
-                                    <option value="">Pilih Bank</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">Nomor Rekening</label>
-                                <input type="text" id="account_number" name="account_number" class="form-control @error('account_number') is-invalid @enderror" value="{{ old('account_number') }}">
-                                @error('account_number')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">Atas Nama</label>
-                                <input type="text" id="account_holder" name="account_holder" class="form-control @error('account_holder') is-invalid @enderror" value="{{ old('account_holder') }}">
-                                @error('account_holder')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
-                    </div> --}}
-
-                    {{-- ========== SECTION 4: DATA KEPEGAWAIAN ========== --}}
-                    {{-- <div class="section-block mb-5">
-                        <h3 class="fw-semibold mb-3 border-bottom pb-2">💼 Data Kepegawaian</h3>
-                        <div class="row g-4"> --}}
-                
-                           
                             
-                            
-                            {{-- <div class="col-md-12">
-                                <label class="form-label required" for="role">Posisi :</label>
-                                <select class="form-select select2" name="role[]" multiple required>
-                                    @foreach (config('employee_roles.roles') as $role)
-                                        <option value="{{ $role }}" 
-                                            {{ in_array($role, old('role', [])) ? 'selected' : '' }}>
-                                            {{ ucfirst($role) }}
+                            <div class="col-md-4">
+                                <label class="form-label">Warna Produk</label>
+                                <select name="colors[]" class="form-select select2" multiple>
+                                    @foreach ($colors as $color)
+                                        <option value="{{ $color->id }}"
+                                            {{ in_array($color->id, old('colors', $productColors ?? [])) ? 'selected' : '' }}>
+                                            {{ $color->name }}
                                         </option>
                                     @endforeach
                                 </select>
                             </div>
-                            <div class="section-block mb-5"> 
-                                <h3 class="fw-semibold mb-3 border-bottom pb-2">📎 Dokumen Karyawan</h3>   
-                                <div class="row g-4">
-                                    <div class="col-md-6 mb-3">
-                                        <label for="contract_letter_file" class="required">Upload Surat Perjanjian Kerja (PDF)</label>
-                                        <input type="file" name="contract_letter_file" class="form-control" accept="application/pdf" required>
-                                        @error('contract_letter_file')
-                                            <small class="text-danger">{{ $message }}</small>
-                                        @enderror
-                                    </div>
-
-                                    <div class="col-md-6 mb-3">
-                                        <label for="training_certificate">Upload Sertifikat (kalau ada)</label>
-                                        <input type="file" name="training_certificate" class="form-control" accept="application/pdf">
-                                        @error('training_certificate')
-                                            <small class="text-danger">{{ $message }}</small>
-                                        @enderror
-                                    </div>
-                                </div>
-                            </div> --}}
+                            
                         </div>
                     </div>
 
-                    {{-- ========== SECTION 5: PENGHASILAN ========== --}}
-                    {{-- <div class="section-block mb-4">
-                        <h3 class="fw-semibold mb-3 border-bottom pb-2">💰 Data Penghasilan</h3>
-                        <div class="row g-4">
-                            <div class="col-md">
-                                <label class="form-label">Gaji Pokok</label>
-                                <input type="number" id="basic_salary" name="basic_salary" class="form-control @error('basic_salary') is-invalid @enderror" value="{{ old('basic_salary') }}" required>
-                                @error('basic_salary')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                            <div class="col-md">
-                                <label class="form-label">Tunjangan</label>
-                                <input type="number" name="allowance" class="form-control" value="{{ old('allowance') }}">
-                            </div>
-                            <div class="col-md">
-                                <label class="form-label">Potongan</label>
-                                <input type="number" name="deduction" class="form-control" value="{{ old('deduction') }}">
-                            </div>
-                            <div class="col-md">
-                                <label class="form-label">Bonus</label>
-                                <input type="number" name="bonus" class="form-control" value="{{ old('bonus') }}">
-                            </div>
-                            <div class="col-md">
-                                <label class="form-label">THR</label>
-                                <input type="number" name="thr" class="form-control" value="{{ old('thr') }}">
+                        <div class="section-block mb-4">
+                            <h3 class="fw-semibold mb-3 border-bottom pb-2">Pengaturan Satuan Unit</h3>
+
+                            <div class="row g-2">
+
+                                <div class="row g-2">
+                                    <div class="col-md-3">
+                                        <label class="form-label">Satuan Level 1</label>
+                                        <input type="text" name="unit_1_name" 
+                                            class="form-control form-control-md" 
+                                            value="{{ old('unit_1_name', $product->unit_1_name ?? 'PCS') }}" >
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <label class="form-label">Nilai Unit 1</label>
+                                        <input type="number" name="unit_1_value" 
+                                            class="form-control form-control-md" 
+                                            value="1" readonly>
+                                    </div>
+                                </div>
+
+                                <div class="row g-2">
+                                    <div class="col-md-3">
+                                        <label class="form-label">Satuan Level 2</label>
+                                        <input type="text" name="unit_2_name" 
+                                            class="form-control form-control-md"
+                                            value="{{ old('unit_2_name', $product->unit_2_name) }}">
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <label class="form-label">Konversi Unit 2</label>
+                                        <input type="number" name="unit_2_value" 
+                                            class="form-control form-control-md"
+                                            value="{{ old('unit_2_value', $product->unit_2_value) }}">
+                                        <small class="text-muted" id="unit_2_preview"></small>
+                                    </div>
+                                </div>
+
+                                <div class="row g-2">
+                                    <div class="col-md-3">
+                                        <label class="form-label">Satuan Level 3</label>
+                                        <input type="text" name="unit_3_name" 
+                                            class="form-control form-control-md"
+                                            value="{{ old('unit_3_name', $product->unit_3_name) }}">
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <label class="form-label">Konversi Unit 3</label>
+                                        <input type="number" name="unit_3_value" 
+                                            class="form-control form-control-md"
+                                            value="{{ old('unit_3_value', $product->unit_3_value) }}">
+                                        <small class="text-muted" id="unit_3_preview"></small>
+                                    </div>
+                                </div>
+
+                                <div class="row g-2">
+                                    <div class="col-md-3">
+                                        <label class="form-label">Satuan Level 4</label>
+                                        <input type="text" name="unit_4_name" 
+                                            class="form-control form-control-md"
+                                            value="{{ old('unit_4_name', $product->unit_4_name) }}">
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <label class="form-label">Konversi Unit 4</label>
+                                        <input type="number" name="unit_4_value" 
+                                            class="form-control form-control-md"
+                                            value="{{ old('unit_4_value', $product->unit_4_value) }}">
+                                        <small class="text-muted" id="unit_4_preview"></small>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div> --}}
+
+                        <div class="section-block mb-5">
+                            <h3 class="fw-semibold mb-3 border-bottom pb-2">Perhitungan Profit</h3>
+
+                            <div class="row g-3">
+
+                                <div class="mb-3">
+    <label class="form-label">Harga Modal (HPP Otomatis)</label>
+
+    <input type="number"
+           id="base_price"
+           class="form-control"
+           value="{{ $hpp ?? old('base_price') }}"
+           readonly>
+
+    @if(!$hpp)
+        <small class="text-danger">
+            Produk ini belum memiliki harga dari supplier
+        </small>
+    @else
+        <small class="text-muted">
+            Diambil otomatis dari harga supplier termurah
+        </small>
+    @endif
+</div>
+
+
+                                <div class="col-md-3">
+                                    <label class="form-label">Tipe Profit</label>
+                                    <select id="profit_type" class="form-select">
+                                        <option value="percent" {{ $product->profit_type == "percent" ? 'selected' : '' }}>Persen (%)</option>
+                                        <option value="nominal" {{ $product->profit_type == "nominal" ? 'selected' : '' }}>Rupiah (Rp)</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <label class="form-label">Nilai Profit</label>
+                                    <input type="number" id="profit_value" class="form-control" placeholder="Contoh: 20 atau 50000" value="{{ old('profit_value', $product->profit_value) }}">
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label">Harga Jual Estimasi</label>
+                                    <input type="text" id="selling_preview" class="form-control" readonly value="{{ old('selling_preview', $product->selling_preview) }}">
+                                </div>
+                            </div>
+
+                            <div class="mt-3 p-3 bg-light rounded">
+                                <strong>Rumus:</strong>
+                                <div id="profit_formula" class="mt-1 text-muted">-</div>
+                            </div>
+                        </div>
 
                     {{-- SUBMIT --}}
                     <div class="text-end mt-5">
@@ -394,73 +310,156 @@
 @endsection
 
 @push('js')
-                                    <script>
-                                            $(document).ready(function() {
-                                                $('.select2').select2({
-                                                    placeholder: "-- Pilih --",
-                                                    width: '100%'
-                                                });
-                                            });
-                                    </script>
+    <script>
+            $(document).ready(function() {
+                $('.select2').select2({
+                    placeholder: "-- Pilih --",
+                    width: '100%'
+                });
+            });
+    </script>
 
-                                    <script>
-                                        $('#province').change(function () {
-                                        var id = $(this).val();
-                                        $('#city').html('<option>Loading...</option>');
-                                        $('#district').html('<option value="">-- Pilih kecamatan --</option>');
-                                        $('#sub_district').html('<option value="">-- Pilih Kelurahan --</option>');
+<script>
+function generateSKU() {
+    $.ajax({
+        url: "{{ route('products.generateSku') }}",
+        method: "POST",
+        data: {
+            _token: "{{ csrf_token() }}",
+            category_id: $('#category_id').val(),
+            brand_id: $('#brand_id').val(),
+            type_id: $('#type_id').val(),
+            size: $('#size').val(),
+            volume: $('#volume').val(),
+            colors: $('#colors').val()
+        },
+        success: function(res) {
+            $('#sku').val(res.sku);
+        }
+    });
+}
 
-                                            if (id) {
-                                            $.get('/api/cities/' + id, function (data) {
-                                            $('#city').empty().append('<option value="">-- Pilih Kabupaten --</option>');
-                                            $.each(data, function (i, city) {
-                                            $('#city').append('<option value="' + city.id + '">' + city.name + '</option>');
-                                                        });
-                                                    });
-                                                }
-                                            });
+// Trigger generate saat input berubah
+$('#category_id, #brand_id, #type_id, #ukuran, #volume, #colors').on('change input', function() {
+    generateSKU();
+});
 
-                                            $('#city').change(function () {
-                                                var id = $(this).val();
-                                                $('#district').html('<option>Loading...</option>');
-                                                $('#sub_district').html('<option value="">-- Pilih Kelurahan --</option>');
+// Generate awal saat halaman dibuka
+$(document).ready(function() {
+    generateSKU();
+});
+</script>
 
-                                                if (id) {
-                                                    $.get('/api/districts/' + id, function (data) {
-                                                        $('#district').empty().append('<option value="">-- Pilih Kecamatan --</option>');
-                                                        $.each(data, function (i, district) {
-                                                            $('#district').append('<option value="' + district.id + '">' + district.name + '</option>');
-                                                        });
-                                                    });
-                                                }
-                                            });
+<script>
+        document.getElementById('photo').addEventListener('change', function (event) {
+        const input = event.target;
+        const file = input.files[0];
+        const previewContainer = document.getElementById('previewImage');
 
-                                            $('#district').change(function () {
-                                                var id = $(this).val();
-                                                $('#sub_district').html('<option>Loading...</option>');
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                // Jika sebelumnya preview berupa ikon <div>, ganti jadi <img>
+                if (previewContainer.tagName.toLowerCase() === 'div') {
+                    const img = document.createElement('img');
+                    img.id = 'previewImage';
+                    img.src = e.target.result;
+                    img.className = 'border rounded-3 shadow-sm';
+                    img.width = 150;
+                    img.height = 150;
+                    img.style.objectFit = 'cover';
+                    previewContainer.replaceWith(img);
+                } else {
+                    previewContainer.src = e.target.result;
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+</script>
 
-                                                if (id) {
-                                                    $.get('/api/sub_districts/' + id, function (data) {
-                                                        $('#sub_district').empty().append('<option value="">-- Pilih Kelurahan --</option>');
-                                                        $.each(data, function (i, sub_district) {
-                                                            $('#sub_district').append('<option value="' + sub_district.id + '">' + sub_district.name + '</option>');
-                                                        });
-                                                    });
-                                                }
-                                            });
+<script>
+    function updateUnitPreview() {
+        let u1 = $('input[name="unit_1_name"]').val() || 'PCS';
+        let v1 = parseInt($('input[name="unit_1_value"]').val()) || 1;
 
-                                            $('#sub_district').change(function () {
-                                                var id = $(this).val();
-                                                $('#postal_code').html('<option>Loading...</option>');
+        let u2 = $('input[name="unit_2_name"]').val();
+        let v2 = parseInt($('input[name="unit_2_value"]').val());
 
-                                                if (id) {
-                                                    $.get('/api/postal_codes/' + id, function (data) {
-                                                        $('#postal_code').empty().append('<option value="">-- Pilih Kode Pos --</option>');
-                                                        $.each(data, function (i, postal_code) {
-                                                            $('#postal_code').append('<option value="' + postal_code.id + '">' + postal_code.postal_code + '</option>');
-                                                        });
-                                                    });
-                                                }
-                                            });
-                                    </script>
+        let u3 = $('input[name="unit_3_name"]').val();
+        let v3 = parseInt($('input[name="unit_3_value"]').val());
+
+        let u4 = $('input[name="unit_4_name"]').val();
+        let v4 = parseInt($('input[name="unit_4_value"]').val());
+
+        // Unit 2
+        if (u2 && v2) {
+            let result2 = v2 * v1;
+            $('#unit_2_preview').text(`1 ${u2} = ${result2} ${u1}`);
+        } else {
+            $('#unit_2_preview').text('');
+        }
+
+        // Unit 3
+        if (u3 && v3 && u2 && v2) {
+            let result3 = v3 * v2 * v1;
+            $('#unit_3_preview').text(`1 ${u3} = ${result3} ${u1}`);
+        } else {
+            $('#unit_3_preview').text('');
+        }
+
+        // Unit 4
+        if (u4 && v4 && u3 && v3 && u2 && v2) {
+            let result4 = v4 * v3 * v2 * v1;
+            $('#unit_4_preview').text(`1 ${u4} = ${result4} ${u1}`);
+        } else {
+            $('#unit_4_preview').text('');
+        }
+    }
+
+    // Jalankan setiap kali input berubah
+    $('input[name="unit_1_name"], input[name="unit_1_value"], ' +
+    'input[name="unit_2_name"], input[name="unit_2_value"], ' +
+    'input[name="unit_3_name"], input[name="unit_3_value"], ' +
+    'input[name="unit__4_name"], input[name="unit_4_value"]'
+    ).on('keyup change', updateUnitPreview);
+</script>
+<script>
+$(document).ready(function () {
+    hitungProfit(); // auto hitung saat edit dibuka
+});
+</script>
+<script>
+function hitungProfit() {
+    let base   = parseFloat($('#base_price').val()) || 0;
+    let type   = $('#profit_type').val();
+    let value  = parseFloat($('#profit_value').val()) || 0;
+
+    let profitRp = 0;
+    let selling  = base;
+
+    if (type === 'percent') {
+        profitRp = base * (value / 100);
+    } else {
+        profitRp = value;
+    }
+
+    selling = base + profitRp;
+
+    $('#selling_preview').val(
+        'Rp ' + selling.toLocaleString('id-ID')
+    );
+
+    let persen = base > 0 ? ((profitRp / base) * 100) : 0;
+
+    $('#profit_preview').val(
+        'Rp ' + profitRp.toLocaleString('id-ID') + 
+        ' (' + persen.toFixed(2) + '%)'
+    );
+}
+
+$('#base_price, #profit_value, #profit_type').on('keyup change', hitungProfit);
+</script>
+
+
 @endpush

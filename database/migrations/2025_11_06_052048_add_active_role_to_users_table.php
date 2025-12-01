@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->foreignUuid('active_role')->nullable()->constrained('roles');
+        Schema::table('products', function (Blueprint $table) {
+            $table->string('profit')->nullable()->constrained('roles');
         });
     }
 

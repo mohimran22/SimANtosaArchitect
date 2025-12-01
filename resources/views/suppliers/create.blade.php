@@ -254,9 +254,9 @@
                         </div>
                     </div>
 
-                    {{-- ========== SECTION 4: DATA KEPEGAWAIAN ========== --}}
+          
                     <div class="section-block mb-5">
-                        <h3 class="fw-semibold mb-3 border-bottom pb-2">💼 Data Pelanggan</h3>
+                        <h3 class="fw-semibold mb-3 border-bottom pb-2">Data Supplier</h3>
                         <div class="row g-4">
                             <div class="col-md-4">
                                 <label class="form-label required">ID Supplier</label>
@@ -296,19 +296,18 @@
                         </div>
                     </div>
 
-                    {{-- ========== SECTION 3: OPSI ALAMAT PENGIRIMAN ========== --}}
                     <div class="section-block mb-3">
                         <div class="form-check form-switch">
                             <input class="form-check-input" type="checkbox" id="same_address" name="same_address">
                             <label class="form-check-label fw-semibold" for="same_address">
-                                Alamat pengiriman sama dengan domisili pengguna
+                                Alamat usaha sama dengan domisili pengguna
                             </label>
                         </div>
                     </div>
 
 
                         <div class="section-block mb-5">
-                            <h3 class="fw-semibold mb-3 border-bottom pb-2">Alamat Pengiriman</h3>
+                            <h3 class="fw-semibold mb-3 border-bottom pb-2">Alamat Usaha</h3>
                             <div class="row g-4">
                                 
                                 

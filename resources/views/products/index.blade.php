@@ -56,17 +56,7 @@
                                         <th>Warna</th>
                                         <th>Ukuran</th>
                                         <th>Volume</th>
-                                        
-                                        <th>Harga Beli</th>
-                                        
-                                        {{-- <th>Asal Produk (Supplier)</th> --}}
-
-                                        <th>Harga Jual</th>
-                                        {{-- <th>Harga Spesial</th>
-                                        <th>Status</th> --}}
-
-                                        {{-- <th>Gudang</th> --}}
-
+                                        <th>Status</th>
                                         <th>Aksi</th>
                                     </tr>
 
@@ -94,29 +84,13 @@
                     { data: 'name', name: 'name' },
                     { data: 'sku_code', name: 'sku_code' },
                     { data: 'description', name: 'description' },
-
                     { data: 'brand', name: 'brand.name' },
                     { data: 'category', name: 'category.name' },
                     { data: 'type', name: 'type.name' },
-                    { data: 'color', name: 'color.name' },
-
+                    { data: 'colors', name: 'colors', orderable: false, searchable: false },
                     { data: 'size', name: 'size' },
                     { data: 'volume', name: 'volume' },
-                    
-
-                    { data: 'buying_prices', name: 'buying_prices' },
-
-                    // many-to-many suppliers (comma separated)
-                    // { data: 'suppliers', name: 'suppliers' },
-
-                    { data: 'selling_prices', name: 'selling_prices' },
-                    // { data: 'special_prices', name: 'special_prices' },
-
-                    // { data: 'status', name: 'status' },
-
-                    // list gudang
-                    // { data: 'warehouses', name: 'warehouses' },
-
+                    { data: 'status', name: 'status' },
                     { data: 'action', name: 'action', orderable: false, searchable: false },
                 ]    
             });

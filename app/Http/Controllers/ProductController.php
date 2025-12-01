@@ -8,6 +8,7 @@ use App\Models\ProductCategory;
 use App\Models\ProductType;
 use App\Models\PostalCode;
 use App\Models\Supplier;
+use App\Services\SkuService;
 use Illuminate\Http\Request;
 use App\Models\Product;
 use Illuminate\Support\Carbon;
@@ -26,11 +27,9 @@ class ProductController extends Controller
 
     $query = Product::with([
         'brand',
-        'color',
+        'colors',
         'category',
         'type',
-        // 'suppliers',
-        // 'warehouseStocks.warehouse',
     ]);
 
     // Jika ada hak akses untuk membatasi data
@@ -51,44 +50,32 @@ class ProductController extends Controller
         return DataTables::of($products)
 
             ->addColumn('brand', fn($row) => $row->brand->name ?? '-')
-            ->addColumn('color', fn($row) => $row->color->name ?? '-')
+            ->addColumn('colors', function ($row) {
+                return $row->colors->count()
+                    ? $row->colors->pluck('name')->implode(', ')
+                    : '-';
+            })
+
 
             ->addColumn('category', fn($row) => $row->category->name ?? '-')
 
             ->addColumn('type', fn($row) => $row->type->name ?? '-')
             ->addColumn('sku_code', fn($row) => $row->sku_code ?? '-')
-            ->addColumn('buying_price', fn($row) => $row->buying_price ?? '-')
-            ->addColumn('selling_price', fn($row) => $row->selling_price ?? '-')
 
+            ->addColumn('status', function ($row) use ($statusLabel) {
 
-            // // Multi Supplier
-            // ->addColumn('suppliers', function ($row) {
-            //     return $row->suppliers->pluck('name')->join(', ') ?: '-';
-            // })
+                $label = $statusLabel[$row->status] ?? 'Tidak Diketahui';
 
-            // // Multi Warehouse
-            // ->addColumn('warehouses', function ($row) {
-            //     return $row->warehouseStocks
-            //             ->filter(fn($ws) => $ws->stock > 0)
-            //             ->pluck('warehouse.name')
-            //             ->join(', ') ?: '-';
-            // })
+                $color = match ($row->status) {
+                    1 => 'success',
+                    2 => 'warning',
+                    3 => 'danger',
+                    4 => 'info',
+                    default => 'secondary'
+                };
 
-            // // Status badge
-            // ->addColumn('status', function ($row) use ($statusLabel) {
-
-            //     $label = $statusLabel[$row->status] ?? 'Tidak Diketahui';
-
-            //     $color = match ($row->status) {
-            //         1 => 'success',
-            //         2 => 'warning',
-            //         3 => 'danger',
-            //         4 => 'info',
-            //         default => 'secondary'
-            //     };
-
-            //     return '<span class="badge bg-' . $color . '">' . $label . '</span>';
-            // })
+                return '<span class="badge bg-' . $color . '">' . $label . '</span>';
+            })
 
             // Foto
             ->addColumn('photo', function ($row) {
@@ -119,7 +106,7 @@ class ProductController extends Controller
                 return $buttons;
             })
 
-            ->rawColumns(['photo', 'action'])
+            ->rawColumns(['photo', 'action', 'status'])
             ->make(true);
     }
 
@@ -142,15 +129,16 @@ class ProductController extends Controller
 public function store(Request $request)
 {
     $request->validate([
-        // 'sku_code'        => 'nullable|string|max:255|unique:products,sku_code',
+        'sku_code'        => 'nullable|string|max:255|unique:products,sku_code',
         'name'            => 'required|string|max:255',
         'photo'           => 'nullable|image|max:2048',
         'description'     => 'nullable|string|max:500',
-        'color_id'        => 'nullable|exists:colors,id',
+        'colors'          => 'nullable|array',
+        'colors.*'        => 'exists:colors,id',
         'brand_id'        => 'nullable|exists:product_brands,id',
         'category_id'     => 'nullable|exists:product_categories,id',
         'type_id'         => 'nullable|exists:product_types,id',
-
+        'status'          => 'required|in:1,2,3,4',
         'unit_1_name'     => 'required|string|max:50',
         'unit_1_value'    => 'required|integer|min:1',
         'unit_2_name'     => 'nullable|string|max:50',
@@ -161,16 +149,6 @@ public function store(Request $request)
         'unit_4_value'    => 'nullable|integer|min:1',
         'volume'          => 'nullable|string|max:255',
         'size'            => 'nullable|string|max:255',
-
-        // 'buying_prices'   => 'nullable|numeric|min:0',
-        // 'selling_prices'  => 'nullable|numeric|min:0',
-        // 'special_prices'  => 'nullable|numeric|min:0',
-        // 'tax_percentage'  => 'nullable|numeric|min:0',
-
-        // 'status'          => 'required|integer',
-
-        // 'suppliers'       => 'nullable|array',
-        // 'suppliers.*'     => 'exists:suppliers,id',
     ]);
 
     DB::beginTransaction();
@@ -186,13 +164,10 @@ public function store(Request $request)
         $product = Product::create([
             'id'              => \Str::uuid(),
 
-            // 'sku_code'        => $request->sku_code,
+            'sku_code'        => $request->sku_code,
             'name'            => $request->name,
             'photo'           => $photoPath,
             'description'     => $request->description,
-
-            // Relasi
-            'color_id'        => $request->color_id,
             'brand_id'        => $request->brand_id,
             'category_id'     => $request->category_id,
             'type_id'         => $request->type_id,
@@ -211,22 +186,13 @@ public function store(Request $request)
             'volume'          => $request->volume,
             'size'            => $request->size,
 
-            // Harga
-            // 'buying_prices'   => $request->buying_prices,
-            // 'selling_prices'  => $request->selling_prices,
-            // 'special_prices'  => $request->special_prices,
-            // 'tax_percentage'  => $request->tax_percentage,
-
-            // 'status'          => $request->status,
+            'status'          => $request->status,
 
             // jika produk milik user
             'user_id'         => auth()->id(),
         ]);
 
-        // Attach suppliers (many to many)
-        if ($request->suppliers) {
-            $product->suppliers()->sync($request->suppliers);
-        }
+        $product->colors()->sync($request->colors ?? []);
 
         DB::commit();
 
@@ -246,12 +212,15 @@ public function storeAjax(Request $request)
 {
     $request->validate([
         'name'        => 'required',
+        'sku_code'        => 'nullable|string|max:255|unique:products,sku_code',
         'photo'       => 'nullable|image|max:2048',
         'description'     => 'nullable|string|max:500',
-        'color_id'        => 'nullable|exists:colors,id',
+        'status'        => 'required|in:1,2,3,4',
         'brand_id'        => 'nullable|exists:product_brands,id',
         'category_id'     => 'nullable|exists:product_categories,id',
         'type_id'         => 'nullable|exists:product_types,id',
+        'colors'          => 'nullable|array',
+        'colors.*'        => 'exists:colors,id',
     ]);
 
     $photoPath = null;
@@ -263,13 +232,13 @@ public function storeAjax(Request $request)
         'name'              => $request->name,
         'photo'             => $photoPath,
         'description'       => $request->description,
+        'sku_code'       => $request->sku_code,
         'brand_id'          => $request->brand_id,
         'category_id'       => $request->category_id,
         'type_id'           => $request->type_id,
-        'color_id'          => $request->color_id,
-        'product_size'      => $request->product_size,
-        'product_volume'    => $request->product_volume,
-
+        'status'          => $request->status,
+        'size'      => $request->size,
+        'volume'    => $request->volume,
         'unit_1_name'       => $request->unit_1_name,
         'unit_1_value'      => $request->unit_1_value,
         'unit_2_name'       => $request->unit_2_name,
@@ -280,11 +249,34 @@ public function storeAjax(Request $request)
         'unit_4_value'      => $request->unit_4_value,
     ]);
 
+    $product->colors()->sync($request->colors ?? []);
+
     return response()->json([
         'success'    => true,
         'product_id' => $product->id
     ]);
 }
+
+public function generateSku(Request $request)
+{
+    // Ambil nama berdasarkan ID
+    $categoryName = ProductCategory::find($request->category_id)->name ?? '';
+    $brandName    = ProductBrand::find($request->brand_id)->name ?? '';
+    $typeName     = ProductType::find($request->type_id)->name ?? '';
+
+    // Kirim ke generator
+    $sku = SkuService::generate(
+        $categoryName,
+        $brandName,
+        $typeName,
+        $request->ukuran,
+        $request->volume,
+        $request->colors ?? []
+    );
+
+    return response()->json(['sku' => $sku]);
+}
+
 
 
 public function show(Product $product)
@@ -311,17 +303,21 @@ public function show(Product $product)
 {
     $product = Product::with([
         'brand',
-        'color',
+        'colors',
         'category',
         'type',
-  
+        'suppliers'
     ])->findOrFail($id);
     
     $colors     = ProductColor::all();
     $brands     = ProductBrand::all();
     $categories = ProductCategory::all();
     $types      = ProductType::all();
-   
+    
+    $productColors = $product->colors->pluck('id')->toArray();
+    $hpp = $product->suppliers()
+        ->orderBy('product_supplier.buying_prices', 'asc')
+        ->first()?->pivot->buying_prices;
 
     return view('products.edit', compact(
         'product',
@@ -329,19 +325,21 @@ public function show(Product $product)
         'colors',
         'categories',
         'types',
-        
+        'productColors',
+        'hpp'
     ));
 }
 
     public function update(Request $request, Product $product)
 {
     $request->validate([
-        // 'sku_code'        => 'nullable|string|max:255|unique:products,sku_code,' . $product->id,
+        'sku_code'        => 'nullable|string|max:255|unique:products,sku_code,' . $product->id,
         'name'            => 'required|string|max:255',
         'photo'           => 'nullable|image|max:2048',
         'description'     => 'nullable|string|max:500',
 
-        'color_id'        => 'nullable|exists:colors,id',
+        'colors'          => 'nullable|array',
+        'colors.*'        => 'exists:colors,id',
         'brand_id'        => 'nullable|exists:product_brands,id',
         'category_id'     => 'nullable|exists:product_categories,id',
         'type_id'         => 'nullable|exists:product_types,id',
@@ -358,16 +356,7 @@ public function show(Product $product)
         
         'volume'          => 'nullable|string|max:255',
         'size'            => 'nullable|string|max:255',
-
-        // 'buying_prices'   => 'nullable|numeric|min:0',
-        // 'selling_prices'  => 'nullable|numeric|min:0',
-        // 'special_prices'  => 'nullable|numeric|min:0',
-        // 'tax_percentage'  => 'nullable|numeric|min:0',
-
-        // 'status'          => 'required|integer',
-
-        // 'suppliers'       => 'nullable|array',
-        // 'suppliers.*'     => 'exists:suppliers,id',
+        'status'          => 'required|in:1,2,3,4',
     ]);
 
     DB::beginTransaction();
@@ -387,10 +376,9 @@ public function show(Product $product)
 
         // Update product
         $product->update([
-            // 'sku_code'        => $request->sku_code,
+            'sku_code'        => $request->sku_code,
             'name'            => $request->name,
             'description'     => $request->description,
-            'color_id'        => $request->color_id,
             'brand_id'        => $request->brand_id,
             'category_id'     => $request->category_id,
             'type_id'         => $request->type_id,
@@ -415,11 +403,11 @@ public function show(Product $product)
             // 'special_prices'  => $request->special_prices,
             // 'tax_percentage'  => $request->tax_percentage,
 
-            // 'status'          => $request->status,
+            'status'          => $request->status,
         ]);
 
         // Sync suppliers pivot
-        $product->suppliers()->sync($request->suppliers ?? []);
+        $product->colors()->sync($request->colors ?? []);
 
         DB::commit();
 
@@ -439,9 +427,6 @@ public function show(Product $product)
 
     public function destroy(product $product) 
     {
-        if (auth()->user()->hasRole('Pemilik Lisensi')) {
-        abort(403);
-        }
     
         if ($product) {
             $product->delete();

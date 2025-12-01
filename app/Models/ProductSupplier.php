@@ -19,4 +19,15 @@ class ProductSupplier extends Pivot
         'tax_percentage',
         'discount',
     ];
+
+    public function product()
+    {
+        return $this->belongsTo(Product::class, 'product_id');
+    }
+
+    // RELASI KE SUPPLIER
+    public function supplier()
+    {
+        return $this->belongsTo(Supplier::class, 'supplier_id');
+    }
 }

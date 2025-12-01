@@ -252,10 +252,10 @@
                     
 
                     <div class="section-block mb-5">
-                        <h3 class="fw-semibold mb-3 border-bottom pb-2">Data Pelanggan</h3>
+                        <h3 class="fw-semibold mb-3 border-bottom pb-2">Data Supplier</h3>
                         <div class="row g-4">
                             <div class="col-md-4">
-                                <label class="form-label required">Nomor Identitas supplier </label>
+                                <label class="form-label required">ID Supplier </label>
                                 <input type="text" id="supplier_id" name="supplier_id" class="form-control" value="{{ old('supplier_id', $supplier->supplier_id) }}" readonly>
                                 @error('supplier_id')
                                     <div class="invalid-feedback">{{ $message }}</div>
