@@ -14,7 +14,6 @@ class Affiliator extends Model
     return $this->belongsTo(User::class);
 }
 
-
     public function province() {
 
     return $this->belongsTo(Province::class);
@@ -40,6 +39,11 @@ class Affiliator extends Model
     return $this->belongsTo(PostalCode::class, 'postal_code_id');
 }
 
+    public function projects()
+{
+    return $this->hasMany(Project::class);
+}
+
 public function scopeMembership($query, $level)
     {
         return $query->where('membership', $level);
@@ -51,6 +55,11 @@ public function scopeMembership($query, $level)
     public function getMembershipFormattedAttribute()
     {
         return ucfirst($this->membership);
+    }
+
+    public function getDisplayNameAttribute()
+    {
+        return $this->user?->fullname;
     }
 
     /**

@@ -52,8 +52,6 @@ class MenuController extends Controller
 
     Menu::create($data);
 
-    cache()->forget('menus_for_user_*');
-
     return redirect()
         ->route('menus.index')
         ->with('success', 'Menu created successfully.');

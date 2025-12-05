@@ -40,6 +40,11 @@ class Customer extends Model
     return $this->belongsTo(PostalCode::class, 'postal_code_id');
 }
 
+    public function projects()
+{
+    return $this->hasMany(Project::class);
+}
+
 public function scopeLoyalty($query, $level)
     {
         return $query->where('loyalty_level', $level);
@@ -59,6 +64,11 @@ public function scopeLoyalty($query, $level)
     public function getStatusTextAttribute()
     {
         return $this->is_active ? 'Aktif' : 'Nonaktif';
+    }
+
+    public function getDisplayNameAttribute()
+    {
+        return $this->user?->fullname;
     }
 
     public static function generateNic()
@@ -124,6 +134,7 @@ public function scopeLoyalty($query, $level)
         'postal_code_id',
         'notes',
         'is_active',
+        'signature',
     ];
 
 }

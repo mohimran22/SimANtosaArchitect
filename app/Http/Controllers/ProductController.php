@@ -6,7 +6,6 @@ use App\Models\ProductColor;
 use App\Models\ProductBrand;
 use App\Models\ProductCategory;
 use App\Models\ProductType;
-use App\Models\PostalCode;
 use App\Models\Supplier;
 use App\Services\SkuService;
 use Illuminate\Http\Request;

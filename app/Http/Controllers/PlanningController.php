@@ -9,8 +9,8 @@ use App\Models\District;
 use App\Models\SubDistrict;
 use App\Models\PostalCode;
 use App\Models\Religion;
-use App\Models\Role;
-use App\Models\User;
+use App\Models\Planning;
+use App\Models\ProjectLevel;
 use Yajra\DataTables\DataTables;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
@@ -18,7 +18,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Str;
 
-class CustomersController extends Controller
+class PlanningController extends Controller
 {
     
     private function readableGender($value)
@@ -100,64 +100,50 @@ class CustomersController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
-    {
-        $validated = $request->validate([
-        'nis' => 'required|string|unique:students',
-        'license_id' => 'required|exists:licenses,id',
-        'fullname' => 'required|string',
-        'nickname' => 'nullable|string',
-        'gender' => 'required|in:1,2',
-        'birth_place' => 'nullable|string',
-        'birth_date' => 'required|date',
-        'age' => 'nullable|integer|min:0',
-        'religion_id' => 'required|exists:religions,id',
-        'email' => 'nullable|email|unique:students,email',
-        'address' => 'nullable|string',
-        'province_id' => 'nullable|exists:provinces,id',
-        'city_id' => 'nullable|exists:cities,id',
-        'district_id' => 'nullable|exists:districts,id',
-        'sub_district_id' => 'nullable|exists:sub_districts,id',
-        'postal_code_id' => 'nullable|exists:postal_codes,id',
-        'father_name' => 'nullable|string',
-        'father_phone' => 'nullable|string',
-        'mother_name' => 'nullable|string',
-        'mother_phone' => 'nullable|string',
-        'student_phone' => 'nullable|string',
-        'previous_school' => 'nullable|string',
-        'grade' => 'nullable|string',
-        'status' => 'nullable|string',
-        'photo' => ['nullable|image|mimes:jpeg,png,jpg,gif|max:2048'],
+{
+    $data = $request->validate([
+        "id"                => 'required',
+        'project_id'        => 'required',
+        // 'employee_id'       => 'required|string',
+        'survey_date'       => 'required|date',
+        'survey_time'       => 'required',
+        'province_id'       => 'required',
+        'city_id'           => 'required',
+        'district_id'       => 'required',
+        'sub_district_id'   => 'required',
+        'postal_code_id'    => 'required',
+        'survey_location'   => 'required',
+        'survey_notes'      => 'nullable',
     ]);
 
-     if ($request->birth_date) {
-        $validated['age'] = Carbon::parse($request->birth_date)->age;
-    }
-
-    if ($request->hasFile('photo')) {
-            $file = $request->file('photo');
-            $filename = time() . '.' . $file->getClientOriginalExtension();
-            $file->storeAs('photos', $filename, 'public');
-            $validated['photo'] = $filename;
-        }
-
-        // Buat akun user
-    $user = User::create([
-        'name' => $validated['fullname'],
-        'email' => $validated['email'] ?: Str::slug($validated['fullname']).'@example.com',
-        'password' => Hash::make('password123'), // default password
+    $survey = Planning::create([
+        'id'      => $data['id'],
+        'project_id'      => $data['project_id'],
+        'survey_date'     => $data['survey_date'],
+        'survey_time'     => $data['survey_time'],
+        'survey_location' => $data['survey_location'],
+        'survey_notes'    => $data['survey_notes'],
     ]);
 
-    // Assign role Student (jika pakai Spatie)
-    $user->syncRoles('Student');
+    $survey->employees()->sync($data['employee_id']);
 
-    // Buat student & hubungkan ke user
-    $student = Student::create(array_merge(
-        $validated,
-        ['user_id' => $user->id]
-    ));
+    // complete level 2
+    ProjectLevel::where([
+        'project_id'  => $data['project_id'],
+        'level_order' => 2
+    ])->update(['is_completed' => true]);
 
-    return redirect()->route('students.index')->with('success', 'Data siswa berhasil ditambahkan');
+    // start level 3
+    ProjectLevel::where([
+        'project_id'  => $data['project_id'],
+        'level_order' => 3
+    ])->update(['is_started' => true]);
+
+    return redirect()
+        ->route('projects.create', ['project_id' => $data['project_id']])
+        ->with('success', 'Survei berhasil disimpan.');
 }
+
 
     /**
      * Display the specified resource.

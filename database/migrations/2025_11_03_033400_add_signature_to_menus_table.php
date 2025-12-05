@@ -11,8 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('menus', function (Blueprint $table) {
-             $table->string('permission_name')->nullable()->after('url');
+        Schema::table('consultations', function (Blueprint $table) {
+            $table->uuid('employee_id')->nullable()->after('notes');
+            $table->foreign('employee_id')->references('id')->on('employees')->onDelete('set null');
         });
     }
 
@@ -21,8 +22,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('menus', function (Blueprint $table) {
-            //
-        });
+        //
     }
 };

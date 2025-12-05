@@ -103,72 +103,6 @@ class EmployeeController extends Controller
         return view('employees.index');
     }
 
-//     private function getEmployeesQuery()
-// {
-//     $auth = auth()->user();
-
-
-//     $query = \DB::table('users')
-//     ->join('employees', 'employees.user_id', '=', 'users.id')
-//     ->leftJoin('religions', 'users.religion_id', '=', 'religions.id')
-//     ->leftJoin('provinces', 'users.province_id', '=', 'provinces.id')
-//     ->leftJoin('cities', 'users.city_id', '=', 'cities.id')
-//     ->leftJoin('districts', 'users.district_id', '=', 'districts.id')
-//     ->leftJoin('sub_districts', 'users.sub_district_id', '=', 'sub_districts.id')
-//     ->leftJoin('postal_codes', 'users.postal_code_id', '=', 'postal_codes.id')
-//     ->select(
-//         'employees.id as employee_id',
-//         'employees.nik',
-//         'users.fullname',
-//         'users.nickname',
-//         'users.gender',
-//         'users.birth_place',
-//         'users.birth_date',
-//         'users.identity_number',
-//         'users.address',
-//         'users.phone',
-//         'employees.marital_status',
-//         'religions.name as religion_name',
-//         'users.email as user_email',
-//         'provinces.name as province_name',
-//         'cities.name as city_name',
-//         'districts.name as district_name',
-//         'sub_districts.name as sub_district_name',
-//         'postal_codes.postal_code',
-//         'employees.position',
-//         'employees.department',
-//         'employees.unit',
-//         'employees.employment_status',
-//         'employees.start_date',
-//         'employees.basic_salary',
-//         'employees.allowance',
-//         'employees.deduction',
-//         'employees.bonus',
-//         'employees.thr',
-//         'employees.contract_letter_file',
-//         'employees.photo'
-//     );
-
-//     //   $query = Employee::with([
-//     //     'user.fullname',
-//     //     'user.nickname',
-//     //     'user.gender',
-//     //     'user.birth_place',
-//     //     'user.birth_date',
-//     //     'user.email',
-//     //     'user.address',
-//     //     'user.phone',
-//     //     'user.religion',
-//     //     'user.province',
-//     //     'user.city',
-//     //     'user.district',
-//     //     'user.subDistrict',
-//     //     'user.postalCode',
-//     // ]);
-
-//     return $query;
-// }
-
     public function create()
     {
         $user = auth()->user();
@@ -221,6 +155,7 @@ class EmployeeController extends Controller
         // --- file ---
         'contract_letter_file' => ['required', 'file', 'mimes:pdf', 'max:2048'],
         'training_certificate' => ['nullable', 'file', 'mimes:pdf', 'max:2048'],
+        'signature' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
     ]);
 
     // 🔹 Upload foto karyawan (kalau ada)
@@ -229,6 +164,13 @@ class EmployeeController extends Controller
         $filename = Str::uuid().'.'.$file->getClientOriginalExtension();
         $file->storeAs('photos', $filename, 'public');
         $validated['photo'] = $filename;
+    }
+
+    if ($request->hasFile('signature')) {
+        $file = $request->file('signature');
+        $filename = Str::uuid().'.'.$file->getClientOriginalExtension();
+        $file->storeAs('photos', $filename, 'public');
+        $validated['signature'] = $filename;
     }
 
     // 🔹 Upload dokumen lain
@@ -304,7 +246,7 @@ class EmployeeController extends Controller
             'thr' => $validated['thr'],
             'contract_letter_file' => $validated['contract_letter_file'] ?? null,
             'training_certificate' => $validated['training_certificate'] ?? null,
-            'photo' => $validated['photo'] ?? null,
+            'signature' => $validated['signature'] ?? null,
         ]);
     });
 
@@ -372,6 +314,7 @@ public function generateNikAjax()
         'bank_id' => 'nullable|uuid|exists:banks,id',
         'account_number' => 'nullable|string|max:50',
         'account_holder' => 'nullable|string|max:100',
+        'photo' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
 
         // --- data employee ---
         'nik' => 'required|unique:employees,nik,' . $employee->id,
@@ -389,7 +332,7 @@ public function generateNikAjax()
         // --- file ---
         'contract_letter_file' => ['nullable', 'file', 'mimes:pdf', 'max:2048'],
         'training_certificate' => ['nullable', 'file', 'mimes:pdf', 'max:2048'],
-        'photo' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
+        'signature' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
     ]);
 
     // 🔹 Ambil user terkait employee
@@ -429,6 +372,18 @@ public function generateNikAjax()
         $validated['photo'] = $filename;
     }
 
+    if ($request->hasFile('signature')) {
+        // hapus foto lama jika ada
+        if ($user->signature && Storage::disk('public')->exists('photos/'.$user->signature)) {
+            Storage::disk('public')->delete('photos/'.$user->signature);
+        }
+
+        $file = $request->file('signature');
+        $filename = Str::uuid().'.'.$file->getClientOriginalExtension();
+        $file->storeAs('photos', $filename, 'public');
+        $validated['signature'] = $filename;
+    }
+
     if ($request->hasFile('contract_letter_file')) {
         if ($employee->contract_letter_file && Storage::disk('public')->exists('contracts/'.$employee->contract_letter_file)) {
             Storage::disk('public')->delete('contracts/'.$employee->contract_letter_file);
@@ -464,7 +419,7 @@ public function generateNikAjax()
         'thr' => $validated['thr'],
         'contract_letter_file' => $validated['contract_letter_file'] ?? $employee->contract_letter_file,
         'training_certificate' => $validated['training_certificate'] ?? $employee->training_certificate,
-        'photo' => $validated['photo'] ?? $employee->photo,
+        'signature' => $validated['signature'] ?? $employee->signature,
     ]);
 
     return redirect()->route('employees.index')->with('success', 'Data karyawan berhasil diperbarui.');

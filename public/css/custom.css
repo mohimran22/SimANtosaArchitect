@@ -45,6 +45,15 @@ button.bg-transparent {
     background-color: #f5f5f5;
 } */
 
+.badge {
+    padding: 4px 8px !important;
+    font-size: 0.9rem !important;
+    font-weight: 500 !important;
+    border: 1px solid currentColor !important;
+    border-radius: 4px !important;
+    color: #fff !important;
+}
+
 .notification-dropdown, 
 .notification-dropdown * {
     font-family: 'Poppins', sans-serif !important;
@@ -220,11 +229,6 @@ body {
   box-shadow: none !important;
 }
 
-
-
-
-
-
 .nav-link {
   white-space: nowrap !important;
   color:#000 !important;
@@ -278,7 +282,7 @@ footer {
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  margin: 0 10px;
+  margin: 0 30px;
 }
 
 /* TABLE */

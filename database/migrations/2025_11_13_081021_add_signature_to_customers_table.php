@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('products', function (Blueprint $table) {
-            $table->string('sku_code')->nullable()->change();
+        Schema::table('customers', function (Blueprint $table) {
+            $table->string('signature')->nullable()->after('notes');
         });
     }
 

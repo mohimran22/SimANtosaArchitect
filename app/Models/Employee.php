@@ -35,7 +35,7 @@ class Employee extends Model
     'thr',
     'contract_letter_file',
     'training_certificate',
-    'photo',
+    'signature',
     ];
 
     public function user()
@@ -43,9 +43,8 @@ class Employee extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    // Jika employee bisa punya banyak license:
 
-        public function province()
+    public function province()
 {
     return $this->belongsTo(Province::class);
 }
@@ -81,9 +80,14 @@ public function bank()
 }
 
 
-    public function educations()
+    public function projects()
 {
-    return $this->hasMany(EmployeeEducation::class);
+    return $this->hasMany(Project::class);
+}
+
+    public function levels()
+{
+    return $this->hasMany(ProjectLevel::class);
 }
 
      public function workers()
@@ -101,10 +105,11 @@ public function bank()
         return $this->married_date ? Carbon::parse($this->married_date)->format('d/m/Y') : '-';
     }
 
+    public function getDisplayNameAttribute()
+    {
+        return $this->user?->fullname;
+    }
     
-
-    
-
     public function getFullnameAttribute($value)
 {
     return Str::title($value);

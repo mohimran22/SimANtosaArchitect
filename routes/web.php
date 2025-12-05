@@ -11,6 +11,7 @@ use App\Http\Controllers\AccountController;
 use App\Http\Controllers\CustomersController;
 use App\Http\Controllers\AffiliatorController;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\ProjectLevelController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\ContractorController;
 use App\Http\Controllers\WorkerController;
@@ -157,7 +158,7 @@ route::resource('/product_types', ProductTypeController::class);
 
 
 
-Route::middleware(['auth', 'permission:lihat daftar produk'])->group(function () {
+Route::middleware(['auth', 'permission:lihat daftar produk|lihat data produk'])->group(function () {
     Route::resource('/products', ProductController::class);
 });
 
@@ -169,7 +170,7 @@ Route::post('/products/generate-sku', [ProductController::class, 'generateSku'])
     ->name('products.generateSku');
 
 
-Route::middleware(['auth', 'permission:lihat daftar gudang'])->group(function () {
+Route::middleware(['auth', 'permission:lihat daftar gudang|lihat data gudang'])->group(function () {
     route::resource('/warehouses', WarehouseController::class);
 });
 
@@ -180,9 +181,42 @@ Route::get('/warehouse/search-product', [SupplierCatalogController::class, 'sear
 Route::post('/warehouse/products/store', [SupplierCatalogController::class, 'storeSupplierProduct'])
     ->name('warehouse.products.store');
 
-Route::middleware(['auth', 'permission:lihat daftar proyek'])->group(function () {
+Route::middleware(['auth', 'permission:lihat daftar proyek|lihat data proyek'])->group(function () {
     Route::resource('/projects', ProjectController::class);
 });
+
+Route::post('/project-level/{level}/complete', 
+    [ProjectLevelController::class, 'complete']
+)->name('project-level.complete');
+
+Route::post('/project-level/{level}/reset', 
+    [ProjectLevelController::class, 'reset']
+)->name('project-level.reset');
+
+// consultations (nested under project)
+// Route::get('projects/{project}/consultations/create', [\App\Http\Controllers\ConsultationController::class, 'create'])
+//     ->name('projects.consultations.create');
+
+Route::post('projects/consultations', [\App\Http\Controllers\ConsultationController::class, 'store'])
+    ->name('projects.consultations.store');
+
+Route::get('consultations/{consultation}', [\App\Http\Controllers\ConsultationController::class, 'show'])
+    ->name('consultations.show');
+
+Route::get('consultations/{consultation}/pdf', [\App\Http\Controllers\ConsultationController::class, 'pdf'])
+    ->name('consultations.pdf');
+
+Route::get('projects/{project}/surveys/create', [\App\Http\Controllers\PlanningController::class, 'create'])
+    ->name('projects.surveys.create');
+
+Route::post('projects/surveys', [\App\Http\Controllers\PlanningController::class, 'store'])
+    ->name('projects.surveys.store');
+
+Route::get('surveys/{survey}', [\App\Http\Controllers\surveyController::class, 'show'])
+    ->name('surveys.show');
+
+Route::get('surveys/{survey}/pdf', [\App\Http\Controllers\surveyController::class, 'pdf'])
+    ->name('surveys.pdf');
 
 Route::middleware(['auth', 'permission:lihat daftar user'])->group(function () {
     route::resource('/users', UsersController::class);

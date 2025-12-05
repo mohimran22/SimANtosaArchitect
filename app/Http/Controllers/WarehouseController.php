@@ -202,6 +202,5 @@ class WarehouseController extends Controller
 
         return redirect()->route('warehouses.index')
             ->with('success', 'warehouse berhasil dihapus.');
-
     }
 }

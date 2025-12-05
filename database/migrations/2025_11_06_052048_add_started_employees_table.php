@@ -11,9 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('students', function (Blueprint $table) {
-            $table->uuid('user_id')->after('license_id');
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+        Schema::table('project_levels', function (Blueprint $table) {
+            $table->boolean('is_started')->default(false)->after('is_completed');
         });
     }
 
@@ -22,9 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('students', function (Blueprint $table) {
-            $table->dropForeign(['user_id']);
-            $table->dropColumn('user_id');
+        Schema::table('project_levels', function (Blueprint $table) {
+            $table->dropColumn('is_started');
         });
     }
 };
