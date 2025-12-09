@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('survey_employee', function (Blueprint $table) {
-            $table->uuid('employee_id');
+        Schema::table('surveys', function (Blueprint $table) {
+            $table->timestamp('signed_at')->nullable()->after('notes');
         });
     }
 
@@ -21,8 +21,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('permissions', function (Blueprint $table) {
-            $table->dropColumn('modules');
-        });
+        //
     }
 };

@@ -15,108 +15,30 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        $now = Carbon::now();
 
-        $permissions = [
+        $menus = [
+            
             [
-                'id' => Str::uuid(),
-                'name' => 'tambah data kategori',
-                'guard_name' => 'web',
-                'created_at' => $now,
-                'updated_at' => $now,
-                'modules' => 'Kategori',
+                'text' => 'Proyek Build',
+                        'icon' => 'ti ti-building-community',
+                        'url' => '/project/buid',
+                        'type' => 'url',
+                        'order' => 3,
+                        'is_active' => true,
+                        'permission_name' => 'lihat daftar proyek',
             ],
             [
-                'id' => Str::uuid(),
-                'name' => 'lihat daftar kategori',
-                'guard_name' => 'web',
-                'created_at' => $now,
-                'updated_at' => $now,
-                'modules' => 'Kategori',
-            ],
-            [
-                'id' => Str::uuid(),
-                'name' => 'ubah data kategori',
-                'guard_name' => 'web',
-                'created_at' => $now,
-                'updated_at' => $now,
-                'modules' => 'Kategori',
-            ],
-            [
-                'id' => Str::uuid(),
-                'name' => 'hapus data kategori',
-                'guard_name' => 'web',
-                'created_at' => $now,
-                'updated_at' => $now,
-                'modules' => 'Kategori',
-            ],
-            [
-                'id' => Str::uuid(),
-                'name' => 'tambah data merk',
-                'guard_name' => 'web',
-                'created_at' => $now,
-                'updated_at' => $now,
-                'modules' => 'Merk',
-            ],
-            [
-                'id' => Str::uuid(),
-                'name' => 'lihat daftar merk',
-                'guard_name' => 'web',
-                'created_at' => $now,
-                'updated_at' => $now,
-                'modules' => 'Merk',
-            ],
-            [
-                'id' => Str::uuid(),
-                'name' => 'ubah data merk',
-                'guard_name' => 'web',
-                'created_at' => $now,
-                'updated_at' => $now,
-                'modules' => 'Merk',
-            ],
-            [
-                'id' => Str::uuid(),
-                'name' => 'hapus data merk',
-                'guard_name' => 'web',
-                'created_at' => $now,
-                'updated_at' => $now,
-                'modules' => 'Merk',
-            ],
-                      [
-                'id' => Str::uuid(),
-                'name' => 'tambah data tipe',
-                'guard_name' => 'web',
-                'created_at' => $now,
-                'updated_at' => $now,
-                'modules' => 'Tipe',
-            ],
-            [
-                'id' => Str::uuid(),
-                'name' => 'lihat daftar tipe',
-                'guard_name' => 'web',
-                'created_at' => $now,
-                'updated_at' => $now,
-                'modules' => 'Tipe',
-            ],
-            [
-                'id' => Str::uuid(),
-                'name' => 'ubah data tipe',
-                'guard_name' => 'web',
-                'created_at' => $now,
-                'updated_at' => $now,
-                'modules' => 'Tipe',
-            ],
-            [
-                'id' => Str::uuid(),
-                'name' => 'hapus data tipe',
-                'guard_name' => 'web',
-                'created_at' => $now,
-                'updated_at' => $now,
-                'modules' => 'Tipe',
+                'text' => 'Tenaga',
+                        'icon' => 'ti ti-building-community',
+                        'url' => '/project/labor',
+                        'type' => 'url',
+                        'order' => 3,
+                        'is_active' => true,
+                        'permission_name' => 'lihat daftar proyek',
             ],
             
         ];
 
-        DB::table('permissions')->insert($permissions);
+        DB::table('menus')->insert($menus);
     }
 }

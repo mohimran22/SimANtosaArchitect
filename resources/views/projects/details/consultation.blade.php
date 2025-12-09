@@ -1,3 +1,8 @@
+@php
+    $consultation = $project->consultations->first();
+@endphp
+
+
 @if(isset($consultation))
 <div class="card shadow-sm border-0 mb-4">
     <div class="card-header fw-bold">
@@ -79,10 +84,10 @@
                 <label class="fw-semibold">Status Persetujuan</label>
                 <div class="mt-2">
                     <span class="badge bg-dark">Konsultan:
-                        {{ $consultation->consultant_signed ? 'Sudah' : 'Belum' }}
+                        {{ $consultation->consultant_signed ? 'Check' : 'Belum' }}
                     </span>
                     <span class="badge bg-dark ms-2">Customer:
-                        {{ $consultation->client_signed ? 'Sudah' : 'Belum' }}
+                        {{ $consultation->client_signed ? 'Check' : 'Belum' }}
                     </span>
                 </div>
             </div>

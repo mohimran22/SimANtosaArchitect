@@ -89,6 +89,16 @@ class Project extends Model
         return $this->hasMany(Consultation::class);
     }
 
+        public function plannings()
+    {
+        return $this->hasMany(Planning::class);
+    }
+
+            public function surveys()
+    {
+        return $this->hasMany(Survey::class);
+    }
+
     /*
     |--------------------------------------------------------------------------
     | ACCESSOR
@@ -102,12 +112,6 @@ class Project extends Model
             ->orderBy('level_order')
             ->first();
     }
-
-    /*
-    |--------------------------------------------------------------------------
-    | EVENTS
-    |--------------------------------------------------------------------------
-    */
 
     protected static function boot()
     {

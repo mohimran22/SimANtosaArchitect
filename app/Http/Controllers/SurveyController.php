@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\ConsultationRequest;
-use App\Models\Consultation;
-use App\Models\ConsultationItem;
+use App\Http\Requests\SurveyRequest;
+use App\Models\Survey;
+use App\Models\SurveyItem;
+use App\Models\SurveyImage;
+use App\Models\SurveyDocumentation;
 use App\Models\Project;
 use App\Models\ProjectLevel;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -12,31 +14,18 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 
-class ConsultationController extends Controller
+class SurveyController extends Controller
 {
-    public function create(Project $project)
-    {
-        // eager load project -> customer.user
-        $project->load('customer.user');
-        return view('projects.consultations.create', compact('project'));
-    }
 
-    public function store(ConsultationRequest $request)
+    public function store(SurveyRequest $request)
 {
     $data = $request->validated();
 
-    // ============================================================
-    // 1. Ambil project + relasi employee & customer (untuk TTD default)
-    // ============================================================
     $project = Project::with(['employee', 'customer'])
         ->findOrFail($data['project_id']);
 
-        $goToSurvey = $request->boolean('go_to_survey');
+        $goToDesain = $request->boolean('go_to_desain');
 
-
-    // ============================================================
-    // 2. Tentukan tanda tangan digital (checkbox signed)
-    // ============================================================
     $consultantSigned = $request->boolean('consultant_signed');
     $clientSigned     = $request->boolean('client_signed');
 
@@ -44,33 +33,55 @@ class ConsultationController extends Controller
     $signedAt = ($consultantSigned || $clientSigned) ? now() : null;
     $documentationPath = null;
 
-    if ($request->hasFile('documentation')) {
-        $documentationPath = $request->file('documentation')
-            ->store('consultations', 'public');
-    }
+    // 1. SIMPAN FOTO DOKUMENTASI
 
-    $consultation = Consultation::create([
+
+    $survey = Survey::create([
         'project_id'        => $data['project_id'],
-        'employee_id'       => $data['employee_id'],
         'created_by'        => auth()->id(),
+        'survey_date'     => $data['survey_date'] ?? null,
+        'survey_time'     => $data['survey_time'] ?? null,
         'contact_name'      => $data['contact_name'] ?? null,
         'contact_phone'     => $data['contact_phone'] ?? null,
-        'site_area'         => $data['site_area'] ?? null,
-        'building_area'     => $data['building_area'] ?? null,
+        'site_area'    => $data['site_area'] ?? null,
+        'building_area'=> $data['building_area'] ?? null,
         'notes'             => $data['notes'] ?? null,
-        'documentation'     => $documentationPath,
         'consultant_signed' => $consultantSigned,
         'client_signed'     => $clientSigned,
         'signed_at'         => $signedAt,
     ]);
+
+    if ($request->hasFile('documentation')) {
+    foreach ($request->file('documentation') as $file) {
+        $path = $file->store('surveys/documentations', 'public');
+
+        SurveyDocumentation::create([
+            'survey_id' => $survey->id,
+            'file_path' => $path
+        ]);
+    }
+}
+
+// 2. SIMPAN FOTO HASIL SURVEI
+if ($request->hasFile('result_images')) {
+    foreach ($request->file('result_images') as $file) {
+        $path = $file->store('surveys/result-images', 'public');
+
+        SurveyImage::create([
+            'survey_id' => $survey->id,
+            'file_path' => $path
+        ]);
+    }
+}
+
 
 
     // ============================================================
     // 4. SIMPAN ITEM DINAMIS (uraian)
     // ============================================================
     foreach ($data['items'] as $i => $item) {
-        ConsultationItem::create([
-            'consultation_id' => $consultation->id,
+        SurveyItem::create([
+            'survey_id' => $survey->id,
             'order_no'        => $i + 1,
             'description'     => $item['description'],
             'remark'          => $item['remark'] ?? null,
@@ -86,52 +97,51 @@ class ConsultationController extends Controller
         // Tandai level konsultasi selesai
         $level = ProjectLevel::where([
             'project_id'  => $project->id,
-            'level_order' => 1,
+            'level_order' => 3,
         ])->first();
 
         if ($level) {
             $level->update([
-                'employee_id'  => $data['employee_id'], // karyawan yg handle
                 'is_completed' => true,
             ]);
+            $level->employees()->sync($data['employee_id']);
         }
 
         // Mulai tahap survei (level 2) otomatis
         ProjectLevel::where([
             'project_id'  => $project->id,
-            'level_order' => 2,
+            'level_order' => 4,
         ])->update([
             'is_started' => true,
         ]);
     }
 
-        if (!$goToSurvey) {
+        if (!$goToDesain) {
         return redirect()
             ->route('projects.show', $project->id)
             ->with('success', 'Konsultasi berhasil disimpan.');
     }
 
     return redirect()
-    ->route('projects.create', ['project_id' => $consultation->project_id])
+    ->route('projects.create', ['project_id' => $survey->project_id])
     ->with('success', 'Form konsultasi berhasil disimpan.');
-
 }
 
 
 
-    public function show(Consultation $consultation)
+    public function show(Survey $Survey)
     {
-        $consultation->load('items', 'project.customer.user', 'creator');
-        return view('projects.consultations.show', compact('consultation'));
+        $Survey->load('items', 'project.customer.user', 'creator');
+        return view('projects.Surveys.show', compact('Survey'));
     }
 
-    public function pdf(Consultation $consultation)
+    public function pdf(Survey $Survey)
     {
-        $consultation->load('items', 'project.customer.user', 'creator');
-        $view = view('projects.consultations.pdf', compact('consultation'))->render();
+        $Survey->load('items', 'project.customer.user', 'creator');
+        $view = view('projects.Surveys.pdf', compact('Survey'))->render();
 
         $pdf = Pdf::loadHTML($view)->setPaper('a4', 'portrait');
-        return $pdf->download("consultation-{$consultation->id}.pdf");
+        return $pdf->download("Survey-{$Survey->id}.pdf");
     }
 }
 

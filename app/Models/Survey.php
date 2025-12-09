@@ -3,20 +3,25 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 class Survey extends Model
 {
+    use HasUuids;
+
+    protected $table = 'surveys';
+    protected $keyType = 'string';
+    public $incrementing = false;
+
     protected $fillable = [
-        'planning_date',
-        'survey_address',
-        'province_id',
-        'city_id',
-        'district_id',
-        'sub_district_id',
-        'postal_code_id',
-        'planning_time',
-        'planning_notes',
-        'employee_id',
+        'project_id',
+        'created_by',
+        'contact_name',
+        'survey_date',
+        'site_area',
+        'building_area',
+        'survey_time',
+        'notes',
         'signed_at',
     ];
 
@@ -27,7 +32,17 @@ class Survey extends Model
 
     public function items()
     {
-        return $this->hasMany(ConsultationItem::class);
+        return $this->hasMany(SurveyItem::class);
+    }
+
+        public function surveyimages()
+    {
+        return $this->hasMany(SurveyImage::class);
+    }
+
+        public function documentations()
+    {
+        return $this->hasMany(SurveyDocumentation::class);
     }
 
     public function creator()
@@ -35,8 +50,8 @@ class Survey extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
-        public function employee()
+        public function employees()
 {
-    return $this->belongsTo(Employee::class, 'employee_id');
+    return $this->belongsToMany(Employee::class, 'survey_employees');
 }
 }

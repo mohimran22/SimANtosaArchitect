@@ -44,7 +44,7 @@
         </div>
     </div>
 
-    <div class="mb-3">
+    <div class="mb-3 mt-4">
                             <label class="form-label">Uraian</label>
 
                             <table class="table table-sm table-bordered" id="items-table">
@@ -144,6 +144,9 @@
         <button type="button" class="btn btn-dark" id="btnToSurvey">
             Lanjut Ke Survei
         </button>
+        
+        <input type="hidden" name="go_to_survey" id="go_to_survey">
+
 
         <a href="#" id="print-preview" class="btn btn-outline-secondary" style="display:none;" target="_blank">
             Cetak / Preview PDF

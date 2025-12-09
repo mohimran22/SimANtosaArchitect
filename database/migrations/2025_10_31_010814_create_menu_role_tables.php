@@ -11,15 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('affiliator', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('menu_id')->index();
-            $table->uuid('role_id')->index();
+        Schema::create('survey_employee', function (Blueprint $table) {
+            $table->uuid('employee_id')->index();
+            $table->uuid('planning_id')->index();
 
-            $table->foreign('menu_id')->references('id')->on('menus')->onDelete('cascade');
+            $table->foreign('planning_id')->references('id')->on('plannings')->onDelete('cascade');
         
-            $table->foreign('role_id')->references('id')->on('roles')->onDelete('cascade');
-            $table->unique(['menu_id', 'role_id']);
+            $table->foreign('employee_id')->references('id')->on('employees')->onDelete('cascade');
+            $table->unique(['employee_id', 'planning_id']);
         });
     }
 
@@ -28,8 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('menu_role');
+        Schema::dropIfExists('survey_employee');
     }
 };
-
-content: "▼";

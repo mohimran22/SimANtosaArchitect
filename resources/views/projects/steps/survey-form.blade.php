@@ -1,11 +1,21 @@
-<form action="{{ route('projects.surveys.store') }}" method="POST">
-    @csrf
+<form 
+      action="{{ route('projects.surveys.store') }}"
+      method="POST"
+      enctype="multipart/form-data">
 
+    @csrf
     <input type="hidden" name="project_id" value="{{ $project->id }}">
 
     <div class="row g-4">
         <div class="col-md-4">
-            <label class="form-label">Rencana Petugas Survei</label>
+            <label class="form-label">Nama Customer</label>
+            <input type="text" class="form-control"
+                   name="contact_name"
+                   value="{{ old('contact_name', $project->customer->user->fullname ?? '') }}">
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label">Petugas Survei</label>
             <select name="employee_id[]" class="form-select select2" multiple required>
                 @foreach($employees as $employee)
                 <option value="{{ $employee->id }}">{{ $employee->display_name }}</option>
@@ -13,103 +23,124 @@
             </select>
         </div>
 
-        <div class="col-md-4">
+        <div class="col-md-2">
             <label class="form-label">Tanggal Survei</label>
             <input type="date" name="survey_date" class="form-control" required>
         </div>
 
-        <div class="col-md-4">
+        <div class="col-md-2">
             <label class="form-label">Waktu Survei</label>
             <input type="time" name="survey_time" class="form-control" required>
         </div>
-    </div>
-    <div class="section-block mb-5">
-                                <h3 class="fw-semibold mb-3 border-bottom pb-2">Lokasi Proyek</h3>
-                                <div class="row g-4">
-                                    <div class="col-12">
-                                        <label class="form-label required">Alamat Lengkap</label>
-                                        <textarea name="project_location" rows="3" class="form-control @error('project_location') is-invalid @enderror" required>{{ old('project_location') }} </textarea>
-                                        @error('project_location')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-                                </div>
-                                <div class="row g-4 mt-2">
-                                    <div class="col-md-6">
-                                        <label class="form-label required">Provinsi</label>
-                                        <select name="province_id" id="province" 
-                                                class="form-select select2 @error('province_id') is-invalid @enderror" required>
-                                            <option value="">-- Pilih Provinsi --</option>
-                                            @foreach($provinces as $province)
-                                                <option value="{{ $province->id }}" {{ old('province_id') == $province->id ? 'selected' : '' }}>
-                                                    {{ $province->name }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                        @error('province_id')
-                                            <small class="text-danger">{{ $message }}</small>
-                                        @enderror
-                                    </div>
 
-                                    <div class="col-md-6">
-                                        <label class="form-label required">Kabupaten/Kota</label>
-                                        <select name="city_id" id="city" 
-                                                class="form-select select2 @error('city_id') is-invalid @enderror" required>
-                                            <option value="">-- Pilih Kota --</option>
-                                        </select>
-                                        @error('city_id')
-                                            <small class="text-danger">{{ $message }}</small>
-                                        @enderror
-                                    </div>
+        
 
-                                    <div class="col-md-5">
-                                        <label class="form-label required">Kecamatan</label>
-                                        <select name="district_id" id="district" 
-                                                class="form-select select2 @error('district_id') is-invalid @enderror" required>
-                                            <option value="">-- Pilih Kecamatan --</option>
-                                        </select>
-                                        @error('district_id')
-                                            <small class="text-danger">{{ $message }}</small>
-                                        @enderror
-                                    </div>
+        <div class="col-md-4">
+            <label class="form-label">Ukuran Tanah (Aktual) </label>
+            <input type="text" class="form-control" name="site_area">
+        </div>
 
-                                    <div class="col-md-5">
-                                        <label class="form-label required">Kelurahan</label>
-                                        <select name="sub_district_id" id="sub_district" 
-                                                class="form-select select2 @error('sub_district_id') is-invalid @enderror" required>
-                                            <option value="">-- Pilih Kelurahan --</option>
-                                        </select>
-                                        @error('sub_district_id')
-                                            <small class="text-danger">{{ $message }}</small>
-                                        @enderror
-                                    </div>
-
-                                    <div class="col-md-2">
-                                        <label class="form-label required">Kode Pos</label>
-                                        <select name="postal_code_id" id="postal_code" 
-                                                class="form-select select2 @error('postal_code_id') is-invalid @enderror" required>
-                                            <option value="">-- Pilih Kode Pos --</option>
-                                        </select>
-                                        @error('postal_code_id')
-                                            <small class="text-danger">{{ $message }}</small>
-                                        @enderror
-                                    </div>
-                                </div>
-                            </div>
-
-    
-    {{-- @include('projects.partials.location-selector', [
-        'prefix' => 'survey_',
-        'locationOld' => old()
-    ]) --}}
-
-
-    <div class="mt-3">
-        <label class="form-label">Catatan Survei</label>
-        <textarea name="survey_notes" class="form-control" rows="3"></textarea>
+        <div class="col-md-4">
+            <label class="form-label">Ukuran Bangunan (Aktual) </label>
+            <input type="text" class="form-control" name="building_area">
+        </div>
     </div>
 
-    <div class="text-end mt-4">
-        <button class="btn btn-dark">Simpan Survei</button>
+    <div class="mt-4">
+        <label class="fw-bold">Foto Hasil Survei / Denah</label>
+        <div class="text-muted mb-2">Foto hasil survei seperti sketsa, denah, atau kondisi lapangan</div>
+
+        <input type="file" 
+            name="result_images[]" 
+            class="form-control" 
+            accept="image/*" 
+            multiple>
+
+        <div id="preview-result-images" class="mt-3 d-flex flex-wrap gap-3"></div>
+    </div>
+
+    <div class="mb-3 mt-3">
+                            <label class="form-label">Uraian</label>
+
+                            <table class="table table-sm table-bordered" id="items-table">
+                                <thead>
+                                    <tr>
+                                        <th width="5%">No</th>
+                                        <th>Uraian</th>
+                                        <th>Keterangan</th>
+                                        <th width="1%"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if(old('items'))
+                                        @foreach(old('items') as $i => $it)
+                                            <tr>
+                                                <td class="row-no text-center">{{ $i + 1 }}</td>
+                                                <td><textarea name="items[{{ $i }}][description]" class="form-control" rows="2">{{ $it['description'] }}</textarea></td>
+                                                <td><textarea name="items[{{ $i }}][remark]" class="form-control" rows="2">{{ $it['remark'] }}</textarea></td>
+                                                <td><button type="button" class="btn btn-sm btn-danger remove-row">-</button></td>
+                                            </tr>
+                                        @endforeach
+                                    @else
+                                        <tr>
+                                            <td class="row-no text-center">1</td>
+                                            <td><textarea name="items[0][description]" class="form-control" rows="2"></textarea></td>
+                                            <td><textarea name="items[0][remark]" class="form-control" rows="2"></textarea></td>
+                                            <td><button type="button" class="btn btn-sm btn-danger remove-row">-</button></td>
+                                        </tr>
+                                    @endif
+                                </tbody>
+                            </table>
+
+                            <button type="button" id="add-row" class="btn btn-sm btn-dark">+ Tambah Uraian</button>
+                        </div>
+
+    <div class="mt-4">
+        <label class="fw-bold">Foto Dokumentasi</label>
+        <div class="text-muted mb-2">Upload foto proses survey (opsional)</div>
+
+        <input type="file" 
+            name="documentation[]" 
+            class="form-control" 
+            accept="image/*" 
+            multiple>
+
+        <div id="preview-documentation" class="mt-3 d-flex flex-wrap gap-3"></div>
+    </div>
+    <div class="row mb-3 mt-4">
+        <div class="col-md-6">
+            <label class="form-label fw-bold">Persetujuan Petugas Survei</label><br>
+            <label>
+                <input type="checkbox" name="consultant_signed" value="1">
+                Saya sebagai Petugas Survei menyetujui hasil survei ini
+            </label>
+        </div>
+
+        <div class="col-md-6">
+            <label class="form-label fw-bold">Persetujuan Customer</label><br>
+            <label>
+                <input type="checkbox" name="client_signed" value="1">
+                Customer menyetujui hasil konsultasi ini
+            </label>
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Catatan Tambahan</label>
+        <textarea name="notes" class="form-control" rows="3"></textarea>
+    </div>
+
+    <div class="d-flex gap-2 mt-3">
+        <button class="btn btn-dark text-end">Simpan Form Survei</button>
+
+        <button type="button" class="btn btn-dark" id="btnToDesain">
+            Lanjut Ke Penawaran Jasa Desain
+        </button>
+        
+        <input type="hidden" name="go_to_desain" id="go_to_desain">
+
+        <a href="#" id="print-preview" class="btn btn-outline-secondary" style="display:none;" target="_blank">
+            Cetak / Preview PDF
+        </a>
     </div>
 </form>

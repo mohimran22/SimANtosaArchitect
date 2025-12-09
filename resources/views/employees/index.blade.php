@@ -51,7 +51,7 @@
                             </p>
                         </div>
                         <div class="table-responsive">
-                            <table id="tableEmployees" class="table card-table table-vcenter text-nowrap" >
+                            <table id="tableEmployees" class="table card-table table-vcenter text-nowrap">
                                 <thead>
                                     <tr>
                                         <th class="w-1">No.</th>

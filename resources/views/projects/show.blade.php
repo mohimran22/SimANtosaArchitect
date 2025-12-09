@@ -201,7 +201,7 @@
                                     @if($isCompleted)
                                         <span class="badge bg-success">Selesai</span>
                                     @elseif($isCurrent)
-                                        <span class="badge bg-warning text-dark">Sedang Berjalan</span>
+                                        <span class="badge bg-warning text-white">Sedang Berjalan</span>
                                     @else
                                         <span class="badge bg-secondary">Belum Dimulai</span>
                                     @endif
@@ -241,6 +241,68 @@
             </a>
 
             <a href="{{ route('consultations.pdf', $consultation->id) }}" 
+                class="btn btn-outline-primary" target="_blank">
+                🖨 Cetak PDF
+            </a>
+        @endif
+
+    </div>
+</div>
+
+<div id="rencana-survei" class="card mb-4">
+    <div class="card-header fw-bold">Tahap 2: Rencana Survei</div>
+    <div class="card-body">
+
+        @if(!$planning)
+            {{-- Jika Rencana Survei belum diisi --}}
+            <p class="text-muted">
+                Anda belum mengisi Form Rencana Survei. Klik tombol di bawah ini untuk memulai.
+            </p>
+
+            <a href="{{ route('projects.create', $project->id) }}" class="btn btn-dark btn-lg">
+                📝 Isi Form Rencana Survei
+            </a>
+
+        @else
+            {{-- Rencana Survei Sudah diisi --}}
+            <p><strong>Form Rencana Survei sudah diisi.</strong></p>
+
+            <a href="{{ route('plannings.show', $planning->id) }}" class="btn btn-success me-2">
+                ✔ Lihat Form Rencana Survei
+            </a>
+
+            <a href="{{ route('plannings.pdf', $planning->id) }}" 
+                class="btn btn-outline-primary" target="_blank">
+                🖨 Cetak PDF
+            </a>
+        @endif
+
+    </div>
+</div>
+
+<div id="survei" class="card mb-4">
+    <div class="card-header fw-bold">Tahap 3: Survei</div>
+    <div class="card-body">
+
+        @if(!$planning)
+            {{-- Jika Rencana Survei belum diisi --}}
+            <p class="text-muted">
+                Anda belum mengisi Form Survei. Klik tombol di bawah ini untuk memulai.
+            </p>
+
+            <a href="{{ route('projects.create', $project->id) }}" class="btn btn-dark btn-lg">
+                📝 Isi Form Survei
+            </a>
+
+        @else
+            {{--  Survei Sudah diisi --}}
+            <p><strong>Form  Survei sudah diisi.</strong></p>
+
+            <a href="{{ route('surveys.show', $planning->id) }}" class="btn btn-success me-2">
+                ✔ Lihat Form  Survei
+            </a>
+
+            <a href="{{ route('plannings.pdf', $planning->id) }}" 
                 class="btn btn-outline-primary" target="_blank">
                 🖨 Cetak PDF
             </a>

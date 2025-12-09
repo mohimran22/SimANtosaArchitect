@@ -1,11 +1,25 @@
+@php
+    $survey = $project->surveys->first();
+    $planningLevel = $project->levels->firstWhere('level_order', 3);
+
+    $surveyEmployees = $planningLevel ? $planningLevel->employees : collect();
+@endphp
+
+
 @if(isset($survey))
 <div class="card shadow-sm border-0 mb-4">
     <div class="card-header fw-bold">
-        Detail Survei Lapangan
+        Detail Konsultasi
     </div>
 
     <div class="card-body">
         <div class="row g-4">
+
+            <div class="col-md-4">
+                <label class="fw-semibold">Nama Customer</label>
+                <input type="text" class="form-control"
+                       value="{{ $survey->contact_name }}" readonly>
+            </div>
 
             <div class="col-md-4">
                 <label class="fw-semibold">Tanggal Survei</label>
@@ -14,7 +28,7 @@
             </div>
 
             <div class="col-md-4">
-                <label class="fw-semibold">Waktu Survei</label>
+                <label class="fw-semibold">Tanggal Survei</label>
                 <input type="text" class="form-control"
                        value="{{ $survey->survey_time }}" readonly>
             </div>
@@ -22,56 +36,122 @@
             <div class="col-md-4">
                 <label class="fw-semibold">Petugas Survei</label>
 
-                <ul class="list-group">
-                    @foreach($survey->employees as $emp)
-                    <li class="list-group-item">
-                        {{ $emp->display_name }}
-                    </li>
-                    @endforeach
-                </ul>
+                <div class="d-flex flex-wrap gap-2 mt-1">
+                    @forelse($surveyEmployees as $emp)
+                        <span class="badge bg-dark text-white px-3 py-2">
+                            {{ $emp->display_name }}
+                        </span>
+                    @empty
+                        <span class="text-muted">Tidak ada petugas survei</span>
+                    @endforelse
+                </div>
             </div>
 
-            {{-- ========================= --}}
-            {{-- ALAMAT SURVEI --}}
-            {{-- ========================= --}}
-            <div class="col-12 mt-3">
-                <label class="fw-semibold">Alamat Lengkap Survei</label>
-                <textarea class="form-control" rows="3" readonly>{{ $survey->survey_location }}</textarea>
-            </div>
-
-            <div class="col-md-6">
-                <label class="fw-semibold">Provinsi</label>
+            <div class="col-md-4">
+                <label class="fw-semibold">Ukuran Tanah</label>
                 <input type="text" class="form-control"
-                       value="{{ $survey->province->name ?? '-' }}" readonly>
+                       value="{{ $survey->site_area }}" readonly>
             </div>
 
-            <div class="col-md-6">
-                <label class="fw-semibold">Kabupaten/Kota</label>
+            <div class="col-md-4">
+                <label class="fw-semibold">Ukuran Bangunan</label>
                 <input type="text" class="form-control"
-                       value="{{ $survey->city->name ?? '-' }}" readonly>
+                       value="{{ $survey->building_area }}" readonly>
             </div>
 
-            <div class="col-md-5">
-                <label class="fw-semibold">Kecamatan</label>
-                <input type="text" class="form-control"
-                       value="{{ $survey->district->name ?? '-' }}" readonly>
-            </div>
+            <div class="mt-4">
+    <h5 class="fw-bold">Foto Hasil Survei (Denah, Kondisi Lapangan, dll)</h5>
 
-            <div class="col-md-5">
-                <label class="fw-semibold">Kelurahan</label>
-                <input type="text" class="form-control"
-                       value="{{ $survey->subDistrict->name ?? '-' }}" readonly>
-            </div>
+    @if($survey->surveyimages->count())
+        <div class="row g-3 mt-2">
+            @foreach($survey->surveyimages as $img)
+                <div class="col-6 col-md-3">
+                    <div class="border rounded shadow-sm p-1">
+                        <a href="{{ asset('storage/'.$img->file_path) }}" target="_blank">
+                            <img src="{{ asset('storage/'.$img->file_path) }}"
+                                 class="img-fluid rounded"
+                                 style="height:150px; object-fit:cover;">
+                        </a>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    @else
+        <p class="text-muted">Tidak ada foto hasil survei.</p>
+    @endif
+</div>
 
-            <div class="col-md-2">
-                <label class="fw-semibold">Kode Pos</label>
-                <input type="text" class="form-control"
-                       value="{{ $survey->postalCode->postal_code ?? '-' }}" readonly>
-            </div>
 
             <div class="col-md-12 mt-3">
-                <label class="fw-semibold">Catatan Survei</label>
-                <textarea class="form-control" rows="3" readonly>{{ $survey->survey_notes }}</textarea>
+                <label class="fw-semibold mb-2">Daftar Uraian</label>
+
+                <table class="table table-sm table-bordered">
+                    <thead>
+                        <tr>
+                            <th width="5%">No</th>
+                            <th>Uraian</th>
+                            <th>Keterangan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($survey->items as $item)
+                        <tr>
+                            <td class="text-center">{{ $item->order_no }}</td>
+                            <td>{{ $item->description }}</td>
+                            <td>{{ $item->remark }}</td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+
+            @if($survey->documentation)
+            <div class="col-md-4 mt-3">
+                <label class="fw-semibold">Foto Dokumentasi</label><br>
+                <img src="{{ asset('storage/'.$survey->documentation) }}"
+                     alt="Dokumentasi"
+                     class="img-thumbnail"
+                     style="width: 200px; height: auto;">
+            </div>
+            @endif
+
+            <div class="col-md-12 mt-3">
+                <label class="fw-semibold">Catatan Tambahan</label>
+                <textarea class="form-control" rows="3" readonly>{{ $survey->notes }}</textarea>
+            </div>
+
+            <div class="mt-4">
+    <h5 class="fw-bold">Foto Dokumentasi</h5>
+
+    @if($survey->documentations->count())
+        <div class="row g-3 mt-2">
+            @foreach($survey->documentations as $img)
+                <div class="col-6 col-md-3">
+                    <div class="border rounded shadow-sm p-1">
+                        <a href="{{ asset('storage/'.$img->file_path) }}" target="_blank">
+                            <img src="{{ asset('storage/'.$img->file_path) }}"
+                                 class="img-fluid rounded"
+                                 style="height:150px; object-fit:cover;">
+                        </a>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    @else
+        <p class="text-muted">Tidak ada foto dokumentasi.</p>
+    @endif
+</div>
+
+            <div class="col-md-12 mt-3">
+                <label class="fw-semibold">Status Persetujuan</label>
+                <div class="mt-2">
+                    <span class="badge bg-dark">Konsultan:
+                        {{ $survey->consultant_signed ? 'Sudah' : 'Belum' }}
+                    </span>
+                    <span class="badge bg-dark ms-2">Customer:
+                        {{ $survey->client_signed ? 'Sudah' : 'Belum' }}
+                    </span>
+                </div>
             </div>
 
         </div>

@@ -20,7 +20,6 @@ class ProjectLevel  extends Model
         'level_name',
         'is_completed',
         'is_started',
-        'employee_id',
     ];
 
 public function project()
@@ -28,9 +27,9 @@ public function project()
         return $this->belongsTo(Project::class);
     }
     
-public function employee()
-{
-    return $this->belongsTo(Employee::class);
-}
+    public function employees()
+    {
+        return $this->belongsToMany(Employee::class, 'project_level_employee');
+    }
 
 }

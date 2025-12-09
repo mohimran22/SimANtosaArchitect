@@ -90,15 +90,25 @@ public function bank()
     return $this->hasMany(ProjectLevel::class);
 }
 
+    public function plannings()
+{
+    return $this->belongsToMany(Planning::class);
+}
+
+    public function surveys()
+{
+    return $this->belongsToMany(Survey::class);
+}
+
      public function workers()
 {
     return $this->hasMany(EmployeeWorkExperience::class);
 }
 
-    public function families()
-{
-    return $this->hasMany(EmployeeFamilyMember::class);
-}
+    public function projectLevels()
+    {
+        return $this->belongsToMany(ProjectLevel::class, 'project_level_employee');
+    }
 
      public function getMarriedDateFormattedAttribute()
     {

@@ -3,22 +3,28 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 class Planning extends Model
 {
+    use HasUuids;
+
+    protected $table = 'plannings';
+    protected $keyType = 'string';
+    public $incrementing = false;
+        public $timestamps = false;
+
     protected $fillable = [
-        'id',
+        'project_id',
         'planning_date',
+        'planning_time',
         'survey_address',
         'province_id',
         'city_id',
         'district_id',
         'sub_district_id',
         'postal_code_id',
-        'planning_time',
         'planning_notes',
-        'employee_id',
-        'signed_at',
     ];
 
     public function project()
@@ -26,19 +32,35 @@ class Planning extends Model
         return $this->belongsTo(Project::class);
     }
 
-    public function items()
-    {
-        return $this->hasMany(ConsultationItem::class);
-    }
-
-    public function creator()
-    {
-        return $this->belongsTo(User::class, 'created_by');
-    }
-
-        public function employee()
+public function level()
 {
-    return $this->belongsTo(Employee::class, 'employee_id');
+    return $this->hasOne(ProjectLevel::class, 'project_id', 'project_id')
+                ->where('level_order', 2);
 }
+
+public function province()
+    {
+        return $this->belongsTo(Province::class);
+    }
+
+    public function city()
+    {
+        return $this->belongsTo(City::class);
+    }
+
+    public function district()
+    {
+        return $this->belongsTo(District::class);
+    }
+
+    public function subDistrict()
+    {
+        return $this->belongsTo(SubDistrict::class);
+    }
+
+    public function postalCode()
+    {
+        return $this->belongsTo(PostalCode::class, 'postal_code_id');
+    }
 }
 

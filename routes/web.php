@@ -182,20 +182,19 @@ Route::post('/warehouse/products/store', [SupplierCatalogController::class, 'sto
     ->name('warehouse.products.store');
 
 Route::middleware(['auth', 'permission:lihat daftar proyek|lihat data proyek'])->group(function () {
+
+    Route::get('/projects/{project}/continue', 
+    [ProjectController::class, 'continue'])
+    ->name('projects.continue');
+
     Route::resource('/projects', ProjectController::class);
 });
 
-Route::post('/project-level/{level}/complete', 
-    [ProjectLevelController::class, 'complete']
-)->name('project-level.complete');
+Route::middleware(['auth', 'permission:lihat daftar proyek|lihat data proyek'])->group(function () {
 
-Route::post('/project-level/{level}/reset', 
-    [ProjectLevelController::class, 'reset']
-)->name('project-level.reset');
+    Route::resource('/labor_costs', \App\Http\Controllers\LaborCostController::class);
+});
 
-// consultations (nested under project)
-// Route::get('projects/{project}/consultations/create', [\App\Http\Controllers\ConsultationController::class, 'create'])
-//     ->name('projects.consultations.create');
 
 Route::post('projects/consultations', [\App\Http\Controllers\ConsultationController::class, 'store'])
     ->name('projects.consultations.store');
@@ -206,17 +205,32 @@ Route::get('consultations/{consultation}', [\App\Http\Controllers\ConsultationCo
 Route::get('consultations/{consultation}/pdf', [\App\Http\Controllers\ConsultationController::class, 'pdf'])
     ->name('consultations.pdf');
 
-Route::get('projects/{project}/surveys/create', [\App\Http\Controllers\PlanningController::class, 'create'])
-    ->name('projects.surveys.create');
+Route::post('projects/plannings', [\App\Http\Controllers\PlanningController::class, 'store'])
+    ->name('projects.plannings.store');
 
-Route::post('projects/surveys', [\App\Http\Controllers\PlanningController::class, 'store'])
+Route::get('plannings/{planning}', [\App\Http\Controllers\PlanningController::class, 'show'])
+    ->name('plannings.show');
+
+Route::get('plannings/{planning}/pdf', [\App\Http\Controllers\PlanningController::class, 'pdf'])
+    ->name('plannings.pdf');
+
+Route::post('projects/surveys', [\App\Http\Controllers\SurveyController::class, 'store'])
     ->name('projects.surveys.store');
 
-Route::get('surveys/{survey}', [\App\Http\Controllers\surveyController::class, 'show'])
+Route::get('surveys/{survey}', [\App\Http\Controllers\SurveyController::class, 'show'])
     ->name('surveys.show');
 
-Route::get('surveys/{survey}/pdf', [\App\Http\Controllers\surveyController::class, 'pdf'])
+Route::get('surveys/{survey}/pdf', [\App\Http\Controllers\SurveyController::class, 'pdf'])
     ->name('surveys.pdf');
+
+Route::post('projects/offers', [\App\Http\Controllers\OfferController::class, 'store'])
+    ->name('projects.offers.store');
+
+Route::get('offers/{offer}', [\App\Http\Controllers\OfferController::class, 'show'])
+    ->name('offers.show');
+
+Route::get('offers/{offer}/pdf', [\App\Http\Controllers\OfferController::class, 'pdf'])
+    ->name('offers.pdf');
 
 Route::middleware(['auth', 'permission:lihat daftar user'])->group(function () {
     route::resource('/users', UsersController::class);

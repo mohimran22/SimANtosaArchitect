@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Religion;
 use App\Models\License;
-use App\Models\LicenseHolder;
+use App\Models\Package;
 use App\Models\Province;
 use App\Models\City;
 use App\Models\District;
@@ -19,13 +19,13 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 
-class LicenseHoldersController extends Controller
+class PackagesController extends Controller
 {
     public function index(Request $request)
     {
 
         if ($request->ajax()) {
-            $license_holders = $this->getJoinedLicenseHolders();
+            $license_holders = $this->getJoinedPackages();
 
             return DataTables::of($license_holders)
                 ->addColumn('birth_date', fn($row) => $row->birth_date ? \Carbon\Carbon::parse($row->birth_date)->format('d/m/Y') : '-')
@@ -63,7 +63,7 @@ class LicenseHoldersController extends Controller
         return view('license_holders.index');
     }
 
-    private function getJoinedLicenseHolders()
+    private function getJoinedPackages()
 {
     $auth = auth()->user();
 
@@ -211,13 +211,13 @@ class LicenseHoldersController extends Controller
         $user->licenses()->sync($validated['licenses']);
 
         $validated['user_id'] = $user->id;
-        LicenseHolder::create(collect($validated)->except(['licenses', 'email'])->toArray());
+        Package::create(collect($validated)->except(['licenses', 'email'])->toArray());
              
 
         return redirect()->route('license_holders.index')->with('success', 'Data berhasil ditambahkan.');
     }
 
-    public function show(LicenseHolder $license_holder)
+    public function show(Package $license_holder)
     {
 
         $license_holder->load(['religion', 'user.licenses', 'province', 'city', 'district', 'subDistrict', 'postalCode']);
@@ -226,36 +226,36 @@ class LicenseHoldersController extends Controller
 
         public function showLicense($id)
         {
-            $license_holder = LicenseHolder::with('user.licenses', 'user.licenses.province', 'user.licenses.city', 'user.licenses.district', 'user.licenses.subDistrict', 'user.licenses.postalCode')->findOrFail($id);
+            $license_holder = Package::with('user.licenses', 'user.licenses.province', 'user.licenses.city', 'user.licenses.district', 'user.licenses.subDistrict', 'user.licenses.postalCode')->findOrFail($id);
 
             return view('license_holders.tab.licenses', compact('license_holder'));
         }
 
     public function showProfile($id)
     {
-    $license_holder = LicenseHolder::with(['user.licenses', 'religion'])->findOrFail($id);
+    $license_holder = Package::with(['user.licenses', 'religion'])->findOrFail($id);
     return view('license_holders.tab.profile', compact('license_holder'));
     }
 
     public function showTab($id)
 {
-    $license_holder = LicenseHolder::with('educations')->findOrFail($id);
+    $license_holder = Package::with('educations')->findOrFail($id);
     return view('license_holders.tab.educations', compact('license_holder'));
 }
 
     public function showWorks($id)
 {
-    $license_holder = LicenseHolder::with('workers')->findOrFail($id);
+    $license_holder = Package::with('workers')->findOrFail($id);
     return view('license_holders.tab.workers', compact('license_holder'));
 }
 
     public function showFams($id)
 {
-    $license_holder = LicenseHolder::with('families')->findOrFail($id);
+    $license_holder = Package::with('families')->findOrFail($id);
     return view('license_holders.tab.families', compact('license_holder'));
 }
 
-    public function edit(LicenseHolder $license_holder)
+    public function edit(Package $license_holder)
     {
         $auth = auth()->user();
 
@@ -289,7 +289,7 @@ class LicenseHoldersController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, LicenseHolder $license_holder)
+    public function update(Request $request, Package $license_holder)
     {
             $auth = auth()->user();
 
@@ -358,7 +358,7 @@ class LicenseHoldersController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(LicenseHolder $license_holder)
+    public function destroy(Package $license_holder)
     {
          if ($license_holder) {
             $license_holder->delete();

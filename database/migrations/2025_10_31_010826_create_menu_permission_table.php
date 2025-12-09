@@ -11,14 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('menu_permission', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('menu_id')->index();
-            $table->uuid('permission_id')->index();
+        Schema::create('survey_employees', function (Blueprint $table) {
+            $table->uuid('employee_id')->index();
+            $table->uuid('survey_id')->index();
 
-            $table->foreign('menu_id')->references('id')->on('menus')->onDelete('cascade');
-            $table->foreign('permission_id')->references('id')->on('permissions')->onDelete('cascade');
-            $table->unique(['menu_id', 'permission_id']);
+            $table->foreign('survey_id')->references('id')->on('surveys')->onDelete('cascade');
+        
+            $table->foreign('employee_id')->references('id')->on('employees')->onDelete('cascade');
+            $table->unique(['employee_id', 'survey_id']);
         });
     }
 
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('menu_permission');
+        Schema::dropIfExists('survey_employees');
     }
 };
