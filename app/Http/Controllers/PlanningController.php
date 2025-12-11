@@ -90,86 +90,51 @@ public function store(Request $request)
         return $pdf->download("planning-{$planning->id}.pdf");
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Student $student)
-    {
-        $licenses = License::all();
-        $religions = Religion::all();
-        $provinces = Province::all();
-        $cities = City::where('province_id', $student->province_id)->get();
-        $districts = District::where('city_id', $student->city_id)->get();
-        $subDistricts = SubDistrict::where('district_id', $student->district_id)->get();
-        $postalCodes = PostalCode::where('sub_district_id', $student->sub_district_id)->get();
+//         public function update(Request $request, Planning $planning)
+// {
+//     $planning->update($request->only([
+//         'contact_name',
+//         'contact_phone',
+//         'employee_id',
+//         'site_area',
+//         'building_area',
+//         'consultant_signed',
+//         'client_signed',
+//         'notes',
+//     ]));
 
-        return view('students.edit', compact('student', 'licenses', 'religions', 'provinces', 'cities', 'districts', 'subDistricts', 'postalCodes'));
-    }
+//     $planning->items()->delete(); // hapus item lama
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Student $student)
-    {
-        $validated = $request->validate([
-        'nis' => [
-            'required',
-            'string',
-            'digits:5',
-            Rule::unique('students')->ignore($student->id),
-        ],
-        'license_id' => 'required|exists:licenses,id',
-        'fullname' => 'required|string',
-        'nickname' => 'nullable|string',
-        'gender' => 'required|in:1,2',
-        'birth_place' => 'nullable|string',
-        'birth_date' => 'required|date',
-        'age' => 'nullable|integer|min:0',
-        'religion_id' => 'required|exists:religions,id',
-        'email' => [
-            'nullable',
-            'email',
-             Rule::unique('students')->ignore($student->id),
-            ], 
-        'address' => 'nullable|string',
-        'province_id' => 'nullable|exists:provinces,id',
-        'city_id' => 'nullable|exists:cities,id',
-        'district_id' => 'nullable|exists:districts,id',
-        'sub_district_id' => 'nullable|exists:sub_districts,id',
-        'postal_code_id' => 'nullable|exists:postal_codes,id',
-        'father_name' => 'required|string',
-        'father_phone' => 'required|string',
-        'mother_name' => 'required|string',
-        'mother_phone' => 'required|string',
-        'student_phone' => 'nullable|string',
-        'previous_school' => 'nullable|string',
-        'grade' => 'nullable|string',
-        'status' => 'nullable|string',
-        'photo' => ['nullable|image|mimes:jpeg,png,jpg,gif|max:2048'],
-    ]);
+//     if ($request->has('items')) {
+//         foreach ($request->items as $item) {
 
-    if ($request->birth_date) {
-        $validated['age'] = Carbon::parse($request->birth_date)->age;
-    }
+//             if (
+//                 (!isset($item['description']) || trim($item['description']) === '') &&
+//                 (!isset($item['remark']) || trim($item['remark']) === '')
+//             ) {
+//                 continue;
+//             }
 
-    // Jika ada file baru
-            if ($request->hasFile('photo')) {
-            // Hapus foto lama jika ada
-                if ($student->photo && Storage::disk('public')->exists('photos/' . $student->photo)) {
-                Storage::disk('public')->delete('photos/' . $student->photo);
-                }
+//             $planning->items()->create([
+//                 'description' => $item['description'] ?? '',
+//                 'remark'      => $item['remark'] ?? '',
+//             ]);
+//         }
+//     }
 
-            // Simpan file baru
-            $file = $request->file('photo');
-            $filename = time() . '.' . $file->getClientOriginalExtension();
-            $file->storeAs('photos', $filename, 'public');
-            $validated['photo'] = $filename;
-        }
+//     if ($request->hasFile('documentation')) {
 
-        $student->update($validated);
+//         if ($planning->documentation) {
+//             Storage::delete('public/'.$planning->documentation);
+//         }
 
-        return redirect()->route('students.index')->with('success', 'Data siswa berhasil diupdate.');
-    }
+//         $path = $request->file('documentation')->store('plannings', 'public');
+
+//         $planning->update(['documentation' => $path]);
+//     }
+
+//     return back()->with('success', 'Data konsultasi berhasil diperbarui!');
+// }
 
     /**
      * Remove the specified resource from storage.

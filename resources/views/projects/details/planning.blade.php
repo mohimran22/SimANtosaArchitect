@@ -19,7 +19,7 @@
             <div class="col-md-3">
                 <label class="fw-semibold"> Rencana Tanggal Survei</label>
                 <input type="text" class="form-control"
-                       value="{{ $planning->planning_date }}" readonly>
+                    value="{{ \Carbon\Carbon::parse($planning->planning_date)->format('d/m/Y') }}" readonly>
             </div>
 
             <div class="col-md-3">

@@ -189,6 +189,8 @@ Route::middleware(['auth', 'permission:lihat daftar proyek|lihat data proyek'])-
     ->name('projects.continue');
 
     Route::resource('/projects', ProjectController::class);
+    Route::get('prjects/{project}/pdf', [ProjectController::class, 'pdf'])
+    ->name('projects.pdf');
 });
 
 Route::middleware(['auth', 'permission:lihat daftar proyek|lihat data proyek'])->group(function () {
@@ -221,8 +223,8 @@ Route::get('design-packages/json/{id}',
 Route::post('projects/consultations', [\App\Http\Controllers\ConsultationController::class, 'store'])
     ->name('projects.consultations.store');
 
-Route::get('consultations/{consultation}', [\App\Http\Controllers\ConsultationController::class, 'show'])
-    ->name('consultations.show');
+Route::put('consultations/{consultation}', [\App\Http\Controllers\ConsultationController::class, 'update'])
+    ->name('consultations.update');
 
 Route::get('consultations/{consultation}/pdf', [\App\Http\Controllers\ConsultationController::class, 'pdf'])
     ->name('consultations.pdf');
@@ -230,8 +232,8 @@ Route::get('consultations/{consultation}/pdf', [\App\Http\Controllers\Consultati
 Route::post('projects/plannings', [\App\Http\Controllers\PlanningController::class, 'store'])
     ->name('projects.plannings.store');
 
-Route::get('plannings/{planning}', [\App\Http\Controllers\PlanningController::class, 'show'])
-    ->name('plannings.show');
+// Route::put('plannings/{planning}', [\App\Http\Controllers\PlanningController::class, 'update'])
+//     ->name('planning.update');
 
 Route::get('plannings/{planning}/pdf', [\App\Http\Controllers\PlanningController::class, 'pdf'])
     ->name('plannings.pdf');

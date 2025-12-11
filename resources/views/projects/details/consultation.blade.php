@@ -1,5 +1,5 @@
 @php
-    $consultation = $project->consultations->first();
+    $consultation = $project->consultation;
 @endphp
 
 

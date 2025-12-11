@@ -9,7 +9,7 @@
 @if(isset($survey))
 <div class="card shadow-sm border-0 mb-4">
     <div class="card-header fw-bold">
-        Detail Konsultasi
+        Detail Survei
     </div>
 
     <div class="card-body">
@@ -24,11 +24,11 @@
             <div class="col-md-4">
                 <label class="fw-semibold">Tanggal Survei</label>
                 <input type="text" class="form-control"
-                       value="{{ $survey->survey_date }}" readonly>
+                    value="{{ \Carbon\Carbon::parse($survey->survey_date)->format('d/m/Y') }}" readonly>
             </div>
 
             <div class="col-md-4">
-                <label class="fw-semibold">Tanggal Survei</label>
+                <label class="fw-semibold">Waktu Survei</label>
                 <input type="text" class="form-control"
                        value="{{ $survey->survey_time }}" readonly>
             </div>

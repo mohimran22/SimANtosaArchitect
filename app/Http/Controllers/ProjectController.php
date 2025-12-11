@@ -148,8 +148,6 @@ class ProjectController extends Controller
 
 public function create(Request $request)
     {
-        
-
         $project = null;
 
         if ($request->has('project_id')) {
@@ -158,12 +156,25 @@ public function create(Request $request)
 
         $activeStep = $this->getCurrentStep($project);
 
+        $timelineSteps = $project
+            ? $project->levels
+                ->sortBy('level_order')
+                ->map(function($level) use ($activeStep) {
+                    return [
+                        'label' => $level->level_name,
+                        'completed' => $level->is_completed,
+                        'current' => $activeStep == $level->level_order + 1,
+                    ];
+                })
+                ->values()
+            : collect([]);
+
         return view('projects.create', array_merge(
             $this->formData(),
-            compact('project', 'activeStep')
+            compact('project', 'timelineSteps', 'activeStep')
         ));
     }
-public function store(ProjectRequest $request)
+    public function store(ProjectRequest $request)
     {
         $project = DB::transaction(function () use ($request) {
 
@@ -200,10 +211,6 @@ public function store(ProjectRequest $request)
             ->with('success', 'Project berhasil dibuat, lanjut ke form konsultasi.');
     }
 
-
-    /**
-     * Hitung step aktif berdasarkan ProjectLevel
-     */
     private function getCurrentStep($project)
     {
         if (!$project) return 1;
@@ -216,10 +223,6 @@ public function store(ProjectRequest $request)
         return $current ? $current->level_order + 1 : 99;
     }
 
-
-    /**
-     * Load project lengkap + semua relasi untuk multi-step
-     */
     private function loadFullProject($projectId)
     {
         return Project::with([
@@ -228,7 +231,7 @@ public function store(ProjectRequest $request)
 
         // LEVEL + EMPLOYEE
         'levels.employees',
-        'consultations.items',
+        'consultation.items',
         // PLANNING LENGKAP
         'plannings',
         'surveys.items',
@@ -242,7 +245,7 @@ public function store(ProjectRequest $request)
         'customer.user',
         'employee',
         'levels.employees',
-        'consultations.items',
+        'consultation.items',
         'plannings',
         'surveys.items',
         'offer.items',
@@ -296,7 +299,7 @@ public function show(Project $project)
         'employee.user',
         'affiliator.user',
         'levels',
-        'consultations.items',
+        'consultation.items',
         'plannings',
         'surveys.items'
     ]);
@@ -306,7 +309,7 @@ public function show(Project $project)
         ->orderBy('level_order')
         ->first();
 
-    $consultation = $project->consultations->first();
+    $consultation = $project->consultation->first();
     $planning = $project->plannings->first();
 
     return view('projects.show', compact(
@@ -324,14 +327,14 @@ public function show(Project $project)
         'employee.user',
         'affiliator.user',
         'levels',
-        'consultations.items',
+        'consultation.items',
         // 'surveys.items',
         // 'designs',
         // 'rabs',
         // 'spks',
     ]);
 
-    $consultation = $project->consultations->first();
+    $consultation = $project->consultation->first();
     // $survey       = $project->surveys->first();
     // $design       = $project->designs->first();
     // $rab          = $project->rabs->first();
@@ -340,10 +343,7 @@ public function show(Project $project)
     $employees = Employee::with('user')->get();
     $customers = Customer::with('user')->get();
     $provinces = Province::all();
-    $cities = City::where('province_id', $project->province_id)->get();
-    $districts = District::where('city_id', $project->city_id)->get();
-    $subDistricts = SubDistrict::where('district_id', $project->district_id)->get();
-    $postalCodes = PostalCode::where('sub_district_id', $project->sub_district_id)->get();
+
 
     return view('projects.edit', compact(
         'project',
@@ -357,45 +357,56 @@ public function show(Project $project)
     ));
 }
 
-    public function update(ProjectRequest $request, Project $project)
+//     public function update(ProjectRequest $request, Project $project)
+// {
+//     DB::transaction(function() use ($request, $project) {
+
+//         // UPDATE PROJECT
+//         $project->update($request->validated());
+
+//         // === JIKA ADA KONSULTASI, UPDATE ===
+//         if ($project->consultation->isNotEmpty()) {
+
+//             $consultation = $project->consultation->first();
+
+//             $consultation->update([
+//                 'contact_name'      => $request->contact_name,
+//                 'contact_phone'     => $request->contact_phone,
+//                 'site_area'         => $request->site_area,
+//                 'building_area'     => $request->building_area,
+//                 'notes'             => $request->notes,
+//                 'employee_id'       => $request->employee_id,
+//             ]);
+
+//             // UPDATE ITEMS
+//             $consultation->items()->delete();
+//             foreach ($request->items as $i => $item) {
+//                 $consultation->items()->create([
+//                     'order_no'    => $i + 1,
+//                     'description' => $item['description'],
+//                     'remark'      => $item['remark'] ?? null,
+//                 ]);
+//             }
+//         }
+
+//         // Tahap lain nanti bisa dilanjutkan di sini...
+//     });
+
+//     return redirect()
+//             ->route('projects.show', $project->id)
+//             ->with('success', 'Produk berhasil diperbarui.');
+// }
+
+public function update(Request $request, Project $project)
 {
-    DB::transaction(function() use ($request, $project) {
-
-        // UPDATE PROJECT
-        $project->update($request->validated());
-
-        // === JIKA ADA KONSULTASI, UPDATE ===
-        if ($project->consultations->isNotEmpty()) {
-
-            $consultation = $project->consultations->first();
-
-            $consultation->update([
-                'contact_name'      => $request->contact_name,
-                'contact_phone'     => $request->contact_phone,
-                'site_area'         => $request->site_area,
-                'building_area'     => $request->building_area,
-                'notes'             => $request->notes,
-                'employee_id'       => $request->employee_id,
-            ]);
-
-            // UPDATE ITEMS
-            $consultation->items()->delete();
-            foreach ($request->items as $i => $item) {
-                $consultation->items()->create([
-                    'order_no'    => $i + 1,
-                    'description' => $item['description'],
-                    'remark'      => $item['remark'] ?? null,
-                ]);
-            }
-        }
-
-        // Tahap lain nanti bisa dilanjutkan di sini...
-    });
+    $project->update($request->all());
 
     return redirect()
-            ->route('projects.show', $project->id)
-            ->with('success', 'Produk berhasil diperbarui.');
+        ->route('projects.index', ['project_id' => $project->id]) 
+        ->withFragment('project-' . $project->number)
+        ->with('success', 'Updated!');
 }
+
 
 
      public function destroy(Project $project) 
@@ -415,8 +426,8 @@ public function show(Project $project)
             'employees'     => \App\Models\Employee::with('user:id,fullname')->get(['id','user_id']),
             'customers'     => \App\Models\Customer::with('user:id,fullname')->get(['id','user_id']),
             'affiliators'   => \App\Models\Affiliator::with('user:id,fullname')->get(['id','user_id']),
-            'provinces'     => \App\Models\Province::all(),
-'designPackages' => \App\Models\DesignPackage::orderBy('name')->orderBy('price_meter')->get(),
+            'provinces'     =>  Province::all(),
+            'designPackages' => \App\Models\DesignPackage::orderBy('name')->orderBy('price_meter')->get(),
 
             'projectStatus' => [
                 1 => 'Proses',

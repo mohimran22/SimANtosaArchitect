@@ -17,7 +17,8 @@
     <div class="row mb-3">
         <div class="col-md-4">
             <label>Nomor Penawaran</label>
-            <input type="text" name="offer_number" class="form-control">
+            <input type="text" name="offer_number" class="form-control" value="{{ old('offer_number') ?? '' }}" placeholder="Auto Generate" readonly>
+
         </div>
         <div class="col-md-4">
             <label>Tanggal Penawaran</label>
@@ -177,6 +178,146 @@ document.addEventListener('DOMContentLoaded', function () {
         return "Rp " + num.toLocaleString('id-ID');
     }
 
+    // ============================
+    // EVENT: Pilih paket desain  
+    // ============================
+    packageSelect.addEventListener('change', function () {
+
+        let packageId = this.value;
+
+        if (!packageId) {
+            priceMeterInput.value = "";
+            priceMeterFormatted.innerText = "";
+            tableBody.innerHTML = "";
+            hitungTotal();
+            return;
+        }
+
+        fetch(`/design-packages/json/${packageId}`)
+            .then(res => res.json())
+            .then(data => {
+
+                priceMeterInput.value = data.price_meter ?? 0;
+                priceMeterFormatted.innerText = formatRp(data.price_meter);
+                satuanInput.value = data.satuan ?? "m2";
+
+                tableBody.innerHTML = "";
+
+                let itemIndex = 0; // <== PENTING
+                let rowNumber = 1;
+
+                let grouped = {};
+
+                // GROUP ITEM BY CATEGORY
+                data.items.forEach(item => {
+                    if (!grouped[item.category]) {
+                        grouped[item.category] = [];
+                    }
+                    grouped[item.category].push(item);
+                });
+
+                // LOOP CATEGORY + ITEMS
+                Object.keys(grouped).forEach(category => {
+
+                    // Baris kategori (TIDAK ADA INPUT HIDDEN)
+                    tableBody.innerHTML += `
+                        <tr class="table-secondary">
+                            <td class="fw-bold">${rowNumber++}</td>
+                            <td class="fw-bold">${category}</td>
+                            <td></td><td></td><td></td><td></td>
+                        </tr>
+                    `;
+
+                    // ITEM DI BAWAH KATEGORI
+                    grouped[category].forEach(item => {
+
+                        tableBody.innerHTML += `
+                            <tr>
+                                <td></td>
+                                <td>- ${item.item_name}</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+
+                                <input type="hidden" name="items[${itemIndex}][item_name]" value="${item.item_name}">
+                                <input type="hidden" name="items[${itemIndex}][category]" value="${category}">
+                            </tr>
+                        `;
+
+                        itemIndex++; // increment hanya untuk item
+                    });
+                });
+
+                hitungTotal();
+            });
+    });
+
+    // ============================
+    // EVENT: Hitung total otomatis  
+    // ============================
+    [volumeInput, discountInput, taxRateInput, shippingInput].forEach(input => {
+        input.addEventListener('input', hitungTotal);
+    });
+
+    // ============================
+    // HITUNG TOTAL  
+    // ============================
+    function hitungTotal() {
+
+        let volume = parseFloat(volumeInput.value) || 0;
+        let price = parseFloat(priceMeterInput.value) || 0;
+
+        let subtotal = volume * price;
+
+        totalPriceInput.value = subtotal;
+        totalPriceFormatted.innerText = formatRp(subtotal);
+
+        document.getElementById("subtotalDisplay").innerText = formatRp(subtotal);
+
+        let discount = parseFloat(discountInput.value) || 0;
+        let subAfterDiscount = subtotal - discount;
+        document.getElementById("subAfterDiscountDisplay").innerText = formatRp(subAfterDiscount);
+
+        let taxRate = parseFloat(taxRateInput.value) || 0;
+        let totalTax = subAfterDiscount * (taxRate / 100);
+        document.getElementById("totalTaxDisplay").innerText = formatRp(totalTax);
+
+        let shippingCost = parseFloat(shippingInput.value) || 0;
+
+        let grandTotal = subAfterDiscount + totalTax + shippingCost;
+        document.getElementById("grandTotalDisplay").innerText = formatRp(grandTotal);
+    }
+
+});
+</script>
+@endpush
+
+
+
+
+{{-- <script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const packageSelect = document.getElementById('designPackageSelect');
+    const priceMeterInput = document.getElementById('priceMeter');
+    const priceMeterFormatted = document.getElementById('priceMeterFormatted');
+    const volumeInput = document.querySelector('input[name="volume"]');
+    const satuanInput = document.getElementById('satuan');
+    const totalPriceInput = document.getElementById('totalPrice');
+    const totalPriceFormatted = document.getElementById('totalPriceFormatted');
+
+    const tableBody = document.getElementById('offerItemsBody');
+
+    const discountInput = document.getElementById('discount');
+    const taxRateInput = document.getElementById('tax_rate');
+    const shippingInput = document.getElementById('shipping');
+
+    function formatRp(num) {
+        num = parseFloat(num) || 0;
+        return "Rp " + num.toLocaleString('id-ID');
+    }
+
     // Fetch package info
     packageSelect.addEventListener('change', function () {
 
@@ -198,18 +339,47 @@ document.addEventListener('DOMContentLoaded', function () {
                 priceMeterFormatted.innerText = formatRp(data.price_meter);
                 satuanInput.value = data.satuan ?? "-";
 
-                tableBody.innerHTML = "";
-                data.items.forEach((item, i) => {
-                    tableBody.innerHTML += `
-                        <tr>
-                            <td>${i + 1}</td>
-                            <td>${item.item_name}
-                            <input type="hidden" name="items[${i}][item_name]" value="${item.item_name}">
-                            <input type="hidden" name="items[${i}][category]" value="${item.category ?? ''}">
+                let groups = {};
+                data.items.forEach(item => {
+                    if (!groups[item.category]) groups[item.category] = [];
+                    groups[item.category].push(item);
+                });
 
-                            </td>
+                tableBody.innerHTML = "";
+                let number = 1;
+                let itemIndex = 0;
+
+                Object.keys(groups).forEach(category => {
+                    tableBody.innerHTML += `
+                        <tr class="table-secondary">
+                            <td class="fw-bold">${number++}</td>
+                            <td class="fw-bold">${category}</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
                         </tr>
                     `;
+                    groups[category].forEach((item, idx) => {
+                        tableBody.innerHTML += `
+                            <tr>
+                                <td></td>
+                                <td>
+                                    - ${item.item_name}
+                                    
+                                </td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+
+                                <input type="hidden" name="items[$[itemIndex]][item_name]" value="${item.item_name}">
+                                <input type="hidden" name="items[$[itemIndex]][category]" value="${item.category}">
+                            </tr>
+                        `;
+                        
+                        itemIndex++;
+                    });
                 });
 
                 hitungTotal();
@@ -256,8 +426,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
 });
-</script>
-@endpush
+</script> --}}
 
 
 

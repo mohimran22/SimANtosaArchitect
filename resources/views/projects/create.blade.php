@@ -17,118 +17,245 @@
     </div>
 </div>
 
-
 <div class="page-body">
     <div class="container-xl">
+        @include('projects.components.timeline-horizontal')
 
-        {{-- STEP 1 – Create Project --}}
-        @if($activeStep == 1)
-        <div class="card shadow-sm border-0 mb-4">
-            <div class="card-body px-5 py-4">
-                <h3 class="mb-4 fw-bold">Buat Proyek Baru</h3>
-                @include('projects.steps.create-project')
+        {{-- STEP 1 – Form Proyek --}}
+@if($activeStep == 1)
+<div id="step-1" class="step-section">
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body px-5 py-4">
+            <h3 class="mb-4 fw-bold">Buat Proyek Baru</h3>
+            @include('projects.steps.create-project')
+        </div>
+    </div>
+</div>
+@endif
+
+
+{{-- DETAIL PROJECT --}}
+@if($activeStep >= 2)
+<div id="step-2" class="step-section">
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body px-5 py-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="fw-bold m-0">1. Proyek</h3>
+
+                <div class="btn-group">
+                    <button type="button" id="btn-edit-project" class="btn btn-sm btn-outline-primary">
+                        Edit Data
+                    </button>
+
+                    <a href="{{ route('projects.pdf', $project->id) }}"
+                        class="btn btn-sm btn-outline-secondary"
+                        target="_blank">
+                        Download PDF
+                    </a>
+                </div>
             </div>
         </div>
-        @endif
 
-
-        {{-- DETAIL PROJECT (muncul setelah step 1 selesai) --}}
-        @if($activeStep >= 2)
-        <div class="card shadow-sm border-0 mb-4">
-            <div class="card-body px-5 py-4">
-                <h3 class="mb-4 fw-bold">1. Proyek</h3>
+            <div id="project-view">
                 @include('projects.details.project')
             </div>
-        </div>
-        @endif
 
-
-        {{-- STEP 2 – Form Konsultasi --}}
-        @if($activeStep == 2)
-        <div class="card shadow-sm border-0 mb-4">
-            <div class="card-body px-5 py-4">
-                <h3 class="mb-4 fw-bold">Form Konsultasi</h3>
-                @include('projects.steps.consultation-form')
+            <div id="project-edit" style="display:none;">
+                @include('projects.edit.project-form')    
             </div>
         </div>
-        @endif
+    </div>
+</div>
+@endif
 
 
-        {{-- DETAIL KONSULTASI --}}
-        @if($activeStep >= 3)
-        <div class="card shadow-sm border-0 mb-4">
-            <div class="card-body px-5 py-4">
-                <h3 class="mb-3 fw-bold">2. Tahap Konsultasi</h3>
+{{-- STEP 2 – Konsultasi --}}
+@if($activeStep == 2)
+<div id="step-2" class="step-section">
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body px-5 py-4">
+            <h3 class="mb-4 fw-bold">Form Konsultasi</h3>
+            @include('projects.steps.consultation-form')
+        </div>
+    </div>
+</div>
+@endif
+
+
+{{-- DETAIL KONSULTASI --}}
+@if($activeStep >= 3)
+<div id="step-3" class="step-section">
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body px-5 py-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="fw-bold m-0">2. Tahap Konsultasi</h3>
+                <div class="btn-group">
+                    <button type="button" id="btn-edit-consultation" class="btn btn-sm btn-dark">
+                        Edit Data
+                    </button>
+
+                    <a href="{{ route('projects.pdf', $project->id) }}"
+                        class="btn btn-sm btn-danger"
+                        target="_blank">
+                        Download PDF
+                    </a>
+                </div>
+            </div>
+        </div>
+            <h3 class="mb-3 fw-bold"></h3>
+            <div id="consultation-view">
                 @include('projects.details.consultation')
             </div>
+
+            <div id="consultation-edit" style="display:none;">
+                @include('projects.edit.consultation-form')    
+            </div>
+    </div>
+</div>
+@endif
+
+
+{{-- STEP 3 --}}
+@if($activeStep == 3)
+<div id="step-3" class="step-section">
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body px-5 py-4">
+            <h3 class="fw-bold mb-4">Form Rencana Survei</h3>
+            @include('projects.steps.planning-form')
         </div>
-        @endif
+    </div>
+</div>
+@endif
 
 
-        {{-- STEP 3 – Form Rencana Survei --}}
-        @if($activeStep == 3)
-        <div class="card shadow-sm border-0 mb-4">
-            <div class="card-body px-5 py-4">
-                <h3 class="fw-bold mb-4">Form Rencana Survei Lapangan</h3>
-                @include('projects.steps.planning-form')
+{{-- DETAIL RENCANA --}}
+@if($activeStep >= 4)
+<div id="step-4" class="step-section">
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body px-5 py-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="mb-3 fw-bold">3. Rencana Survei</h3>
+                <div class="btn-group">
+                    <button type="button" id="btn-edit-planning" class="btn btn-sm btn-dark">
+                       <i class="ti ti-edit" title="Edit Data"></i> 
+                    </button>
+                    <button type="button" id="btn-edit-planning" class="btn btn-sm btn-dark">
+                        <a href="{{ route('projects.pdf', $project->id) }}"
+                            class="btn btn-sm btn-danger"
+                            target="_blank">
+                        </a>
+                        <i class="ti ti-trash" title="Download PDF"></i>
+                    </button>
+                </div>
             </div>
         </div>
-        @endif
+        <div id="planning-view">
+            @include('projects.details.planning')
+        </div>
+
+        <div id="planning-edit" style="display:none;">
+            @include('projects.edit.planning-form')    
+        </div>
+    </div>
+</div>
+@endif
 
 
-        {{-- DETAIL RENCANA SURVEI --}}
-        @if($activeStep >= 4)
-        <div class="card shadow-sm border-0 mb-4">
-            <div class="card-body px-5 py-4">
-                <h3 class="mb-3 fw-bold">3. Rencana Survei</h3>
-                @include('projects.details.planning')
+{{-- STEP 4 --}}
+@if($activeStep == 4)
+<div id="step-4" class="step-section">
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body px-5 py-4">
+            <h3 class="mb-3 fw-bold">Form Survei Lapangan</h3>
+            @include('projects.steps.survey-form')
+        </div>
+    </div>
+</div>
+@endif
+
+
+{{-- DETAIL SURVEI --}}
+@if($activeStep >= 5)
+<div id="step-5" class="step-section">
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body px-5 py-4">       
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="fw-bold m-0">4. Survei</h3>
+                <div class="btn-group">
+                    <button type="button" id="btn-edit-consultation" class="btn btn-sm btn-dark">
+                        Edit Data
+                    </button>
+
+                    <a href="{{ route('projects.pdf', $project->id) }}"
+                        class="btn btn-sm btn-danger"
+                        target="_blank">
+                        Download PDF
+                    </a>
+                </div>
             </div>
         </div>
-        @endif
-
-
-        {{-- STEP 4 – Form Survei --}}
-        @if($activeStep == 4)
-        <div class="card shadow-sm border-0 mb-4">
-            <div class="card-body px-5 py-4">
-                <h3 class="mb-3 fw-bold">Form Survei Lapangan</h3>
-                @include('projects.steps.survey-form')
-            </div>
+    </div>
+        <div id="survey-view">
+            @include('projects.details.survey')
         </div>
-        @endif
 
-
-        {{-- DETAIL SURVEI --}}
-        @if($activeStep >= 5)
-        <div class="card shadow-sm border-0 mb-4">
-            <div class="card-body px-5 py-4">
-                <h3 class="mb-3 fw-bold">4. Survei</h3>
-                @include('projects.details.survey')
-            </div>
+        <div id="survey-edit" style="display:none;">
+            @include('projects.edit.consultation-form')    
         </div>
-        @endif
+</div>
+@endif
 
 
-        {{-- STEP 5 – Form Penawaran Desain --}}
-        @if($activeStep == 5)
-        <div class="card shadow-sm border-0 mb-4">
-            <div class="card-body px-5 py-4">
-                <h3 class="mb-3 fw-bold">Form Penawaran Jasa Desain</h3>
-                @include('projects.steps.desain-form')
-            </div>
+{{-- STEP 5 --}}
+@if($activeStep == 5)
+<div id="step-5" class="step-section">
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body px-5 py-4">
+            <h3 class="mb-3 fw-bold">Form Penawaran Jasa Desain</h3>
+            @include('projects.steps.desain-form')
         </div>
-        @endif
+    </div>
+</div>
+@endif
 
-
-        {{-- DETAIL PENAWARAN DESAIN --}}
-        @if($activeStep >= 6)
-        <div class="card shadow-sm border-0 mb-4">
-            <div class="card-body px-5 py-4">
+@if($activeStep >= 6)
+<div id="step-6" class="step-section">
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body px-5 py-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
                 <h3 class="mb-3 fw-bold">5. Penawaran Jasa Desain</h3>
-                @include('projects.details.offer')
+                <div class="btn-group">
+                    <button type="button" id="btn-edit-consultation" class="btn btn-sm btn-dark">
+                        Edit Data
+                    </button>
+
+                    <a href="{{ route('projects.pdf', $project->id) }}"
+                        class="btn btn-sm btn-danger"
+                        target="_blank">
+                        Download PDF
+                    </a>
+                </div>
             </div>
         </div>
-        @endif
+    </div>
+    <div id="offer-view">
+        @include('projects.details.offer')
+    </div>
+</div>
+@endif
+
+
+{{-- STEP 6 --}}
+@if($activeStep == 6)
+<div id="step-6" class="step-section">
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body px-5 py-4">
+            <h3 class="mb-3 fw-bold">Kontrak Desain</h3>
+        </div>
+    </div>
+</div>
+@endif
+
 
     </div>
 </div>
@@ -574,5 +701,168 @@ function previewMultipleImages(input) {
         reader.readAsDataURL(file);
     });
 }
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+    const view = document.getElementById("project-view");
+    const edit = document.getElementById("project-edit");
+
+    document.getElementById("btn-edit-project").addEventListener("click", () => {
+        view.style.display = "none";
+        edit.style.display = "block";
+    });
+
+    document.getElementById("btn-cancel-project").addEventListener("click", () => {
+        edit.style.display = "none";
+        view.style.display = "block";
+    });
+
+});
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+    const view = document.getElementById("consultation-view");
+    const edit = document.getElementById("consultation-edit");
+
+    document.getElementById("btn-edit-consultation").addEventListener("click", () => {
+        view.style.display = "none";
+        edit.style.display = "block";
+    });
+
+    document.getElementById("btn-cancel-consultation").addEventListener("click", () => {
+        edit.style.display = "none";
+        view.style.display = "block";
+    });
+
+});
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+    const view = document.getElementById("planning-view");
+    const edit = document.getElementById("planning-edit");
+
+    document.getElementById("btn-edit-planning").addEventListener("click", () => {
+        view.style.display = "none";
+        edit.style.display = "block";
+    });
+
+    document.getElementById("btn-cancel-planning").addEventListener("click", () => {
+        edit.style.display = "none";
+        view.style.display = "block";
+    });
+
+});
+</script>
+<script>
+$(document).ready(function () {
+    @if(isset($project))
+        let existingProvince = "{{ $project->province_id }}";
+        let existingCity = "{{ $project->city_id }}";
+        let existingDistrict = "{{ $project->district_id }}";
+        let existingSubDistrict = "{{ $project->sub_district_id }}";
+        let existingPostal = "{{ $project->postal_code_id }}";
+    @else
+        let existingProvince = "";
+        let existingCity = "";
+        let existingDistrict = "";
+        let existingSubDistrict = "";
+        let existingPostal = "";
+    @endif
+
+    // 1. province → city
+    $('#edit_province').on('change', function () {
+        let id = $(this).val();
+        $('#edit_city').empty().append('<option value="">Loading...</option>');
+        $('#edit_district').empty();
+        $('#edit_sub_district').empty();
+        $('#edit_postal_code').empty();
+
+        if (!id) return;
+
+        $.get(`/api/cities/${id}`, function (data) {
+            $('#edit_city').empty().append('<option value="">-- Pilih Kota --</option>');
+            data.forEach(item => {
+                $('#edit_city').append(new Option(item.name, item.id));
+            });
+
+            if (existingCity) {
+                $('#edit_city').val(existingCity).trigger('change');
+                existingCity = null;
+            }
+        });
+    });
+
+    // 2. city → district
+    $('#edit_city').on('change', function () {
+        let id = $(this).val();
+        $('#edit_district').empty().append('<option>Loading...</option>');
+        $('#edit_sub_district').empty();
+        $('#edit_postal_code').empty();
+
+        if (!id) return;
+
+        $.get(`/api/districts/${id}`, function (data) {
+            $('#edit_district').empty().append('<option>-- Pilih Kecamatan --</option>');
+            data.forEach(item => {
+                $('#edit_district').append(new Option(item.name, item.id));
+            });
+
+            if (existingDistrict) {
+                $('#edit_district').val(existingDistrict).trigger('change');
+                existingDistrict = null;
+            }
+        });
+    });
+
+    // 3. district → sub_district
+    $('#edit_district').on('change', function () {
+        let id = $(this).val();
+        $('#edit_sub_district').empty().append('<option>Loading...</option>');
+        $('#edit_postal_code').empty();
+
+        if (!id) return;
+
+        $.get(`/api/sub_districts/${id}`, function (data) {
+            $('#edit_sub_district').empty().append('<option>-- Pilih Kelurahan --</option>');
+            data.forEach(item => {
+                $('#edit_sub_district').append(new Option(item.name, item.id));
+            });
+
+            if (existingSubDistrict) {
+                $('#edit_sub_district').val(existingSubDistrict).trigger('change');
+                existingSubDistrict = null;
+            }
+        });
+    });
+
+    // 4. sub_district → postal_code
+    $('#edit_sub_district').on('change', function () {
+        let id = $(this).val();
+        $('#edit_postal_code').empty().append('<option>Loading...</option>');
+
+        if (!id) return;
+
+        $.get(`/api/postal_codes/${id}`, function (data) {
+            $('#edit_postal_code').empty().append('<option>-- Pilih Kode Pos --</option>');
+            data.forEach(item => {
+                $('#edit_postal_code').append(new Option(item.postal_code, item.id));
+            });
+
+            if (existingPostal) {
+                $('#edit_postal_code').val(existingPostal).trigger('change');
+                existingPostal = null;
+            }
+        });
+    });
+
+    // 🔥 AUTO-LOAD saat halaman edit dibuka
+    if (existingProvince) {
+        $('#edit_province').trigger('change');
+    }
+});
 </script>
 @endpush

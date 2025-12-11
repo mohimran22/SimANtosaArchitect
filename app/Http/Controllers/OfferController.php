@@ -33,7 +33,7 @@ public function store(OfferRequest $request)
         $offer = Offer::create([
             'project_id'        => $data['project_id'],
             'design_package_id' => $data['design_package_id'],
-            'offer_number'      => $data['offer_number'],
+            'offer_number'      => $data['offer_number'] ?: $this->generateOfferNumber(),
             'offer_date'        => $data['offer_date'],
             'contact_name'      => $data['contact_name'],
 
@@ -55,14 +55,17 @@ public function store(OfferRequest $request)
 
         // SIMPAN ITEM
         if ($request->has('items')) {
-            foreach ($request->items as $i => $item) {
+            foreach ($request->items as $item) {
+                if (!$item['item_name']) continue; // skip kategori
+                
                 OfferItem::create([
-                    'offer_id'    => $offer->id,
-                    'item_name'   => $item['item_name'],
-                    'category'    => $item['category'] ?? null,
+                    'offer_id'  => $offer->id,
+                    'item_name' => $item['item_name'],
+                    'category'  => $item['category'],
                 ]);
             }
         }
+
 
         // UPDATE PROJECT LEVEL
         ProjectLevel::where([
@@ -87,5 +90,32 @@ public function store(OfferRequest $request)
         return back()->withErrors($e->getMessage());
     }
 }
+
+private function generateOfferNumber()
+{
+    $tahun = date('Y');
+    $bulan = date('n'); // 1-12
+    $romawiBulan = \App\Helpers\GeneralHelper::bulanRomawi($bulan);
+
+    // Ambil nomor terakhir bulan & tahun ini
+    $lastOffer = \App\Models\Offer::whereYear('offer_date', $tahun)
+        ->whereMonth('offer_date', $bulan)
+        ->orderBy('offer_number', 'DESC')
+        ->first();
+
+    if ($lastOffer) {
+        // Ambil angka urut terakhir (003 → 4)
+        $explode = explode('/', $lastOffer->offer_number);
+        $lastNumber = intval(end($explode)) + 1;
+    } else {
+        $lastNumber = 1;
+    }
+
+    // Format ke 3 digit
+    $nomorUrut = str_pad($lastNumber, 3, '0', STR_PAD_LEFT);
+
+    return "PH/SO/$tahun/$romawiBulan/$nomorUrut";
+}
+
 
 }

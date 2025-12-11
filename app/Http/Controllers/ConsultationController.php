@@ -133,5 +133,51 @@ class ConsultationController extends Controller
         $pdf = Pdf::loadHTML($view)->setPaper('a4', 'portrait');
         return $pdf->download("consultation-{$consultation->id}.pdf");
     }
+
+    public function update(Request $request, Consultation $consultation)
+{
+    $consultation->update($request->only([
+        'contact_name',
+        'contact_phone',
+        'employee_id',
+        'site_area',
+        'building_area',
+        'consultant_signed',
+        'client_signed',
+        'notes',
+    ]));
+
+    $consultation->items()->delete(); // hapus item lama
+
+    if ($request->has('items')) {
+        foreach ($request->items as $item) {
+
+            if (
+                (!isset($item['description']) || trim($item['description']) === '') &&
+                (!isset($item['remark']) || trim($item['remark']) === '')
+            ) {
+                continue;
+            }
+
+            $consultation->items()->create([
+                'description' => $item['description'] ?? '',
+                'remark'      => $item['remark'] ?? '',
+            ]);
+        }
+    }
+
+    if ($request->hasFile('documentation')) {
+
+        if ($consultation->documentation) {
+            Storage::delete('public/'.$consultation->documentation);
+        }
+
+        $path = $request->file('documentation')->store('consultations', 'public');
+
+        $consultation->update(['documentation' => $path]);
+    }
+
+    return back()->with('success', 'Data konsultasi berhasil diperbarui!');
+}
 }
 

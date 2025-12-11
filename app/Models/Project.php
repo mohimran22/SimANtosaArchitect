@@ -84,9 +84,9 @@ class Project extends Model
         return $this->hasMany(ProjectLevel::class);
     }
 
-    public function consultations()
+    public function consultation()
     {
-        return $this->hasMany(Consultation::class);
+        return $this->hasOne(Consultation::class);
     }
 
         public function plannings()
