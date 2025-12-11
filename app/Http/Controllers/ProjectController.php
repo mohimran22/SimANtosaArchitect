@@ -14,6 +14,7 @@ use App\Models\Project;
 use App\Models\ProjectLevel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 use Yajra\DataTables\Facades\DataTables;
 use DB;
 
@@ -66,11 +67,7 @@ class ProjectController extends Controller
         ->addColumn('affiliator', fn($row) => $row->affiliator?->user?->fullname ?? '-')
         ->addColumn('project_type', fn($row) => $this->readableProjectType($row->project_type))
         ->addColumn('start_date', fn($row) => $row->start_date ? Carbon::parse($row->start_date)->format('d/m/Y') : '-')
-        // ->addColumn('colors', function ($row) {
-        //     return $row->colors->count()
-        //         ? $row->colors->pluck('name')->implode(', ')
-        //         : '-';
-        // })
+
         ->addColumn('project_status', function ($row) use ($statusLabel) {
 
             $label = $statusLabel[$row->project_status] ?? 'Tidak Diketahui';
@@ -103,7 +100,11 @@ class ProjectController extends Controller
                 '.$current->level_name.'
             </a>';
 })
-
+        ->editColumn('project_name', function ($row) {
+                    $url = route('projects.continue', $row->id);
+                    $name = Str::title($row->project_name ?? '-');
+                    return '<a href="'.$url.'">'.e($name).'</a>';
+                })
 
         // Tombol Aksi
         ->addColumn('action', function ($project) {
@@ -114,12 +115,12 @@ class ProjectController extends Controller
                             class="btn btn-icon btn-sm btn-dark me-1">
                             <i class="ti ti-edit"></i></a>';
             }
-             if (auth()->user()->can('lihat data proyek')) {
-                        $buttons .= '<a href="' . route('projects.show', $project->id) . '" class="btn btn-icon btn-sm btn-dark me-1" title="Lihat">
-                                        <i class="ti ti-eye"></i>
-                                    </a>';
+            //  if (auth()->user()->can('lihat data proyek')) {
+            //             $buttons .= '<a href="' . route('projects.show', $project->id) . '" class="btn btn-icon btn-sm btn-dark me-1" title="Lihat">
+            //                             <i class="ti ti-eye"></i>
+            //                         </a>';
 
-            }
+            // }
             if (auth()->user()->can('hapus data proyek')) {
                 $buttons .= '<button data-id="' . $project->id . '" 
                             class="btn btn-icon btn-sm btn-dark delete-projects">
@@ -129,7 +130,7 @@ class ProjectController extends Controller
             return $buttons;
         })
 
-        ->rawColumns(['current_level', 'action', 'project_status'])
+        ->rawColumns(['current_level', 'action', 'project_status', 'project_name'])
         ->make(true);
     }
 
@@ -161,8 +162,6 @@ public function create(Request $request)
             $this->formData(),
             compact('project', 'activeStep')
         ));
-
-        dd($project->plannings);
     }
 public function store(ProjectRequest $request)
     {
@@ -232,9 +231,8 @@ public function store(ProjectRequest $request)
         'consultations.items',
         // PLANNING LENGKAP
         'plannings',
-
-        
         'surveys.items',
+        'offer.items',
         ])->findOrFail($projectId);
     }
 
@@ -247,6 +245,7 @@ public function store(ProjectRequest $request)
         'consultations.items',
         'plannings',
         'surveys.items',
+        'offer.items',
     ]);
 
     $activeStep = $this->computeActiveStep($project);
@@ -417,6 +416,8 @@ public function show(Project $project)
             'customers'     => \App\Models\Customer::with('user:id,fullname')->get(['id','user_id']),
             'affiliators'   => \App\Models\Affiliator::with('user:id,fullname')->get(['id','user_id']),
             'provinces'     => \App\Models\Province::all(),
+'designPackages' => \App\Models\DesignPackage::orderBy('name')->orderBy('price_meter')->get(),
+
             'projectStatus' => [
                 1 => 'Proses',
                 2 => 'Revisi',

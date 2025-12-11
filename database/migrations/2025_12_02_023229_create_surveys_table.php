@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-         Schema::create('surveys', function (Blueprint $table) {
+        Schema::create('surveys', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->uuid('project_id')->index();
             $table->uuid('created_by')->nullable(); // user yang mengisi (employee)

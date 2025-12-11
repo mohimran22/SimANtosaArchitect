@@ -36,7 +36,7 @@
         @if($activeStep >= 2)
         <div class="card shadow-sm border-0 mb-4">
             <div class="card-body px-5 py-4">
-                <h3 class="mb-4 fw-bold">Detail Proyek</h3>
+                <h3 class="mb-4 fw-bold">1. Proyek</h3>
                 @include('projects.details.project')
             </div>
         </div>
@@ -58,7 +58,7 @@
         @if($activeStep >= 3)
         <div class="card shadow-sm border-0 mb-4">
             <div class="card-body px-5 py-4">
-                <h3 class="mb-3 fw-bold">Detail Konsultasi</h3>
+                <h3 class="mb-3 fw-bold">2. Tahap Konsultasi</h3>
                 @include('projects.details.consultation')
             </div>
         </div>
@@ -80,7 +80,7 @@
         @if($activeStep >= 4)
         <div class="card shadow-sm border-0 mb-4">
             <div class="card-body px-5 py-4">
-                <h3 class="mb-3 fw-bold">Detail Rencana Survei</h3>
+                <h3 class="mb-3 fw-bold">3. Rencana Survei</h3>
                 @include('projects.details.planning')
             </div>
         </div>
@@ -102,7 +102,7 @@
         @if($activeStep >= 5)
         <div class="card shadow-sm border-0 mb-4">
             <div class="card-body px-5 py-4">
-                <h3 class="mb-3 fw-bold">Detail Survei</h3>
+                <h3 class="mb-3 fw-bold">4. Survei</h3>
                 @include('projects.details.survey')
             </div>
         </div>
@@ -124,7 +124,7 @@
         @if($activeStep >= 6)
         <div class="card shadow-sm border-0 mb-4">
             <div class="card-body px-5 py-4">
-                <h3 class="mb-3 fw-bold">Detail Penawaran Jasa Desain</h3>
+                <h3 class="mb-3 fw-bold">5. Penawaran Jasa Desain</h3>
                 @include('projects.details.offer')
             </div>
         </div>
@@ -575,9 +575,4 @@ function previewMultipleImages(input) {
     });
 }
 </script>
-
-
-
-
-
-                                    @endpush
+@endpush

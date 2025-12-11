@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Support\Carbon;
 
 class Survey extends Model
 {
@@ -54,4 +55,9 @@ class Survey extends Model
 {
     return $this->belongsToMany(Employee::class, 'survey_employees');
 }
+
+     public function getSurveyDateFormattedAttribute()
+    {
+        return $this->survey_date ? Carbon::parse($this->survey_date)->format('d/m/Y') : '-';
+    }
 }

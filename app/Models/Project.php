@@ -99,6 +99,12 @@ class Project extends Model
         return $this->hasMany(Survey::class);
     }
 
+public function offer()
+{
+    return $this->hasOne(Offer::class);
+}
+
+
     /*
     |--------------------------------------------------------------------------
     | ACCESSOR

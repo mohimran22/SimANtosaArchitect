@@ -29,6 +29,7 @@ use App\Http\Controllers\ProductCatalogController;
 use App\Http\Controllers\RoleSwitchController;
 use App\Http\Controllers\UserImportController;
 use App\Http\Controllers\MenuController;
+use App\Http\Controllers\DesignPackageController;
 
 
 Route::get('/', function () {
@@ -195,6 +196,27 @@ Route::middleware(['auth', 'permission:lihat daftar proyek|lihat data proyek'])-
     Route::resource('/labor_costs', \App\Http\Controllers\LaborCostController::class);
 });
 
+// CRUD paket desain
+// Resource (tanpa show!)
+Route::resource('design-packages', DesignPackageController::class)
+    ->except(['show']);
+
+// Tambah / update / hapus item
+Route::post('design-packages/{designPackage}/items',
+    [DesignPackageController::class, 'addItem'])->name('design-packages.items.store');
+
+Route::put('design-package-items/{item}',
+    [DesignPackageController::class, 'updateItem'])->name('design-packages.items.update');
+
+Route::delete('design-package-items/{item}',
+    [DesignPackageController::class, 'deleteItem'])->name('design-packages.items.delete');
+
+// API aman untuk frontend
+Route::get('design-packages/json/{id}',
+    [DesignPackageController::class, 'getPackage'])->name('design-packages.json');
+
+
+
 
 Route::post('projects/consultations', [\App\Http\Controllers\ConsultationController::class, 'store'])
     ->name('projects.consultations.store');
@@ -235,6 +257,8 @@ Route::get('offers/{offer}/pdf', [\App\Http\Controllers\OfferController::class, 
 Route::middleware(['auth', 'permission:lihat daftar user'])->group(function () {
     route::resource('/users', UsersController::class);
 });
+
+
 
 Route::middleware(['auth', 'permission:lihat daftar role'])->group(function () {
     Route::resource('/roles', RoleController::class);
@@ -297,6 +321,8 @@ Route::get('/api/postal_codes/{sub_district_id}', function ($sub_district_id) {
 Route::get('/api/banks', function () {
     return \App\Models\Bank::select('id', 'name', 'code')->orderBy('name')->get();
 });
+
+
 
 
 
