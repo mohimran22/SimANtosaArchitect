@@ -142,35 +142,20 @@
     @endif
 </div>
 
-            {{-- <div class="col-md-12 mt-3">
-                <label class="fw-semibold">Status Persetujuan</label>
-                <div class="mt-2">
-                    <span class="badge bg-dark">Konsultan:
-                        {{ $survey->consultant_signed ? 'Sudah' : 'Belum' }}
-                    </span>
-                    <span class="badge bg-dark ms-2">Customer:
-                        {{ $survey->client_signed ? 'Sudah' : 'Belum' }}
-                    </span>
-                </div>
-            </div> --}}
-            <div class="mb-2">
-                <label class="form-label fw-bold">Persetujuan Petugas Survei:</label><br>
+<div class="col-md-4 mt-3 d-flex justify-content-around text-center">
+    <div>
+        <label class="form-label fw-bold d-block">Persetujuan Surveyor</label>
+        <i class="ti {{ $survey->consultant_signed ? 'ti-check text-success' : 'ti-x text-danger' }}"
+           style="font-size: 28px"></i>
+    </div>
 
-                @if($survey->consultant_signed)
-                    <i class="ti ti-circle-check text-success"></i>
-                @else
-                    <i class="ti ti-circle-x text-danger"></i>
-                @endif
-            </div>
-            <div>
-                <label class="form-label fw-bold">Persetujuan Customer:</label><br>
+    <div>
+        <label class="form-label fw-bold d-block">Persetujuan Customer</label>
+        <i class="ti {{ $survey->client_signed ? 'ti-check text-success' : 'ti-x text-danger' }}"
+           style="font-size: 28px"></i>
+    </div>
+</div>
 
-                @if($survey->client_signed)
-                    <i class="ti ti-circle-check text-success" style="font-size: 28px"></i>
-                @else
-                    <i class="ti ti-circle-x text-danger" style="font-size: 28px"></i>
-                @endif
-            </div>
         </div>
     </div>
 </div>

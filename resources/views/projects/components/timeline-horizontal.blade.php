@@ -78,7 +78,7 @@
     justify-content: center;
     align-items: center;
     margin: 0 auto;
-    font-weight: bold;
+    font-weight: normal;
     position: relative;
     z-index: 2;
     flex-shrink: 0;

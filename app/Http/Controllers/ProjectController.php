@@ -12,6 +12,7 @@ use App\Models\SubDistrict;
 use App\Models\PostalCode;
 use App\Models\Project;
 use App\Models\ProjectLevel;
+use App\Models\ProjectTask;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
@@ -155,6 +156,7 @@ public function create(Request $request)
         }
 
         $activeStep = $this->getCurrentStep($project);
+
 
         $timelineSteps = $project
             ? $project->levels

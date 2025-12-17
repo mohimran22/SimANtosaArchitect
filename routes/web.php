@@ -286,11 +286,31 @@ Route::post(
     [\App\Http\Controllers\InvoiceController::class, 'approve']
 )->name('projects.invoice.approve');
 
-Route::post('projects/tasks/assign', [\App\Http\Controllers\ProjectTaskController::class, 'assign'])
-    ->name('projects.tasks.assign');
+Route::post('/tasks/{task}/assign', [\App\Http\Controllers\ProjectTaskController::class, 'assign'])
+    ->name('tasks.assign');
 
-Route::post('projects/tasks', [\App\Http\Controllers\ProjectTaskController::class, 'upload'])
-    ->name('projects.tasks.upload');
+Route::post('/tasks/{task}/upload', [\App\Http\Controllers\ProjectTaskController::class, 'uploadFile'])
+    ->name('tasks.upload');
+
+Route::post('/tasks/{task}/approve', [\App\Http\Controllers\ProjectTaskController::class, 'approve'])
+    ->name('tasks.approve');
+
+Route::post('/tasks/{task}/reject', [\App\Http\Controllers\ProjectTaskController::class, 'reject'])
+    ->name('tasks.reject');
+
+Route::post('/tasks/{task}/complete', [\App\Http\Controllers\ProjectTaskController::class, 'complete'])
+    ->name('tasks.complete');
+
+Route::get('/tasks/files/{file}', [\App\Http\Controllers\ProjectTaskController::class, 'viewFile'])
+    ->name('tasks.files.view');
+
+Route::delete(
+    '/tasks/files/{file}',
+    [\App\Http\Controllers\ProjectTaskController::class, 'deleteFile']
+)->name('tasks.files.delete');
+
+
+
 
 
 

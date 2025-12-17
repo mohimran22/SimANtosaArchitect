@@ -80,34 +80,18 @@
                 <textarea class="form-control" rows="3" readonly>{{ $consultation->notes }}</textarea>
             </div>
 
-            <div class="col-md-12 mt-3">
-                <label class="fw-semibold">Status Persetujuan</label>
-                {{-- <div class="mt-2">
-                    <span class="badge bg-dark">Konsultan:
-                        {{ $consultation->consultant_signed ? 'Check' : 'Belum' }}
-                    </span>
-                    <span class="badge bg-dark ms-2">Customer:
-                        {{ $consultation->client_signed ? 'Check' : 'Belum' }}
-                    </span>
-                </div> --}}
-            <div>
-                <label class="form-label fw-bold">Persetujuan Konsultan:</label><br>
+            <div class="col-md-12 mt-3 d-flex justify-content-around text-center">
+                <div>
+                    <label class="form-label fw-bold d-block">Persetujuan Konsultan</label>
+                    <i class="ti {{ $consultation->consultant_signed ? 'ti-check text-success' : 'ti-x text-danger' }}"
+                    style="font-size: 28px"></i>
+                </div>
 
-                @if($consultation->consultant_signed)
-                    <i class="ti ti-circle-check text-success" style="font-size: 28px"></i>
-                @else
-                    <i class="ti ti-circle-x text-danger" style="font-size: 28px"></i>
-                @endif
-            </div>
-            <div>
-                <label class="form-label fw-bold">Persetujuan Customer:</label><br>
-
-                @if($consultation->client_signed)
-                    <i class="ti ti-circle-check text-success" style="font-size: 28px"></i>
-                @else
-                    <i class="ti ti-circle-x text-danger" style="font-size: 28px"></i>
-                @endif
-            </div>
+                <div>
+                    <label class="form-label fw-bold d-block">Persetujuan Customer</label>
+                    <i class="ti {{ $consultation->client_signed ? 'ti-check text-success' : 'ti-x text-danger' }}"
+                    style="font-size: 28px"></i>
+                </div>
             </div>
 
         </div>

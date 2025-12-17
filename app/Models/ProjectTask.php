@@ -12,6 +12,10 @@ class ProjectTask extends Model
     protected $keyType = 'string';
     public $incrementing = false;
     
+    protected $casts = [
+        'started_at' => 'datetime',
+        'completed_at' => 'datetime',
+    ];
         protected $fillable = [
         'project_id',
         'offer_id',
@@ -20,8 +24,10 @@ class ProjectTask extends Model
         'employee_id',
         'status',
         'progress',
-        'updated_at',
-        'created_at',
+        'started_at',
+        'completed_at',
+        'parent_task_id',
+        'revision_number'
     ];
 
     public function files()
@@ -31,6 +37,23 @@ class ProjectTask extends Model
 
     public function employee()
     {
-        return $this->belongsTo(Employee::class);
+        return $this->belongsTo(Employee::class, 'employee_id');
     }
+
+        public function project()
+    {
+        return $this->belongsTo(Project::class);
+    }
+
+    // ProjectTask.php
+    public function parent()
+    {
+        return $this->belongsTo(ProjectTask::class, 'parent_task_id');
+    }
+
+    public function revisions()
+    {
+        return $this->hasMany(ProjectTask::class, 'parent_task_id');
+    }
+
 }
