@@ -187,20 +187,21 @@ public function create(Request $request)
                 ['level_order' => 4, 'level_name' => 'Penawaran Jasa Desain'],
                 ['level_order' => 5, 'level_name' => 'Kontrak Desain'],
                 ['level_order' => 6, 'level_name' => 'Invoice Desain DP'],
-                ['level_order' => 7, 'level_name' => 'Form SPK Desain Denah'],
-                ['level_order' => 8, 'level_name' => 'Pengerjaan Desain Denah'],
-                ['level_order' => 9, 'level_name' => 'Revisi Desain Denah'],
-                ['level_order' => 10, 'level_name' => 'Form SPK 3D'],
-                ['level_order' => 11, 'level_name' => 'Pengerjaan 3D'],
-                ['level_order' => 12, 'level_name' => 'Revisi 3D'],
-                ['level_order' => 13, 'level_name' => 'Form SPK DED'],
-                ['level_order' => 14, 'level_name' => 'Pengerjaan DED'],
-                ['level_order' => 15, 'level_name' => 'Revisi DED'],
-                ['level_order' => 16, 'level_name' => 'Form SPK RAB'],
-                ['level_order' => 17, 'level_name' => 'Pengerjaan RAB'],
-                ['level_order' => 18, 'level_name' => 'Revisi RAB'],
-                ['level_order' => 19, 'level_name' => 'Invoice Pelunasan Desain'],
-                ['level_order' => 20, 'level_name' => 'Cetak & Softcopy'],
+                // ['level_order' => 7, 'level_name' => 'Form SPK Desain Denah'],
+                // ['level_order' => 8, 'level_name' => 'Pengerjaan Desain Denah'],
+                // ['level_order' => 9, 'level_name' => 'Revisi Desain Denah'],
+                // ['level_order' => 10, 'level_name' => 'Form SPK 3D'],
+                // ['level_order' => 11, 'level_name' => 'Pengerjaan 3D'],
+                // ['level_order' => 12, 'level_name' => 'Revisi 3D'],
+                // ['level_order' => 13, 'level_name' => 'Form SPK DED'],
+                // ['level_order' => 14, 'level_name' => 'Pengerjaan DED'],
+                // ['level_order' => 15, 'level_name' => 'Revisi DED'],
+                // ['level_order' => 16, 'level_name' => 'Form SPK RAB'],
+                ['level_order' => 7, 'level_name' => 'Proses Pengerjaan'],
+                ['level_order' => 8, 'level_name' => 'Pengerjaan RAB'],
+                ['level_order' => 9, 'level_name' => 'Revisi RAB'],
+                ['level_order' => 10, 'level_name' => 'Invoice Pelunasan Desain'],
+                ['level_order' => 11, 'level_name' => 'Cetak & Softcopy'],
             ]);
 
             return $project;
@@ -233,8 +234,8 @@ public function create(Request $request)
         'levels.employees',
         'consultation.items',
         // PLANNING LENGKAP
-        'plannings',
-        'surveys.items',
+        'planning',
+        'survey.items',
         'offer.items',
         ])->findOrFail($projectId);
     }
@@ -246,8 +247,8 @@ public function create(Request $request)
         'employee',
         'levels.employees',
         'consultation.items',
-        'plannings',
-        'surveys.items',
+        'planning',
+        'survey.items',
         'offer.items',
     ]);
 
@@ -300,8 +301,8 @@ public function show(Project $project)
         'affiliator.user',
         'levels',
         'consultation.items',
-        'plannings',
-        'surveys.items'
+        'planning',
+        'survey.items'
     ]);
 
     $currentLevel = $project->levels()
@@ -310,7 +311,7 @@ public function show(Project $project)
         ->first();
 
     $consultation = $project->consultation->first();
-    $planning = $project->plannings->first();
+    $planning = $project->planning->first();
 
     return view('projects.show', compact(
         'project',
@@ -328,14 +329,14 @@ public function show(Project $project)
         'affiliator.user',
         'levels',
         'consultation.items',
-        // 'surveys.items',
+        // 'survey.items',
         // 'designs',
         // 'rabs',
         // 'spks',
     ]);
 
     $consultation = $project->consultation->first();
-    // $survey       = $project->surveys->first();
+    // $survey       = $project->survey->first();
     // $design       = $project->designs->first();
     // $rab          = $project->rabs->first();
     // $spk          = $project->spks->first();

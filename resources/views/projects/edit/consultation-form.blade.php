@@ -88,7 +88,7 @@
                 </tbody>
             </table>
 
-            <button type="button" id="add-row" class="btn btn-sm btn-dark">+ Tambah Uraian</button>
+            <button type="button" id="tambah-baris" class="btn btn-sm btn-dark">+ Tambah Uraian</button>
 
             <hr>
 
@@ -138,7 +138,7 @@
                     <!-- PREVIEW -->
                     <div>
                         <img 
-                            id="preview-documentation"
+                            id="preview-documentations"
                             src="{{ isset($consultation) && $consultation->documentation 
                                     ? asset('storage/'.$consultation->documentation) 
                                     : '' }}"
@@ -149,8 +149,8 @@
                 </div>
             </div>
             <div class="mt-4">
-                <button class="btn btn-success btn-sm">Simpan</button>
-                <button type="button" id="btn-cancel-consultation" class="btn btn-light btn-sm">Batal</button>
+                <button class="btn btn-dark">Simpan</button>
+                <button type="button" id="btn-cancel-consultation" class="btn btn-light">Batal</button>
             </div>
         </form>
     </div>
@@ -158,7 +158,7 @@
 
 @push('js')
 <script>
-document.getElementById('add-row').addEventListener('click', function () {
+document.getElementById('tambah-baris').addEventListener('click', function () {
     let table = document.querySelector("#items-table tbody");
     let rowCount = table.rows.length;
 
@@ -186,7 +186,7 @@ document.addEventListener('click', function(e) {
 </script>
 <script>
 function previewDocumentation(input) {
-    const preview = document.getElementById('preview-documentation');
+    const preview = document.getElementById('preview-documentations');
 
     if (input.files && input.files[0]) {
         const reader = new FileReader();

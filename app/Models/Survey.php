@@ -23,6 +23,8 @@ class Survey extends Model
         'building_area',
         'survey_time',
         'notes',
+        'consultant_signed',
+        'client_signed',
         'signed_at',
     ];
 

@@ -14,6 +14,11 @@ class Offer extends Model
     public $incrementing = false;
     public $timestamps = false;
 
+    protected $casts = [
+        'approved_at' => 'datetime',
+        'contract_date' => 'date', // sekalian rapihin
+    ];
+
     protected $fillable = [
         'project_id',
         'design_package_id',
@@ -31,6 +36,10 @@ class Offer extends Model
         'grand_total',
         'notes',
         'created_by',
+        'contract_number',
+        'contract_date',
+        'approved_at',
+        'approved_by'
     ];
 
     public function items()
@@ -47,4 +56,14 @@ class Offer extends Model
     {
         return $this->belongsTo(DesignPackage::class, 'design_package_id');
     }
+
+    public function groupedItems()
+{
+    return $this->items
+        ->groupBy('category')
+        ->map(function ($items) {
+            return $items;
+        });
+}
+
 }

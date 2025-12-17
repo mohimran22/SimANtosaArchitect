@@ -166,18 +166,6 @@
             <div class="border p-3">{{ $offer->notes }}</div>
         </div>
         @endif
-
-        {{-- Tombol --}}
-        <div class="mt-4">
-            {{-- <a href="{{ route('offers.show', $offer->id) }}" class="btn btn-dark">
-                <i class="ti ti-eye"></i> Lihat Detail Lengkap
-            </a> --}}
-
-            <a href="{{ route('offers.pdf', $offer->id) }}" class="btn btn-danger">
-                <i class="ti ti-file"></i> Download PDF
-            </a>
-        </div>
-
     </div>
 </div>
 @endif

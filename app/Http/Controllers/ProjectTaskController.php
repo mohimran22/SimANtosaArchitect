@@ -7,9 +7,7 @@ use App\Models\Project;
 use App\Models\Offer;
 use App\Models\OfferItem;
 use App\Models\ProjectLevel;
-use App\Models\City;
-use App\Models\District;
-use App\Models\SubDistrict;
+use App\Models\ProjectTask;
 use App\Models\PostalCode;
 use Illuminate\Support\Carbon;
 use App\Models\User;
@@ -19,8 +17,35 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 
-class OfferController extends Controller
+class ProjectTaskController extends Controller
 {
+
+        public function assign(Request $request, ProjectTask $task)
+    {
+        $task->update([
+            'employee_id' => $request->employee_id,
+            'status'      => 'in_progress',
+        ]);
+
+        return back();
+    }
+
+        public function upload(Request $request, ProjectTask $task)
+    {
+        $path = $request->file('file')
+            ->store('project-tasks', 'public');
+
+        $task->files()->create([
+            'file_path' => $path,
+        ]);
+
+        $task->update([
+            'status'   => 'done',
+            'progress' => 100,
+        ]);
+
+        return back();
+    }
 
 
     public function show(Package $license_holder)

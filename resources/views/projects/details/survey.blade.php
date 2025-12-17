@@ -1,5 +1,5 @@
 @php
-    $survey = $project->surveys->first();
+    $survey = $project->survey;
     $planningLevel = $project->levels->firstWhere('level_order', 3);
 
     $surveyEmployees = $planningLevel ? $planningLevel->employees : collect();
@@ -142,7 +142,7 @@
     @endif
 </div>
 
-            <div class="col-md-12 mt-3">
+            {{-- <div class="col-md-12 mt-3">
                 <label class="fw-semibold">Status Persetujuan</label>
                 <div class="mt-2">
                     <span class="badge bg-dark">Konsultan:
@@ -152,8 +152,25 @@
                         {{ $survey->client_signed ? 'Sudah' : 'Belum' }}
                     </span>
                 </div>
-            </div>
+            </div> --}}
+            <div class="mb-2">
+                <label class="form-label fw-bold">Persetujuan Petugas Survei:</label><br>
 
+                @if($survey->consultant_signed)
+                    <i class="ti ti-circle-check text-success"></i>
+                @else
+                    <i class="ti ti-circle-x text-danger"></i>
+                @endif
+            </div>
+            <div>
+                <label class="form-label fw-bold">Persetujuan Customer:</label><br>
+
+                @if($survey->client_signed)
+                    <i class="ti ti-circle-check text-success" style="font-size: 28px"></i>
+                @else
+                    <i class="ti ti-circle-x text-danger" style="font-size: 28px"></i>
+                @endif
+            </div>
         </div>
     </div>
 </div>

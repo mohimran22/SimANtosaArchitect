@@ -75,11 +75,11 @@ public function store(Request $request)
     /**
      * Display the specified resource.
      */
-    public function show(Planning $planning)
-    {
-        $planning->load('project.customer.user');
-        return view('projects.plannings.show', compact('planning'));
-    }
+    // public function show(Planning $planning)
+    // {
+    //     $planning->load('project.customer.user');
+    //     return view('projects.plannings.show', compact('planning'));
+    // }
 
         public function pdf(Planning $planning)
     {
@@ -90,51 +90,41 @@ public function store(Request $request)
         return $pdf->download("planning-{$planning->id}.pdf");
     }
 
-//         public function update(Request $request, Planning $planning)
-// {
-//     $planning->update($request->only([
-//         'contact_name',
-//         'contact_phone',
-//         'employee_id',
-//         'site_area',
-//         'building_area',
-//         'consultant_signed',
-//         'client_signed',
-//         'notes',
-//     ]));
+    public function update(Request $request, Planning $planning)
+    {
+        $validated = $request->validate([
+            'planning_date' => 'required|date',
+            'planning_time' => 'required',
+            'employee_id'   => 'required|array',
+            'employee_id.*'  => 'uuid',
+        ]);
 
-//     $planning->items()->delete(); // hapus item lama
+        // 🔹 UPDATE DATA PLANNING
+        $planning->update([
+            'planning_date'  => $request->planning_date,
+            'planning_time'  => $request->planning_time,
+            'planning_notes' => $request->planning_notes,
+            'survey_address' => $request->survey_address,
+            'province_id'    => $request->province_id,
+            'city_id'        => $request->city_id,
+            'district_id'    => $request->district_id,
+            'sub_district_id'=> $request->sub_district_id,
+            'postal_code_id' => $request->postal_code_id,
+        ]);
 
-//     if ($request->has('items')) {
-//         foreach ($request->items as $item) {
+        /**
+         * 🔹 UPDATE PETUGAS SURVEI DI LEVEL PROJECT
+         * Petugas TIDAK disimpan di tabel planning.
+         */
+        $project = $planning->project;
+        $planningLevel = $project->levels->firstWhere('level_order', 2);
 
-//             if (
-//                 (!isset($item['description']) || trim($item['description']) === '') &&
-//                 (!isset($item['remark']) || trim($item['remark']) === '')
-//             ) {
-//                 continue;
-//             }
+        if ($planningLevel) {
+            $planningLevel->employees()->sync($request->employee_id);
+        }
 
-//             $planning->items()->create([
-//                 'description' => $item['description'] ?? '',
-//                 'remark'      => $item['remark'] ?? '',
-//             ]);
-//         }
-//     }
-
-//     if ($request->hasFile('documentation')) {
-
-//         if ($planning->documentation) {
-//             Storage::delete('public/'.$planning->documentation);
-//         }
-
-//         $path = $request->file('documentation')->store('plannings', 'public');
-
-//         $planning->update(['documentation' => $path]);
-//     }
-
-//     return back()->with('success', 'Data konsultasi berhasil diperbarui!');
-// }
+        return back()->with('success', 'Planning berhasil diperbarui.');
+    }
 
     /**
      * Remove the specified resource from storage.

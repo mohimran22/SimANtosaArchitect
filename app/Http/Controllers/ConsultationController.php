@@ -31,8 +31,6 @@ class ConsultationController extends Controller
     $project = Project::with(['employee', 'customer'])
         ->findOrFail($data['project_id']);
 
-        $goToSurvey = $request->boolean('go_to_survey');
-
 
     // ============================================================
     // 2. Tentukan tanda tangan digital (checkbox signed)
@@ -105,12 +103,6 @@ class ConsultationController extends Controller
         ]);
     }
 
-        if (!$goToSurvey) {
-        return redirect()
-            ->route('projects.show', $project->id)
-            ->with('success', 'Konsultasi berhasil disimpan.');
-    }
-
     return redirect()
     ->route('projects.create', ['project_id' => $consultation->project_id])
     ->with('success', 'Form konsultasi berhasil disimpan.');
@@ -150,7 +142,7 @@ class ConsultationController extends Controller
     $consultation->items()->delete(); // hapus item lama
 
     if ($request->has('items')) {
-        foreach ($request->items as $item) {
+        foreach ($request->items as $i => $item) {
 
             if (
                 (!isset($item['description']) || trim($item['description']) === '') &&
@@ -160,6 +152,7 @@ class ConsultationController extends Controller
             }
 
             $consultation->items()->create([
+                'order_no'    => $i + 1,
                 'description' => $item['description'] ?? '',
                 'remark'      => $item['remark'] ?? '',
             ]);

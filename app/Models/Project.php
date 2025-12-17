@@ -89,20 +89,31 @@ class Project extends Model
         return $this->hasOne(Consultation::class);
     }
 
-        public function plannings()
+        public function planning()
     {
-        return $this->hasMany(Planning::class);
+        return $this->hasOne(Planning::class);
     }
 
-            public function surveys()
+            public function survey()
     {
-        return $this->hasMany(Survey::class);
+        return $this->hasOne(Survey::class);
     }
 
-public function offer()
+    public function offer()
+    {
+        return $this->hasOne(Offer::class);
+    }
+
+    public function invoice()
+    {
+        return $this->hasOne(Invoice::class);
+    }
+
+    public function tasks()
 {
-    return $this->hasOne(Offer::class);
+    return $this->hasMany(ProjectTask::class);
 }
+
 
 
     /*

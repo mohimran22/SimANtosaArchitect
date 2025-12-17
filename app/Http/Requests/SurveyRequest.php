@@ -8,7 +8,7 @@ class SurveyRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true; // atur permission sesuai kebutuhan
+        return true;
     }
 
     public function rules(): array
@@ -22,13 +22,22 @@ class SurveyRequest extends FormRequest
             'notes' => 'nullable|string',
             'survey_date' => 'required|string',
             'survey_time' => 'required',
+
             'employee_id'    => 'required|array',
             'employee_id.*'  => 'uuid',
 
-            // items array
+            // Items dinamis
             'items' => 'required|array|min:1',
             'items.*.description' => 'required|string|max:2000',
-            'items.*.remark' => 'nullable|string|max:2000',
+            'items.*.remark'      => 'nullable|string|max:2000',
+
+            // 🔥 VALIDASI FOTO DOKUMENTASI (boleh banyak)
+            'documentation'   => 'nullable|array',
+            'documentation.*' => 'image|max:2048', // 5MB
+
+            // 🔥 VALIDASI HASIL SURVEI (boleh banyak)
+            'result_images'   => 'nullable|array',
+            'result_images.*' => 'image|max:2048', // 5MB
         ];
     }
 }

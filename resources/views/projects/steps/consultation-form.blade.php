@@ -58,14 +58,24 @@
                                 </thead>
                                 <tbody>
                                     @if(old('items'))
-                                        @foreach(old('items') as $i => $it)
+                                        @foreach(old('items', [ ['description' => '', 'remark' => ''] ]) as $i => $it)
                                             <tr>
                                                 <td class="row-no text-center">{{ $i + 1 }}</td>
-                                                <td><textarea name="items[{{ $i }}][description]" class="form-control" rows="2">{{ $it['description'] }}</textarea></td>
-                                                <td><textarea name="items[{{ $i }}][remark]" class="form-control" rows="2">{{ $it['remark'] }}</textarea></td>
-                                                <td><button type="button" class="btn btn-sm btn-danger remove-row">-</button></td>
+
+                                                <td>
+                                                    <textarea name="items[{{ $i }}][description]" class="form-control" rows="2">{{ data_get($it, 'description') }}</textarea>
+                                                </td>
+
+                                                <td>
+                                                    <textarea name="items[{{ $i }}][remark]" class="form-control" rows="2">{{ data_get($it, 'remark') }}</textarea>
+                                                </td>
+
+                                                <td>
+                                                    <button type="button" class="btn btn-sm btn-danger remove-row">-</button>
+                                                </td>
                                             </tr>
                                         @endforeach
+
                                     @else
                                         <tr>
                                             <td class="row-no text-center">1</td>
@@ -141,15 +151,62 @@
     <div class="d-flex gap-2 mt-3">
         <button class="btn btn-dark">Simpan Konsultasi</button>
 
-        <button type="button" class="btn btn-dark" id="btnToSurvey">
-            Lanjut Ke Survei
-        </button>
-        
-        <input type="hidden" name="go_to_survey" id="go_to_survey">
-
-
         <a href="#" id="print-preview" class="btn btn-outline-secondary" style="display:none;" target="_blank">
             Cetak / Preview PDF
         </a>
     </div>
 </form>
+
+@push('js')
+<script>
+    $(document).ready(function() {
+        $('.select2').select2({
+            placeholder: "-- Pilih --",
+            width: '100%'
+        });
+    });
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const addBtn = document.getElementById('add-row');
+    const table = document.querySelector('#items-table tbody');
+
+function renumber() {
+    table.querySelectorAll('tr').forEach((tr, idx) => {
+        tr.querySelector('.row-no').textContent = idx + 1;
+
+        tr.querySelectorAll('textarea, input[type="text"]').forEach(el => {
+            el.name = el.name.replace(/items\[\d+]/, `items[${idx}]`);
+        });
+    });
+}
+
+    // Add row
+    addBtn.addEventListener('click', function () {
+        const idx = table.querySelectorAll('tr').length;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td class="row-no text-center">${idx + 1}</td>
+            <td><textarea name="items[${idx}][description]" class="form-control" rows="2"></textarea></td>
+            <td><textarea name="items[${idx}][remark]" class="form-control" rows="2"></textarea></td>
+            <td><button type="button" class="btn btn-sm btn-danger remove-row">-</button></td>
+        `;
+        table.appendChild(tr);
+        renumber();  // ← WAJIB
+    });
+
+    // Remove row
+    table.addEventListener('click', function (e) {
+        if (e.target.matches('.remove-row')) {
+            e.target.closest('tr').remove();
+            renumber(); // ← kamu sudah benar
+        }
+    });
+
+    // Saat halaman edit dibuka → rapikan nomor
+    renumber();
+});
+</script>
+@endpush

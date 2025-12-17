@@ -121,3 +121,66 @@
         <button class="btn btn-dark">Simpan Form</button>
     </div>
 </form>
+
+@push('js')
+<script>
+$('#survey_province').change(function () {
+var id = $(this).val();
+$('#survey_city').html('<option>Loading...</option>');
+$('#survey_district').html('<option value="">-- Pilih kecamatan --</option>');
+$('#survey_sub_district').html('<option value="">-- Pilih kelurahan --</option>');
+
+if (id) {
+$.get('/api/cities/' + id, function (data) {
+$('#survey_city').empty().append('<option value="">-- Pilih city --</option>');
+$.each(data, function (i, city) {
+    $('#survey_city').append('<option value="' + city.id + '">' + city.name + '</option>');
+        });
+    });
+    }
+});
+
+$('#survey_city').change(function () {
+var id = $(this).val();
+$('#survey_district').html('<option>Loading...</option>');
+$('#survey_sub_district').html('<option value="">-- Pilih kelurahan --</option>');
+
+if (id) {
+    $.get('/api/districts/' + id, function (data) {
+        $('#survey_district').empty().append('<option value="">-- Pilih kecamatan --</option>');
+        $.each(data, function (i, district) {
+            $('#survey_district').append('<option value="' + district.id + '">' + district.name + '</option>');
+                });
+            });
+        }
+    });
+
+$('#survey_district').change(function () {
+var id = $(this).val();
+$('#survey_sub_district').html('<option>Loading...</option>');
+
+    if (id) {
+        $.get('/api/sub_districts/' + id, function (data) {
+            $('#survey_sub_district').empty().append('<option value="">-- Pilih kelurahan --</option>');
+            $.each(data, function (i, sub_district) {
+                $('#survey_sub_district').append('<option value="' + sub_district.id + '">' + sub_district.name + '</option>');
+            });
+        });
+    }
+});
+
+$('#survey_sub_district').change(function () {
+var id = $(this).val();
+$('#survey_postal_code').html('<option>Loading...</option>');
+
+if (id) {
+    $.get('/api/postal_codes/' + id, function (data) {
+        $('#survey_postal_code').empty().append('<option value="">-- Pilih kode pos --</option>');
+        $.each(data, function (i, postal_code) {
+            $('#survey_postal_code').append('<option value="' + postal_code.id + '">' + postal_code.postal_code + '</option>');
+        });
+    });
+    }
+});
+</script>
+@endpush

@@ -1,6 +1,6 @@
 @php
     // Level_order 2 = rencana survei
-    $planning = $project->plannings->first();
+    $planning = $project->planning;
     
     $planningLevel = $project->levels->firstWhere('level_order', 2);
 

@@ -82,3 +82,122 @@
     </div>
 </div>
 
+@push('js')
+                                        <script>
+                                            $(document).ready(function() {
+                                                $('.select2').select2({
+                                                    placeholder: "-- Pilih --",
+                                                    width: '100%'
+                                                });
+                                            });
+                                        </script>
+<script>
+$(document).ready(function () {
+    @if(isset($project))
+        let existingProvince = "{{ $project->province_id }}";
+        let existingCity = "{{ $project->city_id }}";
+        let existingDistrict = "{{ $project->district_id }}";
+        let existingSubDistrict = "{{ $project->sub_district_id }}";
+        let existingPostal = "{{ $project->postal_code_id }}";
+    @else
+        let existingProvince = "";
+        let existingCity = "";
+        let existingDistrict = "";
+        let existingSubDistrict = "";
+        let existingPostal = "";
+    @endif
+
+    // 1. province → city
+    $('#edit_province').on('change', function () {
+        let id = $(this).val();
+        $('#edit_city').empty().append('<option value="">Loading...</option>');
+        $('#edit_district').empty();
+        $('#edit_sub_district').empty();
+        $('#edit_postal_code').empty();
+
+        if (!id) return;
+
+        $.get(`/api/cities/${id}`, function (data) {
+            $('#edit_city').empty().append('<option value="">-- Pilih Kota --</option>');
+            data.forEach(item => {
+                $('#edit_city').append(new Option(item.name, item.id));
+            });
+
+            if (existingCity) {
+                $('#edit_city').val(existingCity).trigger('change');
+                existingCity = null;
+            }
+        });
+    });
+
+    // 2. city → district
+    $('#edit_city').on('change', function () {
+        let id = $(this).val();
+        $('#edit_district').empty().append('<option>Loading...</option>');
+        $('#edit_sub_district').empty();
+        $('#edit_postal_code').empty();
+
+        if (!id) return;
+
+        $.get(`/api/districts/${id}`, function (data) {
+            $('#edit_district').empty().append('<option>-- Pilih Kecamatan --</option>');
+            data.forEach(item => {
+                $('#edit_district').append(new Option(item.name, item.id));
+            });
+
+            if (existingDistrict) {
+                $('#edit_district').val(existingDistrict).trigger('change');
+                existingDistrict = null;
+            }
+        });
+    });
+
+    // 3. district → sub_district
+    $('#edit_district').on('change', function () {
+        let id = $(this).val();
+        $('#edit_sub_district').empty().append('<option>Loading...</option>');
+        $('#edit_postal_code').empty();
+
+        if (!id) return;
+
+        $.get(`/api/sub_districts/${id}`, function (data) {
+            $('#edit_sub_district').empty().append('<option>-- Pilih Kelurahan --</option>');
+            data.forEach(item => {
+                $('#edit_sub_district').append(new Option(item.name, item.id));
+            });
+
+            if (existingSubDistrict) {
+                $('#edit_sub_district').val(existingSubDistrict).trigger('change');
+                existingSubDistrict = null;
+            }
+        });
+    });
+
+    // 4. sub_district → postal_code
+    $('#edit_sub_district').on('change', function () {
+        let id = $(this).val();
+        $('#edit_postal_code').empty().append('<option>Loading...</option>');
+
+        if (!id) return;
+
+        $.get(`/api/postal_codes/${id}`, function (data) {
+            $('#edit_postal_code').empty().append('<option>-- Pilih Kode Pos --</option>');
+            data.forEach(item => {
+                $('#edit_postal_code').append(new Option(item.postal_code, item.id));
+            });
+
+            if (existingPostal) {
+                $('#edit_postal_code').val(existingPostal).trigger('change');
+                existingPostal = null;
+            }
+        });
+    });
+
+    // 🔥 AUTO-LOAD saat halaman edit dibuka
+    if (existingProvince) {
+        $('#edit_province').trigger('change');
+    }
+});
+</script>
+@endpush
+

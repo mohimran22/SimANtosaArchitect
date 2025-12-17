@@ -232,8 +232,8 @@ Route::get('consultations/{consultation}/pdf', [\App\Http\Controllers\Consultati
 Route::post('projects/plannings', [\App\Http\Controllers\PlanningController::class, 'store'])
     ->name('projects.plannings.store');
 
-// Route::put('plannings/{planning}', [\App\Http\Controllers\PlanningController::class, 'update'])
-//     ->name('planning.update');
+Route::put('plannings/{planning}', [\App\Http\Controllers\PlanningController::class, 'update'])
+    ->name('plannings.update');
 
 Route::get('plannings/{planning}/pdf', [\App\Http\Controllers\PlanningController::class, 'pdf'])
     ->name('plannings.pdf');
@@ -241,20 +241,58 @@ Route::get('plannings/{planning}/pdf', [\App\Http\Controllers\PlanningController
 Route::post('projects/surveys', [\App\Http\Controllers\SurveyController::class, 'store'])
     ->name('projects.surveys.store');
 
-Route::get('surveys/{survey}', [\App\Http\Controllers\SurveyController::class, 'show'])
-    ->name('surveys.show');
+Route::put('surveys/{survey}', [\App\Http\Controllers\SurveyController::class, 'update'])
+    ->name('surveys.update');
 
 Route::get('surveys/{survey}/pdf', [\App\Http\Controllers\SurveyController::class, 'pdf'])
     ->name('surveys.pdf');
 
 Route::post('projects/offers', [\App\Http\Controllers\OfferController::class, 'store'])
     ->name('projects.offers.store');
+    
 
-Route::get('offers/{offer}', [\App\Http\Controllers\OfferController::class, 'show'])
-    ->name('offers.show');
+Route::put('offers/{offer}', [\App\Http\Controllers\OfferController::class, 'update'])
+    ->name('offers.update');
 
-Route::get('offers/{offer}/pdf', [\App\Http\Controllers\OfferController::class, 'pdf'])
-    ->name('offers.pdf');
+Route::post('/offers/{offer}/approve', [\App\Http\Controllers\OfferController::class, 'approve'])
+    ->name('offers.approve')
+    ->middleware('auth');
+
+Route::post('/offers/{offer}/reject', [\App\Http\Controllers\OfferController::class, 'reject'])
+    ->name('offers.reject');
+
+
+Route::get('/projects/offers/{offer}/pdf', [\App\Http\Controllers\OfferController::class, 'printPdf'])
+    ->name('projects.offers.pdf');
+
+// routes/web.php
+Route::get(
+    'projects/{project}/contract/pdf',
+    [\App\Http\Controllers\ContractController::class, 'pdf']
+)->name('projects.contract.pdf');
+
+Route::get(
+    'projects/{project}/invoice/pdf',
+    [\App\Http\Controllers\InvoiceController::class, 'invoiceDp']
+)->name('projects.invoice.pdf');
+
+Route::post(
+    '/projects/{project}/contract/approve',
+    [\App\Http\Controllers\ContractController::class, 'approve']
+)->name('projects.contract.approve');
+
+Route::post(
+    '/projects/{project}/invoice/approve',
+    [\App\Http\Controllers\InvoiceController::class, 'approve']
+)->name('projects.invoice.approve');
+
+Route::post('projects/tasks/assign', [\App\Http\Controllers\ProjectTaskController::class, 'assign'])
+    ->name('projects.tasks.assign');
+
+Route::post('projects/tasks', [\App\Http\Controllers\ProjectTaskController::class, 'upload'])
+    ->name('projects.tasks.upload');
+
+
 
 Route::middleware(['auth', 'permission:lihat daftar user'])->group(function () {
     route::resource('/users', UsersController::class);
@@ -281,28 +319,6 @@ Route::middleware(['auth'])->group(function () {
 //     Route::get('/rab', [AccountController::class, 'index'])->name('accounts.index');
 //     Route::post('/rab/update-role', [AccountController::class, 'updateRole'])->name('accounts.update-role');
 // });
-
-
-
-// Route::get('/license_holders/{id}/licenses', [LicenseHoldersController::class, 'showLicense'])->name('license_holders.licenses');
-// Route::get('/license_holders/{id}/profile', [LicenseHoldersController::class, 'showProfile'])->name('license_holders.profile');
-// Route::get('/license_holders/{id}/educations', [LicenseHoldersController::class, 'showTab'])->name('license_holders.educations');
-// Route::get('/license_holders/{id}/workers', [LicenseHoldersController::class, 'showWorks'])->name('license_holders.workers');
-// Route::get('/license_holders/{id}/families', [LicenseHoldersController::class, 'showFams'])->name('license_holders.families');
-
-
-
-
-
-// Route::get('/employees/{id}/profile', [EmployeeController::class, 'showProfile'])->name('employees.profile');
-// Route::get('/employees/{id}/educations', [EmployeeController::class, 'showTab'])->name('employees.educations');
-// Route::get('/employees/{id}/workers', [EmployeeController::class, 'showWorks'])->name('employees.workers');
-// Route::get('/employees/{id}/families', [EmployeeController::class, 'showFams'])->name('employees.families');
-
-// route::resource('/employee_educations', EmployeeEducationController::class);
-// route::resource('/employee_workers', EmployeeWorkExperienceController::class);
-// route::resource('/employee_families', EmployeeFamilyMemberController::class);
-
 
 Route::get('/api/cities/{province_id}', function ($province_id) {
     return \App\Models\City::where('province_id', $province_id)->select('id', 'name')->get();

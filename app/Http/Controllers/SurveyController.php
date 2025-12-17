@@ -24,8 +24,6 @@ class SurveyController extends Controller
     $project = Project::with(['employee', 'customer'])
         ->findOrFail($data['project_id']);
 
-        $goToDesain = $request->boolean('go_to_desain');
-
     $consultantSigned = $request->boolean('consultant_signed');
     $clientSigned     = $request->boolean('client_signed');
 
@@ -116,24 +114,10 @@ if ($request->hasFile('result_images')) {
         ]);
     }
 
-        if (!$goToDesain) {
-        return redirect()
-            ->route('projects.show', $project->id)
-            ->with('success', 'Konsultasi berhasil disimpan.');
-    }
-
     return redirect()
     ->route('projects.create', ['project_id' => $survey->project_id])
     ->with('success', 'Form konsultasi berhasil disimpan.');
 }
-
-
-
-    public function show(Survey $Survey)
-    {
-        $Survey->load('items', 'project.customer.user', 'creator');
-        return view('projects.Surveys.show', compact('Survey'));
-    }
 
     public function pdf(Survey $Survey)
     {
@@ -143,5 +127,116 @@ if ($request->hasFile('result_images')) {
         $pdf = Pdf::loadHTML($view)->setPaper('a4', 'portrait');
         return $pdf->download("Survey-{$Survey->id}.pdf");
     }
+
+    public function update(Request $request, Survey $survey)
+{
+    $validated = $request->validate([
+        'survey_date' => 'required|date',
+        'survey_time' => 'required',
+        'employee_id'   => 'required|array',
+        'employee_id.*'  => 'uuid',
+        'project_id' => 'required|uuid|exists:projects,id',
+        'contact_name' => 'nullable|string|max:255',
+        'site_area' => 'nullable|string|max:255',
+        'building_area' => 'nullable|string|max:255',
+        'notes' => 'nullable|string',
+    ]);
+
+    // ===========================
+    // UPDATE DATA SURVEY
+    // ===========================
+    $survey->update([
+        'survey_date'   => $request->survey_date,
+        'survey_time'   => $request->survey_time,
+        'notes'         => $request->notes,
+        'project_id'    => $request->project_id,
+        'contact_name'  => $request->contact_name,
+        'site_area'     => $request->site_area,
+        'building_area' => $request->building_area,
+        'consultant_signed' => $request->has('consultant_signed') ? 1 : 0,
+        'client_signed'     => $request->has('client_signed') ? 1 : 0,
+    ]);
+
+    $survey->items()->delete();
+
+    if ($request->has('items')) {
+        foreach ($request->items as $i => $item) {
+
+            if (
+                (!isset($item['description']) || trim($item['description']) === '') &&
+                (!isset($item['remark']) || trim($item['remark']) === '')
+            ) {
+                continue;
+            }
+
+            $survey->items()->create([
+                'order_no'    => $i + 1,
+                'description' => $item['description'] ?? '',
+                'remark'      => $item['remark'] ?? '',
+            ]);
+        }
+    }
+
+
+    // ===========================
+    // UPDATE FOTO DOKUMENTASI (MULTIPLE)
+    // ===========================
+    if ($request->hasFile('documentation')) {
+
+        // hapus semua dokumentasi lama
+        foreach ($survey->documentations as $doc) {
+            Storage::disk('public')->delete($doc->file_path);
+            $doc->delete();
+        }
+
+        // simpan baru
+        foreach ($request->file('documentation') as $file) {
+            $path = $file->store('surveys/documentations', 'public');
+
+            SurveyDocumentation::create([
+                'survey_id' => $survey->id,
+                'file_path' => $path
+            ]);
+        }
+    }
+
+
+    // ===========================
+    // UPDATE FOTO HASIL SURVEY (MULTIPLE)
+    // ===========================
+    if ($request->hasFile('result_images')) {
+
+        // hapus lama
+        foreach ($survey->surveyimages as $img) {
+            Storage::disk('public')->delete($img->file_path);
+            $img->delete();
+        }
+
+        // simpan baru
+        foreach ($request->file('result_images') as $file) {
+            $path = $file->store('surveys/result-images', 'public');
+
+            SurveyImage::create([
+                'survey_id' => $survey->id,
+                'file_path' => $path
+            ]);
+        }
+    }
+
+
+    // ===========================
+    // UPDATE PETUGAS SURVEI DI LEVEL
+    // ===========================
+    $project = $survey->project;
+    $surveyLevel = $project->levels->firstWhere('level_order', 3);
+
+    if ($surveyLevel) {
+        $surveyLevel->employees()->sync($request->employee_id);
+    }
+
+    return back()->with('success', 'Survey berhasil diperbarui.');
+}
+
+
 }
 
