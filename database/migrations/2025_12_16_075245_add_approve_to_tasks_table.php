@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('project_tasks', function (Blueprint $table) {
-            $table->uuid('parent_task_id')->nullable(); // relasi ke task awal
-            $table->integer('revision_number')->default(0); // 0 = original
+        $table->uuid('approved_by')->nullable();
+        $table->foreign('approved_by')->references('id')->on('users')->cascadeOnDelete();
     });
     }
 

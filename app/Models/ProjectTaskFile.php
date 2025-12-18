@@ -20,5 +20,21 @@ class ProjectTaskFile extends Model
     {
         return $this->belongsTo(ProjectTask::class, 'project_task_id');
     }
+
+        public function uploader()
+    {
+        return $this->belongsTo(User::class, 'uploaded_by');
+    }
+
+    public function getUploaderNameAttribute()
+    {
+        if (!$this->uploader) {
+            return 'System';
+        }
+
+        return $this->uploader->employee->user->fullname
+            ?? $this->uploader->fullname;
+    }
+
 }
 

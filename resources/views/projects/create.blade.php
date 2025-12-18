@@ -2,358 +2,352 @@
 
 @section('content')
 
-<div class="page-header d-print-none mb-4">
-    <div class="container-xl">
-        <div class="row align-items-center">
-            <div class="col d-flex align-items-center">
-                <a href="{{ route('projects.index') }}" class="btn btn-dark d-flex align-items-center" style="margin-left: 20px;">
-                    <i class="ti ti-arrow-left"></i>
-                </a>
-                
-                    <h2 class="page-title mb-0">Tambah Proyek</h2>
-                
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="page-body">
-    <div class="container-xl">
-        @include('projects.components.timeline-horizontal')
-
-        {{-- STEP 1 – Form Proyek --}}
-@if($activeStep == 1)
-<div id="step-1" class="step-section">
-    <div class="card shadow-sm border-0 mb-4">
-        <div class="card-body px-5 py-4">
-            <h3 class="mb-4 fw-bold">1. Buat Proyek Baru</h3>
-            @include('projects.steps.create-project')
-        </div>
-    </div>
-</div>
-@endif
-
-
-{{-- DETAIL PROJECT --}}
-@if($activeStep >= 2)
-<div id="step-2" class="step-section">
-    <div class="card shadow-sm border-0 mb-4">
-        <div class="card-body px-5 py-4">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h3 class="fw-bold m-0">1. Proyek</h3>
-
-                <div class="btn-group">
-                    <button type="button" id="btn-edit-project"
-                        class="btn btn-sm btn-dark me-2"
-                        title="Edit Data">
-                        <i class="ti ti-edit"></i>
-                    </button>
-                    {{-- 
-                    <a href="{{ route('projects.pdf', $project->id) }}"
-                    class="btn btn-sm btn-dark"
-                    target="_blank"
-                    title="Download PDF">
-                        <i class="ti ti-download"></i>
-                    </a> --}}
-                </div>
-
-            </div>
-        </div>
-
-            <div id="project-view">
-                @include('projects.details.project')
-            </div>
-
-            <div id="project-edit" style="display:none;">
-                @include('projects.edit.project-form')    
-            </div>
-        </div>
-    </div>
-</div>
-@endif
-
-
-{{-- STEP 2 – Konsultasi --}}
-@if($activeStep == 2)
-<div id="step-2" class="step-section">
-    <div class="card shadow-sm border-0 mb-4">
-        <div class="card-body px-5 py-4">
-            <h3 class="mb-4 fw-bold">2. Form Konsultasi</h3>
-            @include('projects.steps.consultation-form')
-        </div>
-    </div>
-</div>
-@endif
-
-
-{{-- DETAIL KONSULTASI --}}
-@if($activeStep >= 3)
-<div id="step-3" class="step-section">
-    <div class="card shadow-sm border-0 mb-4">
-        <div class="card-body px-5 py-4">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h3 class="fw-bold m-0">2. Tahap Konsultasi</h3>
-                <div class="btn-group">
-                    <button type="button" id="btn-edit-consultation" 
-                        class="btn btn-sm btn-dark me-2"
-                        title="Edit Data">
-                        <i class="ti ti-edit"></i>
-                    </button>
-
-                    {{-- <a href="{{ route('projects.pdf', $project->id) }}"
-                        class="btn btn-sm btn-dark"
-                        target="_blank"
-                        title="Download PDF">
-                        <i class="ti ti-download"></i>
-                    </a> --}}
+    <div class="page-header d-print-none mb-4">
+        <div class="container-xl">
+            <div class="row align-items-center">
+                <div class="col d-flex align-items-center">
+                    <a href="{{ route('projects.index') }}" class="btn btn-dark d-flex align-items-center" style="margin-left: 20px;">
+                        <i class="ti ti-arrow-left"></i>
+                    </a>      
+                        <h2 class="page-title mb-0">Tambah Proyek</h2> 
                 </div>
             </div>
         </div>
-            <h3 class="mb-3 fw-bold"></h3>
-            <div id="consultation-view">
-                @include('projects.details.consultation')
-            </div>
-
-            <div id="consultation-edit" style="display:none;">
-                @include('projects.edit.consultation-form')    
-            </div>
     </div>
-</div>
-@endif
 
+    <div class="page-body">
+        <div class="container-xl">
+            @include('projects.components.timeline-horizontal')
 
-{{-- STEP 3 --}}
-@if($activeStep == 3)
-<div id="step-3" class="step-section">
-    <div class="card shadow-sm border-0 mb-4">
-        <div class="card-body px-5 py-4">
-            <h3 class="fw-bold mb-4">3. Form Rencana Survei</h3>
-            @include('projects.steps.planning-form')
-        </div>
-    </div>
-</div>
-@endif
-
-
-{{-- DETAIL RENCANA --}}
-@if($activeStep >= 4)
-<div id="step-4" class="step-section">
-    <div class="card shadow-sm border-0 mb-4">
-        <div class="card-body px-5 py-4">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-            <h3 class="mb-3 fw-bold">3. Rencana Survei</h3>
-                <div class="btn-group">
-                    <button type="button" id="btn-edit-planning" 
-                        class="btn btn-sm btn-dark me-2"
-                        title="Edit Data">
-                        <i class="ti ti-edit"></i> 
-                    </button>
-                    {{-- <a href="{{ route('projects.pdf', $project->id) }}"
-                        class="btn btn-sm btn-dark"
-                        target="_blank"
-                        title="Download PDF">
-                        <i class="ti ti-download"></i>
-                    </a> --}}
+            {{-- STEP 1 – Form Proyek --}}
+            @if($activeStep == 1)
+            <div id="step-1" class="step-section">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body px-5 py-4">
+                        <h3 class="mb-4 fw-bold">1. Buat Proyek Baru</h3>
+                        @include('projects.steps.create-project')
+                    </div>
                 </div>
             </div>
-        </div>
-        <div id="planning-view">
-            @include('projects.details.planning')
-        </div>
-
-        <div id="planning-edit" style="display:none;">
-            @include('projects.edit.planning-form')    
-        </div>
-    </div>
-</div>
-@endif
+            @endif
 
 
-{{-- STEP 4 --}}
-@if($activeStep == 4)
-<div id="step-4" class="step-section">
-    <div class="card shadow-sm border-0 mb-4">
-        <div class="card-body px-5 py-4">
-            <h3 class="mb-3 fw-bold">4. Form Survei Lapangan</h3>
-            @include('projects.steps.survey-form')
-        </div>
-    </div>
-</div>
-@endif
+            {{-- DETAIL PROJECT --}}
+            @if($activeStep >= 2)
+            <div id="step-2" class="step-section">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body px-5 py-4">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h3 class="fw-bold m-0">1. Proyek</h3>
 
+                            <div class="btn-group">
+                                <button type="button" id="btn-edit-project"
+                                    class="btn btn-sm btn-dark me-2"
+                                    title="Edit Data">
+                                    <i class="ti ti-edit"></i>
+                                </button>
+                                {{-- 
+                                <a href="{{ route('projects.pdf', $project->id) }}"
+                                class="btn btn-sm btn-dark"
+                                target="_blank"
+                                title="Download PDF">
+                                    <i class="ti ti-download"></i>
+                                </a> --}}
+                            </div>
 
-{{-- DETAIL SURVEI --}}
-@if($activeStep >= 5)
-<div id="step-5" class="step-section">
-    <div class="card shadow-sm border-0 mb-4">
-        <div class="card-body px-5 py-4">       
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h3 class="fw-bold m-0">4. Survei</h3>
-                <div class="btn-group">
-                    <button type="button" id="btn-edit-survey"
-                        class="btn btn-sm btn-dark me-2"
-                        title="Edit Data">
-                        <i class="ti ti-edit"></i>
-                    </button>
+                        </div>
+                    </div>
+
+                        <div id="project-view">
+                            @include('projects.details.project')
+                        </div>
+
+                        <div id="project-edit" style="display:none;">
+                            @include('projects.edit.project-form')    
+                        </div>
+                    </div>
                 </div>
             </div>
+            @endif
 
-            {{-- SISI VIEW --}}
-            <div id="survey-view">
-                @include('projects.details.survey')
-            </div>
 
-            {{-- SISI EDIT --}}
-            <div id="survey-edit" style="display:none;">
-                @include('projects.edit.survey-form')
-            </div>
-        </div>
-    </div>
-</div>
-@endif
-
-{{-- STEP 5 --}}
-@if($activeStep == 5)
-<div id="step-5" class="step-section">
-    <div class="card shadow-sm border-0 mb-4">
-        <div class="card-body px-5 py-4">
-            <h3 class="mb-3 fw-bold">5. Form Penawaran Jasa Desain</h3>
-            @include('projects.steps.desain-form')
-        </div>
-    </div>
-</div>
-@endif
-
-@if($activeStep >= 6)
-<div id="step-6" class="step-section">
-    <div class="card shadow-sm border-0 mb-4">
-        <div class="card-body px-5 py-4">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h3 class="mb-3 fw-bold">5. Penawaran Jasa Desain</h3>
-                <div class="btn-group">
-                    <button type="button" id="btn-edit-offer"
-                        class="btn btn-sm btn-dark me-2"
-                        title="Edit Data">
-                        <i class="ti ti-edit"></i>
-                    </button>
-                    <a href="{{ route('projects.offers.pdf', $project->offer->id) }}"
-                        class="btn btn-sm btn-dark"
-                        target="_blank"
-                        title="Download PDF">
-                        <i class="ti ti-download"></i>
-                    </a>
+            {{-- STEP 2 – Konsultasi --}}
+            @if($activeStep == 2)
+            <div id="step-2" class="step-section">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body px-5 py-4">
+                        <h3 class="mb-4 fw-bold">2. Form Konsultasi</h3>
+                        @include('projects.steps.consultation-form')
+                    </div>
                 </div>
             </div>
-            <div id="offer-view">
-                @include('projects.details.offer')
-            </div>
-            <div id="offer-edit" style="display:none;">
-                @include('projects.edit.offer-form')    
-            </div>
-        </div>
-    </div>
-</div>
-@endif
+            @endif
 
-@if($activeStep >= 6)
-<div id="step-6" class="step-section">
-    <div class="card shadow-sm border-0 mb-4">
-        <div class="card-body px-5 py-4">
-            <h3 class="mb-3 fw-bold">6. Draft Kontrak Pelaksanaan Pekerjaan</h3>
 
-            <div class="d-flex gap-2">
+            {{-- DETAIL KONSULTASI --}}
+            @if($activeStep >= 3)
+            <div id="step-3" class="step-section">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body px-5 py-4">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h3 class="fw-bold m-0">2. Tahap Konsultasi</h3>
+                            <div class="btn-group">
+                                <button type="button" id="btn-edit-consultation" 
+                                    class="btn btn-sm btn-dark me-2"
+                                    title="Edit Data">
+                                    <i class="ti ti-edit"></i>
+                                </button>
 
-                <a href="{{ route('projects.contract.pdf', $project->id) }}"
-                class="btn btn-dark"
-                target="_blank">
-                    <i class="ti ti-download"></i> Download Draft Kontrak
-                </a>
+                                {{-- <a href="{{ route('projects.pdf', $project->id) }}"
+                                    class="btn btn-sm btn-dark"
+                                    target="_blank"
+                                    title="Download PDF">
+                                    <i class="ti ti-download"></i>
+                                </a> --}}
+                            </div>
+                        </div>
+                    </div>
+                        <h3 class="mb-3 fw-bold"></h3>
+                        <div id="consultation-view">
+                            @include('projects.details.consultation')
+                        </div>
 
-                @if(!$project->offer->approved_at)
-                    <form action="{{ route('projects.contract.approve', $project->id) }}"
-                        method="POST"
-                        onsubmit="return confirm('Approve kontrak dan lanjut ke tahap Invoice DP?')">
-                        @csrf
-                        <button class="btn btn-success">
-                            <i class="ti ti-check"></i> Approve Kontrak
-                        </button>
-                    </form>
-                @else
-                    <span class="badge bg-success align-self-center">
-                        <i class="ti ti-check"></i>
-                        Disetujui {{ $project->offer->approved_at->format('d M Y') }}
-                    </span>
-                @endif
-            </div>
-        </div>
-    </div>
-</div>
-@endif
-
-@if($activeStep >= 7)
-<div id="step-7" class="step-section">
-    <div class="card shadow-sm border-0 mb-4">
-        <div class="card-body px-5 py-4">
-            <h3 class="mb-3 fw-bold">7. Invoice Pembayaran Desain DP</h3>
-                <div id="offer-view">
-                    <div class="d-flex gap-2">
-                    @php
-                        $invoice = $project->invoice;
-                    @endphp
-
-                    {{-- DOWNLOAD --}}
-                    @if(!$invoice?->invoice_dp_downloaded_at)
-                        <a href="{{ route('projects.invoice.pdf', $project->id) }}"
-                        class="btn btn-dark"
-                        target="_blank">
-                            <i class="ti ti-download"></i> Download Invoice
-                        </a>
-                    @else
-                    <a href="{{ route('projects.invoice.pdf', $project->id) }}"
-                        class="btn btn-dark"
-                        target="_blank">
-                        <i class="ti ti-download"></i>Download Invoice
-                    </a>
-                    <span class="btn btn-outline-success disabled">
-                        <i class="ti ti-check"></i> Sudah didownload
-                    </span>
-
-                    @endif
-
-                    @if(
-                        $invoice?->invoice_dp_downloaded_at &&
-                        !$invoice?->invoice_dp_approved_at
-                    )
-                        <form action="{{ route('projects.invoice.approve', $project->id) }}"
-                            method="POST"
-                            onsubmit="return confirm('Lanjut ke tahap pengerjaan?')">
-                            @csrf
-                            <button class="btn btn-success">
-                                <i class="ti ti-arrow-right"></i> Lanjut ke tahap berikutnya
-                            </button>
-                        </form>
-                    @endif
-</div>
+                        <div id="consultation-edit" style="display:none;">
+                            @include('projects.edit.consultation-form')    
+                        </div>
                 </div>
+            </div>
+            @endif
+
+
+            {{-- STEP 3 --}}
+            @if($activeStep == 3)
+            <div id="step-3" class="step-section">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body px-5 py-4">
+                        <h3 class="fw-bold mb-4">3. Form Rencana Survei</h3>
+                        @include('projects.steps.planning-form')
+                    </div>
+                </div>
+            </div>
+            @endif
+
+
+            {{-- DETAIL RENCANA --}}
+            @if($activeStep >= 4)
+            <div id="step-4" class="step-section">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body px-5 py-4">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h3 class="mb-3 fw-bold">3. Rencana Survei</h3>
+                            <div class="btn-group">
+                                <button type="button" id="btn-edit-planning" 
+                                    class="btn btn-sm btn-dark me-2"
+                                    title="Edit Data">
+                                    <i class="ti ti-edit"></i> 
+                                </button>
+                                {{-- <a href="{{ route('projects.pdf', $project->id) }}"
+                                    class="btn btn-sm btn-dark"
+                                    target="_blank"
+                                    title="Download PDF">
+                                    <i class="ti ti-download"></i>
+                                </a> --}}
+                            </div>
+                        </div>
+                    </div>
+                    <div id="planning-view">
+                        @include('projects.details.planning')
+                    </div>
+
+                    <div id="planning-edit" style="display:none;">
+                        @include('projects.edit.planning-form')    
+                    </div>
+                </div>
+            </div>
+            @endif
+
+
+            {{-- STEP 4 --}}
+            @if($activeStep == 4)
+            <div id="step-4" class="step-section">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body px-5 py-4">
+                        <h3 class="mb-3 fw-bold">4. Form Survei Lapangan</h3>
+                        @include('projects.steps.survey-form')
+                    </div>
+                </div>
+            </div>
+            @endif
+
+
+            {{-- DETAIL SURVEI --}}
+            @if($activeStep >= 5)
+            <div id="step-5" class="step-section">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body px-5 py-4">       
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h3 class="fw-bold m-0">4. Survei</h3>
+                            <div class="btn-group">
+                                <button type="button" id="btn-edit-survey"
+                                    class="btn btn-sm btn-dark me-2"
+                                    title="Edit Data">
+                                    <i class="ti ti-edit"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        {{-- SISI VIEW --}}
+                        <div id="survey-view">
+                            @include('projects.details.survey')
+                        </div>
+
+                        {{-- SISI EDIT --}}
+                        <div id="survey-edit" style="display:none;">
+                            @include('projects.edit.survey-form')
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @endif
+
+            {{-- STEP 5 --}}
+            @if($activeStep == 5)
+            <div id="step-5" class="step-section">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body px-5 py-4">
+                        <h3 class="mb-3 fw-bold">5. Form Penawaran Jasa Desain</h3>
+                        @include('projects.steps.desain-form')
+                    </div>
+                </div>
+            </div>
+            @endif
+
+            @if($activeStep >= 6)
+            <div id="step-6" class="step-section">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body px-5 py-4">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h3 class="mb-3 fw-bold">5. Penawaran Jasa Desain</h3>
+                            <div class="btn-group">
+                                <button type="button" id="btn-edit-offer"
+                                    class="btn btn-sm btn-dark me-2"
+                                    title="Edit Data">
+                                    <i class="ti ti-edit"></i>
+                                </button>
+                                <a href="{{ route('projects.offers.pdf', $project->offer->id) }}"
+                                    class="btn btn-sm btn-dark"
+                                    target="_blank"
+                                    title="Download PDF">
+                                    <i class="ti ti-download"></i>
+                                </a>
+                            </div>
+                        </div>
+                        <div id="offer-view">
+                            @include('projects.details.offer')
+                        </div>
+                        <div id="offer-edit" style="display:none;">
+                            @include('projects.edit.offer-form')    
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @endif
+
+            @if($activeStep >= 6)
+            <div id="step-6" class="step-section">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body px-5 py-4">
+                        <h3 class="mb-3 fw-bold">6. Draft Kontrak Pelaksanaan Pekerjaan</h3>
+
+                        <div class="d-flex gap-2">
+
+                            <a href="{{ route('projects.contract.pdf', $project->id) }}"
+                            class="btn btn-dark"
+                            target="_blank">
+                                <i class="ti ti-download"></i> Download Draft Kontrak
+                            </a>
+
+                            @if(!$project->offer->approved_at)
+                                <form action="{{ route('projects.contract.approve', $project->id) }}"
+                                    method="POST"
+                                    onsubmit="return confirm('Approve kontrak dan lanjut ke tahap Invoice DP?')">
+                                    @csrf
+                                    <button class="btn btn-success">
+                                        <i class="ti ti-check"></i> Approve Kontrak
+                                    </button>
+                                </form>
+                            @else
+                                <span class="badge bg-success align-self-center">
+                                    <i class="ti ti-check"></i>
+                                    Disetujui {{ $project->offer->approved_at->format('d M Y') }}
+                                </span>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @endif
+
+            @if($activeStep >= 7)
+            <div id="step-7" class="step-section">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body px-5 py-4">
+                        <h3 class="mb-3 fw-bold">7. Invoice Pembayaran Desain DP</h3>
+                            
+                                <div class="d-flex gap-2">
+                                    @php
+                                        $invoice = $project->invoice;
+                                    @endphp
+
+                                
+                                    @if(!$invoice?->invoice_dp_downloaded_at)
+                                        <a href="{{ route('projects.invoice.pdf', $project->id) }}"
+                                        class="btn btn-dark"
+                                        target="_blank">
+                                            <i class="ti ti-download"></i> Download Invoice
+                                        </a>
+                                    @else
+                                        <a href="{{ route('projects.invoice.pdf', $project->id) }}"
+                                            class="btn btn-dark"
+                                            target="_blank">
+                                            <i class="ti ti-download"></i>Download Invoice
+                                        </a>
+                                        <span class="btn btn-outline-success disabled">
+                                            <i class="ti ti-check"></i> Sudah didownload
+                                        </span>
+                                    @endif
+
+                                    @if(
+                                        $invoice?->invoice_dp_downloaded_at &&
+                                        !$invoice?->invoice_dp_approved_at
+                                    )
+                                        <form action="{{ route('projects.invoice.approve', $project->id) }}"
+                                            method="POST"
+                                            onsubmit="return confirm('Lanjut ke tahap pengerjaan?')">
+                                            @csrf
+                                            <button class="btn btn-success">
+                                                <i class="ti ti-arrow-right"></i> Lanjut ke tahap berikutnya
+                                            </button>
+                                        </form>
+                                    @endif
+                                </div>     
+                    </div>
+                </div>
+            </div>
+            @endif
+
+            @if($activeStep == 8)
+            <div id="step-8" class="step-section">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body px-5 py-4">
+                        <h3 class="mb-3 fw-bold">8. Form Pengerjaan</h3>
+                        @include('projects.steps.work-process')
+                    </div>
+                </div>
+            </div>
+            @endif
         </div>
     </div>
-</div>
-@endif
-
-@if($activeStep == 8)
-<div id="step-8" class="step-section">
-    <div class="card shadow-sm border-0 mb-4">
-        <div class="card-body px-5 py-4">
-            <h3 class="mb-3 fw-bold">8. Form Pengerjaan</h3>
-            @include('projects.steps.work-process')
-        </div>
-    </div>
-</div>
-@endif
-
-
-    </div>
-</div>
 
 @endsection
 

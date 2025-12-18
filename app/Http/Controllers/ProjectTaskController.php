@@ -68,6 +68,8 @@ public function assign(Request $request, ProjectTask $task)
             'id'   => $file->id,
             'name' => $file->file_name,
             'url'  => route('tasks.files.view', $file),
+            'uploaded_by'  => $file->uploaded_by_name,
+            'uploaded_at'  => $file->created_at->format('d-m-Y H:i'),
         ],
         'task_status' => $task->status,
     ]);
@@ -102,28 +104,35 @@ public function assign(Request $request, ProjectTask $task)
 public function approve(ProjectTask $task)
 {
     if (!$task->employee_id) {
-        return back()->with('error', 'Tugas belum memiliki PIC.');
+        return response()->json(['message' => 'Task belum punya PIC'], 403);
     }
 
-    // ❌ BELUM UPLOAD FILE
     if ($task->files()->count() === 0) {
-        return back()->with('error', 'Belum ada dokumen yang diupload.');
+        return response()->json(['message' => 'File belum diupload'], 403);
     }
 
-    // ❌ STATUS TIDAK VALID
     if ($task->status !== 'konfirmasi') {
-        return back()->with('error', 'Tugas belum dalam proses.');
+        return response()->json(['message' => 'Status belum konfirmasi'], 403);
     }
+
+
+    $approvedAt = now();
 
     $task->update([
         'status'          => 'selesai',
-        'approved_at'     => now(),
+        'approved_at'     => $approvedAt,
+        'approved_by' => auth()->id(),
         'reject_note'     => null,
     ]);
 
     $this->checkAutoNextLevel($task);
 
-    return back()->with('success', 'Tugas disetujui.');
+        return response()->json([
+        'status' => 'ok',
+    'approved_by' => auth()->user()->fullname,
+    'approved_at' => $approvedAt->format('d-m-Y H:i'),
+        'task_status' => 'selesai',
+    ]);
 }
 
 protected function checkAutoNextLevel(ProjectTask $task)
@@ -162,16 +171,10 @@ public function reject(Request $request, ProjectTask $task)
         'reject_note' => $request->reject_note,
     ]);
 
-    // $tasks = ProjectTask::where('project_id', $project->id)
-    //     ->orderBy('parent_task_id')
-    //     ->orderBy('revision_number')
-    //     ->get();
-
     $revisionNumber = ProjectTask::where('parent_task_id', $task->parent_task_id ?? $task->id)
         ->max('revision_number') + 1;
 
-    // task baru (revisi)
-    ProjectTask::create([
+    $newTask = ProjectTask::create([
         'project_id'       => $task->project_id,
         'offer_id'         => $task->offer_id,
         'parent_task_id'   => $task->parent_task_id ?? $task->id,
@@ -183,7 +186,18 @@ public function reject(Request $request, ProjectTask $task)
         'started_at'       => now(),
     ]);
 
-    return back()->with('success', 'Revisi dibuat.');
+    return response()->json([
+        'status' => 'ok',
+        'revision' => [
+        'id'       => $newTask->id,
+        'name'     => $newTask->task_name,
+        'category' => $newTask->category,
+        'category_key' => Str::slug($newTask->category),
+        'employee' => optional($newTask->employee?->user)->fullname,
+        'status'   => $newTask->status,
+        'revision' => $newTask->revision_number,
+        ]
+    ]);
 }
 
 public function viewFile(ProjectTaskFile $file)
@@ -197,30 +211,30 @@ public function viewFile(ProjectTaskFile $file)
 
 public function deleteFile(ProjectTaskFile $file)
 {
-    // Optional: cek permission
-    // abort_unless(auth()->user()->can('update', $file->task), 403);
-
-    Storage::disk('public')->delete($file->file_path);
-
     $task = $file->task;
 
+    // OPTIONAL: authorization
+    // abort_unless(auth()->user()->can('delete', $file), 403);
+
+    // hapus fisik
+    Storage::disk('public')->delete($file->file_path);
+
+    // hapus DB
     $file->delete();
 
-    // Kalau file dihapus, kembalikan ke tunda approval
-    $task->update([
-        'approval_status' => 'tunda',
-    ]);
+    // update status task
+    if ($task->files()->count() === 0) {
+        $task->update([
+            'status' => $task->employee_id ? 'proses' : 'tunda',
+        ]);
+    }
 
     return response()->json([
         'status' => 'ok',
-        'file'   => [
-            'id'   => $file->id,
-            'name' => $file->file_name,
-            'url'  => route('tasks.files.delete', $file),
-        ],
         'task_status' => $task->status,
     ]);
 }
+
 
 
 }

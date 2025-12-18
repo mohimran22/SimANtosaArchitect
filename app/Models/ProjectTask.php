@@ -14,6 +14,7 @@ class ProjectTask extends Model
     
     protected $casts = [
         'started_at' => 'datetime',
+        'approved_at' => 'datetime',
         'completed_at' => 'datetime',
     ];
         protected $fillable = [
@@ -27,12 +28,14 @@ class ProjectTask extends Model
         'started_at',
         'completed_at',
         'parent_task_id',
-        'revision_number'
+        'revision_number',
+        'aproved_at',
+        'approved_by',
     ];
 
     public function files()
     {
-        return $this->hasMany(ProjectTaskFile::class);
+        return $this->hasMany(ProjectTaskFile::class, 'project_task_id');
     }
 
     public function employee()
@@ -55,5 +58,11 @@ class ProjectTask extends Model
     {
         return $this->hasMany(ProjectTask::class, 'parent_task_id');
     }
+
+    public function approvedBy()
+{
+    return $this->belongsTo(User::class, 'approved_by');
+}
+
 
 }

@@ -22,6 +22,11 @@ class User extends Authenticatable
     public $incrementing = false;
     protected $keyType = 'string';
 
+    public function uploadedProjectTaskFiles()
+    {
+        return $this->hasMany(ProjectTaskFile::class, 'uploaded_by');
+    }
+
 public function employee()
 {
     return $this->hasOne(Employee::class);
