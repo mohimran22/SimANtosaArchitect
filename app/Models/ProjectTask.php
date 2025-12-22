@@ -15,6 +15,7 @@ class ProjectTask extends Model
     protected $casts = [
         'started_at' => 'datetime',
         'approved_at' => 'datetime',
+        'rejected_at' => 'datetime',
         'completed_at' => 'datetime',
     ];
         protected $fillable = [
@@ -31,6 +32,9 @@ class ProjectTask extends Model
         'revision_number',
         'aproved_at',
         'approved_by',
+        'rejected_at',
+        'rejected_by',
+        'reject_note',
     ];
 
     public function files()
@@ -63,6 +67,12 @@ class ProjectTask extends Model
 {
     return $this->belongsTo(User::class, 'approved_by');
 }
+
+public function rejectedBy()
+{
+    return $this->belongsTo(User::class, 'rejected_by');
+}
+
 
 
 }

@@ -15,9 +15,17 @@
         </div>
     </div>
 
+
     <div class="page-body">
         <div class="container-xl">
             @include('projects.components.timeline-horizontal')
+                @php
+                    $surveyInvoice = $project?->latestSurveyInvoice();
+
+                    $surveyApproved = $surveyInvoice?->status === 'approved';
+                    $surveyWaiting  = $surveyInvoice?->status === 'waiting_approval';
+                    $surveyRejected = $surveyInvoice?->status === 'rejected';
+                @endphp
 
             {{-- STEP 1 – Form Proyek --}}
             @if($activeStep == 1)
@@ -121,54 +129,52 @@
 
 
             {{-- STEP 3 --}}
-            @if($activeStep == 3)
-            <div id="step-3" class="step-section">
-                <div class="card shadow-sm border-0 mb-4">
-                    <div class="card-body px-5 py-4">
-                        <h3 class="fw-bold mb-4">3. Form Rencana Survei</h3>
-                        @include('projects.steps.planning-form')
+{{-- STEP 3 --}}
+@if($activeStep == 3)
+<div id="step-3" class="step-section">
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body px-5 py-4">
+            <h3 class="fw-bold mb-4">3. Rencana Survei</h3>
+
+            {{-- JIKA PLANNING BELUM ADA → TAMPILKAN FORM --}}
+            @if(!$project->planning)
+                @include('projects.steps.planning-form')
+
+            {{-- JIKA PLANNING SUDAH ADA --}}
+            @else
+                {{-- DETAIL PLANNING --}}
+                @include('projects.details.planning')
+
+                {{-- ALERT STATUS --}}
+                @if($surveyRejected)
+                    <div class="alert alert-danger mt-4">
+                        <strong>Biaya survei ditolak:</strong><br>
+                        {{ $surveyInvoice->reject_note }}
                     </div>
-                </div>
-            </div>
+                @elseif($surveyWaiting)
+                    <div class="alert alert-warning mt-4">
+                        <i class="ti ti-clock me-1"></i>
+                        Menunggu persetujuan biaya survei dari customer.
+                    </div>
+                @endif
             @endif
 
+        </div>
+    </div>
+</div>
+@endif
 
-            {{-- DETAIL RENCANA --}}
-            @if($activeStep >= 4)
-            <div id="step-4" class="step-section">
-                <div class="card shadow-sm border-0 mb-4">
-                    <div class="card-body px-5 py-4">
-                        <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h3 class="mb-3 fw-bold">3. Rencana Survei</h3>
-                            <div class="btn-group">
-                                <button type="button" id="btn-edit-planning" 
-                                    class="btn btn-sm btn-dark me-2"
-                                    title="Edit Data">
-                                    <i class="ti ti-edit"></i> 
-                                </button>
-                                {{-- <a href="{{ route('projects.pdf', $project->id) }}"
-                                    class="btn btn-sm btn-dark"
-                                    target="_blank"
-                                    title="Download PDF">
-                                    <i class="ti ti-download"></i>
-                                </a> --}}
-                            </div>
-                        </div>
-                    </div>
-                    <div id="planning-view">
-                        @include('projects.details.planning')
-                    </div>
-
-                    <div id="planning-edit" style="display:none;">
-                        @include('projects.edit.planning-form')    
-                    </div>
-                </div>
-            </div>
-            @endif
 
 
             {{-- STEP 4 --}}
-            @if($activeStep == 4)
+            @if(
+                $activeStep == 4 &&
+                $planning &&
+                (
+                    $planning->survey_fee == 0 ||
+                    $surveyApproved
+                )
+            )
             <div id="step-4" class="step-section">
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body px-5 py-4">
@@ -178,6 +184,7 @@
                 </div>
             </div>
             @endif
+
 
 
             {{-- DETAIL SURVEI --}}
@@ -234,12 +241,14 @@
                                     title="Edit Data">
                                     <i class="ti ti-edit"></i>
                                 </button>
+                                @if($project->offer?->id)
                                 <a href="{{ route('projects.offers.pdf', $project->offer->id) }}"
                                     class="btn btn-sm btn-dark"
                                     target="_blank"
                                     title="Download PDF">
                                     <i class="ti ti-download"></i>
                                 </a>
+                                @endif
                             </div>
                         </div>
                         <div id="offer-view">

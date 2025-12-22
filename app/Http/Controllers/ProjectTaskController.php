@@ -159,46 +159,76 @@ protected function checkAutoNextLevel(ProjectTask $task)
 
 public function reject(Request $request, ProjectTask $task)
 {
-    abort_if($task->status !== 'konfirmasi', 403);
+    // ambil task aktif (revisi terakhir)
+    $activeTask = ProjectTask::where(function ($q) use ($task) {
+            $q->where('id', $task->id)
+              ->orWhere('parent_task_id', $task->id);
+        })
+        ->orderByDesc('revision_number')
+        ->first();
+
+    abort_if($activeTask->status !== 'konfirmasi', 403);
 
     $request->validate([
         'reject_note' => 'required|string|max:1000',
     ]);
 
-    // tandai task lama
-    $task->update([
-        'status'      => 'revisi',
-        'reject_note' => $request->reject_note,
+    // update task lama (yang direject)
+    $activeTask->update([
+        'status'        => 'revisi',
+        'reject_note'   => $request->reject_note,
+        'rejected_by'   => auth()->id(),
+        'rejected_at'   => now(),
     ]);
 
-    $revisionNumber = ProjectTask::where('parent_task_id', $task->parent_task_id ?? $task->id)
-        ->max('revision_number') + 1;
+    $parentId = $activeTask->parent_task_id ?? $activeTask->id;
 
+    $revisionNumber = ProjectTask::where(
+        'parent_task_id',
+        $parentId
+    )->max('revision_number') + 1;
+
+    // buat task revisi baru
     $newTask = ProjectTask::create([
-        'project_id'       => $task->project_id,
-        'offer_id'         => $task->offer_id,
-        'parent_task_id'   => $task->parent_task_id ?? $task->id,
-        'revision_number'  => $revisionNumber,
-        'task_name'        => "Revisi {$revisionNumber} - {$task->task_name}",
-        'employee_id'      => $task->employee_id,
-        'category'         => $task->category,
-        'status'           => 'proses',
-        'started_at'       => now(),
+        'project_id'      => $activeTask->project_id,
+        'offer_id'        => $activeTask->offer_id,
+        'parent_task_id'  => $parentId,
+        'revision_number' => $revisionNumber,
+        'task_name'       => "Revisi {$revisionNumber} - {$activeTask->task_name}",
+        'employee_id'     => $activeTask->employee_id,
+        'category'        => $activeTask->category,
+        'status'          => 'proses',
+        'started_at'      => now(),
     ]);
 
     return response()->json([
         'status' => 'ok',
+
+        // info task lama (yang ditolak)
+        'rejected' => [
+            'task_id'     => $activeTask->id,
+            'rejected_by' => auth()->user()->fullname,
+            'rejected_at' => now()->format('d-m-Y H:i'),
+            'reject_note' => $activeTask->reject_note,
+        ],
+
+        // task revisi baru
         'revision' => [
-        'id'       => $newTask->id,
-        'name'     => $newTask->task_name,
-        'category' => $newTask->category,
-        'category_key' => Str::slug($newTask->category),
-        'employee' => optional($newTask->employee?->user)->fullname,
-        'status'   => $newTask->status,
-        'revision' => $newTask->revision_number,
-        ]
+            'id'           => $newTask->id,
+            'name'         => $newTask->task_name,
+            'category'     => $newTask->category,
+            'category_key' => Str::slug($newTask->category),
+            'employee'     => optional($newTask->employee?->user)->fullname,
+            'status'       => $newTask->status,
+            'revision'     => $newTask->revision_number,
+            'reject_note'  => $activeTask->reject_note,
+            'rejected_by'  => auth()->user()->fullname,
+            'rejected_at'  => now()->format('d-m-Y H:i'),
+        ],
     ]);
 }
+
+
 
 public function viewFile(ProjectTaskFile $file)
 {

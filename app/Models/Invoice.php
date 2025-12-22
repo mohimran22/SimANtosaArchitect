@@ -9,36 +9,39 @@ class Invoice extends Model
 {
     use HasUuid;
 
+    const TYPE_SURVEY = 'survey';
+    const TYPE_DP = 'dp';
+
+    const STATUS_DRAFT = 'draft';
+    const STATUS_WAITING = 'waiting_approval';
+    const STATUS_APPROVED = 'approved';
+    const STATUS_REJECTED = 'rejected';
+
     protected $keyType = 'string';
     public $incrementing = false;
 
     protected $casts = [
-        'invoice_date' => 'date'
+        'invoice_date' => 'date',
+        'approved_at'  => 'datetime',
+        'rejected_at'  => 'datetime',
     ];
 
     protected $fillable = [
         'project_id',
         'invoice_number',
         'invoice_date',
-        'invoice_dp_downloaded_at',
-        'invoice_dp_approved_at',
-        // 'created_by',
+        'invoice_type',
+        'amount',
+        'status',
+        'approved_at',
+        'approved_by',
+        'rejected_at',
+        'rejected_by',
+        'reject_note',
     ];
-
-    public function items()
-    {
-        return $this->hasMany(OfferItem::class);
-    }
 
     public function project()
     {
         return $this->belongsTo(Project::class);
     }
-
-    public function package()
-    {
-        return $this->belongsTo(DesignPackage::class, 'design_package_id');
-    }
-
-
 }

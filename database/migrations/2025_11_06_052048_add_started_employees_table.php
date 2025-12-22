@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('project_levels', function (Blueprint $table) {
-            $table->boolean('is_started')->default(false)->after('is_completed');
+        Schema::table('plannings', function (Blueprint $table) {
+            $table->boolean('same_address')->default(false)->after('postal_code_id');
         });
     }
 
@@ -22,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('project_levels', function (Blueprint $table) {
-            $table->dropColumn('is_started');
+            $table->dropColumn('same_address');
         });
     }
 };

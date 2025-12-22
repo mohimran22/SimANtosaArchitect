@@ -104,9 +104,9 @@ class Project extends Model
         return $this->hasOne(Offer::class);
     }
 
-    public function invoice()
+    public function invoices()
     {
-        return $this->hasOne(Invoice::class);
+        return $this->hasMany(Invoice::class);
     }
 
     public function tasks()
@@ -145,4 +145,23 @@ class Project extends Model
             }
         });
     }
+
+    public function getCustomerNameAttribute()
+{
+    return $this->customer?->display_name ?? '-';
+}
+
+public function getEmployeeNameAttribute()
+{
+    return $this->employee?->display_name ?? '-';
+}
+
+public function latestSurveyInvoice()
+{
+    return $this->invoices()
+        ->where('invoice_type', 'survey')
+        ->latest()
+        ->first();
+}
+
 }

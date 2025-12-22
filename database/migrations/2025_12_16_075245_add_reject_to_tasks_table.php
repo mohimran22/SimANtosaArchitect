@@ -12,8 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('project_tasks', function (Blueprint $table) {
-        $table->uuid('approved_by')->nullable();
-        $table->foreign('approved_by')->references('id')->on('users')->cascadeOnDelete();
+        $table->uuid('rejected_by')->nullable();
+        $table->foreign('rejected_by')->references('id')->on('users')->cascadeOnDelete();
+        $table->timestamp('rejected_at')->nullable();
     });
     }
 
@@ -22,11 +23,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-    // Schema::table('project_tasks', function (Blueprint $table) {
-    //     $table->dropColumn('approval_status');
-    //     $table->dropColumn('reject_note');
-    //     $table->dropColumn('approved_at');
-    //     $table->dropColumn('is_revision');
-    // });
+    Schema::table('project_tasks', function (Blueprint $table) {
+        $table->dropColumn('rejected_at');
+        $table->dropColumn('rejected_by');
+    });
     }
 };

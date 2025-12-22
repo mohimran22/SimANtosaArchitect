@@ -157,7 +157,6 @@ public function create(Request $request)
 
         $activeStep = $this->getCurrentStep($project);
 
-
         $timelineSteps = $project
             ? $project->levels
                 ->sortBy('level_order')
@@ -200,10 +199,10 @@ public function create(Request $request)
                 // ['level_order' => 15, 'level_name' => 'Revisi DED'],
                 // ['level_order' => 16, 'level_name' => 'Form SPK RAB'],
                 ['level_order' => 7, 'level_name' => 'Proses Pengerjaan'],
-                ['level_order' => 8, 'level_name' => 'Pengerjaan RAB'],
-                ['level_order' => 9, 'level_name' => 'Revisi RAB'],
-                ['level_order' => 10, 'level_name' => 'Invoice Pelunasan Desain'],
-                ['level_order' => 11, 'level_name' => 'Cetak & Softcopy'],
+                // ['level_order' => 8, 'level_name' => 'Pengerjaan RAB'],
+                // ['level_order' => 9, 'level_name' => 'Revisi RAB'],
+                ['level_order' => 8, 'level_name' => 'Invoice Pelunasan Desain'],
+                ['level_order' => 9, 'level_name' => 'Cetak & Softcopy'],
             ]);
 
             return $project;
@@ -231,11 +230,8 @@ public function create(Request $request)
         return Project::with([
          'customer.user',
         'employee',
-
-        // LEVEL + EMPLOYEE
         'levels.employees',
         'consultation.items',
-        // PLANNING LENGKAP
         'planning',
         'survey.items',
         'offer.items',

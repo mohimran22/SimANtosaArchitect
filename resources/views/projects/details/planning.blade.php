@@ -5,6 +5,7 @@
     $planningLevel = $project->levels->firstWhere('level_order', 2);
 
     $planningEmployees = $planningLevel ? $planningLevel->employees : collect();
+    $surveyInvoice = $project?->latestSurveyInvoice();
 @endphp
 
 @if(isset($planning))
@@ -41,13 +42,6 @@
         @endforelse
     </div>
 </div>
-
-
-
-
-            {{-- ========================= --}}
-            {{-- ALAMAT SURVEI --}}
-            {{-- ========================= --}}
             <div class="col-12 mt-3">
                 <label class="fw-semibold">Alamat Lengkap Survei</label>
                 <textarea class="form-control" rows="3" readonly>{{ $planning->survey_address }}</textarea>
@@ -86,6 +80,23 @@
             <div class="col-md-12 mt-3">
                 <label class="fw-semibold">Catatan Rencana Survei</label>
                 <textarea class="form-control" rows="3" readonly>{{ $planning->planning_notes }}</textarea>
+            </div>
+
+            <div class="section-block mb-5">
+                <h3 class="fw-semibold mb-3 mt-3 border-bottom pb-2">
+                    Biaya Survei
+                </h3>
+
+                <div class="col-md-4">
+                    <label class="fw-semibold">Biaya Survei</label>
+                    @if($surveyInvoice)
+                    <input type="text" class="form-control"
+                        value="Rp {{ number_format($surveyInvoice->amount, 0, ',', ',') }}" readonly>
+                    @else
+                    <input type="text" class="form-control"
+                        value="Belum ditentukan" readonly>
+                    @endif
+                </div>
             </div>
 
         </div>

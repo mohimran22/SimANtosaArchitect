@@ -12,19 +12,25 @@ class Planning extends Model
     protected $table = 'plannings';
     protected $keyType = 'string';
     public $incrementing = false;
-        public $timestamps = false;
+    public $timestamps = false;
 
     protected $fillable = [
         'project_id',
         'planning_date',
         'planning_time',
         'survey_address',
+        'same_address',
         'province_id',
         'city_id',
         'district_id',
         'sub_district_id',
         'postal_code_id',
+        'aproved_at',
+        'approved_by',
+        'rejected_at',
+        'rejected_by',
         'planning_notes',
+        'survey_fee'
     ];
 
     public function project()

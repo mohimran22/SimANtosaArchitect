@@ -310,6 +310,26 @@ Route::delete(
 )->name('tasks.files.delete');
 
 
+// routes/web.php
+
+Route::middleware(['auth', 'role:Customer'])->group(function () {
+
+    Route::get(
+        '/customer/invoices/{invoice}',
+        [\App\Http\Controllers\CustomerInvoiceController::class, 'show']
+    )->name('customer.invoices.show');
+
+    Route::post(
+        '/customer/invoices/{invoice}/approve',
+        [\App\Http\Controllers\CustomerInvoiceController::class, 'approve']
+    )->name('customer.invoices.approve');
+
+    Route::post(
+        '/customer/invoices/{invoice}/reject',
+        [\App\Http\Controllers\CustomerInvoiceController::class, 'reject']
+    )->name('customer.invoices.reject');
+
+});
 
 
 

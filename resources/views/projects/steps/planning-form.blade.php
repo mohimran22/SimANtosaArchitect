@@ -1,5 +1,25 @@
+@php
+    $projectLocation = [
+    'survey_address'  => $project->project_location,
+    'province_id'     => $project->province_id,
+    'city_id'         => $project->city_id,
+    'district_id'     => $project->district_id,
+    'sub_district_id' => $project->sub_district_id,
+    'postal_code_id'  => $project->postal_code_id,
+];
+@endphp
+
 <form action="{{ route('projects.plannings.store') }}" method="POST">
     @csrf
+    @if ($errors->any())
+                    <div class="alert alert-danger">
+                        <ul class="mb-0">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
 
     <input type="hidden" name="project_id" value="{{ $project->id }}">
 
@@ -23,16 +43,18 @@
             <input type="time" name="planning_time" class="form-control" required>
         </div>
     </div>
-    {{-- <div class="section-block mb-3 mt-4">
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" id="same_address" name="same_address">
-                                <label class="form-check-label fw-semibold" for="same_address">
-                                    Lokasi Survei sama dengan Lokasi proyek?
-                                </label>
-                            </div>
-                        </div> --}}
-    <div class="section-block mb-5">
-                                <h3 class="fw-semibold mb-3 border-bottom pb-2">Lokasi Proyek</h3>
+        <div class="section-block mb-3 mt-4">
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox"
+                    id="same_address" name="same_address" checked>
+                <label class="form-check-label fw-semibold" for="same_address">
+                    Lokasi Survei sama dengan Lokasi Proyek
+                </label>
+            </div>
+        </div>
+
+                            <div class="section-block mb-5" id="location-fields">
+                                <h3 class="fw-semibold mb-3 mt-3 border-bottom pb-2">Lokasi Proyek</h3>
                                 <div class="row g-4">
                                     <div class="col-12">
                                         <label class="form-label required">Alamat Lengkap</label>
@@ -104,25 +126,46 @@
                                     </div>
                                 </div>
                             </div>
-
-    
-    {{-- @include('projects.partials.location-selector', [
-        'prefix' => 'survey_',
-        'locationOld' => old()
-    ]) --}}
-
-
     <div class="mt-3">
         <label class="form-label">Catatan Survei</label>
         <textarea name="planning_notes" class="form-control" rows="3"></textarea>
     </div>
+            <div class="section-block mb-5">
+                <h3 class="fw-semibold mb-3 mt-3 border-bottom pb-2">
+                    Biaya Survei
+                </h3>
+
+                <div class="col-md-4">
+                    <label class="form-label required">Biaya Survei</label>
+
+                    <input type="text"
+                        name="survey_fee"
+                        id="survey_fee"
+                        class="form-control rupiah @error('survey_fee') is-invalid @enderror"
+                        value="{{ old('survey_fee', 'Rp 0') }}"
+                        required>
+
+                    <small class="text-muted">
+                        Isi <strong>Rp 0</strong> jika survei gratis
+                    </small>
+
+                    @error('survey_fee')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+            </div>
+
 
     <div class="text-end mt-4">
         <button class="btn btn-dark">Simpan Form</button>
     </div>
 </form>
 
+
 @push('js')
+<script>
+    window.projectLocation = @json($projectLocation);
+</script>
 <script>
 $('#survey_province').change(function () {
 var id = $(this).val();
@@ -181,6 +224,75 @@ if (id) {
         });
     });
     }
+});
+</script>
+
+<script>
+$(document).ready(function () {
+
+function fillFromProject() {
+    const loc = window.projectLocation;
+    if (!loc) return;
+
+    $('textarea[name="survey_address"]').val(loc.survey_address);
+
+    $('#survey_province').val(loc.province_id).trigger('change');
+
+    $.get('/api/cities/' + loc.province_id, function () {
+        $('#survey_city').val(loc.city_id).trigger('change');
+
+        $.get('/api/districts/' + loc.city_id, function () {
+            $('#survey_district').val(loc.district_id).trigger('change');
+
+            $.get('/api/sub_districts/' + loc.district_id, function () {
+                $('#survey_sub_district').val(loc.sub_district_id).trigger('change');
+
+                $.get('/api/postal_codes/' + loc.sub_district_id, function () {
+                    $('#survey_postal_code').val(loc.postal_code_id).trigger('change');
+                });
+            });
+        });
+    });
+}
+
+
+    function setReadonly(state) {
+        $('#location-fields').find('textarea, input')
+            .prop('readonly', state);
+
+        $('#location-fields').find('select')
+            .prop('disabled', state)
+            .trigger('change.select2');
+    }
+
+
+    // toggle checkbox
+    $('#same_address').on('change', function () {
+        if (this.checked) {
+            fillFromProject();
+            setReadOnly(true);
+        } else {
+            setReadOnly(false);
+        }
+    });
+
+    // initial load
+    if ($('#same_address').is(':checked')) {
+        fillFromProject();
+        setReadOnly(true);
+    }
+});
+</script>
+<script>
+document.querySelectorAll('.rupiah').forEach(el => {
+    el.addEventListener('input', function () {
+        let value = this.value.replace(/[^\d]/g, '');
+        this.value = new Intl.NumberFormat('id-ID', {
+            style: 'currency',
+            currency: 'IDR',
+            minimumFractionDigits: 0
+        }).format(value || 0);
+    });
 });
 </script>
 @endpush
