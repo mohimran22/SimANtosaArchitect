@@ -55,13 +55,13 @@
 
             <div class="col-md-2">
                 <label class="fw-semibold">Harga Satuan</label>
-                <input type="text" class="form-control" readonly
+                <input type="text" class="form-control" disabled
                        value="Rp {{ number_format($offer->price_meter, 0, ',', '.') }}">
             </div>
 
             <div class="col-md-2">
                 <label class="fw-semibold">Total Harga</label>
-                <input type="text" class="form-control" readonly
+                <input type="text" class="form-control" disabled
                        value="Rp {{ number_format($offer->total_price, 0, ',', '.') }}">
             </div>
         </div>

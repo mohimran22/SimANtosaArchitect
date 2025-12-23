@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ProjectRequest;
 use App\Models\Employee;
 use App\Models\Customer;
+use App\Models\Invoice;
 use App\Models\Province;
 use App\Models\City;
 use App\Models\District;
@@ -147,7 +148,7 @@ class ProjectController extends Controller
         };
     }
 
-public function create(Request $request)
+    public function create(Request $request)
     {
         $project = null;
 
@@ -156,6 +157,31 @@ public function create(Request $request)
         }
 
         $activeStep = $this->getCurrentStep($project);
+        $surveyInvoice = Invoice::where('project_id', $project?->id)
+            ->where('invoice_type', 'survey')
+            ->latest()
+            ->first();
+
+        $surveyApproved = $surveyInvoice && $surveyInvoice->status === 'approved';
+        $isFreeSurvey = !$surveyInvoice && $project?->levels
+            ->firstWhere('level_order', 3)?->is_started;
+
+        $surveyWaiting  = $surveyInvoice && $surveyInvoice->status === 'waiting_approval';
+        $surveyRejected = $surveyInvoice && $surveyInvoice->status === 'rejected';
+        $invoiceDp = Invoice::where('project_id', $project?->id)
+            ->where('invoice_type', Invoice::TYPE_DP)
+            ->first();
+
+
+        // 🔥 OVERRIDE STEP
+        if (
+            $project &&
+            $project->planning &&
+            ($isFreeSurvey || $surveyApproved) &&
+            $activeStep == 3
+        ) {
+            $activeStep = 4;
+        }
 
         $timelineSteps = $project
             ? $project->levels
@@ -172,7 +198,9 @@ public function create(Request $request)
 
         return view('projects.create', array_merge(
             $this->formData(),
-            compact('project', 'timelineSteps', 'activeStep')
+            compact('project', 'timelineSteps', 'activeStep', 'surveyInvoice',
+        'surveyApproved',
+        'isFreeSurvey', 'surveyWaiting', 'surveyRejected', 'invoiceDp')
         ));
     }
     public function store(ProjectRequest $request)
@@ -188,6 +216,16 @@ public function create(Request $request)
                 ['level_order' => 4, 'level_name' => 'Penawaran Jasa Desain'],
                 ['level_order' => 5, 'level_name' => 'Kontrak Desain'],
                 ['level_order' => 6, 'level_name' => 'Invoice Desain DP'],
+                ['level_order' => 7, 'level_name' => 'Proses Pengerjaan'],
+                ['level_order' => 8, 'level_name' => 'Invoice Pelunasan Desain'],
+                ['level_order' => 9, 'level_name' => 'Cetak & Softcopy'],
+            ]);
+            return $project;
+        });
+        return redirect()
+            ->route('projects.create', ['project_id' => $project->id])
+            ->with('success', 'Project berhasil dibuat, lanjut ke form konsultasi.');
+    }
                 // ['level_order' => 7, 'level_name' => 'Form SPK Desain Denah'],
                 // ['level_order' => 8, 'level_name' => 'Pengerjaan Desain Denah'],
                 // ['level_order' => 9, 'level_name' => 'Revisi Desain Denah'],
@@ -198,20 +236,9 @@ public function create(Request $request)
                 // ['level_order' => 14, 'level_name' => 'Pengerjaan DED'],
                 // ['level_order' => 15, 'level_name' => 'Revisi DED'],
                 // ['level_order' => 16, 'level_name' => 'Form SPK RAB'],
-                ['level_order' => 7, 'level_name' => 'Proses Pengerjaan'],
+                
                 // ['level_order' => 8, 'level_name' => 'Pengerjaan RAB'],
                 // ['level_order' => 9, 'level_name' => 'Revisi RAB'],
-                ['level_order' => 8, 'level_name' => 'Invoice Pelunasan Desain'],
-                ['level_order' => 9, 'level_name' => 'Cetak & Softcopy'],
-            ]);
-
-            return $project;
-        });
-
-        return redirect()
-            ->route('projects.create', ['project_id' => $project->id])
-            ->with('success', 'Project berhasil dibuat, lanjut ke form konsultasi.');
-    }
 
     private function getCurrentStep($project)
     {
@@ -222,7 +249,7 @@ public function create(Request $request)
             ->sortBy('level_order')
             ->first();
 
-        return $current ? $current->level_order + 1 : 99;
+        return $current ? $current->level_order + 1 : 9;
     }
 
     private function loadFullProject($projectId)
@@ -258,37 +285,23 @@ public function create(Request $request)
     ]);
 }
 
-/**
- * Dapatkan step aktif untuk project.
- */
 private function computeActiveStep($project, $request = null)
 {
-    // Jika URL membawa ?step= → pakai itu
     if ($request && $request->filled('step')) {
         return (int) $request->step;
     }
 
-    // Jika project belum ada → step 1
     if (!$project) {
         return 1;
     }
 
-    // Cari level yang sedang berjalan
     $current = $project->levels
-        ->where('is_started', true)
         ->where('is_completed', false)
         ->sortBy('level_order')
         ->first();
 
-    // Jika tidak ada → berarti semua selesai → step terakhir
-    if (!$current) {
-        return 20;
-    }
-
-    // Step aktif adalah level_order
-    return $current->level_order;
+    return $current ? $current->level_order + 1 : 9;
 }
-
 
 
 public function show(Project $project)

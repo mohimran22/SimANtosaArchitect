@@ -80,7 +80,7 @@
                 <textarea class="form-control" rows="3" readonly>{{ $consultation->notes }}</textarea>
             </div>
 
-            <div class="col-md-12 mt-3 d-flex justify-content-around text-center">
+            <div class="col-md-4 mt-3 d-flex justify-content-around text-center">
                 <div>
                     <label class="form-label fw-bold d-block">Persetujuan Konsultan</label>
                     <i class="ti {{ $consultation->consultant_signed ? 'ti-check text-success' : 'ti-x text-danger' }}"

@@ -22,43 +22,46 @@ public function store(OfferRequest $request)
     DB::beginTransaction();
 
     try {
-        // HITUNG TOTAL
-        $subtotal = $data['total_price'] ?? 0;
-        $discount = $data['discount'] ?? 0;
 
+        $inputVolume   = (float) $data['volume'];
+        $billingVolume = $inputVolume > 0 && $inputVolume < 100 ? 100 : $inputVolume;
+
+        $priceMeter = (float) $data['price_meter'];
+
+        $subtotal = $billingVolume * $priceMeter;
+
+        $discount = (float) ($data['discount'] ?? 0);
         $subtotalAfterDiscount = $subtotal - $discount;
-        $totalTax = $subtotalAfterDiscount * (($data['tax_rate'] ?? 0) / 100);
-        $grandTotal = $subtotalAfterDiscount + $totalTax + ($data['shipping'] ?? 0);
 
-        // SIMPAN OFFER
+        $taxRate = (float) ($data['tax_rate'] ?? 0);
+        $totalTax = $subtotalAfterDiscount * ($taxRate / 100);
+
+        $shipping = (float) ($data['shipping'] ?? 0);
+        $grandTotal = $subtotalAfterDiscount + $totalTax + $shipping;
+
         $offer = Offer::create([
             'project_id'        => $data['project_id'],
             'design_package_id' => $data['design_package_id'],
             'offer_number'      => $data['offer_number'] ?: $this->generateOfferNumber(),
             'offer_date'        => $data['offer_date'],
             'contact_name'      => $data['contact_name'],
-
-            'volume'            => $data['volume'],
+            'volume'            => $inputVolume,
             'satuan'            => $data['satuan'],
-            'price_meter'       => $data['price_meter'],
+            'price_meter'       => $priceMeter,
             'total_price'       => $subtotal,
-
             'discount'          => $discount,
-            'tax_rate'          => $data['tax_rate'],
+            'tax_rate'          => $taxRate,
             'total_tax'         => $totalTax,
-
-            'shipping'          => $data['shipping'],
+            'shipping'          => $shipping,
             'grand_total'       => $grandTotal,
-
             'notes'             => $data['notes'] ?? null,
             'created_by'        => auth()->id(),
         ]);
 
-        // SIMPAN ITEM
         if ($request->has('items')) {
             foreach ($request->items as $item) {
-                if (!$item['item_name']) continue; // skip kategori
-                
+                if (empty($item['item_name'])) continue;
+
                 OfferItem::create([
                     'offer_id'  => $offer->id,
                     'item_name' => $item['item_name'],
@@ -67,8 +70,6 @@ public function store(OfferRequest $request)
             }
         }
 
-
-        // UPDATE PROJECT LEVEL
         ProjectLevel::where([
             'project_id'  => $data['project_id'],
             'level_order' => 4,
@@ -91,6 +92,7 @@ public function store(OfferRequest $request)
         return back()->withErrors($e->getMessage());
     }
 }
+
 
 private function generateOfferNumber()
 {

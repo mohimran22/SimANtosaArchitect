@@ -142,7 +142,7 @@
                         name="survey_fee"
                         id="survey_fee"
                         class="form-control rupiah @error('survey_fee') is-invalid @enderror"
-                        value="{{ old('survey_fee', 'Rp 0') }}"
+                        value="{{ old('survey_fee') }}"
                         required>
 
                     <small class="text-muted">

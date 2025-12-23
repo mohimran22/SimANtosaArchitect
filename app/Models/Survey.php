@@ -26,6 +26,7 @@ class Survey extends Model
         'consultant_signed',
         'client_signed',
         'signed_at',
+        'document',
     ];
 
     public function project()
@@ -38,7 +39,7 @@ class Survey extends Model
         return $this->hasMany(SurveyItem::class);
     }
 
-        public function surveyimages()
+        public function images()
     {
         return $this->hasMany(SurveyImage::class);
     }

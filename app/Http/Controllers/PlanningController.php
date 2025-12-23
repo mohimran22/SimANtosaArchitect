@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\InvoiceNumberHelper;
 use App\Models\Customer;
 use App\Models\Project;
 use App\Models\Planning;
@@ -14,6 +15,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class PlanningController extends Controller
 {
@@ -21,14 +23,16 @@ class PlanningController extends Controller
 public function store(Request $request)
 {
     $project = Project::findOrFail($request->project_id);
-
+    $request->merge([
+    'same_address' => $request->boolean('same_address'),
+    ]);
     $data = $request->validate([
         'project_id'      => 'required|uuid',
         'employee_id'     => 'required|array',
         'employee_id.*'   => 'uuid',
         'planning_date'   => 'required|date',
         'planning_time'   => 'required',
-        'same_address'    => 'nullable|boolean',
+        'same_address'    => 'required|boolean',
         'survey_address'  => 'nullable|string',
         'province_id'     => 'nullable|integer',
         'city_id'         => 'nullable|integer',
@@ -41,7 +45,7 @@ public function store(Request $request)
 
     // Jika lokasi SAMA dengan proyek
     if ($request->boolean('same_address')) {
-        $data['survey_address']  = $project->survey_address;
+        $data['survey_address']  = $project->project_location;
         $data['province_id']     = $project->province_id;
         $data['city_id']         = $project->city_id;
         $data['district_id']     = $project->district_id;
@@ -61,7 +65,7 @@ public function store(Request $request)
 
     DB::transaction(function () use ($data, $project) {
 
-        $surveyFee = (int) preg_replace('/\D/', '', $data['survey_fee']);
+        $surveyFee = (int) preg_replace('/[^0-9]/', '', $data['survey_fee']);
 
         $planning = Planning::create([
             'project_id'      => $data['project_id'],
@@ -101,6 +105,7 @@ public function store(Request $request)
                 'amount'       => $surveyFee,
                 'status'       => Invoice::STATUS_WAITING,
                 'invoice_date' => now(),
+                'approval_token' => Str::uuid(),
             ]);
         }
     });
@@ -111,41 +116,48 @@ public function store(Request $request)
 }
 
 
-        public function pdf(Planning $planning)
-    {
-        $planning->load('project.customer.user');
-        $view = view('projects.plannings.pdf', compact('planning'))->render();
+public function planningSurveyPdf(Project $project)
+{
+    $planning = $project->planning;
+    $surveyInvoice = $project->latestSurveyInvoice();
+    $planningEmployees = $planning?->employees;
 
-        $pdf = Pdf::loadHTML($view)->setPaper('a4', 'portrait');
-        return $pdf->download("planning-{$planning->id}.pdf");
-    }
+    abort_if(!$planning, 404);
 
-    public function update(Request $request, Planning $planning)
-    {
-        $validated = $request->validate([
-            'planning_date' => 'required|date',
-            'planning_time' => 'required',
-            'employee_id'   => 'required|array',
-            'employee_id.*'  => 'uuid',
-        ]);
+    return Pdf::loadView('pdf.planning-survey', compact(
+        'project',
+        'planning',
+        'surveyInvoice',
+        'planningEmployees'
+    ))
+    ->setPaper('A4')
+    ->stream('Rencana-Survei.pdf');
+}
 
-        // 🔹 UPDATE DATA PLANNING
+public function update(Request $request, Planning $planning)
+{
+    $request->validate([
+        'planning_date' => 'required|date',
+        'planning_time' => 'required',
+        'employee_id'   => 'required|array',
+        'employee_id.*' => 'exists:employees,id',
+        'survey_fee'    => 'required',
+    ]);
+
+    DB::transaction(function () use ($request, $planning) {
+
         $planning->update([
-            'planning_date'  => $request->planning_date,
-            'planning_time'  => $request->planning_time,
-            'planning_notes' => $request->planning_notes,
-            'survey_address' => $request->survey_address,
-            'province_id'    => $request->province_id,
-            'city_id'        => $request->city_id,
-            'district_id'    => $request->district_id,
-            'sub_district_id'=> $request->sub_district_id,
-            'postal_code_id' => $request->postal_code_id,
+            'planning_date'   => $request->planning_date,
+            'planning_time'   => $request->planning_time,
+            'planning_notes'  => $request->planning_notes,
+            'survey_address'  => $request->survey_address,
+            'province_id'     => $request->province_id,
+            'city_id'         => $request->city_id,
+            'district_id'     => $request->district_id,
+            'sub_district_id' => $request->sub_district_id,
+            'postal_code_id'  => $request->postal_code_id,
         ]);
 
-        /**
-         * 🔹 UPDATE PETUGAS SURVEI DI LEVEL PROJECT
-         * Petugas TIDAK disimpan di tabel planning.
-         */
         $project = $planning->project;
         $planningLevel = $project->levels->firstWhere('level_order', 2);
 
@@ -153,12 +165,48 @@ public function store(Request $request)
             $planningLevel->employees()->sync($request->employee_id);
         }
 
-        return back()->with('success', 'Planning berhasil diperbarui.');
+        $amount = (int) preg_replace('/[^0-9]/', '', $request->survey_fee);
+
+        Invoice::where('project_id', $project->id)
+            ->where('invoice_type', 'survey')
+            ->whereIn('status', ['waiting_approval', 'rejected'])
+            ->update([
+                'status' => 'obsolete',
+            ]);
+        if ($amount > 0) {
+        Invoice::create([
+            'project_id'     => $project->id,
+            'invoice_type'   => 'survey',
+            'invoice_number' => InvoiceNumberHelper::survey(),
+            'amount'         => $amount,
+            'status'         => $amount > 0 ? 'waiting_approval' : 'approved',
+            'approval_token' => $amount > 0 ? Str::uuid() : null,
+            'approved_at'    => $amount > 0 ? null : now(),
+        ]);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+        if ($amount === 0) {
+
+            // Complete Rencana Survei
+            ProjectLevel::where('project_id', $project->id)
+                ->where('level_order', 2)
+                ->update([
+                    'is_completed' => true,
+                ]);
+
+            // Start Survei
+            ProjectLevel::where('project_id', $project->id)
+                ->where('level_order', 3)
+                ->update([
+                    'is_started' => true,
+                ]);
+        }
+
+    });
+
+    return back()->with('success', 'Rencana survei berhasil diperbarui.');
+}
+
     public function destroy(Student $student)
     {
         if ($student) {

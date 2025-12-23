@@ -30,7 +30,6 @@ class Planning extends Model
         'rejected_at',
         'rejected_by',
         'planning_notes',
-        'survey_fee'
     ];
 
     public function project()

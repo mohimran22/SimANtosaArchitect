@@ -15,38 +15,29 @@
         </div>
     </div>
 
-
     <div class="page-body">
         <div class="container-xl">
             @include('projects.components.timeline-horizontal')
                 @php
-                    $surveyInvoice = $project?->latestSurveyInvoice();
-
-                    $surveyApproved = $surveyInvoice?->status === 'approved';
-                    $surveyWaiting  = $surveyInvoice?->status === 'waiting_approval';
-                    $surveyRejected = $surveyInvoice?->status === 'rejected';
+                    $planning = $project?->planning;
+                    $disableEdit = $surveyWaiting;
                 @endphp
-
-            {{-- STEP 1 – Form Proyek --}}
             @if($activeStep == 1)
             <div id="step-1" class="step-section">
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body px-5 py-4">
-                        <h3 class="mb-4 fw-bold">1. Buat Proyek Baru</h3>
+                        <h3 class="mb-4 fw-bold">Buat Proyek Baru</h3>
                         @include('projects.steps.create-project')
                     </div>
                 </div>
             </div>
             @endif
-
-
-            {{-- DETAIL PROJECT --}}
             @if($activeStep >= 2)
             <div id="step-2" class="step-section">
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body px-5 py-4">
                         <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h3 class="fw-bold m-0">1. Proyek</h3>
+                            <h3 class="fw-bold m-0">Proyek</h3>
 
                             <div class="btn-group">
                                 <button type="button" id="btn-edit-project"
@@ -65,7 +56,6 @@
 
                         </div>
                     </div>
-
                         <div id="project-view">
                             @include('projects.details.project')
                         </div>
@@ -77,28 +67,22 @@
                 </div>
             </div>
             @endif
-
-
-            {{-- STEP 2 – Konsultasi --}}
             @if($activeStep == 2)
             <div id="step-2" class="step-section">
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body px-5 py-4">
-                        <h3 class="mb-4 fw-bold">2. Form Konsultasi</h3>
+                        <h3 class="mb-4 fw-bold">1. Form Konsultasi</h3>
                         @include('projects.steps.consultation-form')
                     </div>
                 </div>
             </div>
             @endif
-
-
-            {{-- DETAIL KONSULTASI --}}
             @if($activeStep >= 3)
             <div id="step-3" class="step-section">
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body px-5 py-4">
                         <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h3 class="fw-bold m-0">2. Tahap Konsultasi</h3>
+                            <h3 class="fw-bold m-0">1. Tahap Konsultasi</h3>
                             <div class="btn-group">
                                 <button type="button" id="btn-edit-consultation" 
                                     class="btn btn-sm btn-dark me-2"
@@ -115,7 +99,6 @@
                             </div>
                         </div>
                     </div>
-                        <h3 class="mb-3 fw-bold"></h3>
                         <div id="consultation-view">
                             @include('projects.details.consultation')
                         </div>
@@ -126,74 +109,91 @@
                 </div>
             </div>
             @endif
+            @if($activeStep >= 3)
+            <div id="step-planning" class="step-section">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body px-5 py-4">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h3 class="fw-bold mb-0">2. Rencana Survei</h3>
 
+                        <div class="d-flex align-items-center gap-2">
+                            <button type="button"
+                                id="btn-edit-planning"
+                                class="btn btn-sm btn-dark {{ $disableEdit ? 'disabled' : '' }}"
+                                {{ $disableEdit ? 'disabled' : '' }}
+                                title="{{ $disableEdit ? 'Menunggu persetujuan biaya survei' : 'Edit Data' }}">
+                                <i class="ti ti-edit"></i>
+                            </button>
 
-            {{-- STEP 3 --}}
-{{-- STEP 3 --}}
-@if($activeStep == 3)
-<div id="step-3" class="step-section">
-    <div class="card shadow-sm border-0 mb-4">
-        <div class="card-body px-5 py-4">
-            <h3 class="fw-bold mb-4">3. Rencana Survei</h3>
-
-            {{-- JIKA PLANNING BELUM ADA → TAMPILKAN FORM --}}
-            @if(!$project->planning)
-                @include('projects.steps.planning-form')
-
-            {{-- JIKA PLANNING SUDAH ADA --}}
-            @else
-                {{-- DETAIL PLANNING --}}
-                @include('projects.details.planning')
-
-                {{-- ALERT STATUS --}}
-                @if($surveyRejected)
-                    <div class="alert alert-danger mt-4">
-                        <strong>Biaya survei ditolak:</strong><br>
-                        {{ $surveyInvoice->reject_note }}
+                            {{-- @if($surveyInvoice && $surveyInvoice->amount > 0)
+                                <a href="{{ route('projects.planning-survey.pdf', $project->id) }}"
+                                    class="btn btn-sm btn-dark"
+                                    target="_blank"
+                                    title="Lihat PDF Rencana Survei">
+                                    <i class="ti ti-file-text"></i>
+                                </a>
+                            @endif
+                            @if($surveyInvoice && $surveyInvoice->status === 'approved')
+                                <a href="{{ route('projects.invoice-survey', $project->id) }}"
+                                    class="btn btn-dark"
+                                    target="_blank"
+                                    title="Cetak Invoice Rencana Survei">
+                                    <i class="ti ti-receipt"></i>
+                                </a>
+                            @endif --}}
+                        </div>
                     </div>
-                @elseif($surveyWaiting)
-                    <div class="alert alert-warning mt-4">
-                        <i class="ti ti-clock me-1"></i>
-                        Menunggu persetujuan biaya survei dari customer.
+
+                        @if(!$project->planning)
+                            @include('projects.steps.planning-form')
+                        @else
+                            <div id="planning-view">
+                                @include('projects.details.planning')
+                            </div>
+                            @if(!$surveyWaiting && !$surveyApproved)
+                                <div id="planning-edit" style="display:none;">
+                                    @include('projects.edit.planning-form')
+                                </div>
+                            @endif
+
+                            @if($surveyInvoice && $surveyInvoice->status === 'rejected')
+                                <div class="alert alert-danger mt-4">
+                                    Biaya survei ditolak:<br>{{ $surveyInvoice->reject_note }}
+                                    
+                                </div>
+
+                            @elseif($surveyInvoice && $surveyInvoice->status === 'waiting_approval' && $surveyInvoice->amount > 0)
+                                <div class="alert alert-warning mt-4">
+                                    Menunggu persetujuan biaya survei dari customer (via PDF)<br>Data rencana survei tidak dapat diubah selama proses persetujuan.
+                                </div>
+                            @endif
+                        @endif
                     </div>
-                @endif
+                </div>
+            </div>
             @endif
-
-        </div>
-    </div>
-</div>
-@endif
-
-
-
-            {{-- STEP 4 --}}
             @if(
                 $activeStep == 4 &&
                 $planning &&
                 (
-                    $planning->survey_fee == 0 ||
-                    $surveyApproved
+                    $project->levels->firstWhere('level_order', 3)?->is_started
                 )
             )
-            <div id="step-4" class="step-section">
+            <div id="step-survey" class="step-section">
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body px-5 py-4">
-                        <h3 class="mb-3 fw-bold">4. Form Survei Lapangan</h3>
+                        <h3 class="mb-3 fw-bold">3. Form Survei Lapangan</h3>
                         @include('projects.steps.survey-form')
                     </div>
                 </div>
             </div>
             @endif
-
-
-
-            {{-- DETAIL SURVEI --}}
             @if($activeStep >= 5)
             <div id="step-5" class="step-section">
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body px-5 py-4">       
                         <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h3 class="fw-bold m-0">4. Survei</h3>
+                            <h3 class="fw-bold m-0">3. Survei</h3>
                             <div class="btn-group">
                                 <button type="button" id="btn-edit-survey"
                                     class="btn btn-sm btn-dark me-2"
@@ -216,25 +216,22 @@
                 </div>
             </div>
             @endif
-
-            {{-- STEP 5 --}}
             @if($activeStep == 5)
             <div id="step-5" class="step-section">
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body px-5 py-4">
-                        <h3 class="mb-3 fw-bold">5. Form Penawaran Jasa Desain</h3>
+                        <h3 class="mb-3 fw-bold">4. Form Penawaran Jasa Desain</h3>
                         @include('projects.steps.desain-form')
                     </div>
                 </div>
             </div>
             @endif
-
             @if($activeStep >= 6)
             <div id="step-6" class="step-section">
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body px-5 py-4">
                         <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h3 class="mb-3 fw-bold">5. Penawaran Jasa Desain</h3>
+                            <h3 class="mb-3 fw-bold">4. Penawaran Jasa Desain</h3>
                             <div class="btn-group">
                                 <button type="button" id="btn-edit-offer"
                                     class="btn btn-sm btn-dark me-2"
@@ -261,12 +258,11 @@
                 </div>
             </div>
             @endif
-
             @if($activeStep >= 6)
             <div id="step-6" class="step-section">
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body px-5 py-4">
-                        <h3 class="mb-3 fw-bold">6. Draft Kontrak Pelaksanaan Pekerjaan</h3>
+                        <h3 class="mb-3 fw-bold">5. Draft Kontrak Pelaksanaan Pekerjaan</h3>
 
                         <div class="d-flex gap-2">
 
@@ -281,12 +277,12 @@
                                     method="POST"
                                     onsubmit="return confirm('Approve kontrak dan lanjut ke tahap Invoice DP?')">
                                     @csrf
-                                    <button class="btn btn-success">
+                                    <button class="btn btn-dark">
                                         <i class="ti ti-check"></i> Approve Kontrak
                                     </button>
                                 </form>
                             @else
-                                <span class="badge bg-success align-self-center">
+                                <span class="badge bg-dark align-self-center">
                                     <i class="ti ti-check"></i>
                                     Disetujui {{ $project->offer->approved_at->format('d M Y') }}
                                 </span>
@@ -296,16 +292,15 @@
                 </div>
             </div>
             @endif
-
             @if($activeStep >= 7)
             <div id="step-7" class="step-section">
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body px-5 py-4">
-                        <h3 class="mb-3 fw-bold">7. Invoice Pembayaran Desain DP</h3>
+                        <h3 class="mb-3 fw-bold">6. Invoice Pembayaran Desain DP</h3>
                             
                                 <div class="d-flex gap-2">
                                     @php
-                                        $invoice = $project->invoice;
+                                        $invoice = $invoiceDp;
                                     @endphp
 
                                 
@@ -321,7 +316,7 @@
                                             target="_blank">
                                             <i class="ti ti-download"></i>Download Invoice
                                         </a>
-                                        <span class="btn btn-outline-success disabled">
+                                        <span class="btn btn-outline-dark disabled">
                                             <i class="ti ti-check"></i> Sudah didownload
                                         </span>
                                     @endif
@@ -334,7 +329,7 @@
                                             method="POST"
                                             onsubmit="return confirm('Lanjut ke tahap pengerjaan?')">
                                             @csrf
-                                            <button class="btn btn-success">
+                                            <button class="btn btn-dark">
                                                 <i class="ti ti-arrow-right"></i> Lanjut ke tahap berikutnya
                                             </button>
                                         </form>
@@ -344,20 +339,62 @@
                 </div>
             </div>
             @endif
-
-            @if($activeStep == 8)
+            @if($activeStep >= 8)
             <div id="step-8" class="step-section">
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body px-5 py-4">
-                        <h3 class="mb-3 fw-bold">8. Form Pengerjaan</h3>
+                        <h3 class="mb-3 fw-bold">7. Form Pengerjaan</h3>
                         @include('projects.steps.work-process')
+                    </div>
+                </div>
+            </div>
+            @endif
+            @if($activeStep >= 9)
+            <div id="step-9" class="step-section">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body px-5 py-4">
+                        <h3 class="mb-3 fw-bold">8. Invoice Pelunasan Desain</h3>
+
+                        @php
+                            $invoiceFinal = $project->invoices
+                                ->where('invoice_type', 'final')
+                                ->first();
+                        @endphp
+
+                        <div class="d-flex gap-2">
+                            <a href="{{ route('projects.invoice.final', $project->id) }}"
+                            class="btn btn-dark"
+                            target="_blank">
+                                <i class="ti ti-download"></i> Download Invoice Pelunasan
+                            </a>
+
+                            @if(
+                                $invoiceFinal &&
+                                $invoiceFinal->downloaded_at &&
+                                !$invoiceFinal->approved_at
+                            )
+                                <form action="{{ route('projects.invoice.final.approve', $project->id) }}"
+                                    method="POST"
+                                    onsubmit="return confirm('Selesaikan proyek?')">
+                                    @csrf
+                                    <button class="btn btn-success">
+                                        <i class="ti ti-check"></i> Konfirmasi Pelunasan
+                                    </button>
+                                </form>
+                            @endif
+
+                            @if($invoiceFinal?->approved_at)
+                                <span class="btn btn-outline-success disabled">
+                                    <i class="ti ti-check"></i> Pelunasan Selesai
+                                </span>
+                            @endif
+                        </div>
                     </div>
                 </div>
             </div>
             @endif
         </div>
     </div>
-
 @endsection
 
 @push('js')
@@ -633,6 +670,56 @@ function previewMultipleImages(input) {
     });
 }
 </script>
+
+<script>
+document.addEventListener('click', function (e) {
+
+    const btn = e.target.closest('.add-row');
+    if (!btn) return;
+
+    const tableId = btn.dataset.target;
+    const table   = document.getElementById(tableId);
+    const tbody   = table.querySelector('tbody');
+
+    const index = tbody.querySelectorAll('tr').length;
+
+    const row = document.createElement('tr');
+    row.innerHTML = `
+        <td class="row-no text-center">${index + 1}</td>
+        <td>
+            <textarea name="items[${index}][description]"
+                      class="form-control" rows="2"></textarea>
+        </td>
+        <td>
+            <textarea name="items[${index}][remark]"
+                      class="form-control" rows="2"></textarea>
+        </td>
+        <td>
+            <button type="button"
+                    class="btn btn-sm btn-danger remove-row">-</button>
+        </td>
+    `;
+
+    tbody.appendChild(row);
+});
+</script>
+<script>
+document.addEventListener('click', function (e) {
+    const btn = e.target.closest('.remove-row');
+    if (!btn) return;
+
+    const row   = btn.closest('tr');
+    const tbody = row.closest('tbody');
+
+    row.remove();
+
+    // re-numbering
+    tbody.querySelectorAll('tr').forEach((tr, i) => {
+        tr.querySelector('.row-no').textContent = i + 1;
+    });
+});
+</script>
+
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {

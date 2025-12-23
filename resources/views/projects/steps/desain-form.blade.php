@@ -58,6 +58,9 @@
         <div class="col-md-2">
             <label class="form-label">Volume</label>
             <input type="text" name="volume" class="form-control">
+            <small class="text-muted">
+                Minimal order 100 m2
+            </small>
         </div>
         <div class="col-md-2">
             <label class="form-label">Satuan</label>
@@ -73,11 +76,14 @@
             <label class="form-label">Total Harga (Rp)</label>
             <input type="hidden" name="total_price" id="totalPrice">
             <span id="totalPriceFormatted" class="form-control bg-light"></span>
+                <small class="text-warning d-none" id="minOrderNote">
+                    * Volume < 100 m² dihitung sebagai 100 m²
+                </small>
         </div>
     </div>
 
-    <div class="row mb-4">
-
+    
+        <div class="row mb-4">
             <h4 class="fw-bold mb-3">Rincian Pekerjaan</h4>
 
             <table class="table table-bordered align-middle" id="offerItemsTable">
@@ -142,9 +148,7 @@
                     </tr>
                 </tfoot>
             </table>
-
-        
-    </div>
+        </div>
 
     <h4 class="fw-bold mb-3">Keterangan</h4>
 
@@ -178,9 +182,6 @@ document.addEventListener('DOMContentLoaded', function () {
         return "Rp " + num.toLocaleString('id-ID');
     }
 
-    // ============================
-    // EVENT: Pilih paket desain  
-    // ============================
     packageSelect.addEventListener('change', function () {
 
         let packageId = this.value;
@@ -203,12 +204,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 tableBody.innerHTML = "";
 
-                let itemIndex = 0; // <== PENTING
+                let itemIndex = 0;
                 let rowNumber = 1;
 
                 let grouped = {};
 
-                // GROUP ITEM BY CATEGORY
                 data.items.forEach(item => {
                     if (!grouped[item.category]) {
                         grouped[item.category] = [];
@@ -216,10 +216,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     grouped[item.category].push(item);
                 });
 
-                // LOOP CATEGORY + ITEMS
                 Object.keys(grouped).forEach(category => {
 
-                    // Baris kategori (TIDAK ADA INPUT HIDDEN)
                     tableBody.innerHTML += `
                         <tr class="table-secondary">
                             <td class="fw-bold">${rowNumber++}</td>
@@ -228,7 +226,6 @@ document.addEventListener('DOMContentLoaded', function () {
                         </tr>
                     `;
 
-                    // ITEM DI BAWAH KATEGORI
                     grouped[category].forEach(item => {
 
                         tableBody.innerHTML += `
@@ -245,7 +242,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             </tr>
                         `;
 
-                        itemIndex++; // increment hanya untuk item
+                        itemIndex++;
                     });
                 });
 
@@ -253,27 +250,30 @@ document.addEventListener('DOMContentLoaded', function () {
             });
     });
 
-    // ============================
-    // EVENT: Hitung total otomatis  
-    // ============================
     [volumeInput, discountInput, taxRateInput, shippingInput].forEach(input => {
         input.addEventListener('input', hitungTotal);
     });
 
-    // ============================
-    // HITUNG TOTAL  
-    // ============================
     function hitungTotal() {
 
-        let volume = parseFloat(volumeInput.value) || 0;
-        let price = parseFloat(priceMeterInput.value) || 0;
+        let inputVolume = parseFloat(volumeInput.value) || 0;
 
+        // 🚨 Minimum order 100 m2
+        let volume = inputVolume > 0 && inputVolume < 100 ? 100 : inputVolume;
+
+        let price = parseFloat(priceMeterInput.value) || 0;
         let subtotal = volume * price;
 
         totalPriceInput.value = subtotal;
         totalPriceFormatted.innerText = formatRp(subtotal);
 
         document.getElementById("subtotalDisplay").innerText = formatRp(subtotal);
+        const minNote = document.getElementById('minOrderNote');
+        if (inputVolume > 0 && inputVolume < 100) {
+            minNote.classList.remove('d-none');
+        } else {
+            minNote.classList.add('d-none');
+        }
 
         let discount = parseFloat(discountInput.value) || 0;
         let subAfterDiscount = subtotal - discount;
@@ -284,7 +284,6 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById("totalTaxDisplay").innerText = formatRp(totalTax);
 
         let shippingCost = parseFloat(shippingInput.value) || 0;
-
         let grandTotal = subAfterDiscount + totalTax + shippingCost;
         document.getElementById("grandTotalDisplay").innerText = formatRp(grandTotal);
     }

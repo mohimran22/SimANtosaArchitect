@@ -12,111 +12,98 @@ use App\Models\ProjectLevel;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 
 
 class SurveyController extends Controller
 {
 
-    public function store(SurveyRequest $request)
+public function store(SurveyRequest $request)
 {
-    $data = $request->validated();
+    DB::transaction(function () use ($request) {
 
-    $project = Project::with(['employee', 'customer'])
-        ->findOrFail($data['project_id']);
+        $data = $request->validated();
 
-    $consultantSigned = $request->boolean('consultant_signed');
-    $clientSigned     = $request->boolean('client_signed');
+        $project = Project::with(['employee', 'customer'])
+            ->findOrFail($data['project_id']);
 
-    // Jika salah satu tanda tangan dilakukan → simpan timestamp
-    $signedAt = ($consultantSigned || $clientSigned) ? now() : null;
-    $documentationPath = null;
+        $consultantSigned = $request->boolean('consultant_signed');
+        $clientSigned     = $request->boolean('client_signed');
 
-    // 1. SIMPAN FOTO DOKUMENTASI
+        $signedAt = ($consultantSigned || $clientSigned) ? now() : null;
 
-
-    $survey = Survey::create([
-        'project_id'        => $data['project_id'],
-        'created_by'        => auth()->id(),
-        'survey_date'     => $data['survey_date'] ?? null,
-        'survey_time'     => $data['survey_time'] ?? null,
-        'contact_name'      => $data['contact_name'] ?? null,
-        'contact_phone'     => $data['contact_phone'] ?? null,
-        'site_area'    => $data['site_area'] ?? null,
-        'building_area'=> $data['building_area'] ?? null,
-        'notes'             => $data['notes'] ?? null,
-        'consultant_signed' => $consultantSigned,
-        'client_signed'     => $clientSigned,
-        'signed_at'         => $signedAt,
-    ]);
-
-    if ($request->hasFile('documentation')) {
-    foreach ($request->file('documentation') as $file) {
-        $path = $file->store('surveys/documentations', 'public');
-
-        SurveyDocumentation::create([
-            'survey_id' => $survey->id,
-            'file_path' => $path
-        ]);
-    }
-}
-
-// 2. SIMPAN FOTO HASIL SURVEI
-if ($request->hasFile('result_images')) {
-    foreach ($request->file('result_images') as $file) {
-        $path = $file->store('surveys/result-images', 'public');
-
-        SurveyImage::create([
-            'survey_id' => $survey->id,
-            'file_path' => $path
-        ]);
-    }
-}
-
-
-
-    // ============================================================
-    // 4. SIMPAN ITEM DINAMIS (uraian)
-    // ============================================================
-    foreach ($data['items'] as $i => $item) {
-        SurveyItem::create([
-            'survey_id' => $survey->id,
-            'order_no'        => $i + 1,
-            'description'     => $item['description'],
-            'remark'          => $item['remark'] ?? null,
-        ]);
-    }
-
-
-    // ============================================================
-    // 5. Jika client sudah tanda tangan → nyatakan tahap selesai
-    // ============================================================
-    if ($clientSigned) {
-
-        // Tandai level konsultasi selesai
-        $level = ProjectLevel::where([
-            'project_id'  => $project->id,
-            'level_order' => 3,
-        ])->first();
-
-        if ($level) {
-            $level->update([
-                'is_completed' => true,
-            ]);
-            $level->employees()->sync($data['employee_id']);
+        if ($request->hasFile('document')) {
+            $file = $request->file('document');
+            $filename = Str::uuid().'_'.$file->getClientOriginalName();
+            $file->storeAs('surveys', $filename, 'public');
+            $data['document'] = $filename;
         }
 
-        // Mulai tahap survei (level 2) otomatis
-        ProjectLevel::where([
-            'project_id'  => $project->id,
-            'level_order' => 4,
-        ])->update([
-            'is_started' => true,
+        $survey = Survey::create([
+            'project_id'        => $data['project_id'],
+            'created_by'        => auth()->id(),
+            'survey_date'       => $data['survey_date'] ?? null,
+            'survey_time'       => $data['survey_time'] ?? null,
+            'contact_name'      => $data['contact_name'] ?? null,
+            'contact_phone'     => $data['contact_phone'] ?? null,
+            'site_area'         => $data['site_area'] ?? null,
+            'building_area'     => $data['building_area'] ?? null,
+            'document'          => $data['document'] ?? null,
+            'notes'             => $data['notes'] ?? null,
+            'consultant_signed' => $consultantSigned,
+            'client_signed'     => $clientSigned,
+            'signed_at'         => $signedAt,
         ]);
-    }
+
+        if ($request->hasFile('documentation')) {
+            foreach ($request->file('documentation') as $file) {
+                $survey->documentations()->create([
+                    'file_path' => $file->store('surveys/documentations', 'public')
+                ]);
+            }
+        }
+
+        if ($request->hasFile('result_images')) {
+            foreach ($request->file('result_images') as $file) {
+                $survey->images()->create([
+                    'file_path' => $file->store('surveys/result-images', 'public')
+                ]);
+            }
+        }
+
+        // items
+        foreach ($data['items'] as $i => $item) {
+            $survey->items()->create([
+                'order_no'    => $i + 1,
+                'description' => $item['description'],
+                'remark'      => $item['remark'] ?? null,
+            ]);
+        }
+
+        if ($clientSigned) {
+            $level = ProjectLevel::where([
+                'project_id'  => $project->id,
+                'level_order' => 3,
+            ])->first();
+
+            if ($level) {
+                $level->update(['is_completed' => true]);
+                $level->employees()->sync($data['employee_id']);
+            }
+
+            ProjectLevel::where([
+                'project_id'  => $project->id,
+                'level_order' => 4,
+            ])->update(['is_started' => true]);
+        }
+
+        $this->surveyId = $survey->project_id;
+    });
 
     return redirect()
-    ->route('projects.create', ['project_id' => $survey->project_id])
-    ->with('success', 'Form konsultasi berhasil disimpan.');
+        ->route('projects.create', ['project_id' => $this->surveyId])
+        ->with('success', 'Form survey berhasil disimpan.');
 }
 
     public function pdf(Survey $Survey)

@@ -47,7 +47,7 @@
     <div class="mb-3 mt-4">
                             <label class="form-label">Uraian</label>
 
-                            <table class="table table-sm table-bordered" id="items-table">
+                            <table class="table table-sm table-bordered" id="consultation-items-table">
                                 <thead>
                                     <tr>
                                         <th width="5%">No</th>
@@ -87,7 +87,7 @@
                                 </tbody>
                             </table>
 
-                            <button type="button" id="add-row" class="btn btn-sm btn-dark">+ Tambah Uraian</button>
+                            <button type="button" data-target="consultation-items-table" class="btn btn-sm btn-dark add-row">+ Tambah Uraian</button>
                         </div>
 
 

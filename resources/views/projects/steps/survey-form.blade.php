@@ -8,14 +8,14 @@
 
     <div class="row g-4">
         <div class="col-md-4">
-            <label class="form-label">Nama Customer</label>
+            <label class="form-label required">Nama Customer</label>
             <input type="text" class="form-control"
                    name="contact_name"
                    value="{{ old('contact_name', $project->customer->user->fullname ?? '') }}">
         </div>
 
         <div class="col-md-4">
-            <label class="form-label">Petugas Survei</label>
+            <label class="form-label required">Petugas Survei</label>
             <select name="employee_id[]" class="form-select select2" multiple required>
                 @foreach($employees as $employee)
                 <option value="{{ $employee->id }}">{{ $employee->display_name }}</option>
@@ -24,45 +24,58 @@
         </div>
 
         <div class="col-md-2">
-            <label class="form-label">Tanggal Survei</label>
+            <label class="form-label required">Tanggal Survei</label>
             <input type="date" name="survey_date" class="form-control" required>
         </div>
 
         <div class="col-md-2">
-            <label class="form-label">Waktu Survei</label>
+            <label class="form-label required">Waktu Survei</label>
             <input type="time" name="survey_time" class="form-control" required>
         </div>
 
         
 
         <div class="col-md-4">
-            <label class="form-label">Ukuran Tanah (Aktual) </label>
+            <label class="form-label required">Ukuran Tanah (Aktual) </label>
             <input type="text" class="form-control" name="site_area">
         </div>
 
         <div class="col-md-4">
-            <label class="form-label">Ukuran Bangunan (Aktual) </label>
+            <label class="form-label required">Ukuran Bangunan (Aktual) </label>
             <input type="text" class="form-control" name="building_area">
         </div>
     </div>
+    <div class="section-block mt-4"> 
+        <div class="row g-4">
+            <div class="col-md-6 mb-4">
+                <label class="fw-bold required">Foto Hasil Survei / Denah</label>
+                <div class="text-muted mb-2">Foto hasil survei seperti sketsa, denah, atau kondisi lapangan</div>
+                <input type="file"
+                    name="result_images[]"
+                    class="form-control image-input"
+                    data-preview="preview-result-images"
+                    accept="image/*"
+                    multiple>
 
-    <div class="mt-4">
-        <label class="fw-bold">Foto Hasil Survei / Denah</label>
-        <div class="text-muted mb-2">Foto hasil survei seperti sketsa, denah, atau kondisi lapangan</div>
+                <div id="preview-result-images"
+                    class="mt-3 d-flex flex-wrap gap-3"></div>
+            </div>
 
-        <input type="file" 
-            name="result_images[]" 
-            class="form-control" 
-            accept="image/*" 
-            multiple>
-
-        <div id="preview-result-images" class="mt-3 d-flex flex-wrap gap-3"></div>
+            <div class="col-md-6 mb-3">
+                <label for="document" class="required">Upload Denah existing (PDF)</label>
+                <div class="text-muted mb-2">Dokumen hasil survei seperti sketsa, denah, atau kondisi lapangan</div>
+                <input type="file" name="document" class="form-control" accept="application/pdf" required>
+                @error('document')
+                    <small class="text-danger">{{ $message }}</small>
+                @enderror
+            </div>
+        </div>
     </div>
 
     <div class="mb-3 mt-3">
                             <label class="form-label">Uraian</label>
 
-                            <table class="table table-sm table-bordered" id="items-table">
+                            <table class="table table-sm table-bordered" id="survey-items-table">
                                 <thead>
                                     <tr>
                                         <th width="5%">No</th>
@@ -101,21 +114,23 @@
                                 </tbody>
                             </table>
 
-                            <button type="button" id="add-rows" class="btn btn-sm btn-dark">+ Tambah Uraian</button>
+                            <button type="button" data-target="survey-items-table" class="btn btn-sm btn-dark add-row">+ Tambah Uraian</button>
                         </div>
 
-    <div class="mt-4">
-        <label class="fw-bold">Foto Dokumentasi</label>
-        <div class="text-muted mb-2">Upload foto proses survey (opsional)</div>
+        <div class="mb-4">
+            <label class="fw-bold">Foto Dokumentasi</label>
+            <div class="text-muted mb-2">Foto dokumentasi saat kegiatan survei</div>
+            <input type="file"
+                name="documentation[]"
+                class="form-control image-input"
+                data-preview="preview-documentation"
+                accept="image/*"
+                multiple>
 
-        <input type="file" 
-            name="documentation[]" 
-            class="form-control" 
-            accept="image/*" 
-            multiple>
+            <div id="preview-documentation"
+                class="mt-3 d-flex flex-wrap gap-3"></div>
+        </div>
 
-        <div id="preview-documentation" class="mt-3 d-flex flex-wrap gap-3"></div>
-    </div>
     <div class="row mb-3 mt-4">
         <div class="col-md-6">
             <label class="form-label fw-bold">Persetujuan Petugas Survei</label><br>
@@ -129,7 +144,7 @@
             <label class="form-label fw-bold">Persetujuan Customer</label><br>
             <label>
                 <input type="checkbox" name="client_signed" value="1">
-                Customer menyetujui hasil konsultasi ini
+                Customer menyetujui hasil survei ini
             </label>
         </div>
     </div>
@@ -155,45 +170,60 @@
 </script>
 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', () => {
 
-    const addBtn = document.getElementById('add-rows');
-    const table = document.querySelector('#items-table tbody');
+    const fileStores = new Map();
 
-function renumber() {
-    table.querySelectorAll('tr').forEach((tr, idx) => {
-        tr.querySelector('.row-no').textContent = idx + 1;
+    document.querySelectorAll('.image-input').forEach(input => {
+        fileStores.set(input, new DataTransfer());
 
-        tr.querySelectorAll('textarea, input[type="text"]').forEach(el => {
-            el.name = el.name.replace(/items\[\d+]/, `items[${idx}]`);
+        input.addEventListener('change', () => {
+            const previewEl = document.getElementById(input.dataset.preview);
+            const store     = fileStores.get(input);
+
+            const selectedFiles = Array.from(input.files);
+            input.value = '';
+
+            selectedFiles.forEach(file => {
+                store.items.add(file);
+
+                const reader = new FileReader();
+                reader.onload = e => {
+                    const div = document.createElement('div');
+                    div.className = 'position-relative';
+                    div.innerHTML = `
+                        <img src="${e.target.result}"
+                             class="rounded border"
+                             style="width:120px;height:120px;object-fit:cover">
+                        <button type="button"
+                                class="btn btn-sm btn-danger position-absolute top-0 end-0 remove-image">
+                            ×
+                        </button>
+                    `;
+
+                    div.querySelector('.remove-image').addEventListener('click', () => {
+                        const index = Array.from(store.files).findIndex(
+                            f => f.name === file.name && f.size === file.size
+                        );
+
+                        if (index > -1) {
+                            store.items.remove(index);
+                            input.files = store.files;
+                        }
+
+                        div.remove();
+                    });
+
+                    previewEl.appendChild(div);
+                };
+                reader.readAsDataURL(file);
+            });
+
+            input.files = store.files;
         });
     });
-}
-
-    // Add row
-    addBtn.addEventListener('click', function () {
-        const idx = table.querySelectorAll('tr').length;
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td class="row-no text-center">${idx + 1}</td>
-            <td><textarea name="items[${idx}][description]" class="form-control" rows="2"></textarea></td>
-            <td><textarea name="items[${idx}][remark]" class="form-control" rows="2"></textarea></td>
-            <td><button type="button" class="btn btn-sm btn-danger remove-row">-</button></td>
-        `;
-        table.appendChild(tr);
-        renumber();  // ← WAJIB
-    });
-
-    // Remove row
-    table.addEventListener('click', function (e) {
-        if (e.target.matches('.remove-row')) {
-            e.target.closest('tr').remove();
-            renumber(); // ← kamu sudah benar
-        }
-    });
-
-    // Saat halaman edit dibuka → rapikan nomor
-    renumber();
 });
 </script>
+
+
 @endpush

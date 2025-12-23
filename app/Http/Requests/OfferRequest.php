@@ -20,7 +20,7 @@ class OfferRequest extends FormRequest
             'offer_date'         => 'nullable|date',
             'contact_name'       => 'nullable|string|max:255',
 
-            'volume'             => 'nullable|numeric',
+            'volume'             => 'nullable|numeric|min:1',
             'satuan'             => 'nullable|string|max:50',
             'price_meter'        => 'nullable|numeric',
             'total_price'        => 'nullable|numeric',

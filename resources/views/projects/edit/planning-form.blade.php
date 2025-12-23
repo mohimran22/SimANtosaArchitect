@@ -2,6 +2,7 @@
     $planning = $project->planning;
     $planningLevel = $project->levels->firstWhere('level_order', 2);
     $planningEmployees = $planningLevel ? $planningLevel->employees : collect();
+    $surveyInvoice = $project?->latestSurveyInvoice();
 @endphp
 
 <div class="card shadow-sm border-0 mb-4">
@@ -150,9 +151,34 @@
                 <textarea name="planning_notes" class="form-control" rows="3">{{ old('planning_notes', $planning->planning_notes) }}</textarea>
             </div>
 
+            <div class="section-block mb-5">
+                <h3 class="fw-semibold mb-3 mt-3 border-bottom pb-2">
+                    Biaya Survei
+                </h3>
+
+                <div class="col-md-4">
+                    <label class="form-label required">Biaya Survei</label>
+
+                    <input type="text"
+                        name="survey_fee"
+                        id="survey_fee"
+                        class="form-control rupiah @error('survey_fee') is-invalid @enderror"
+                        value="{{ $surveyInvoice ? 'Rp '.number_format($surveyInvoice->amount,0,',','.') : '-' }}"
+                        required>
+
+                    <small class="text-muted">
+                        Isi <strong>Rp 0</strong> jika survei gratis
+                    </small>
+
+                    @error('survey_fee')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+            </div>
+
             <div class="text-end mt-4">
                 <button class="btn btn-dark">Simpan Perubahan</button>
-                <button type="button" id="btn-cancel-consultation" class="btn btn-light">Batal</button>
+                <button type="button" id="btn-cancel-planning" class="btn btn-light">Batal</button>
             </div>
         </form>
     </div>
@@ -218,6 +244,18 @@ if (id) {
         });
     });
     }
+});
+</script>
+<script>
+document.querySelectorAll('.rupiah').forEach(el => {
+    el.addEventListener('input', function () {
+        let value = this.value.replace(/[^\d]/g, '');
+        this.value = new Intl.NumberFormat('id-ID', {
+            style: 'currency',
+            currency: 'IDR',
+            minimumFractionDigits: 0
+        }).format(value || 0);
+    });
 });
 </script>
 @endpush

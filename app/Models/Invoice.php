@@ -11,6 +11,7 @@ class Invoice extends Model
 
     const TYPE_SURVEY = 'survey';
     const TYPE_DP = 'dp';
+    const TYPE_FINAL = 'final';
 
     const STATUS_DRAFT = 'draft';
     const STATUS_WAITING = 'waiting_approval';
@@ -35,13 +36,22 @@ class Invoice extends Model
         'status',
         'approved_at',
         'approved_by',
+        'approval_token',
         'rejected_at',
         'rejected_by',
         'reject_note',
+        'invoice_dp_downloaded_at',
+        'invoice_dp_approved_at',
+        'downloaded_at',
     ];
 
     public function project()
     {
         return $this->belongsTo(Project::class);
+    }
+
+        public function planning()
+    {
+        return $this->hasOne(Planning::class);
     }
 }

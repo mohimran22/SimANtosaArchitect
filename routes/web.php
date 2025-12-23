@@ -271,6 +271,7 @@ Route::get(
     [\App\Http\Controllers\ContractController::class, 'pdf']
 )->name('projects.contract.pdf');
 
+
 Route::get(
     'projects/{project}/invoice/pdf',
     [\App\Http\Controllers\InvoiceController::class, 'invoiceDp']
@@ -285,6 +286,35 @@ Route::post(
     '/projects/{project}/invoice/approve',
     [\App\Http\Controllers\InvoiceController::class, 'approve']
 )->name('projects.invoice.approve');
+
+Route::middleware(['auth'])->group(function () {
+
+    Route::get(
+        '/projects/{project}/planning-survey/pdf',
+        [\App\Http\Controllers\InvoiceController::class, 'surveyPlanningPdf']
+    )->name('projects.planning-survey.pdf');
+});
+
+Route::get(
+    '/survey-invoice/{invoice}/{token}/approve',
+    [\App\Http\Controllers\InvoiceController::class, 'approveSurvey']
+)->name('survey.invoice.approve');
+
+Route::get(
+    '/survey-invoice/{invoice}/{token}/reject',
+    [\App\Http\Controllers\InvoiceController::class, 'rejectSurveyForm']
+)->name('survey.invoice.reject.form');
+
+Route::post(
+    '/survey-invoice/{invoice}/{token}/reject',
+    [\App\Http\Controllers\InvoiceController::class, 'rejectSurvey']
+)->name('survey.invoice.reject');
+
+Route::get(
+    '/projects/{project}/invoice-survey',
+    [\App\Http\Controllers\InvoiceController::class, 'invoiceSurvey']
+)->name('projects.invoice-survey');
+
 
 Route::post('/tasks/{task}/assign', [\App\Http\Controllers\ProjectTaskController::class, 'assign'])
     ->name('tasks.assign');
@@ -308,6 +338,25 @@ Route::delete(
     '/tasks/files/{file}',
     [\App\Http\Controllers\ProjectTaskController::class, 'deleteFile']
 )->name('tasks.files.delete');
+
+Route::get('/survey-invoice/{invoice}/approve', [\App\Http\Controllers\SurveyInvoiceController::class, 'approve'])
+    ->name('survey.approve');
+
+Route::post('/survey-invoice/{invoice}/reject', [\App\Http\Controllers\SurveyInvoiceController::class, 'reject'])
+    ->name('survey.reject.form');
+
+Route::get(
+    '/projects/{project}/invoice-final',
+    [\App\Http\Controllers\InvoiceController::class, 'invoiceFinal']
+)->name('projects.invoice.final');
+
+Route::post(
+    '/projects/{project}/invoice-final/approve',
+    [\App\Http\Controllers\InvoiceController::class, 'approveFinal']
+)->name('projects.invoice.final.approve');
+
+
+
 
 
 // routes/web.php
@@ -346,7 +395,6 @@ Route::middleware(['auth', 'permission:lihat daftar role'])->group(function () {
 });
 
 Route::middleware(['auth'])->group(function () {
-    // Route::resource('/accounts', AccountController::class);
     Route::get('/accounts', [AccountController::class, 'index'])->name('accounts.index');
     Route::post('/accounts/update-role', [AccountController::class, 'updateRole'])->name('accounts.update-role');
 });
@@ -355,10 +403,10 @@ Route::middleware(['auth'])->group(function () {
 //     route::resource('/documents', DocumentController::class);
 // });
 
-// Route::middleware(['auth', 'permission:Lihat daftar rab'])->group(function () {
-//     Route::get('/rab', [AccountController::class, 'index'])->name('accounts.index');
-//     Route::post('/rab/update-role', [AccountController::class, 'updateRole'])->name('accounts.update-role');
-// });
+Route::middleware(['auth', 'permission:Lihat daftar rab'])->group(function () {
+    Route::resource('/rab', RABController::class);
+    Route::post('/rab/update-role', [AccountController::class, 'updateRole'])->name('accounts.update-role');
+});
 
 Route::get('/api/cities/{province_id}', function ($province_id) {
     return \App\Models\City::where('province_id', $province_id)->select('id', 'name')->get();

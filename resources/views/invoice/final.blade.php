@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>Invoice DP</title>
+<title>Invoice Pelunasan</title>
 
 <style>
 @page {
@@ -53,7 +53,6 @@ p {
 
 <body>
 
-{{-- HEADER --}}
 <div class="header">
     <img src="{{ public_path('images/header-invoice.jpg') }}" style="width:100%;">
 </div>
@@ -86,8 +85,6 @@ p {
     </td>
 </tr>
 </table>
-
-
 
 <table width="100%" class="no-border" style="margin-top:15px;">
 <tr>
@@ -131,88 +128,49 @@ p {
 </tr>
 </table>
 
-
 <br>
 
-{{-- TABEL --}}
 <table>
 <thead>
 <tr>
     <th>Deskripsi</th>
     <th>%</th>
-    <th>Total Harga Proyek (Rp)</th>
-    <th>Total Yang Harus Dibayar (Rp)</th>
+    <th>Total Proyek (Rp)</th>
+    <th>Pelunasan (Rp)</th>
 </tr>
 </thead>
-
 <tbody>
 <tr>
-    <td>
-        Pembayaran I Proyek {{ $project_name }}
-    </td>
-    <td class="text-center">70%</td>
+    <td>Pelunasan Proyek {{ $project_name }}</td>
+    <td class="text-center">30%</td>
     <td class="text-right">{{ number_format($grand_total,0,',','.') }}</td>
-    <td class="text-right">{{ number_format($dp_amount,0,',','.') }}</td>
+    <td class="text-right">{{ number_format($final_amount,0,',','.') }}</td>
 </tr>
 </tbody>
-
 <tfoot>
-    @if(isset($total_price))
-    <tr>
-        <th colspan="3" class="text-right">SUBTOTAL</th>
-        <th class="text-right">
-            {{ number_format($total_price,0,',','.') }}
-        </th>
-    </tr>
-    @endif
-
-    {{-- DISCOUNT --}}
-    @if(($discount ?? 0) > 0)
-    <tr>
-        <th colspan="3" class="text-right">DISCOUNT</th>
-        <th class="text-right">
-            {{ number_format($discount,0,',','.') }}
-        </th>
-    </tr>
-    @endif
-
-    {{-- TOTAL DP --}}
-    <tr>
-        <th colspan="3" class="text-right bold">TOTAL DP (70%)</th>
-        <th class="text-right bold">
-            {{ number_format($dp_amount,0,',','.') }}
-        </th>
-    </tr>
+<tr>
+    <th colspan="3" class="text-right">TOTAL PELUNASAN</th>
+    <th class="text-right">
+        {{ number_format($final_amount,0,',','.') }}
+    </th>
+</tr>
 </tfoot>
 </table>
 
 <br>
 
 <p><strong>Terbilang :</strong><br>
-{{ terbilang($dp_amount) }} Rupiah
+{{ terbilang($final_amount) }} Rupiah
 </p>
-
-{{-- KETERANGAN --}}
-<p class="bold">Keterangan :</p>
-<ul>
-    <li>
-        Sisa pembayaran sebesar 30%
-        senilai Rp {{ number_format($remaining_amount, 0, ',', '.') }} ({{ terbilang($remaining_amount) }} rupiah) 
-        akan ditagihkan pada pembayaran berikutnya.
-    </li>
-</ul>
 
 <br>
 
 <p>PT. Tosa Ahmad Jaya<br><strong>Antosa Architect</strong></p>
 
-<div style="height:90px;">
 <img src="{{ public_path('images/ttd-dwiantosa.png') }}" style="height:90px;">
-</div>
 
-<p><strong><u>Ir. Ar. Dwiantosa Ahmad Fathony, IAI., IPP</strong></u>
-    <br>
-    Direktur Utama
-</p>
+<p><strong><u>Ir. Ar. Dwiantosa Ahmad Fathony, IAI., IPP</u></strong><br>
+Direktur Utama</p>
+
 </body>
 </html>
