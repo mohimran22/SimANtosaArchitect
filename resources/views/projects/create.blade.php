@@ -21,6 +21,8 @@
                 @php
                     $planning = $project?->planning;
                     $disableEdit = $surveyWaiting;
+                    use Illuminate\Support\Facades\Storage;
+                    $final = $project?->finalDocument;
                 @endphp
             @if($activeStep == 1)
             <div id="step-1" class="step-section">
@@ -53,9 +55,8 @@
                                     <i class="ti ti-download"></i>
                                 </a> --}}
                             </div>
-
                         </div>
-                    </div>
+                    
                         <div id="project-view">
                             @include('projects.details.project')
                         </div>
@@ -98,7 +99,7 @@
                                 </a> --}}
                             </div>
                         </div>
-                    </div>
+                    
                         <div id="consultation-view">
                             @include('projects.details.consultation')
                         </div>
@@ -106,6 +107,7 @@
                         <div id="consultation-edit" style="display:none;">
                             @include('projects.edit.consultation-form')    
                         </div>
+                    </div>
                 </div>
             </div>
             @endif
@@ -116,7 +118,7 @@
                         <div class="d-flex justify-content-between align-items-center mb-4">
                         <h3 class="fw-bold mb-0">2. Rencana Survei</h3>
 
-                        <div class="d-flex align-items-center gap-2">
+                        
                             <button type="button"
                                 id="btn-edit-planning"
                                 class="btn btn-sm btn-dark {{ $disableEdit ? 'disabled' : '' }}"
@@ -142,7 +144,6 @@
                                 </a>
                             @endif --}}
                         </div>
-                    </div>
 
                         @if(!$project->planning)
                             @include('projects.steps.planning-form')
@@ -203,12 +204,10 @@
                             </div>
                         </div>
 
-                        {{-- SISI VIEW --}}
                         <div id="survey-view">
                             @include('projects.details.survey')
                         </div>
 
-                        {{-- SISI EDIT --}}
                         <div id="survey-edit" style="display:none;">
                             @include('projects.edit.survey-form')
                         </div>
@@ -282,7 +281,7 @@
                                     </button>
                                 </form>
                             @else
-                                <span class="badge bg-dark align-self-center">
+                                <span class="text-muted fst-italic d-flex align-items-center gap-1">
                                     <i class="ti ti-check"></i>
                                     Disetujui {{ $project->offer->approved_at->format('d M Y') }}
                                 </span>
@@ -316,8 +315,9 @@
                                             target="_blank">
                                             <i class="ti ti-download"></i>Download Invoice
                                         </a>
-                                        <span class="btn btn-outline-dark disabled">
-                                            <i class="ti ti-check"></i> Sudah didownload
+                                        <span class="text-muted fst-italic d-flex align-items-center gap-1">
+                                            <i class="ti ti-check"></i>
+                                            Sudah didownload
                                         </span>
                                     @endif
 
@@ -375,7 +375,7 @@
                             )
                                 <form action="{{ route('projects.invoice.final.approve', $project->id) }}"
                                     method="POST"
-                                    onsubmit="return confirm('Selesaikan proyek?')">
+                                    onsubmit="return confirm('Lanjut ke tahap berikutnya?')">
                                     @csrf
                                     <button class="btn btn-success">
                                         <i class="ti ti-check"></i> Konfirmasi Pelunasan
@@ -384,11 +384,87 @@
                             @endif
 
                             @if($invoiceFinal?->approved_at)
-                                <span class="btn btn-outline-success disabled">
-                                    <i class="ti ti-check"></i> Pelunasan Selesai
+                                <span class="text-muted fst-italic d-flex align-items-center gap-1">
+                                    <i class="ti ti-check"></i>
+                                    Pelunasan Selesai
                                 </span>
                             @endif
                         </div>
+                    </div>
+                </div>
+            </div>
+            @endif
+            @if($activeStep == 9)
+            <div id="step-9" class="step-section">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body px-5 py-4">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h3 class="mb-4 fw-bold">9. Hasil Proyek</h3>
+                            @if($project->finalDocument)
+                                <div class="btn-group">
+                                    <button class="btn btn-sm btn-dark"
+                                            onclick="document.getElementById('form-reupload').classList.toggle('d-none')">
+                                        <i class="ti ti-edit"></i>
+                                    </button>
+                                </div>
+                            @endif
+                        </div>
+                        @include('projects.steps.upload-final')
+                        @if($final)
+                        <div class="alert alert-success mt-4 d-flex align-items-center justify-content-between">
+                            <div>
+                                <i class="ti ti-check"></i>
+                                Hasil proyek sudah diupload
+                            </div>
+                        </div>
+                            <div class="d-flex gap-2">
+                                {{-- Download --}}
+                                <a href="{{ Storage::url($final->document_path) }}"
+                                class="btn btn-dark"
+                                target="_blank">
+                                    <i class="ti ti-download"></i>Download File
+                                </a>
+
+                                {{-- Upload ulang --}}
+
+
+                                {{-- <form action="{{ route('projects.finals.destroy', $project->id) }}"
+                                    method="POST"
+                                    onsubmit="return confirm('Yakin ingin menghapus hasil proyek?')">
+                                    @csrf
+                                    @method('DELETE')
+
+                                    <button class="btn btn-outline-danger btn-sm">
+                                        <i class="ti ti-trash"></i>
+                                    </button>
+                                </form> --}}
+                            </div>
+                        
+
+                        <form id="form-reupload"
+                            action="{{ route('projects.finals.store', $project->id) }}"
+                            method="POST"
+                            enctype="multipart/form-data"
+                            class="d-none mt-3">
+
+                            @csrf
+
+                            <div class="col-md-6">
+                                <label class="required">Upload Ulang File</label>
+                                <input type="file"
+                                    name="document"
+                                    class="form-control"
+                                    accept=".zip,.rar"
+                                    required>
+                            </div>
+
+                            <div class="mt-3">
+                                <button class="btn btn-sm btn-dark">
+                                    <i class="ti ti-upload"></i> Simpan Perubahan
+                                </button>
+                            </div>
+                        </form>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -643,32 +719,135 @@ $(document).ready(function() {
 </script>
 
 <script>
-function previewMultipleImages(input) {
-    const previewWrapper = document.getElementById('preview-wrapper');
-    previewWrapper.innerHTML = ''; // reset preview lama
+document.addEventListener('DOMContentLoaded', () => {
 
-    if (!input.files) return;
+    const fileStores = new Map();
 
-    Array.from(input.files).forEach(file => {
-        if (!file.type.startsWith('image/')) return;
+    document.querySelectorAll('.image-input').forEach(input => {
+        fileStores.set(input, new DataTransfer());
 
-        const reader = new FileReader();
+        input.addEventListener('change', () => {
+            const previewEl = document.getElementById(input.dataset.preview);
+            const store     = fileStores.get(input);
 
-        reader.onload = function(e) {
-            const img = document.createElement('img');
-            img.src = e.target.result;
-            img.style.width = '90px';
-            img.style.height = '90px';
-            img.style.objectFit = 'cover';
-            img.style.borderRadius = '6px';
-            img.style.border = '1px solid #ddd';
+            const selectedFiles = Array.from(input.files);
+            input.value = '';
 
-            previewWrapper.appendChild(img);
-        };
+            selectedFiles.forEach(file => {
+                store.items.add(file);
 
-        reader.readAsDataURL(file);
+                const reader = new FileReader();
+                reader.onload = e => {
+                    const div = document.createElement('div');
+                    div.className = 'position-relative';
+                    div.innerHTML = `
+                        <img src="${e.target.result}"
+                             class="rounded border"
+                             style="width:120px;height:120px;object-fit:cover">
+                        <button type="button"
+                                class="btn btn-sm btn-danger position-absolute top-0 end-0 remove-image">
+                            ×
+                        </button>
+                    `;
+
+                    div.querySelector('.remove-image').addEventListener('click', () => {
+                        const index = Array.from(store.files).findIndex(
+                            f => f.name === file.name && f.size === file.size
+                        );
+
+                        if (index > -1) {
+                            store.items.remove(index);
+                            input.files = store.files;
+                        }
+
+                        div.remove();
+                    });
+
+                    previewEl.appendChild(div);
+                };
+                reader.readAsDataURL(file);
+            });
+
+            input.files = store.files;
+        });
     });
-}
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    const fileStores = new Map();
+
+    document.querySelectorAll('.pdf-input').forEach(input => {
+        fileStores.set(input, new DataTransfer());
+
+        input.addEventListener('change', () => {
+            const previewEl = document.getElementById(input.dataset.preview);
+            const store = fileStores.get(input);
+
+            const files = Array.from(input.files);
+            input.value = ''; // reset awal
+
+            files.forEach(file => {
+                store.items.add(file);
+
+                const row = document.createElement('div');
+                row.className = 'd-flex align-items-center justify-content-between border rounded p-2';
+
+                row.innerHTML = `
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="ti ti-file-text fs-4 text-danger"></i>
+                        <span>${file.name}</span>
+                        <small class="text-muted">(${(file.size/1024).toFixed(1)} KB)</small>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-danger">Hapus</button>
+                `;
+
+                row.querySelector('button').addEventListener('click', () => {
+                    const index = Array.from(store.files).findIndex(
+                        f => f.name === file.name && f.size === file.size
+                    );
+
+                    if (index > -1) {
+                        store.items.remove(index);
+                        input.files = store.files;
+                    }
+
+                    row.remove();
+                });
+
+                previewEl.appendChild(row);
+            });
+
+            input.files = store.files;
+        });
+    });
+});
+</script>
+<script>
+document.addEventListener('click', function(e) {
+    const btn = e.target.closest('.btn-delete');
+    if (!btn) return;
+
+    if (!confirm('Hapus file ini?')) return;
+
+    const id   = btn.dataset.id;
+    const type = btn.dataset.type;
+
+    let url = '';
+    if (type === 'document') url = `/survey-documents/${id}`;
+    if (type === 'image') url = `/survey-images/${id}`;
+    if (type === 'documentation') url = `/survey-documentations/${id}`;
+
+    fetch(url, {
+        method: 'DELETE',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        }
+    }).then(() => {
+        btn.closest('.position-relative, .list-group-item').remove();
+    });
+});
 </script>
 
 <script>
@@ -810,6 +989,22 @@ document.addEventListener("DOMContentLoaded", () => {
         view.style.display = "block";
     });
 
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const editBtn = document.getElementById('btn-edit-final');
+    const fileInput = document.querySelector('input[name="document"]');
+
+    if (editBtn && fileInput) {
+        // awalnya disable
+        fileInput.disabled = true;
+
+        editBtn.addEventListener('click', function () {
+            fileInput.disabled = false;
+            fileInput.focus();
+        });
+    }
 });
 </script>
 

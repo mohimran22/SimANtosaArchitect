@@ -64,23 +64,33 @@
                     </tbody>
                 </table>
             </div>
-
-            @if($consultation->documentation)
-            <div class="col-md-4 mt-3">
-                <label class="fw-semibold">Foto Dokumentasi</label><br>
-                <img src="{{ asset('storage/'.$consultation->documentation) }}"
-                     alt="Dokumentasi"
-                     class="img-thumbnail"
-                     style="width: 200px; height: auto;">
+            <div class="mt-4">
+                <h5 class="fw-bold">Foto Dokumentasi</h5>
+                @if($consultation->documentations->count())
+                    <div class="row g-3 mt-2">
+                        @foreach($consultation->documentations as $doc)
+                            <div class="col-6 col-md-3">
+                                <div class="border rounded shadow-sm p-1">
+                                    <a href="{{ asset('storage/consultations'.$doc->file_path) }}" target="_blank">
+                                        <img src="{{ asset('storage/'.$doc->file_path) }}"
+                                            class="img-fluid rounded"
+                                            style="height:150px; object-fit:cover;">
+                                    </a>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                @else
+                <p class="text-muted">Tidak ada foto hasil survei.</p>
+                @endif
             </div>
-            @endif
 
             <div class="col-md-12 mt-3">
                 <label class="fw-semibold">Catatan Tambahan</label>
                 <textarea class="form-control" rows="3" readonly>{{ $consultation->notes }}</textarea>
             </div>
 
-            <div class="col-md-4 mt-3 d-flex justify-content-around text-center">
+            <div class="col-12 mt-3 d-flex justify-content-around text-center">
                 <div>
                     <label class="form-label fw-bold d-block">Persetujuan Konsultan</label>
                     <i class="ti {{ $consultation->consultant_signed ? 'ti-check text-success' : 'ti-x text-danger' }}"

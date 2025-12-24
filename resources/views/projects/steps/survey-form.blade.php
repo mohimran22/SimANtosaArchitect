@@ -62,13 +62,16 @@
             </div>
 
             <div class="col-md-6 mb-3">
-                <label for="document" class="required">Upload Denah existing (PDF)</label>
-                <div class="text-muted mb-2">Dokumen hasil survei seperti sketsa, denah, atau kondisi lapangan</div>
-                <input type="file" name="document" class="form-control" accept="application/pdf" required>
-                @error('document')
-                    <small class="text-danger">{{ $message }}</small>
-                @enderror
-            </div>
+                <label class="fw-bold">Dokumen Denah existing (PDF)</label>
+                <div class="text-muted mb-2">Boleh upload lebih dari 1 file PDF</div>
+                <input type="file"
+                    name="documents[]"
+                    class="form-control pdf-input"
+                    data-preview="preview-documents"
+                    accept="application/pdf"
+                    multiple>
+                <div id="preview-documents" class="mt-3 d-flex flex-column gap-2"></div>
+            </div>    
         </div>
     </div>
 
@@ -169,7 +172,7 @@
     });
 </script>
 
-<script>
+{{-- <script>
 document.addEventListener('DOMContentLoaded', () => {
 
     const fileStores = new Map();
@@ -223,7 +226,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 });
-</script>
+</script> --}}
 
 
 @endpush

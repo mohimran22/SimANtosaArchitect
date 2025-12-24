@@ -74,7 +74,7 @@
             </div>
 
             <div class="mt-4">
-                <button class="btn btn-success btn-sm">Simpan</button>
+                <button class="btn btn-dark">Simpan</button>
                 <button type="button" id="btn-cancel-project" class="btn btn-light btn-sm">Batal</button>
             </div>
 

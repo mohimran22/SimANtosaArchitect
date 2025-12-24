@@ -45,50 +45,50 @@
     </div>
 
     <div class="mb-3 mt-4">
-                            <label class="form-label">Uraian</label>
+        <label class="form-label">Uraian</label>
 
-                            <table class="table table-sm table-bordered" id="consultation-items-table">
-                                <thead>
-                                    <tr>
-                                        <th width="5%">No</th>
-                                        <th>Uraian</th>
-                                        <th>Keterangan</th>
-                                        <th width="1%"></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @if(old('items'))
-                                        @foreach(old('items', [ ['description' => '', 'remark' => ''] ]) as $i => $it)
-                                            <tr>
-                                                <td class="row-no text-center">{{ $i + 1 }}</td>
+        <table class="table table-sm table-bordered" id="consultation-items-table">
+            <thead>
+                <tr>
+                    <th width="5%">No</th>
+                    <th>Uraian</th>
+                    <th>Keterangan</th>
+                    <th width="1%"></th>
+                </tr>
+            </thead>
+            <tbody>
+                @if(old('items'))
+                    @foreach(old('items', [ ['description' => '', 'remark' => ''] ]) as $i => $it)
+                        <tr>
+                            <td class="row-no text-center">{{ $i + 1 }}</td>
 
-                                                <td>
-                                                    <textarea name="items[{{ $i }}][description]" class="form-control" rows="2">{{ data_get($it, 'description') }}</textarea>
-                                                </td>
+                            <td>
+                                <textarea name="items[{{ $i }}][description]" class="form-control" rows="2">{{ data_get($it, 'description') }}</textarea>
+                            </td>
 
-                                                <td>
-                                                    <textarea name="items[{{ $i }}][remark]" class="form-control" rows="2">{{ data_get($it, 'remark') }}</textarea>
-                                                </td>
+                            <td>
+                                <textarea name="items[{{ $i }}][remark]" class="form-control" rows="2">{{ data_get($it, 'remark') }}</textarea>
+                            </td>
 
-                                                <td>
-                                                    <button type="button" class="btn btn-sm btn-danger remove-row">-</button>
-                                                </td>
-                                            </tr>
-                                        @endforeach
+                            <td>
+                                <button type="button" class="btn btn-sm btn-danger remove-row">-</button>
+                            </td>
+                        </tr>
+                    @endforeach
 
-                                    @else
-                                        <tr>
-                                            <td class="row-no text-center">1</td>
-                                            <td><textarea name="items[0][description]" class="form-control" rows="2"></textarea></td>
-                                            <td><textarea name="items[0][remark]" class="form-control" rows="2"></textarea></td>
-                                            <td><button type="button" class="btn btn-sm btn-danger remove-row">-</button></td>
-                                        </tr>
-                                    @endif
-                                </tbody>
-                            </table>
+                @else
+                    <tr>
+                        <td class="row-no text-center">1</td>
+                        <td><textarea name="items[0][description]" class="form-control" rows="2"></textarea></td>
+                        <td><textarea name="items[0][remark]" class="form-control" rows="2"></textarea></td>
+                        <td><button type="button" class="btn btn-sm btn-danger remove-row">-</button></td>
+                    </tr>
+                @endif
+            </tbody>
+        </table>
 
-                            <button type="button" data-target="consultation-items-table" class="btn btn-sm btn-dark add-row">+ Tambah Uraian</button>
-                        </div>
+        <button type="button" data-target="consultation-items-table" class="btn btn-sm btn-dark add-row">+ Tambah Uraian</button>
+    </div>
 
 
     <div class="row mb-3 mt-4">
@@ -114,38 +114,19 @@
         <textarea name="notes" class="form-control" rows="3"></textarea>
     </div>
 
-    {{-- @include('projects.steps.partials.consultation-upload') --}}
-    <div class="col-md-6 mb-3">
-                            <label for="documentation" class="form-label">Upload Foto Dokumentasi :</label>
+    <div class="md-6 mb-4">
+            <label class="fw-bold">Foto Dokumentasi</label>
+            <div class="text-muted mb-2">Foto dokumentasi saat kegiatan survei</div>
+            <input type="file"
+                name="documentation[]"
+                class="form-control image-input"
+                data-preview="preview-dokumentasi"
+                accept="image/*"
+                multiple>
 
-                            <div class="d-flex gap-3 align-items-start">
-                                <!-- INPUT FILE -->
-                                <div class="flex-fill">
-                                    <input 
-                                        type="file" 
-                                        name="documentation" 
-                                        id="documentation"
-                                        class="form-control" 
-                                        accept="image/*"
-                                        onchange="previewDocumentation(this)"
-                                    >
-
-                                    @error('documentation')
-                                        <small class="text-danger">{{ $message }}</small>
-                                    @enderror
-                                </div>
-
-                                <!-- PREVIEW -->
-                                <div>
-                                    <img 
-                                        id="preview-documentation" 
-                                        src="" 
-                                        alt="Preview" 
-                                        style="display:none; width:120px; height:120px; object-fit:cover; border-radius:8px; border:1px solid #ddd;"
-                                    >
-                                </div>
-                            </div>
-                        </div>
+            <div id="preview-dokumentasi"
+                class="mt-3 d-flex flex-wrap gap-3"></div>
+        </div>
 
 
     <div class="d-flex gap-2 mt-3">
@@ -167,46 +148,4 @@
     });
 </script>
 
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-
-    const addBtn = document.getElementById('add-row');
-    const table = document.querySelector('#items-table tbody');
-
-function renumber() {
-    table.querySelectorAll('tr').forEach((tr, idx) => {
-        tr.querySelector('.row-no').textContent = idx + 1;
-
-        tr.querySelectorAll('textarea, input[type="text"]').forEach(el => {
-            el.name = el.name.replace(/items\[\d+]/, `items[${idx}]`);
-        });
-    });
-}
-
-    // Add row
-    addBtn.addEventListener('click', function () {
-        const idx = table.querySelectorAll('tr').length;
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td class="row-no text-center">${idx + 1}</td>
-            <td><textarea name="items[${idx}][description]" class="form-control" rows="2"></textarea></td>
-            <td><textarea name="items[${idx}][remark]" class="form-control" rows="2"></textarea></td>
-            <td><button type="button" class="btn btn-sm btn-danger remove-row">-</button></td>
-        `;
-        table.appendChild(tr);
-        renumber();  // ← WAJIB
-    });
-
-    // Remove row
-    table.addEventListener('click', function (e) {
-        if (e.target.matches('.remove-row')) {
-            e.target.closest('tr').remove();
-            renumber(); // ← kamu sudah benar
-        }
-    });
-
-    // Saat halaman edit dibuka → rapikan nomor
-    renumber();
-});
-</script>
 @endpush

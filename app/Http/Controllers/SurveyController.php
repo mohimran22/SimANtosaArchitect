@@ -7,6 +7,7 @@ use App\Models\Survey;
 use App\Models\SurveyItem;
 use App\Models\SurveyImage;
 use App\Models\SurveyDocumentation;
+use App\Models\SurveyDocument;
 use App\Models\Project;
 use App\Models\ProjectLevel;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -33,13 +34,6 @@ public function store(SurveyRequest $request)
 
         $signedAt = ($consultantSigned || $clientSigned) ? now() : null;
 
-        if ($request->hasFile('document')) {
-            $file = $request->file('document');
-            $filename = Str::uuid().'_'.$file->getClientOriginalName();
-            $file->storeAs('surveys', $filename, 'public');
-            $data['document'] = $filename;
-        }
-
         $survey = Survey::create([
             'project_id'        => $data['project_id'],
             'created_by'        => auth()->id(),
@@ -49,7 +43,6 @@ public function store(SurveyRequest $request)
             'contact_phone'     => $data['contact_phone'] ?? null,
             'site_area'         => $data['site_area'] ?? null,
             'building_area'     => $data['building_area'] ?? null,
-            'document'          => $data['document'] ?? null,
             'notes'             => $data['notes'] ?? null,
             'consultant_signed' => $consultantSigned,
             'client_signed'     => $clientSigned,
@@ -68,6 +61,14 @@ public function store(SurveyRequest $request)
             foreach ($request->file('result_images') as $file) {
                 $survey->images()->create([
                     'file_path' => $file->store('surveys/result-images', 'public')
+                ]);
+            }
+        }
+
+        if ($request->hasFile('documents')) {
+            foreach ($request->file('documents') as $file) {
+                $survey->documents()->create([
+                    'file_path' => $file->store('surveys/documents', 'public')
                 ]);
             }
         }
@@ -106,14 +107,14 @@ public function store(SurveyRequest $request)
         ->with('success', 'Form survey berhasil disimpan.');
 }
 
-    public function pdf(Survey $Survey)
-    {
-        $Survey->load('items', 'project.customer.user', 'creator');
-        $view = view('projects.Surveys.pdf', compact('Survey'))->render();
+    // public function pdf(Survey $Survey)
+    // {
+    //     $Survey->load('items', 'project.customer.user', 'creator');
+    //     $view = view('projects.Surveys.pdf', compact('Survey'))->render();
 
-        $pdf = Pdf::loadHTML($view)->setPaper('a4', 'portrait');
-        return $pdf->download("Survey-{$Survey->id}.pdf");
-    }
+    //     $pdf = Pdf::loadHTML($view)->setPaper('a4', 'portrait');
+    //     return $pdf->download("Survey-{$Survey->id}.pdf");
+    // }
 
     public function update(Request $request, Survey $survey)
 {
@@ -164,56 +165,27 @@ public function store(SurveyRequest $request)
         }
     }
 
-
-    // ===========================
-    // UPDATE FOTO DOKUMENTASI (MULTIPLE)
-    // ===========================
-    if ($request->hasFile('documentation')) {
-
-        // hapus semua dokumentasi lama
-        foreach ($survey->documentations as $doc) {
-            Storage::disk('public')->delete($doc->file_path);
-            $doc->delete();
-        }
-
-        // simpan baru
-        foreach ($request->file('documentation') as $file) {
-            $path = $file->store('surveys/documentations', 'public');
-
-            SurveyDocumentation::create([
-                'survey_id' => $survey->id,
-                'file_path' => $path
-            ]);
+    if ($request->hasFile('documents')) {
+        foreach ($request->file('documents') as $file) {
+            $path = $file->store('surveys/documents', 'public');
+            $survey->documents()->create(['file_path' => $path]);
         }
     }
 
-
-    // ===========================
-    // UPDATE FOTO HASIL SURVEY (MULTIPLE)
-    // ===========================
     if ($request->hasFile('result_images')) {
-
-        // hapus lama
-        foreach ($survey->surveyimages as $img) {
-            Storage::disk('public')->delete($img->file_path);
-            $img->delete();
-        }
-
-        // simpan baru
         foreach ($request->file('result_images') as $file) {
             $path = $file->store('surveys/result-images', 'public');
-
-            SurveyImage::create([
-                'survey_id' => $survey->id,
-                'file_path' => $path
-            ]);
+            $survey->images()->create(['file_path' => $path]);
         }
     }
 
+    if ($request->hasFile('documentation')) {
+        foreach ($request->file('documentation') as $file) {
+            $path = $file->store('surveys/documentations', 'public');
+            $survey->documentations()->create(['file_path' => $path]);
+        }
+    }
 
-    // ===========================
-    // UPDATE PETUGAS SURVEI DI LEVEL
-    // ===========================
     $project = $survey->project;
     $surveyLevel = $project->levels->firstWhere('level_order', 3);
 
@@ -224,6 +196,23 @@ public function store(SurveyRequest $request)
     return back()->with('success', 'Survey berhasil diperbarui.');
 }
 
+public function deleteDocument(SurveyDocument $docs)
+{
+    Storage::disk('public')->delete($docs->file_path);
+    $doc->delete();
+}
+
+public function deleteImage(SurveyImage $img)
+{
+    Storage::disk('public')->delete($img->file_path);
+    $img->delete();
+}
+
+public function deleteDocumentation(SurveyDocumentation $doc)
+{
+    Storage::disk('public')->delete($doc->file_path);
+    $doc->delete();
+}
 
 }
 

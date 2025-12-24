@@ -188,7 +188,7 @@ Route::middleware(['auth', 'permission:lihat daftar proyek|lihat data proyek'])-
     [ProjectController::class, 'continue'])
     ->name('projects.continue');
 
-    Route::resource('/projects', ProjectController::class);
+    Route::resource('/projects', ProjectController::class)->except(['edit, update, show']);
     Route::get('prjects/{project}/pdf', [ProjectController::class, 'pdf'])
     ->name('projects.pdf');
 });
@@ -198,8 +198,6 @@ Route::middleware(['auth', 'permission:lihat daftar proyek|lihat data proyek'])-
     Route::resource('/labor_costs', \App\Http\Controllers\LaborCostController::class);
 });
 
-// CRUD paket desain
-// Resource (tanpa show!)
 Route::resource('design-packages', DesignPackageController::class)
     ->except(['show']);
 
@@ -355,11 +353,15 @@ Route::post(
     [\App\Http\Controllers\InvoiceController::class, 'approveFinal']
 )->name('projects.invoice.final.approve');
 
+Route::post(
+    '/projects/{project}/final',
+    [\App\Http\Controllers\FinalProjectController::class, 'store']
+)->name('projects.finals.store');
+Route::delete(
+    '/projects/{project}/final',
+    [\App\Http\Controllers\FinalProjectController::class, 'destroy']
+)->name('projects.finals.destroy');
 
-
-
-
-// routes/web.php
 
 Route::middleware(['auth', 'role:Customer'])->group(function () {
 

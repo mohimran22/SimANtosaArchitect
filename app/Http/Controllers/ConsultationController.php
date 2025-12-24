@@ -14,38 +14,17 @@ use Illuminate\Support\Facades\Storage;
 
 class ConsultationController extends Controller
 {
-    public function create(Project $project)
-    {
-        // eager load project -> customer.user
-        $project->load('customer.user');
-        return view('projects.consultations.create', compact('project'));
-    }
-
     public function store(ConsultationRequest $request)
 {
     $data = $request->validated();
 
-    // ============================================================
-    // 1. Ambil project + relasi employee & customer (untuk TTD default)
-    // ============================================================
     $project = Project::with(['employee', 'customer'])
         ->findOrFail($data['project_id']);
 
-
-    // ============================================================
-    // 2. Tentukan tanda tangan digital (checkbox signed)
-    // ============================================================
     $consultantSigned = $request->boolean('consultant_signed');
     $clientSigned     = $request->boolean('client_signed');
 
-    // Jika salah satu tanda tangan dilakukan → simpan timestamp
     $signedAt = ($consultantSigned || $clientSigned) ? now() : null;
-    $documentationPath = null;
-
-    if ($request->hasFile('documentation')) {
-        $documentationPath = $request->file('documentation')
-            ->store('consultations', 'public');
-    }
 
     $consultation = Consultation::create([
         'project_id'        => $data['project_id'],
@@ -56,16 +35,19 @@ class ConsultationController extends Controller
         'site_area'         => $data['site_area'] ?? null,
         'building_area'     => $data['building_area'] ?? null,
         'notes'             => $data['notes'] ?? null,
-        'documentation'     => $documentationPath,
         'consultant_signed' => $consultantSigned,
         'client_signed'     => $clientSigned,
         'signed_at'         => $signedAt,
     ]);
 
+    if ($request->hasFile('documentation')) {
+        foreach ($request->file('documentation') as $file) {
+            $consultation->documentations()->create([
+                'file_path' => $file->store('consultations/documentations', 'public')
+            ]);
+        }
+    }
 
-    // ============================================================
-    // 4. SIMPAN ITEM DINAMIS (uraian)
-    // ============================================================
     foreach ($data['items'] as $i => $item) {
         ConsultationItem::create([
             'consultation_id' => $consultation->id,
@@ -75,10 +57,6 @@ class ConsultationController extends Controller
         ]);
     }
 
-
-    // ============================================================
-    // 5. Jika client sudah tanda tangan → nyatakan tahap selesai
-    // ============================================================
     if ($clientSigned) {
 
         // Tandai level konsultasi selesai

@@ -53,19 +53,17 @@ $colors = [
                         @endif
                     </td>
 
-
-
                     <td>
-                                <select class="form-select assign-employee"
-                                        data-task="{{ $task->id }}">
-                                    <option value="">-- Pilih --</option>
-                                    @foreach($employees as $emp)
-                                        <option value="{{ $emp->id }}"
-                                            @selected($task->employee_id == $emp->id)>
-                                            {{ $emp->user->fullname }}
-                                        </option>
-                                    @endforeach
-                                </select>
+                        <select class="form-select assign-employee"
+                                data-task="{{ $task->id }}">
+                            <option value="">-- Pilih --</option>
+                            @foreach($employees as $emp)
+                                <option value="{{ $emp->id }}"
+                                    @selected($task->employee_id == $emp->id)>
+                                    {{ $emp->user->fullname }}
+                                </option>
+                            @endforeach
+                        </select>
                     </td>
 
 

@@ -54,7 +54,7 @@
             </div>
 
             <div class="col-md-4">
-                <label class="fw-semibold">Ukuran Bangunan</label>
+                <label class="fw-semibold">Ukuran Bangunan </label>
                 <input type="text" class="form-control"
                        value="{{ $survey->building_area }}" readonly>
             </div>
@@ -63,7 +63,6 @@
                 <div class="row g-4">
                     <div class="col-md-6 mb-4">
                         <h5 class="fw-bold">Foto Hasil Survei (Denah, Kondisi Lapangan, dll)</h5>
-
                         @if($survey->images->count())
                             <div class="row g-3 mt-2">
                                 @foreach($survey->images as $img)
@@ -83,14 +82,21 @@
                         @endif
                     </div>
                     <div class="col-md-6 mb-4">
-                        <div class="fw-bold">Dokumen Denah Existing</div>
-                        @if ($survey->document)
-                            <a href="{{ asset('storage/surveys/' . $survey->document) }}"
-                                target="_blank" class="btn btn-sm btn-outline-primary mt-1">
-                                <i class="ti ti-file-text"></i> Lihat Dokumen
-                            </a>
+                        <h5 class="fw-bold">Dokumen Denah Existing</h5>
+                        @if($survey->documents->count())
+                            <ul class="list-group">
+                                @foreach($survey->documents as $docs)
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <a href="{{ asset('storage/'.$docs->file_path) }}"
+                                        target="_blank"
+                                        class="btn btn-sm btn-outline-dark">
+                                            Lihat File
+                                        </a>
+                                    </li>
+                                @endforeach
+                            </ul>
                         @else
-                            <div>-</div>
+                            <em class="text-muted">Tidak ada dokumen.</em>
                         @endif
                     </div>
                 </div>
@@ -143,7 +149,7 @@
                 <label class="fw-semibold">Catatan Tambahan</label>
                 <textarea class="form-control" rows="3" readonly>{{ $survey->notes }}</textarea>
             </div>
-            <div class="col-md-4 mt-3 d-flex justify-content-around text-center">
+            <div class="col-12 mt-3 d-flex justify-content-around text-center">
                 <div>
                     <label class="form-label fw-bold d-block">Persetujuan Surveyor</label>
                     <i class="ti {{ $survey->consultant_signed ? 'ti-check text-success' : 'ti-x text-danger' }}"

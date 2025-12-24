@@ -40,4 +40,9 @@ class Consultation extends Model
 {
     return $this->belongsTo(Employee::class, 'employee_id');
 }
+
+        public function documentations()
+    {
+        return $this->hasMany(ConsultationDocumentation::class);
+    }
 }

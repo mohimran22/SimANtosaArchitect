@@ -114,6 +114,11 @@ class Project extends Model
     return $this->hasMany(ProjectTask::class);
 }
 
+    public function finalDocument()
+{
+    return $this->hasOne(FinalProject::class);
+}
+
 
 
     /*

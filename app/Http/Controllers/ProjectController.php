@@ -22,9 +22,6 @@ use DB;
 
 class ProjectController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
        public function index(Request $request)
 {
     $auth = auth()->user();
@@ -86,22 +83,22 @@ class ProjectController extends Controller
         })
 
         ->addColumn('current_level', function ($row) {
-    $current = $row->levels
-        ->where('is_completed', false)
-        ->sortBy('level_order')
-        ->first();
+            $current = $row->levels
+                ->where('is_completed', false)
+                ->sortBy('level_order')
+                ->first();
 
-    // Jika semua selesai
-    if (!$current) {
-        return '<span class="badge bg-success">Selesai Semua Tahapan</span>';
-    }
+            // Jika semua selesai
+            if (!$current) {
+                return '<span class="badge bg-success">Selesai</span>';
+            }
 
-    $url = route('projects.continue', $row->id);
+            $url = route('projects.continue', $row->id);
 
-    return '<a href="'.$url.'" class="badge bg-primary" style="cursor:pointer;">
-                '.$current->level_name.'
-            </a>';
-})
+            return '<a href="'.$url.'" class="badge bg-primary" style="cursor:pointer;">
+                        '.$current->level_name.'
+                    </a>';
+        })
         ->editColumn('project_name', function ($row) {
                     $url = route('projects.continue', $row->id);
                     $name = Str::title($row->project_name ?? '-');
@@ -112,11 +109,11 @@ class ProjectController extends Controller
         ->addColumn('action', function ($project) {
             $buttons = '';
 
-            if (auth()->user()->can('ubah data proyek')) {
-                $buttons .= '<a href="' . route('projects.edit', $project->id) . '" 
-                            class="btn btn-icon btn-sm btn-dark me-1">
-                            <i class="ti ti-edit"></i></a>';
-            }
+            // if (auth()->user()->can('ubah data proyek')) {
+            //     $buttons .= '<a href="' . route('projects.edit', $project->id) . '" 
+            //                 class="btn btn-icon btn-sm btn-dark me-1">
+            //                 <i class="ti ti-edit"></i></a>';
+            // }
             //  if (auth()->user()->can('lihat data proyek')) {
             //             $buttons .= '<a href="' . route('projects.show', $project->id) . '" class="btn btn-icon btn-sm btn-dark me-1" title="Lihat">
             //                             <i class="ti ti-eye"></i>
@@ -303,112 +300,6 @@ private function computeActiveStep($project, $request = null)
     return $current ? $current->level_order + 1 : 9;
 }
 
-
-public function show(Project $project)
-{
-    $project->load([
-        'customer.user',
-        'employee.user',
-        'affiliator.user',
-        'levels',
-        'consultation.items',
-        'planning',
-        'survey.items'
-    ]);
-
-    $currentLevel = $project->levels()
-        ->where('is_completed', false)
-        ->orderBy('level_order')
-        ->first();
-
-    $consultation = $project->consultation->first();
-    $planning = $project->planning->first();
-
-    return view('projects.show', compact(
-        'project',
-        'currentLevel',
-        'consultation',
-        'planning'
-    ));
-}
-
-    public function edit(Project $project)
-{
-    $project->load([
-        'customer.user',
-        'employee.user',
-        'affiliator.user',
-        'levels',
-        'consultation.items',
-        // 'survey.items',
-        // 'designs',
-        // 'rabs',
-        // 'spks',
-    ]);
-
-    $consultation = $project->consultation->first();
-    // $survey       = $project->survey->first();
-    // $design       = $project->designs->first();
-    // $rab          = $project->rabs->first();
-    // $spk          = $project->spks->first();
-
-    $employees = Employee::with('user')->get();
-    $customers = Customer::with('user')->get();
-    $provinces = Province::all();
-
-
-    return view('projects.edit', compact(
-        'project',
-        'consultation',
-        // 'survey',
-        // 'design',
-        // 'rab',
-        'customers',
-        'employees',
-        'provinces', 'cities', 'districts', 'subDistricts', 'postalCodes'
-    ));
-}
-
-//     public function update(ProjectRequest $request, Project $project)
-// {
-//     DB::transaction(function() use ($request, $project) {
-
-//         // UPDATE PROJECT
-//         $project->update($request->validated());
-
-//         // === JIKA ADA KONSULTASI, UPDATE ===
-//         if ($project->consultation->isNotEmpty()) {
-
-//             $consultation = $project->consultation->first();
-
-//             $consultation->update([
-//                 'contact_name'      => $request->contact_name,
-//                 'contact_phone'     => $request->contact_phone,
-//                 'site_area'         => $request->site_area,
-//                 'building_area'     => $request->building_area,
-//                 'notes'             => $request->notes,
-//                 'employee_id'       => $request->employee_id,
-//             ]);
-
-//             // UPDATE ITEMS
-//             $consultation->items()->delete();
-//             foreach ($request->items as $i => $item) {
-//                 $consultation->items()->create([
-//                     'order_no'    => $i + 1,
-//                     'description' => $item['description'],
-//                     'remark'      => $item['remark'] ?? null,
-//                 ]);
-//             }
-//         }
-
-//         // Tahap lain nanti bisa dilanjutkan di sini...
-//     });
-
-//     return redirect()
-//             ->route('projects.show', $project->id)
-//             ->with('success', 'Produk berhasil diperbarui.');
-// }
-
 public function update(Request $request, Project $project)
 {
     $project->update($request->all());
@@ -419,11 +310,8 @@ public function update(Request $request, Project $project)
         ->with('success', 'Updated!');
 }
 
-
-
      public function destroy(Project $project) 
     {
-    
         if ($project) {
             $project->delete();
             return response()->json(['status' => 'success', 'message' => 'Project deleted successfully']);

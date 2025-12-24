@@ -27,8 +27,8 @@ class ConsultationRequest extends FormRequest
             'items.*.description' => 'required|string|max:2000',
             'items.*.remark' => 'nullable|string|max:2000',
 
-            // signature uploads (image)
-            'documentation' => 'nullable|image|max:2048',
+        'documentation'     => 'nullable|array',
+        'documentation.*'   => 'image|mimes:jpg,jpeg,png|max:2048',
         ];
     }
 }

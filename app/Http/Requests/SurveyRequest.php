@@ -34,7 +34,8 @@ public function rules(): array
         'items.*.remark'        => 'nullable|string|max:2000',
 
         // Dokumen utama (single file)
-        'document' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+        'documents'     => 'nullable|array',
+        'documents.*'   => 'file|mimes:pdf|max:2048',
 
         // 🔥 Foto dokumentasi (multiple)
         'documentation'     => 'nullable|array',

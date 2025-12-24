@@ -78,59 +78,66 @@
 
             </div>
 
-            
-            {{-- <div class="mt-4">
-                <label class="fw-bold">Foto Hasil Survei / Denah</label>
-                <div class="text-muted mb-2">Foto seperti sketsa atau kondisi lapangan</div>
-                @if($survey->surveyimages)
-                    <div class="d-flex flex-wrap gap-3 mb-3">
-                        @foreach(($survey->surveyimages) as $img)
+            <div class="section-block mt-4">
+                <div class="row g-4">
+                    <div class="col-md-6 mb-4">
+                        <h5 class="fw-bold mt-4">Foto Hasil Survei</h5>
+                        @foreach($survey->images as $img)
                             <div class="position-relative">
-                                <img src="{{ asset('storage/' . $img->file_path) }}" 
-                                    class="rounded border" 
-                                    width="120" height="120" 
-                                    style="object-fit: cover;">
+                                <img src="{{ asset('storage/'.$img->file_path) }}"
+                                    class="rounded border"
+                                    style="width:120px;height:120px;object-fit:cover">
+
+                                <button type="button"
+                                    class="btn btn-sm btn-danger position-absolute top-0 end-0 btn-delete"
+                                    data-id="{{ $img->id }}"
+                                    data-type="image">
+                                    ×
+                                </button>
                             </div>
                         @endforeach
+
+                        <input type="file"
+                            name="result_images[]"
+                            class="form-control image-input"
+                            multiple>
                     </div>
-                @endif
+                    <div class="col-md-6 mb-4">
+                        <h5 class="fw-bold">Dokumen Denah Existing</h5>
 
-                <input type="file" 
-                    name="result_images[]" 
-                    id="result-images-input"
-                    class="form-control" 
-                    accept="image/*" 
-                    multiple>
+                        @if($survey->documents->count())
+                            <ul class="list-group mb-3">
+                                @foreach($survey->documents as $doc)
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div class="d-flex gap-2">
+                                            <a href="{{ asset('storage/'.$doc->file_path) }}"
+                                            target="_blank"
+                                            class="btn btn-sm btn-outline-dark">
+                                                Lihat File
+                                            </a>
+                                            <button type="button"
+                                                class="btn btn-sm btn-danger btn-delete"
+                                                data-id="{{ $doc->id }}"
+                                                data-type="document">
+                                                Hapus
+                                            </button>
+                                        </div>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        @else
+                        <em class="text-muted">Belum ada dokumen.</em>
+                        @endif
 
-                <div id="preview-result-images" class="mt-3 d-flex flex-wrap gap-3"></div>
-            </div> --}}
-            <div class="mt-4">
-                <label class="fw-bold">Foto Hasil Survei / Denah</label>
-                <div class="text-muted mb-2">Foto seperti sketsa atau kondisi lapangan</div>
-
-                {{-- FOTO LAMA --}}
-                @if($survey->surveyimages)
-                    <div id="old-result-images" class="d-flex flex-wrap gap-3 mb-3">
-                        @foreach($survey->surveyimages as $img)
-                            <img src="{{ asset('storage/' . $img->file_path) }}"
-                                width="120" height="120" class="rounded border"
-                                style="object-fit: cover;">
-                        @endforeach
+                        <input type="file"
+                            name="documents[]"
+                            class="form-control"
+                            accept="application/pdf"
+                            multiple>
                     </div>
-                @endif
-
-                {{-- INPUT FILE --}}
-                <input type="file"
-                    name="result_images[]"
-                    id="result-images-input"
-                    class="form-control"
-                    accept="image/*"
-                    multiple>
-
-                {{-- PREVIEW BARU --}}
-                <div id="preview-result-images"
-                    class="mt-3 d-flex flex-wrap gap-3"></div>
+                </div>
             </div>
+
 
             {{-- ITEM URAIAN --}}
             <div class="mb-3 mt-3">
@@ -170,29 +177,28 @@
             </div>
 
             <div class="mt-4">
+                <h5 class="fw-bold mt-4">Foto Dokumentasi</h5>
+                <div class="d-flex flex-wrap gap-3 mb-3">
+                @foreach($survey->documentations as $doc)
+                    <div class="position-relative">
+                        <img src="{{ asset('storage/'.$doc->file_path) }}"
+                            class="rounded border"
+                            style="width:120px;height:120px;object-fit:cover">
 
-                <label class="fw-bold">Foto Dokumentasi</label>
-                <div class="text-muted mb-2">Upload foto proses survey (opsional)</div>
-
-                @if($survey->documentations)
-                    <div id="old-documentation" class="d-flex flex-wrap gap-3 mb-3">
-                        @foreach($survey->documentations as $doc)
-                            <img src="{{ asset('storage/' . $doc->file_path) }}"
-                                width="120" height="120" class="rounded border"
-                                style="object-fit: cover;">
-                        @endforeach
+                        <button type="button"
+                            class="btn btn-sm btn-danger position-absolute top-0 end-0 btn-delete"
+                            data-id="{{ $doc->id }}"
+                            data-type="documentation">
+                            ×
+                        </button>
                     </div>
-                @endif
+                @endforeach
+                </div>
 
                 <input type="file"
                     name="documentation[]"
-                    id="documentation-input"
-                    class="form-control"
-                    accept="image/*"
+                    class="form-control image-input"
                     multiple>
-
-                <div id="preview-documentation"
-                    class="mt-3 d-flex flex-wrap gap-3"></div>
             </div>
             {{-- TTD --}}
             <div class="row mt-3">
@@ -219,7 +225,7 @@
 
             {{-- SUBMIT --}}
             <div class="mt-4">
-                <button class="btn btn-success">Simpan</button>
+                <button class="btn btn-dark">Simpan</button>
                 <button type="button" id="btn-cancel-survey" class="btn btn-light">Batal</button>
             </div>
 

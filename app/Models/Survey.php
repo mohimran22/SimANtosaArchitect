@@ -49,6 +49,11 @@ class Survey extends Model
         return $this->hasMany(SurveyDocumentation::class);
     }
 
+            public function documents()
+    {
+        return $this->hasMany(SurveyDocument::class);
+    }
+
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
