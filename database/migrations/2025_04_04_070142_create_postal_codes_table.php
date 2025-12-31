@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('pieces', function (Blueprint $table) {
+        Schema::create('postal_codes', function (Blueprint $table) {
             $table->id();
-            $table->string('name');   
+            $table->string('postal_code', 10);
+            $table->unsignedBigInteger('sub_district_id');
+            $table->foreign('sub_district_id')->references('id')->on('sub_districts')->onDelete('cascade');
         });
     }
 
@@ -22,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('pieces');
+        Schema::dropIfExists('postal_codes');
     }
 };

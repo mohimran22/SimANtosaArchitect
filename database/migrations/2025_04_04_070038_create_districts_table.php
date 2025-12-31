@@ -11,13 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-    Schema::create('project_groups', function (Blueprint $table) {
-            $table->uuid('id')->primary();
+        Schema::create('districts', function (Blueprint $table) {
+            $table->id();
             $table->string('name');
-            $table->string('file_path');
-            $table->timestamps();
+            $table->unsignedBigInteger('city_id');
+            $table->foreign('city_id')->references('id')->on('cities')->onDelete('cascade');
+            $table->boolean('is_active');
         });
-
     }
 
     /**
@@ -25,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('project_groups');
+        Schema::dropIfExists('districts');
     }
 };

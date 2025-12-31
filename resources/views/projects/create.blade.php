@@ -306,9 +306,9 @@
             </div>
             @endif
             @if(
-                ($project->project_type == 1 && $activeStep >= 7 && $project->offer->approved_at)
+                ($project?->project_type == 1 && $activeStep >= 7 && $project->offer->approved_at)
                 ||
-                ($project->project_type == 2 && $activeStep >= 6)
+                ($project?->project_type == 2 && $activeStep >= 6)
             )
             <div id="step-7" class="step-section">
                 <div class="card shadow-sm border-0 mb-4">
