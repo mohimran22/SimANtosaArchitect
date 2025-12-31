@@ -356,6 +356,8 @@ public function approveSurvey(Invoice $invoice, $token)
     $invoice->update([
         'status' => 'approved',
         'approved_at' => now(),
+        'approve_by_name' => $invoice->project->customer->user->fullname ?? 'Customer',
+        'approved_ip' => request()->ip(),
     ]);
 
     $project = $invoice->project;

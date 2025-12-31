@@ -116,17 +116,36 @@ body {
 @endif
 <table width="100%" style="margin-top:50px;">
     <tr>
-        <td width="50%" style="text-align:center;">
+        <td width="50%" style="text-align:center; vertical-align:top;">
             <p>Disusun oleh,</p>
-            <br><br><br>
-            <strong>Admin Antosa Architect</strong>
+
+            @if($invoice->status === 'approved')
+                <img src="{{ public_path('images/ttd-dwiantosa.png') }}" style="height:90px;">
+
+                <p>
+                    <strong><u>Ir. Ar. Dwiantosa Ahmad Fathony, IAI., IPP</u></strong><br>
+                </p>
+            @else
+                <br><br><br>
+                <p>
+                    <strong>Ir. Ar. Dwiantosa Ahmad Fathony, IAI., IPP</strong>
+                </p>
+            @endif
         </td>
 
-        <td width="50%" style="text-align:center;">
+        <td width="50%" style="text-align:center; vertical-align:top;">
             <p>Disetujui oleh Customer,</p>
-            <br><br><br>
-            <strong>{{ $project->customer->user->fullname ?? '................' }}</strong>
+
+            @if($invoice->status === 'approved')
+                <br><br>
+                <strong>{{ $invoice->approve_by_name }}</strong><br>
+            @else
+                <br><br><br>
+                <strong>{{ $project->customer->user->fullname ?? '................' }}</strong>
+            @endif
         </td>
+
+
     </tr>
 </table>
 @if($invoice->status === 'waiting_approval')

@@ -66,16 +66,16 @@
                         </div>
                     </div>
                 </div>
-            </div>
-            @endif
-            @if($activeStep == 2)
-            <div id="step-2" class="step-section">
-                <div class="card shadow-sm border-0 mb-4">
-                    <div class="card-body px-5 py-4">
-                        <h3 class="mb-4 fw-bold">1. Form Konsultasi</h3>
-                        @include('projects.steps.consultation-form')
-                    </div>
-                </div>
+
+                @if($activeStep == 2)
+
+                    <div class="card shadow-sm border-0 mb-4">
+                        <div class="card-body px-5 py-4">
+                            <h3 class="mb-4 fw-bold">1. Form Konsultasi</h3>
+                            @include('projects.steps.consultation-form')
+                        </div>
+                    </div>  
+                @endif
             </div>
             @endif
             @if($activeStep >= 3)
@@ -107,10 +107,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
-            @endif
-            @if($activeStep >= 3)
-            <div id="step-planning" class="step-section">
+
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body px-5 py-4">
                         <div class="d-flex justify-content-between align-items-center mb-4">
@@ -155,7 +152,7 @@
                     $project->levels->firstWhere('level_order', 3)?->is_started
                 )
             )
-            <div id="step-survey" class="step-section">
+            <div id="step-4" class="step-section">
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body px-5 py-4">
                         <h3 class="mb-3 fw-bold">3. Form Survei Lapangan</h3>
@@ -186,10 +183,8 @@
                         </div>
                     </div>
                 </div>
-            </div>
-            @endif
+
             @if($activeStep == 5)
-            <div id="step-5" class="step-section">
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body px-5 py-4">
                         @if($project->project_type == 1)
@@ -202,6 +197,7 @@
                         @endif
                     </div>
                 </div>
+            @endif
             </div>
             @endif
             @if($activeStep >= 6)
@@ -586,118 +582,99 @@ if (id) {
     }
 });
 </script>
-
-
-
 <script>
-    $(document).ready(function () {
-    // 🟢 Ambil nilai lama (old) dari Blade
-    let oldProvince  = "{{ old('province_id') }}";
-    let oldCity      = "{{ old('city_id') }}";
-    let oldDistrict  = "{{ old('district_id') }}";
-    let oldSub       = "{{ old('sub_district_id') }}";
-    let oldPostal    = "{{ old('postal_code_id') }}";
+function initLocationCascade(config) {
+    const {
+        prefix = '',
+        oldProvince,
+        oldCity,
+        oldDistrict,
+        oldSub,
+        oldPostal
+    } = config;
 
-    if (oldProvince) {
-    setTimeout(() => {
-        loadCities(oldProvince, oldCity, function () {
-            if (oldCity) loadDistricts(oldCity, oldDistrict, function () {
-                if (oldDistrict) loadSubDistricts(oldDistrict, oldSub, function () {
-                    if (oldSub) loadPostalCodes(oldSub, oldPostal);
-                });
+    const $province = $('#' + prefix + 'province');
+    const $city = $('#' + prefix + 'city');
+    const $district = $('#' + prefix + 'district');
+    const $sub = $('#' + prefix + 'sub_district');
+    const $postal = $('#' + prefix + 'postal_code');
+
+    function loadCities(provinceId, selected = null, callback = null) {
+        if (!provinceId) return;
+        $.get(`/api/cities/${provinceId}`, function (data) {
+            $city.empty().append('<option value="">-- Pilih Kota --</option>');
+            data.forEach(item => {
+                $city.append(`<option value="${item.id}" ${selected == item.id ? 'selected' : ''}>${item.name}</option>`);
             });
+            $city.trigger('change.select2');
+            if (callback) callback();
         });
-    }, 200); // tunggu 200ms
-}
+    }
 
+    function loadDistricts(cityId, selected = null, callback = null) {
+        if (!cityId) return;
+        $.get(`/api/districts/${cityId}`, function (data) {
+            $district.empty().append('<option value="">-- Pilih Kecamatan --</option>');
+            data.forEach(item => {
+                $district.append(`<option value="${item.id}" ${selected == item.id ? 'selected' : ''}>${item.name}</option>`);
+            });
+            $district.trigger('change.select2');
+            if (callback) callback();
+        });
+    }
 
-    console.log({
-    oldProvince,
-    oldCity,
-    oldDistrict,
-    oldSub,
-    oldPostal
-});
+    function loadSubDistricts(districtId, selected = null, callback = null) {
+        if (!districtId) return;
+        $.get(`/api/sub_districts/${districtId}`, function (data) {
+            $sub.empty().append('<option value="">-- Pilih Kelurahan --</option>');
+            data.forEach(item => {
+                $sub.append(`<option value="${item.id}" ${selected == item.id ? 'selected' : ''}>${item.name}</option>`);
+            });
+            $sub.trigger('change.select2');
+            if (callback) callback();
+        });
+    }
 
+    function loadPostalCodes(subId, selected = null) {
+        if (!subId) return;
+        $.get(`/api/postal_codes/${subId}`, function (data) {
+            $postal.empty().append('<option value="">-- Pilih Kode Pos --</option>');
+            data.forEach(item => {
+                $postal.append(`<option value="${item.id}" ${selected == item.id ? 'selected' : ''}>${item.postal_code}</option>`);
+            });
+            $postal.trigger('change.select2');
+        });
+    }
 
-    // 🔹 Event saat provinsi berubah
-    $('#province').on('change', function () {
+    // Event listeners
+    $province.on('change', function () {
         loadCities(this.value);
     });
 
-    // 🔹 Event saat kota berubah
-    $('#city').on('change', function () {
+    $city.on('change', function () {
         loadDistricts(this.value);
     });
 
-    // 🔹 Event saat kecamatan berubah
-    $('#district').on('change', function () {
+    $district.on('change', function () {
         loadSubDistricts(this.value);
     });
 
-    // 🔹 Event saat kelurahan berubah
-    $('#sub_district').on('change', function () {
+    $sub.on('change', function () {
         loadPostalCodes(this.value);
     });
 
-    // ==============================
-// Fungsi AJAX versi sesuai route kamu
-// ==============================
-function loadCities(provinceId, selected = null, callback = null) {
-    if (!provinceId) return;
-    $.get(`/api/cities/${provinceId}`, function (data) {
-        $('#city').empty().append('<option value="">-- Pilih Kota --</option>');
-        $.each(data, function (i, city) {
-            $('#city').append(
-                `<option value="${city.id}" ${selected == city.id ? 'selected' : ''}>${city.name}</option>`
-            );
+    // Restore old()
+    if (oldProvince) {
+        loadCities(oldProvince, oldCity, () => {
+            loadDistricts(oldCity, oldDistrict, () => {
+                loadSubDistricts(oldDistrict, oldSub, () => {
+                    loadPostalCodes(oldSub, oldPostal);
+                });
+            });
         });
-        if (callback) callback();
-    });
+    }
 }
-
-function loadDistricts(cityId, selected = null, callback = null) {
-    if (!cityId) return;
-    $.get(`/api/districts/${cityId}`, function (data) {
-        $('#district').empty().append('<option value="">-- Pilih Kecamatan --</option>');
-        $.each(data, function (i, district) {
-            $('#district').append(
-                `<option value="${district.id}" ${selected == district.id ? 'selected' : ''}>${district.name}</option>`
-            );
-        });
-        if (callback) callback();
-    });
-}
-
-function loadSubDistricts(districtId, selected = null, callback = null) {
-    if (!districtId) return;
-    $.get(`/api/sub_districts/${districtId}`, function (data) {
-        $('#sub_district').empty().append('<option value="">-- Pilih Kelurahan --</option>');
-        $.each(data, function (i, sub) {
-            $('#sub_district').append(
-                `<option value="${sub.id}" ${selected == sub.id ? 'selected' : ''}>${sub.name}</option>`
-            );
-        });
-        if (callback) callback();
-    });
-}
-
-function loadPostalCodes(subId, selected = null) {
-    if (!subId) return;
-    $.get(`/api/postal_codes/${subId}`, function (data) {
-        $('#postal_code').empty().append('<option value="">-- Pilih Kode Pos --</option>');
-        $.each(data, function (i, code) {
-            $('#postal_code').append(
-                `<option value="${code.id}" ${selected == code.id ? 'selected' : ''}>${code.postal_code}</option>`
-            );
-        });
-    });
-}
-
-});
 </script>
-
-
 
 <script>
 $(document).ready(function() {

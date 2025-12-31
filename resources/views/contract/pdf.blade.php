@@ -467,8 +467,21 @@ Namun apabila terjadi Force Majeure atau bencana alam yang diluar kemampuan Para
 <!-- TANDA TANGAN -->
 <table class="ttd">
 <tr>
-    <td><strong>Pemilik Rumah</strong><br><br><br><br><br><u>{{ strtoupper($offer->contact_name) }}</u></td>
-    <td><strong>Arsitek</strong><br><br><br><br><br><u>(Ir. Ar. Dwiantosa Ahmad F., IAI., IPP)</u></td>
+    <td width="50%" style="text-align:center; vertical-align:top;"><strong>Pemilik Rumah</strong><br><br><br><br><br><u>{{ strtoupper($offer->contact_name) }}</u></td>
+
+    <td width="50%" style="text-align:center; vertical-align:top;">
+        <strong>Arsitek</strong><br><br>
+
+        @if($offer->approved_at)
+            <img src="{{ public_path('images/ttd-dwiantosa.png') }}" style="height:90px;"><br>
+            <strong>
+                <u>Ir. Ar. Dwiantosa Ahmad F., IAI., IPP</u>
+            </strong>
+        @else
+            <br><br><br><br>
+            <u>(Ir. Ar. Dwiantosa Ahmad F., IAI., IPP)</u>
+        @endif
+    </td>
 </tr>
 </table>
 </body>

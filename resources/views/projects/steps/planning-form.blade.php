@@ -28,25 +28,31 @@
             <label class="form-label">Rencana Petugas Survei</label>
             <select name="employee_id[]" class="form-select select2" multiple required>
                 @foreach($employees as $employee)
-                <option value="{{ $employee->id }}">{{ $employee->display_name }}</option>
+                <option value="{{ $employee->id }}"
+                    {{ collect(old('employee_id'))->contains($employee->id) ? 'selected' : '' }}>
+                    {{ $employee->display_name }}
+                </option>
+
                 @endforeach
             </select>
         </div>
 
         <div class="col-md-4">
             <label class="form-label">Tanggal Survei</label>
-            <input type="date" name="planning_date" class="form-control" required>
+            <input type="date" name="planning_date"
+                value="{{ old('planning_date') }}" class="form-control" required>
         </div>
 
         <div class="col-md-4">
             <label class="form-label">Waktu Survei</label>
-            <input type="time" name="planning_time" class="form-control" required>
+            <input type="time" name="planning_time"
+                value="{{ old('planning_time') }}" class="form-control" required>
         </div>
     </div>
         <div class="section-block mb-3 mt-4">
             <div class="form-check form-switch">
-                <input class="form-check-input" type="checkbox"
-                    id="same_address" name="same_address" checked>
+                    <input class="form-check-input" type="checkbox" name="same_address" id="same_address"
+                        {{ old('same_address', true) ? 'checked' : '' }}>
                 <label class="form-check-label fw-semibold" for="same_address">
                     Lokasi Survei sama dengan Lokasi Proyek
                 </label>
@@ -128,7 +134,8 @@
                             </div>
     <div class="mt-3">
         <label class="form-label">Catatan Survei</label>
-        <textarea name="planning_notes" class="form-control" rows="3"></textarea>
+        <textarea name="planning_notes" class="form-control" rows="3">{{ old('planning_notes') }}</textarea>
+        
     </div>
             <div class="section-block mb-5">
                 <h3 class="fw-semibold mb-3 mt-3 border-bottom pb-2">
@@ -163,6 +170,19 @@
 
 
 @push('js')
+<script>
+$(function () {
+    initLocationCascade({
+        prefix: 'survey_',
+        oldProvince: "{{ old('province_id') }}",
+        oldCity: "{{ old('city_id') }}",
+        oldDistrict: "{{ old('district_id') }}",
+        oldSub: "{{ old('sub_district_id') }}",
+        oldPostal: "{{ old('postal_code_id') }}"
+    });
+});
+</script>
+
 <script>
     window.projectLocation = @json($projectLocation);
 </script>

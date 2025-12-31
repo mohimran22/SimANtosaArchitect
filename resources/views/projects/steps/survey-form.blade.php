@@ -16,33 +16,75 @@
 
         <div class="col-md-4">
             <label class="form-label required">Petugas Survei</label>
-            <select name="employee_id[]" class="form-select select2" multiple required>
+            <select name="employee_id[]"
+                    class="form-select select2 @error('employee_id') is-invalid @enderror"
+                    multiple
+                    required>
                 @foreach($employees as $employee)
-                <option value="{{ $employee->id }}">{{ $employee->display_name }}</option>
+                    <option value="{{ $employee->id }}"
+                        {{ in_array($employee->id, old('employee_id', [])) ? 'selected' : '' }}>
+                        {{ $employee->display_name }}
+                    </option>
                 @endforeach
             </select>
+
+            @error('employee_id')
+                <div class="invalid-feedback d-block">{{ $message }}</div>
+            @enderror
         </div>
 
         <div class="col-md-2">
             <label class="form-label required">Tanggal Survei</label>
-            <input type="date" name="survey_date" class="form-control" required>
+            <input type="date"
+       name="survey_date"
+       class="form-control @error('survey_date') is-invalid @enderror"
+       value="{{ old('survey_date') }}"
+       required>
+
+@error('survey_date')
+    <div class="invalid-feedback">{{ $message }}</div>
+@enderror
+
         </div>
 
         <div class="col-md-2">
             <label class="form-label required">Waktu Survei</label>
-            <input type="time" name="survey_time" class="form-control" required>
-        </div>
+            <input type="time"
+       name="survey_time"
+       class="form-control @error('survey_time') is-invalid @enderror"
+       value="{{ old('survey_time') }}"
+       required>
 
-        
+@error('survey_time')
+    <div class="invalid-feedback">{{ $message }}</div>
+@enderror
+
+        </div>
 
         <div class="col-md-4">
             <label class="form-label required">Ukuran Tanah (Aktual) </label>
-            <input type="text" class="form-control" name="site_area">
+            <input type="text"
+       class="form-control @error('site_area') is-invalid @enderror"
+       name="site_area"
+       value="{{ old('site_area') }}">
+
+@error('site_area')
+    <div class="invalid-feedback">{{ $message }}</div>
+@enderror
+
         </div>
 
         <div class="col-md-4">
             <label class="form-label required">Ukuran Bangunan (Aktual) </label>
-            <input type="text" class="form-control" name="building_area">
+            <input type="text"
+       class="form-control @error('building_area') is-invalid @enderror"
+       name="building_area"
+       value="{{ old('building_area') }}">
+
+@error('building_area')
+    <div class="invalid-feedback">{{ $message }}</div>
+@enderror
+
         </div>
     </div>
     <div class="section-block mt-4"> 
@@ -138,7 +180,11 @@
         <div class="col-md-6">
             <label class="form-label fw-bold">Persetujuan Petugas Survei</label><br>
             <label>
-                <input type="checkbox" name="consultant_signed" value="1">
+<input type="checkbox"
+       name="consultant_signed"
+       value="1"
+       {{ old('consultant_signed') ? 'checked' : '' }}>
+
                 Saya sebagai Petugas Survei menyetujui hasil survei ini
             </label>
         </div>
@@ -146,7 +192,11 @@
         <div class="col-md-6">
             <label class="form-label fw-bold">Persetujuan Customer</label><br>
             <label>
-                <input type="checkbox" name="client_signed" value="1">
+<input type="checkbox"
+       name="client_signed"
+       value="1"
+       {{ old('client_signed') ? 'checked' : '' }}>
+
                 Customer menyetujui hasil survei ini
             </label>
         </div>
@@ -154,7 +204,13 @@
 
     <div class="mb-3">
         <label class="form-label">Catatan Tambahan</label>
-        <textarea name="notes" class="form-control" rows="3"></textarea>
+        <textarea name="notes"
+                class="form-control @error('notes') is-invalid @enderror"
+                rows="3">{{ old('notes') }}</textarea>
+
+        @error('notes')
+            <div class="invalid-feedback">{{ $message }}</div>
+        @enderror
     </div>
 
     <div class="text-end mt-4">

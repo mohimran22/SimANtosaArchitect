@@ -27,7 +27,8 @@
             <select name="employee_id" class="form-select select2" required>
                 <option value="">-- Pilih Karyawan --</option>
                 @foreach($employees as $employee)
-                <option value="{{ $employee->id }}">
+                <option value="{{ $employee->id }}"
+                    {{ old('employee_id') == $employee->id ? 'selected' : '' }}>
                     {{ $employee->display_name }}
                 </option>
                 @endforeach
@@ -36,12 +37,12 @@
 
         <div class="col-md-4">
             <label class="form-label">Ukuran Tanah</label>
-            <input type="text" class="form-control" name="site_area">
+            <input type="text" class="form-control" name="site_area" value="{{ old('site_area') }}">
         </div>
 
         <div class="col-md-4">
             <label class="form-label">Ukuran Bangunan</label>
-            <input type="text" class="form-control" name="building_area">
+            <input type="text" class="form-control" name="building_area" value="{{ old('building_area') }}">
         </div>
     </div>
 
@@ -107,7 +108,8 @@
         <div class="col-md-6">
             <label class="form-label fw-bold">Persetujuan Konsultan</label><br>
             <label>
-                <input type="checkbox" name="consultant_signed" value="1">
+                <input type="checkbox" name="consultant_signed" value="1"
+                    {{ old('consultant_signed') ? 'checked' : '' }}>
                 Saya sebagai Konsultan menyetujui hasil konsultasi ini
             </label>
         </div>
@@ -115,7 +117,9 @@
         <div class="col-md-6">
             <label class="form-label fw-bold">Persetujuan Customer</label><br>
             <label>
-                <input type="checkbox" name="client_signed" value="1">
+                <input type="checkbox" name="client_signed" value="1"
+                    {{ old('client_signed') ? 'checked' : '' }}>
+
                 Customer menyetujui hasil konsultasi ini
             </label>
         </div>
@@ -123,21 +127,23 @@
 
     <div class="mb-3">
         <label class="form-label">Catatan Tambahan</label>
-        <textarea name="notes" class="form-control" rows="3"></textarea>
+        <textarea name="notes" class="form-control" rows="3">{{ old('notes') }}</textarea>
+
     </div>
 
-    <div class="md-6 mb-4">
-            <label class="fw-bold">Upload Dokumen</label>
+        <div class="md-6 mb-4">
+            <label class="fw-bold">Foto Dokumentasi</label>
+            <div class="text-muted mb-2">Foto dokumentasi saat kegiatan survei</div>
             <input type="file"
                 name="documentation[]"
-                class="form-control pdf-input"
-                data-preview="preview-documents"
-                accept="application/pdf"
+                class="form-control image-input"
+                data-preview="preview-documentation"
+                accept="image/*"
                 multiple>
 
-            <div id="preview-documents"
+            <div id="preview-documentation"
                 class="mt-3 d-flex flex-wrap gap-3"></div>
-    </div>
+        </div>
 
     <div class="d-flex gap-2 mt-3">
         <button class="btn btn-dark">Simpan Konsultasi</button>

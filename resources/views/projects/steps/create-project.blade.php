@@ -53,7 +53,9 @@
                 <select name="project_status" class="form-select">
                     <option value="">-- Pilih Status --</option>
                     @foreach($projectStatus as $key => $label)
-                        <option value="{{ $key }}">{{ $label }}</option>
+                    <option value="{{ $key }}" {{ old('project_status') == $key ? 'selected' : '' }}>
+                        {{ $label }}
+                    </option>
                     @endforeach
                 </select>
             </div>
@@ -199,4 +201,17 @@
     </div>
 </form>
 
-
+@push('js')
+    <script>
+$(function () {
+    initLocationCascade({
+        prefix: '',
+        oldProvince: "{{ old('province_id') }}",
+        oldCity: "{{ old('city_id') }}",
+        oldDistrict: "{{ old('district_id') }}",
+        oldSub: "{{ old('sub_district_id') }}",
+        oldPostal: "{{ old('postal_code_id') }}"
+    });
+});
+</script>
+@endpush

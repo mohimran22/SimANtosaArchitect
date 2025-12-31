@@ -45,6 +45,8 @@ class Invoice extends Model
         'invoice_dp_downloaded_at',
         'invoice_dp_approved_at',
         'downloaded_at',
+        'approve_by_name',
+        'approved_ip'
     ];
 
     public function project()

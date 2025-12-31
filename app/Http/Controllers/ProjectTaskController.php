@@ -13,6 +13,7 @@ use Illuminate\Support\Carbon;
 use App\Models\User;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 
 
 class ProjectTaskController extends Controller
@@ -160,16 +161,12 @@ protected function checkAutoNextLevel(ProjectTask $task)
     $projectId = $task->project_id;
 
     $activeTaskIds = ProjectTask::where('project_id', $projectId)
-        ->where(function ($q) {
-            $q->whereNull('parent_task_id') // task utama
-              ->orWhereIn('revision_number', function ($sub) {
-                  $sub->selectRaw('MAX(revision_number)')
-                      ->from('project_tasks')
-                      ->whereNotNull('parent_task_id')
-                      ->groupBy('parent_task_id');
-              });
+        ->whereIn('id', function ($q) {
+            $q->selectRaw('MAX(id)')
+              ->from('project_tasks')
+              ->groupBy(DB::raw('COALESCE(parent_task_id, id)'));
         })
-        ->pluck('revision_number');
+        ->pluck('id');
 
     $hasUnfinished = ProjectTask::whereIn('id', $activeTaskIds)
         ->where('status', '!=', 'selesai')
@@ -182,17 +179,14 @@ protected function checkAutoNextLevel(ProjectTask $task)
     ProjectLevel::where([
         'project_id'  => $projectId,
         'level_order' => 7,
-    ])->update([
-        'is_completed' => true,
-    ]);
+    ])->update(['is_completed' => true]);
 
     ProjectLevel::where([
         'project_id'  => $projectId,
         'level_order' => 8,
-    ])->update([
-        'is_started' => true,
-    ]);
+    ])->update(['is_started' => true]);
 }
+
 
 public function reject(Request $request, ProjectTask $task)
 {
