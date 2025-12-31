@@ -64,6 +64,24 @@
                     </tbody>
                 </table>
             </div>
+            <div class="col-md-6 mb-4">
+                <h5 class="fw-bold">Dokumen Upload</h5>
+                @if($consultation->documents->count())
+                    <ul class="list-group">
+                        @foreach($consultation->documents as $docs)
+                            <li class="list-group-item d-flex justify-content-between">
+                                <a href="{{ asset('storage/'.$docs->file_path) }}"
+                                target="_blank"
+                                class="btn btn-sm btn-outline-dark">
+                                    Lihat File
+                                </a>
+                            </li>
+                        @endforeach
+                    </ul>
+                @else
+                    <em class="text-muted">Tidak ada dokumen.</em>
+                @endif
+            </div>
             <div class="mt-4">
                 <h5 class="fw-bold">Foto Dokumentasi</h5>
                 @if($consultation->documentations->count())

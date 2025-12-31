@@ -135,27 +135,64 @@ public function approve(ProjectTask $task)
     ]);
 }
 
+// protected function checkAutoNextLevel(ProjectTask $task)
+// {
+//     if (
+//         ProjectTask::where('project_id', $task->project_id)
+//             ->where('status', '!=', 'selesai')
+//             ->exists()
+//     ) {
+//         return;
+//     }
+
+//     ProjectLevel::where([
+//         'project_id'  => $task->project_id,
+//         'level_order' => 7,
+//     ])->update(['is_completed' => true]);
+
+//     ProjectLevel::where([
+//         'project_id'  => $task->project_id,
+//         'level_order' => 8,
+//     ])->update(['is_started' => true]);
+// }
 protected function checkAutoNextLevel(ProjectTask $task)
 {
-    if (
-        ProjectTask::where('project_id', $task->project_id)
-            ->where('status', '!=', 'selesai')
-            ->exists()
-    ) {
+    $projectId = $task->project_id;
+
+    $activeTaskIds = ProjectTask::where('project_id', $projectId)
+        ->where(function ($q) {
+            $q->whereNull('parent_task_id') // task utama
+              ->orWhereIn('revision_number', function ($sub) {
+                  $sub->selectRaw('MAX(revision_number)')
+                      ->from('project_tasks')
+                      ->whereNotNull('parent_task_id')
+                      ->groupBy('parent_task_id');
+              });
+        })
+        ->pluck('revision_number');
+
+    $hasUnfinished = ProjectTask::whereIn('id', $activeTaskIds)
+        ->where('status', '!=', 'selesai')
+        ->exists();
+
+    if ($hasUnfinished) {
         return;
     }
 
     ProjectLevel::where([
-        'project_id'  => $task->project_id,
+        'project_id'  => $projectId,
         'level_order' => 7,
-    ])->update(['is_completed' => true]);
+    ])->update([
+        'is_completed' => true,
+    ]);
 
     ProjectLevel::where([
-        'project_id'  => $task->project_id,
+        'project_id'  => $projectId,
         'level_order' => 8,
-    ])->update(['is_started' => true]);
+    ])->update([
+        'is_started' => true,
+    ]);
 }
-
 
 public function reject(Request $request, ProjectTask $task)
 {

@@ -27,21 +27,13 @@ public function rules(): array
 
         'employee_id'   => 'required|array|min:1',
         'employee_id.*' => 'uuid|exists:employees,id',
-
-        // Items dinamis
         'items'                 => 'required|array|min:1',
         'items.*.description'   => 'required|string|max:2000',
         'items.*.remark'        => 'nullable|string|max:2000',
-
-        // Dokumen utama (single file)
         'documents'     => 'nullable|array',
         'documents.*'   => 'file|mimes:pdf|max:2048',
-
-        // 🔥 Foto dokumentasi (multiple)
         'documentation'     => 'nullable|array',
         'documentation.*'   => 'image|mimes:jpg,jpeg,png|max:2048',
-
-        // 🔥 Foto hasil survei / denah (multiple)
         'result_images'     => 'nullable|array',
         'result_images.*'   => 'image|mimes:jpg,jpeg,png|max:2048',
     ];

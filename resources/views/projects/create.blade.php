@@ -99,11 +99,9 @@
                                 </a> --}}
                             </div>
                         </div>
-                    
                         <div id="consultation-view">
                             @include('projects.details.consultation')
                         </div>
-
                         <div id="consultation-edit" style="display:none;">
                             @include('projects.edit.consultation-form')    
                         </div>
@@ -117,8 +115,6 @@
                     <div class="card-body px-5 py-4">
                         <div class="d-flex justify-content-between align-items-center mb-4">
                         <h3 class="fw-bold mb-0">2. Rencana Survei</h3>
-
-                        
                             <button type="button"
                                 id="btn-edit-planning"
                                 class="btn btn-sm btn-dark {{ $disableEdit ? 'disabled' : '' }}"
@@ -126,25 +122,7 @@
                                 title="{{ $disableEdit ? 'Menunggu persetujuan biaya survei' : 'Edit Data' }}">
                                 <i class="ti ti-edit"></i>
                             </button>
-
-                            {{-- @if($surveyInvoice && $surveyInvoice->amount > 0)
-                                <a href="{{ route('projects.planning-survey.pdf', $project->id) }}"
-                                    class="btn btn-sm btn-dark"
-                                    target="_blank"
-                                    title="Lihat PDF Rencana Survei">
-                                    <i class="ti ti-file-text"></i>
-                                </a>
-                            @endif
-                            @if($surveyInvoice && $surveyInvoice->status === 'approved')
-                                <a href="{{ route('projects.invoice-survey', $project->id) }}"
-                                    class="btn btn-dark"
-                                    target="_blank"
-                                    title="Cetak Invoice Rencana Survei">
-                                    <i class="ti ti-receipt"></i>
-                                </a>
-                            @endif --}}
                         </div>
-
                         @if(!$project->planning)
                             @include('projects.steps.planning-form')
                         @else
@@ -156,13 +134,10 @@
                                     @include('projects.edit.planning-form')
                                 </div>
                             @endif
-
                             @if($surveyInvoice && $surveyInvoice->status === 'rejected')
                                 <div class="alert alert-danger mt-4">
-                                    Biaya survei ditolak:<br>{{ $surveyInvoice->reject_note }}
-                                    
+                                    Biaya survei ditolak:<br>{{ $surveyInvoice->reject_note }}     
                                 </div>
-
                             @elseif($surveyInvoice && $surveyInvoice->status === 'waiting_approval' && $surveyInvoice->amount > 0)
                                 <div class="alert alert-warning mt-4">
                                     Menunggu persetujuan biaya survei dari customer (via PDF)<br>Data rencana survei tidak dapat diubah selama proses persetujuan.
@@ -203,11 +178,9 @@
                                 </button>
                             </div>
                         </div>
-
                         <div id="survey-view">
                             @include('projects.details.survey')
                         </div>
-
                         <div id="survey-edit" style="display:none;">
                             @include('projects.edit.survey-form')
                         </div>
@@ -219,8 +192,14 @@
             <div id="step-5" class="step-section">
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body px-5 py-4">
-                        <h3 class="mb-3 fw-bold">4. Form Penawaran Jasa Desain</h3>
-                        @include('projects.steps.desain-form')
+                        @if($project->project_type == 1)
+                            <h3 class="mb-3 fw-bold">4. Form Penawaran Jasa Desain</h3>
+                            @include('projects.steps.desain-form')
+
+                        @elseif($project->project_type == 2)
+                            <h3 class="mb-3 fw-bold">4. Form Penawaran Pembuatan RAB</h3>
+                            @include('projects.steps.rab-form')
+                        @endif
                     </div>
                 </div>
             </div>
@@ -229,42 +208,77 @@
             <div id="step-6" class="step-section">
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body px-5 py-4">
+
                         <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h3 class="mb-3 fw-bold">4. Penawaran Jasa Desain</h3>
+                            <h3 class="mb-3 fw-bold">
+                                {{ $project->project_type == 1 ? '4. Penawaran Jasa Desain' : '4. Penawaran Jasa RAB' }}
+                            </h3>
+
                             <div class="btn-group">
-                                <button type="button" id="btn-edit-offer"
-                                    class="btn btn-sm btn-dark me-2"
-                                    title="Edit Data">
+                                {{-- 🔥 BUTTON EDIT --}}
+                                <button type="button"
+                                        class="btn btn-sm btn-dark me-2 btn-toggle-offer"
+                                        data-view="offer-view"
+                                        data-edit="offer-edit"
+                                        title="Edit Data">
                                     <i class="ti ti-edit"></i>
                                 </button>
+
+                                {{-- PDF --}}
                                 @if($project->offer?->id)
-                                <a href="{{ route('projects.offers.pdf', $project->offer->id) }}"
-                                    class="btn btn-sm btn-dark"
-                                    target="_blank"
-                                    title="Download PDF">
-                                    <i class="ti ti-download"></i>
-                                </a>
+                                    @if($project->project_type == 1)
+                                    <a href="{{ route('projects.offers.desain.pdf', $project->offer->id) }}"
+                                        class="btn btn-sm btn-dark"
+                                        target="_blank"
+                                        title="Download PDF">
+                                            <i class="ti ti-download"></i>
+                                    </a>
+                                    @else
+                                    <a href="{{ route('projects.offers.rab.pdf', $project->offer->id) }}"
+                                        class="btn btn-sm btn-dark"
+                                        target="_blank"
+                                        title="Download PDF">
+                                            <i class="ti ti-download"></i>
+                                    </a>
+                                    @endif
                                 @endif
                             </div>
                         </div>
+
                         <div id="offer-view">
-                            @include('projects.details.offer')
+                            @if($project->project_type == 1)
+                                @include('projects.details.offer')
+                            @else
+                                @include('projects.details.raboffer')
+                            @endif
                         </div>
+
                         <div id="offer-edit" style="display:none;">
-                            @include('projects.edit.offer-form')    
+                            @if($project->project_type == 1)
+                                @include('projects.edit.offer-form')
+                            @else
+                                @include('projects.edit.raboffer-form')
+                            @endif
+                            <div class="mt-3">
+                                <button type="button"
+                                        class="btn btn-secondary btn-cancel-offer"
+                                        data-view="offer-view"
+                                        data-edit="offer-edit">
+                                    Batal
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
             @endif
-            @if($activeStep >= 6)
+            @if($activeStep >= 6 && $project->project_type == 1)
             <div id="step-6" class="step-section">
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body px-5 py-4">
                         <h3 class="mb-3 fw-bold">5. Draft Kontrak Pelaksanaan Pekerjaan</h3>
 
                         <div class="d-flex gap-2">
-
                             <a href="{{ route('projects.contract.pdf', $project->id) }}"
                             class="btn btn-dark"
                             target="_blank">
@@ -291,54 +305,83 @@
                 </div>
             </div>
             @endif
-            @if($activeStep >= 7)
+            @if(
+                ($project->project_type == 1 && $activeStep >= 7 && $project->offer->approved_at)
+                ||
+                ($project->project_type == 2 && $activeStep >= 6)
+            )
             <div id="step-7" class="step-section">
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body px-5 py-4">
-                        <h3 class="mb-3 fw-bold">6. Invoice Pembayaran Desain DP</h3>
-                            
-                                <div class="d-flex gap-2">
-                                    @php
-                                        $invoice = $invoiceDp;
-                                    @endphp
 
-                                
-                                    @if(!$invoice?->invoice_dp_downloaded_at)
-                                        <a href="{{ route('projects.invoice.pdf', $project->id) }}"
-                                        class="btn btn-dark"
-                                        target="_blank">
-                                            <i class="ti ti-download"></i> Download Invoice
-                                        </a>
-                                    @else
-                                        <a href="{{ route('projects.invoice.pdf', $project->id) }}"
-                                            class="btn btn-dark"
-                                            target="_blank">
-                                            <i class="ti ti-download"></i>Download Invoice
-                                        </a>
-                                        <span class="text-muted fst-italic d-flex align-items-center gap-1">
-                                            <i class="ti ti-check"></i>
-                                            Sudah didownload
-                                        </span>
-                                    @endif
+                        <h3 class="mb-3 fw-bold">
+                            {{ $project->project_type == 1
+                                ? '6. Invoice Pembayaran Desain (DP)'
+                                : '5. Invoice Jasa Pembuatan RAB'
+                            }}
+                        </h3>
 
-                                    @if(
-                                        $invoice?->invoice_dp_downloaded_at &&
-                                        !$invoice?->invoice_dp_approved_at
-                                    )
-                                        <form action="{{ route('projects.invoice.approve', $project->id) }}"
-                                            method="POST"
-                                            onsubmit="return confirm('Lanjut ke tahap pengerjaan?')">
-                                            @csrf
-                                            <button class="btn btn-dark">
-                                                <i class="ti ti-arrow-right"></i> Lanjut ke tahap berikutnya
-                                            </button>
-                                        </form>
-                                    @endif
-                                </div>     
+                        @php
+                            $invoice = $project->project_type == 1
+                                ? $invoiceDp
+                                : $invoiceRab;
+                        @endphp
+
+                        <div class="d-flex gap-2">
+                            <a href="{{ $project->project_type == 1
+                                    ? route('projects.invoice.pdf', $project->id)
+                                    : route('projects.invoice.rab', $project->id)
+                                }}"
+                                class="btn btn-dark"
+                                target="_blank">
+                                <i class="ti ti-download"></i>
+                                Download Invoice
+                            </a>
+                            @if(
+                                ($project->project_type == 1 && $invoice?->invoice_dp_downloaded_at)
+                                ||
+                                ($project->project_type == 2 && $invoice?->downloaded_at)
+                            )
+                                <span class="text-muted fst-italic d-flex align-items-center gap-1">
+                                    <i class="ti ti-check"></i> Sudah didownload
+                                </span>
+                            @endif
+                            @if(
+                                $project->project_type == 1 &&
+                                $invoice?->invoice_dp_downloaded_at &&
+                                !$invoice?->invoice_dp_approved_at
+                            )
+                                <form action="{{ route('projects.invoice.approve', $project->id) }}"
+                                    method="POST"
+                                    onsubmit="return confirm('Lanjut ke tahap pengerjaan desain?')">
+                                    @csrf
+                                    <button class="btn btn-dark">
+                                        <i class="ti ti-arrow-right"></i> Lanjut ke tahap berikutnya
+                                    </button>
+                                </form>
+                            @endif
+
+                            @if(
+                                $project->project_type == 2 &&
+                                $invoice?->downloaded_at &&
+                                !$invoice?->approved_at
+                            )
+                                <form action="{{ route('projects.invoice.rab.approve', $project->id) }}"
+                                    method="POST"
+                                    onsubmit="return confirm('Approve invoice RAB dan lanjut ke pengerjaan?')">
+                                    @csrf
+                                    <button class="btn btn-dark">
+                                        <i class="ti ti-check"></i> Lanjut ke tahap berikutnya
+                                    </button>
+                                </form>
+                            @endif
+                        </div>
+
                     </div>
                 </div>
             </div>
             @endif
+
             @if($activeStep >= 8)
             <div id="step-8" class="step-section">
                 <div class="card shadow-sm border-0 mb-4">
@@ -888,6 +931,10 @@ document.addEventListener('click', function (e) {
     if (!btn) return;
 
     const row   = btn.closest('tr');
+    if (row.dataset.fixed === "1") {
+        alert('Baris ini tidak bisa dihapus');
+        return;
+    }
     const tbody = row.closest('tbody');
 
     row.remove();
@@ -976,21 +1023,38 @@ document.addEventListener("DOMContentLoaded", () => {
 <script>
 document.addEventListener("DOMContentLoaded", () => {
 
-    const view = document.getElementById("offer-view");
-    const edit = document.getElementById("offer-edit");
+    document.querySelectorAll('.btn-toggle-offer').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const viewId = btn.dataset.view;
+            const editId = btn.dataset.edit;
 
-    document.getElementById("btn-edit-offer").addEventListener("click", () => {
-        view.style.display = "none";
-        edit.style.display = "block";
+            const view = document.getElementById(viewId);
+            const edit = document.getElementById(editId);
+
+            if (!view || !edit) return;
+
+            view.style.display = 'none';
+            edit.style.display = 'block';
+        });
     });
+    document.querySelectorAll('.btn-cancel-offer').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const viewId = btn.dataset.view;
+            const editId = btn.dataset.edit;
 
-    document.getElementById("btn-cancel-offer").addEventListener("click", () => {
-        edit.style.display = "none";
-        view.style.display = "block";
+            const view = document.getElementById(viewId);
+            const edit = document.getElementById(editId);
+
+            if (!view || !edit) return;
+
+            edit.style.display = 'none';
+            view.style.display = 'block';
+        });
     });
 
 });
 </script>
+
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const editBtn = document.getElementById('btn-edit-final');

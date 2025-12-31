@@ -30,7 +30,9 @@ use App\Http\Controllers\RoleSwitchController;
 use App\Http\Controllers\UserImportController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\DesignPackageController;
-
+use App\Http\Controllers\RabPackageController;
+use App\Http\Controllers\AhspGroupController;
+use App\Http\Controllers\AhspController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -198,6 +200,11 @@ Route::middleware(['auth', 'permission:lihat daftar proyek|lihat data proyek'])-
     Route::resource('/labor_costs', \App\Http\Controllers\LaborCostController::class);
 });
 
+Route::middleware(['auth', 'permission:lihat daftar proyek|lihat data proyek'])->group(function () {
+
+    Route::resource('/equipment_cost', \App\Http\Controllers\EquipmentCostController::class);
+});
+
 Route::resource('design-packages', DesignPackageController::class)
     ->except(['show']);
 
@@ -215,7 +222,30 @@ Route::delete('design-package-items/{item}',
 Route::get('design-packages/json/{id}',
     [DesignPackageController::class, 'getPackage'])->name('design-packages.json');
 
+Route::resource('rab-packages', RabPackageController::class)
+    ->except(['show']);
 
+// Tambah / update / hapus item
+Route::post('rab-packages/{rabPackage}/items',
+    [RabPackageController::class, 'addItem'])->name('rab-packages.items.store');
+
+Route::put('rab-package-items/{item}',
+    [RabPackageController::class, 'updateItem'])->name('rab-packages.items.update');
+
+Route::delete('rab-package-items/{item}',
+    [RabPackageController::class, 'deleteItem'])->name('rab-packages.items.delete');
+
+// API aman untuk frontend
+Route::get('rab-packages/json/{id}',
+    [RabPackageController::class, 'getPackage'])->name('rab-packages.json');
+
+Route::resource('/ahsp-groups', AhspGroupController::class);
+
+Route::resource('/ahsp-groups.ahsps', AhspController::class)
+    ->shallow()
+    ->except(['index', 'show']);
+
+Route::resource('/job-categories', \App\Http\Controllers\JobCategoryController::class);
 
 
 Route::post('projects/consultations', [\App\Http\Controllers\ConsultationController::class, 'store'])
@@ -259,9 +289,26 @@ Route::post('/offers/{offer}/approve', [\App\Http\Controllers\OfferController::c
 Route::post('/offers/{offer}/reject', [\App\Http\Controllers\OfferController::class, 'reject'])
     ->name('offers.reject');
 
-
 Route::get('/projects/offers/{offer}/pdf', [\App\Http\Controllers\OfferController::class, 'printPdf'])
-    ->name('projects.offers.pdf');
+    ->name('projects.offers.desain.pdf');
+
+Route::post('projects/offer', [\App\Http\Controllers\OfferRABController::class, 'store'])
+    ->name('projects.offer.store');
+    
+
+Route::put('offer/{offer}', [\App\Http\Controllers\OfferRABController::class, 'update'])
+    ->name('offer.update');
+
+Route::post('/offer/{offer}/approve', [\App\Http\Controllers\OfferRABController::class, 'approve'])
+    ->name('offer.approve')
+    ->middleware('auth');
+
+Route::post('/offer/{offer}/reject', [\App\Http\Controllers\OfferRABController::class, 'reject'])
+    ->name('offer.reject');
+
+
+Route::get('/projects/offer/{offer}/pdf', [\App\Http\Controllers\OfferRABController::class, 'printPdf'])
+    ->name('projects.offers.rab.pdf');
 
 // routes/web.php
 Route::get(
@@ -275,6 +322,11 @@ Route::get(
     [\App\Http\Controllers\InvoiceController::class, 'invoiceDp']
 )->name('projects.invoice.pdf');
 
+Route::get(
+    'projects/{project}/invoice/invoice-rab',
+    [\App\Http\Controllers\InvoiceController::class, 'invoiceRab']
+)->name('projects.invoice.rab');
+
 Route::post(
     '/projects/{project}/contract/approve',
     [\App\Http\Controllers\ContractController::class, 'approve']
@@ -284,6 +336,11 @@ Route::post(
     '/projects/{project}/invoice/approve',
     [\App\Http\Controllers\InvoiceController::class, 'approve']
 )->name('projects.invoice.approve');
+
+Route::post(
+    '/projects/{project}/invoice-rab/approve',
+    [\App\Http\Controllers\InvoiceController::class, 'approveRab']
+)->name('projects.invoice.rab.approve');
 
 Route::middleware(['auth'])->group(function () {
 
@@ -382,7 +439,14 @@ Route::middleware(['auth', 'role:Customer'])->group(function () {
 
 });
 
+Route::middleware(['auth', 'permission:lihat daftar rab|lihat data rab'])->group(function () {
+Route::prefix('rab')->name('rab.')->group(function () {
+    Route::get('/start/{rab}', [RABController::class, 'start'])->name('start');
+    Route::get('/create', [RABController::class, 'create'])->name('create');
+    Route::post('/', [RABController::class, 'store'])->name('store');
+});
 
+});
 
 
 Route::middleware(['auth', 'permission:lihat daftar user'])->group(function () {
@@ -440,5 +504,7 @@ Route::get('/api/banks', function () {
 
 // Route::get('/import-users', [UserImportController::class, 'showForm'])->name('users.import.form');
 // Route::post('/import-users', [UserImportController::class, 'import'])->name('users.import');
+Route::post('/upah/import', [UpahImportController::class, 'importUpah'])
+    ->name('upah.import');
 
 

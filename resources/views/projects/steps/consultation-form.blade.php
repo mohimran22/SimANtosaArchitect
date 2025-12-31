@@ -1,7 +1,8 @@
 <form 
       action="{{ route('projects.consultations.store') }}"
       method="POST"
-      enctype="multipart/form-data">
+      enctype="multipart/form-data"
+      data-project-type="{{ $project->project_type }}">
 
     @csrf
     <input type="hidden" name="project_id" value="{{ $project->id }}">
@@ -56,7 +57,8 @@
                     <th width="1%"></th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="consultation-items-body"
+                  data-project-type="{{ $project->project_type }}">
                 @if(old('items'))
                     @foreach(old('items', [ ['description' => '', 'remark' => ''] ]) as $i => $it)
                         <tr>
@@ -89,7 +91,17 @@
 
         <button type="button" data-target="consultation-items-table" class="btn btn-sm btn-dark add-row">+ Tambah Uraian</button>
     </div>
-
+    
+    <div class="col-md-6 mb-3">
+        <label class="fw-bold">Upload Dokumen (PDF)</label>
+        <input type="file"
+            name="documents[]"
+            class="form-control pdf-input"
+            data-preview="preview-documents"
+            accept="application/pdf"
+            multiple>
+        <div id="preview-documents" class="mt-3 d-flex flex-column gap-2"></div>
+    </div> 
 
     <div class="row mb-3 mt-4">
         <div class="col-md-6">
@@ -115,29 +127,22 @@
     </div>
 
     <div class="md-6 mb-4">
-            <label class="fw-bold">Foto Dokumentasi</label>
-            <div class="text-muted mb-2">Foto dokumentasi saat kegiatan survei</div>
+            <label class="fw-bold">Upload Dokumen</label>
             <input type="file"
                 name="documentation[]"
-                class="form-control image-input"
-                data-preview="preview-dokumentasi"
-                accept="image/*"
+                class="form-control pdf-input"
+                data-preview="preview-documents"
+                accept="application/pdf"
                 multiple>
 
-            <div id="preview-dokumentasi"
+            <div id="preview-documents"
                 class="mt-3 d-flex flex-wrap gap-3"></div>
-        </div>
-
+    </div>
 
     <div class="d-flex gap-2 mt-3">
         <button class="btn btn-dark">Simpan Konsultasi</button>
-
-        <a href="#" id="print-preview" class="btn btn-outline-secondary" style="display:none;" target="_blank">
-            Cetak / Preview PDF
-        </a>
     </div>
 </form>
-
 @push('js')
 <script>
     $(document).ready(function() {
@@ -147,5 +152,87 @@
         });
     });
 </script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const tbody = document.getElementById('consultation-items-body');
+    if (!tbody) return;
+
+    const projectType = tbody.dataset.projectType;
+    if (projectType != '2') return; // hanya RAB
+
+    // kosongkan default row
+    tbody.innerHTML = '';
+
+    const templates = [
+        'Desain Denah',
+        'Desain 3D',
+        'Desain DED'
+    ];
+
+    templates.forEach((label, i) => {
+        const row = document.createElement('tr');
+        row.dataset.fixed = "1"; // 🔒 FLAG FIXED
+
+        row.innerHTML = `
+            <td class="row-no text-center">${i + 1}</td>
+
+            <td>
+                <input type="hidden"
+                       name="items[${i}][description]"
+                       value="${label}">
+                ${label}
+            </td>
+
+            <td>
+                <label class="me-3">
+                    <input type="radio"
+                           name="items[${i}][remark]"
+                           value="Ada"> Ada
+                </label>
+                <label>
+                    <input type="radio"
+                           name="items[${i}][remark]"
+                           value="Tidak"> Tidak
+                </label>
+            </td>
+
+            <td></td> <!-- ⛔ TANPA REMOVE -->
+        `;
+        tbody.appendChild(row);
+    });
+});
+</script>
+<script>
+document.addEventListener('submit', function (e) {
+
+    const form = e.target;
+    if (!form.closest('form')) return;
+
+    const tbody = document.getElementById('consultation-items-body');
+    if (!tbody) return;
+
+    let valid = true;
+    let messageShown = false;
+
+    tbody.querySelectorAll('tr[data-fixed="1"]').forEach((row, index) => {
+        const radios = row.querySelectorAll('input[type="radio"]');
+        const checked = Array.from(radios).some(r => r.checked);
+
+        if (!checked) {
+            valid = false;
+            if (!messageShown) {
+                alert(`Uraian "${row.querySelector('strong').innerText}" wajib dipilih (Ada / Tidak)`);
+                messageShown = true;
+            }
+        }
+    });
+
+    if (!valid) {
+        e.preventDefault();
+    }
+});
+</script>
+
 
 @endpush

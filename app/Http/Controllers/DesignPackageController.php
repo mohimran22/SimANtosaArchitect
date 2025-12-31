@@ -8,9 +8,7 @@ use Illuminate\Http\Request;
 
 class DesignPackageController extends Controller
 {
-    /**
-     * List semua paket
-     */
+
     public function index()
     {
         $packages = DesignPackage::withCount('items')->get();

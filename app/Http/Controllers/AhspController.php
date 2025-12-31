@@ -3,138 +3,64 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
-use PhpOffice\PhpSpreadsheet\IOFactory;
-use App\Models\License;
-use App\Models\Province;
-use App\Models\City;
-use App\Models\User;
-use App\Models\District;
-use App\Models\Religion;
-use App\Models\Student;
-use Illuminate\Support\Str;
-use App\Helpers\FormatHelper as F;
+use App\Models\AhspGroup;
+use App\Models\Ahsp;
 
-class LicenseImportController extends Controller
+
+class AhspController extends Controller
 {
-    public function showForm()
+    public function create(AhspGroup $ahspGroup)
     {
-        return view('licenses.import');
+        return view('ahsps.create', compact('ahspGroup'));
     }
 
-    public function import(Request $request)
+    public function store(Request $request, AhspGroup $ahspGroup)
     {
-        $request->validate([
-            'file' => 'required|mimes:xlsx,xls',
+        $data = $request->validate([
+            'kode' => 'required|string|max:20',
+            'kode_urut' => 'required|string|max:50',
+            'nama_pekerjaan' => 'required|string',
+            'satuan' => 'required|string|max:10'
         ]);
 
-        $spreadsheet = IOFactory::load($request->file('file'));
-        $sheet = $spreadsheet->getSheetByName('DATA SISWA');
+        $ahspGroup->ahsps()->create($data);
 
-        $totalInserted = 0;
-
-        if ($sheet) {
-            $rows = $sheet->toArray();
-
-            DB::beginTransaction();
-
-            try {
-                foreach ($rows as $index => $row) {
-                    if ($index === 0) continue; // skip header
-
-                    $license = License::whereRaw('TRIM(name) = ?', [trim($row[3])])->first();
-                    if (!$license) {
-                        logger()->warning("SKIP: License not found: {$row[3]}");
-                        continue;
-                    }
-
-                    $province = Province::whereRaw('TRIM(name) = ?', [trim($row[12])])->first();
-                    $city = City::whereRaw('TRIM(name) = ?', [trim($row[13])])->first();
-                    $district = District::whereRaw('TRIM(name) = ?', [trim($row[14])])->first();
-                    $religion = Religion::whereRaw('TRIM(name) = ?', [trim($row[9])])->first();
-
-                    $gender = strtolower(trim($row[5])) === 'perempuan' ? 2 : 1;
-
-                    // Tanggal lahir
-                    $birthDate = null;
-                    if (!empty($row[7])) {
-                        if (is_numeric($row[7])) {
-                            $birthDate = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($row[7])->format('Y-m-d');
-                        } else {
-                            $birthDate = F::parseIndoDate($row[7]);
-                        }
-                    } else {
-                        $birthDate = '2005-01-01'; // fallback
-                    }
-
-                    $email = trim($row[10]) ?: Str::slug(trim($row[4])) . '@example.com';
-
-                    $user = User::firstOrNew(['email' => $email]);
-            if (!$user->exists) {
-                $user->name = trim($row[4]);
-                $user->password = Hash::make('password123');
-                $user->save();
-            }
-
-            // Optional: assign role
-            if ($user->exists && !$user->hasRole('Siswa')) {
-                $user->assignRole('Siswa');
-            }
-
-            logger('User ID: ' . $user->id);
-
-            // Insert or update student
-            $student = Student::updateOrCreate(
-                ['nis' => trim($row[1])],
-                [
-                    'id' => Str::uuid(), // dipakai hanya jika baru
-                    'license_id' => $license->id,
-                    'user_id' => $user->id,
-                    'fullname' => trim($row[4]),
-                    'nickname' => trim($row[4]),
-                    'gender' => $gender,
-                    'birth_place' => F::parseTextOrDefault($row[6]),
-                    'birth_date' => $birthDate ?? '2005-01-01',
-                    'age' => !empty($row[8]) ? (int) $row[8] : null,
-                    'religion_id' => $religion?->id,
-                    'address' => trim($row[11]),
-                    'email' => $email,
-                    'province_id' => $province?->id,
-                    'city_id' => $city?->id,
-                    'district_id' => $district?->id,
-                    'sub_district_id' => null,
-                    'postal_code_id' => null,
-                    'father_name' => F::parseTextOrDefault($row[15]),
-                    'father_phone' => F::parseNumberOrDefault($row[16]),
-                    'mother_name' => F::parseTextOrDefault($row[17]),
-                    'mother_phone' => F::parseNumberOrDefault($row[18]),
-                    'student_phone' => trim($row[19]) ?: null,
-                    'previous_school' => trim($row[20]),
-                    'grade' => trim($row[21]),
-                    'status' => trim($row[22]),
-                ]
-            );
-
-            logger($student->toArray());
-
-                    $totalInserted++;
-                }
-
-                DB::commit();
-            } catch (\Throwable $e) {
-                DB::rollBack();
-                logger()->error('IMPORT ERROR: ' . $e->getMessage());
-                return back()->with('error', 'Gagal import: ' . $e->getMessage());
-            }
-        }
-
-        return back()->with('success', "Import selesai. Total siswa diimport: {$totalInserted}");
+        return redirect()
+            ->route('ahsp-groups.show', $ahspGroup)
+            ->with('success', 'AHSP berhasil ditambahkan');
     }
 
+    public function edit(Ahsp $ahsp)
+    {
+        return view('ahsps.edit', compact('ahsp'));
+    }
 
-    
+    public function update(Request $request, Ahsp $ahsp)
+    {
+        $data = $request->validate([
+            'kode' => 'required|string|max:20',
+            'kode_urut' => 'required|string|max:50',
+            'nama_pekerjaan' => 'required|string',
+            'satuan' => 'required|string|max:10'
+        ]);
+
+        $ahsp->update($data);
+
+        return back()->with('success', 'AHSP berhasil diupdate');
+    }
+
+    public function destroy(Ahsp $ahsp)
+    {
+        $group = $ahsp->group;
+        $ahsp->delete();
+
+        return redirect()
+            ->route('ahsp-groups.show', $group)
+            ->with('success', 'AHSP berhasil dihapus');
+    }
 }
+
 
         //  if  ($sheet1) {
         //     $rows = $sheet1->toArray();

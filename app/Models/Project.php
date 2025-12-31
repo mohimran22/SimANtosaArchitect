@@ -17,6 +17,7 @@ class Project extends Model
 
     protected $fillable = [
         'project_code',
+        'parent_project_id',
         'project_name',
         'project_type',
         'project_location',
@@ -32,12 +33,6 @@ class Project extends Model
         'start_date',
         'project_status',
     ];
-
-    /*
-    |--------------------------------------------------------------------------
-    | RELATIONS
-    |--------------------------------------------------------------------------
-    */
 
     public function province()
     {
@@ -119,14 +114,6 @@ class Project extends Model
     return $this->hasOne(FinalProject::class);
 }
 
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | ACCESSOR
-    |--------------------------------------------------------------------------
-    */
-
     public function getCurrentLevelAttribute()
     {
         return $this->levels()
@@ -167,6 +154,34 @@ public function latestSurveyInvoice()
         ->where('invoice_type', 'survey')
         ->latest()
         ->first();
+}
+
+public function generateLevels()
+{
+    $levels = match ((int) $this->project_type) {
+        1 => [
+                ['level_order' => 1, 'level_name' => 'Konsultasi'],
+                ['level_order' => 2, 'level_name' => 'Rencana Survei'],
+                ['level_order' => 3, 'level_name' => 'Survei'],
+                ['level_order' => 4, 'level_name' => 'Penawaran Jasa Desain'],
+                ['level_order' => 5, 'level_name' => 'Kontrak Desain'],
+                ['level_order' => 6, 'level_name' => 'Invoice Desain DP'],
+                ['level_order' => 7, 'level_name' => 'Proses Pengerjaan'],
+                ['level_order' => 8, 'level_name' => 'Invoice Pelunasan Desain'],
+                ['level_order' => 9, 'level_name' => 'Cetak & Softcopy'],
+            ],
+        2 => [
+                ['level_order' => 1, 'level_name' => 'Konsultasi'],
+                ['level_order' => 2, 'level_name' => 'Rencana Survei'],
+                ['level_order' => 3, 'level_name' => 'Survei'],
+                ['level_order' => 4, 'level_name' => 'Penawaran (Tambahan) Pembuatan RAB'],
+                ['level_order' => 5, 'level_name' => 'Invoice RAB'],
+                ['level_order' => 6, 'level_name' => 'Proses Pengerjaan RAB'],
+            ],
+        default => throw new \Exception('Jenis proyek tidak valid'),
+    };
+
+    $this->levels()->createMany($levels);
 }
 
 }

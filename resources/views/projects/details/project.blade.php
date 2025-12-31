@@ -1,3 +1,17 @@
+@php
+    $type = [
+        '1'     => 'Desain',
+        '2'     => 'RAB',
+        '3'     => 'Build',
+    ];
+    $status = [
+        '1'     => 'Proses',
+        '2'     => 'Revisi',
+        '3'     => 'Butuh Persetujuan',
+        '4'     => 'Selesai',
+    ];
+@endphp
+
 @if(isset($project))
 <div class="card shadow-sm border-0 mb-4">
     <div class="card-header fw-bold">
@@ -10,6 +24,21 @@
             <div class="col-md-4">
                 <label class="fw-semibold">Nama Proyek</label>
                 <input type="text" class="form-control" value="{{ $project->project_name }}" readonly>
+            </div>
+
+            <div class="col-md-2">
+                <label class="fw-semibold">Jenis Proyek</label>
+                <input type="text" class="form-control" value="{{ $type[$project->project_type] }}" readonly>
+            </div>
+
+            <div class="col-md-4">
+                <label class="fw-semibold">Tanggal Mulai Proyek</label>
+                <input type="text" class="form-control" value="{{ $project->start_date }}" readonly>
+            </div>
+
+            <div class="col-md-2">
+                <label class="fw-semibold">Status Proyek</label>
+                <input type="text" class="form-control" value="{{ $status[$project->project_status] }}" readonly>
             </div>
 
             <div class="col-md-4">

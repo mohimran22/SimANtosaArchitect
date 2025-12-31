@@ -72,10 +72,10 @@ class ProjectController extends Controller
             $label = $statusLabel[$row->project_status] ?? 'Tidak Diketahui';
 
             $color = match ($row->project_status) {
-                1 => 'success',
-                2 => 'warning',
-                3 => 'danger',
-                4 => 'info',
+                1 => 'info',
+                2 => 'danger',
+                3 => 'warning',
+                4 => 'success',
                 default => 'secondary'
             };
 
@@ -140,7 +140,8 @@ class ProjectController extends Controller
     {
         return match ((int) $value) {
             1 => 'Desain',
-            2 => 'Build',
+            2 => 'RAB',
+            3 => 'Build',
             default => '-',
         };
     }
@@ -168,9 +169,10 @@ class ProjectController extends Controller
         $invoiceDp = Invoice::where('project_id', $project?->id)
             ->where('invoice_type', Invoice::TYPE_DP)
             ->first();
+        $invoiceRab = Invoice::where('project_id', $project?->id)
+            ->where('invoice_type', Invoice::TYPE_RAB)
+            ->first();
 
-
-        // 🔥 OVERRIDE STEP
         if (
             $project &&
             $project->planning &&
@@ -197,45 +199,48 @@ class ProjectController extends Controller
             $this->formData(),
             compact('project', 'timelineSteps', 'activeStep', 'surveyInvoice',
         'surveyApproved',
-        'isFreeSurvey', 'surveyWaiting', 'surveyRejected', 'invoiceDp')
+        'isFreeSurvey', 'surveyWaiting', 'surveyRejected', 'invoiceDp', 'invoiceRab')
         ));
     }
+    // public function store(ProjectRequest $request)
+    // {
+    //     $project = DB::transaction(function () use ($request) {
+
+    //         $project = Project::create($request->validated());
+
+    //         $project->levels()->createMany([
+    //             ['level_order' => 1, 'level_name' => 'Konsultasi'],
+    //             ['level_order' => 2, 'level_name' => 'Rencana Survei'],
+    //             ['level_order' => 3, 'level_name' => 'Survei'],
+    //             ['level_order' => 4, 'level_name' => 'Penawaran Jasa Desain'],
+    //             ['level_order' => 5, 'level_name' => 'Kontrak Desain'],
+    //             ['level_order' => 6, 'level_name' => 'Invoice Desain DP'],
+    //             ['level_order' => 7, 'level_name' => 'Proses Pengerjaan'],
+    //             ['level_order' => 8, 'level_name' => 'Invoice Pelunasan Desain'],
+    //             ['level_order' => 9, 'level_name' => 'Cetak & Softcopy'],
+    //         ]);
+    //         return $project;
+    //     });
+    //     return redirect()
+    //         ->route('projects.create', ['project_id' => $project->id])
+    //         ->with('success', 'Project berhasil dibuat, lanjut ke form konsultasi.');
+    // }
+
     public function store(ProjectRequest $request)
-    {
-        $project = DB::transaction(function () use ($request) {
+{
+    $project = DB::transaction(function () use ($request) {
 
-            $project = Project::create($request->validated());
+        $project = Project::create($request->validated());
 
-            $project->levels()->createMany([
-                ['level_order' => 1, 'level_name' => 'Konsultasi'],
-                ['level_order' => 2, 'level_name' => 'Rencana Survei'],
-                ['level_order' => 3, 'level_name' => 'Survei'],
-                ['level_order' => 4, 'level_name' => 'Penawaran Jasa Desain'],
-                ['level_order' => 5, 'level_name' => 'Kontrak Desain'],
-                ['level_order' => 6, 'level_name' => 'Invoice Desain DP'],
-                ['level_order' => 7, 'level_name' => 'Proses Pengerjaan'],
-                ['level_order' => 8, 'level_name' => 'Invoice Pelunasan Desain'],
-                ['level_order' => 9, 'level_name' => 'Cetak & Softcopy'],
-            ]);
-            return $project;
-        });
-        return redirect()
-            ->route('projects.create', ['project_id' => $project->id])
-            ->with('success', 'Project berhasil dibuat, lanjut ke form konsultasi.');
-    }
-                // ['level_order' => 7, 'level_name' => 'Form SPK Desain Denah'],
-                // ['level_order' => 8, 'level_name' => 'Pengerjaan Desain Denah'],
-                // ['level_order' => 9, 'level_name' => 'Revisi Desain Denah'],
-                // ['level_order' => 10, 'level_name' => 'Form SPK 3D'],
-                // ['level_order' => 11, 'level_name' => 'Pengerjaan 3D'],
-                // ['level_order' => 12, 'level_name' => 'Revisi 3D'],
-                // ['level_order' => 13, 'level_name' => 'Form SPK DED'],
-                // ['level_order' => 14, 'level_name' => 'Pengerjaan DED'],
-                // ['level_order' => 15, 'level_name' => 'Revisi DED'],
-                // ['level_order' => 16, 'level_name' => 'Form SPK RAB'],
-                
-                // ['level_order' => 8, 'level_name' => 'Pengerjaan RAB'],
-                // ['level_order' => 9, 'level_name' => 'Revisi RAB'],
+        $project->generateLevels();
+
+        return $project;
+    });
+
+    return redirect()
+        ->route('projects.create', ['project_id' => $project->id])
+        ->with('success', 'Project berhasil dibuat.');
+}
 
     private function getCurrentStep($project)
     {
@@ -328,7 +333,7 @@ public function update(Request $request, Project $project)
             'affiliators'   => \App\Models\Affiliator::with('user:id,fullname')->get(['id','user_id']),
             'provinces'     =>  Province::all(),
             'designPackages' => \App\Models\DesignPackage::orderBy('name')->orderBy('price_meter')->get(),
-
+            'rabPackages' => \App\Models\RabPackage::orderBy('name')->orderBy('price_meter')->get(),
             'projectStatus' => [
                 1 => 'Proses',
                 2 => 'Revisi',

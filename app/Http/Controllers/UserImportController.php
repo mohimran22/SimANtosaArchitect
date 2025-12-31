@@ -3,137 +3,72 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Hash;
-use App\Models\User;
-use App\Models\License;
-use App\Models\LicenseHolderFamilyMembers;
 use PhpOffice\PhpSpreadsheet\IOFactory;
-use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
-use App\Helpers\FormatHelper as F;
+use Illuminate\Support\Facades\DB;
 
-class UserImportController extends Controller
+class UpahImportController extends Controller
 {
-    public function showForm()
-    {
-        return view('users.import');
-    }
 
-    public function import(Request $request)
+public function importUpah(Request $request)
 {
     $request->validate([
-        'file' => 'required|mimes:xlsx,xls'
+        'file' => 'required|mimes:xls,xlsx'
     ]);
 
-    $spreadsheet = IOFactory::load($request->file('file'));
-    $sheet = $spreadsheet->getSheetByName('Data Keluarga');
-    $totalInserted = 0;
+    DB::beginTransaction();
 
-    if ($sheet) {
-            $rows = $sheet->toArray();
+    try {
+        $spreadsheet = IOFactory::load($request->file('file')->getPathname());
+        $rows = $spreadsheet->getActiveSheet()->toArray();
 
-            foreach ($rows as $i => $row) {
-                if ($i === 0) continue;
+        $currentCategory = null;
 
-                 // Ambil license
-                $license = License::whereRaw('TRIM(license_id) = ?', [trim($row[1])])->first();
-                if (!$license) {
-                    logger('License not found: '.$row[1]);
-                    continue;
-                }
+        foreach ($rows as $index => $row) {
+            if ($index < 6) continue; // skip header atas
 
-                // Ambil user (owner) pertama dari pivot license_user
-                $user = $license->owners()->first();
-                if (!$user) {
-                    logger('User owner not found for license: '.$license->id);
-                    continue;
-                }
+            $colB = trim($row[1] ?? '');
+            $colC = trim($row[2] ?? '');
+            $colD = trim($row[3] ?? '');
+            $colE = trim($row[4] ?? '');
+            $colF = trim($row[5] ?? '');
 
-                // Ambil license_holder dari user
-                $holder = $user->licenseHolder;
-                if (!$holder) {
-                    logger('License holder not found for user: '.$user->id);
-                    continue;
-                }
-
-                // === SUAMI/ISTRI ===
-                if (strtolower(trim($row[4])) === 'married' && !empty($row[5])) {
-                    LicenseHolderFamilyMembers::create([
-                        'id' => Str::uuid(),
-                        'license_holder_id' => $holder->id,
-                        'name' => trim($row[5]),
-                        'relationship' => 2, // Istri, 4 kalau Suami
-                        'gender' => 2, // Istri = perempuan
-                        'birth_date' => F::parseIndoDate($row[25]) ?? '1980-01-01', // Tidak ada di header
-                        'job' => trim($row[8] ?? '') ?: null,
-                        'job_phone' => trim($row[9] ?? '') ?: null,
-                        'last_education_level' => null,
-                        'institution_name' => trim($row[22] ?? '') ?: null,
-                    ]);
-                    $totalInserted++;
-                }
-
-                // === ANAK 1 ===
-                if (!empty($row[10])) {
-                    LicenseHolderFamilyMembers::create([
-                        'id' => Str::uuid(),
-                        'license_holder_id' => $holder->id,
-                        'name' => trim($row[10]),
-                        'relationship' => 3, // Anak
-                        'gender' => strtolower(trim($row[12])) == 'laki-laki' ? 1 : 2,
-                        'birth_date' => F::parseIndoDate($row[11]) ?? '1990-01-01',
-                        'job' => null,
-                        'job_phone' => null,
-                        'last_education_level' => null,
-                        'institution_name' => trim($row[13] ?? '') ?: null,
-                    ]);
-                    $totalInserted++;
-                }
-
-                // === ANAK 2 ===
-                if (!empty($row[14])) {
-                    LicenseHolderFamilyMembers::create([
-                        'id' => Str::uuid(),
-                        'license_holder_id' => $holder->id,
-                        'name' => trim($row[14]),
-                        'relationship' => 3,
-                        'gender' => strtolower(trim($row[16])) == 'laki-laki' ? 1 : 2,
-                        'birth_date' => F::parseIndoDate($row[15]) ?? '1990-01-01',
-                        'job' => null,
-                        'job_phone' => null,
-                        'last_education_level' => null,
-                        'institution_name' => trim($row[17] ?? '') ?: null,
-                    ]);
-                    $totalInserted++;
-                }
-
-                // === ANAK 3 ===
-                if (!empty($row[18])) {
-                    LicenseHolderFamilyMembers::create([
-                        'id' => Str::uuid(),
-                        'license_holder_id' => $holder->id,
-                        'name' => trim($row[18]),
-                        'relationship' => 3,
-                        'gender' => strtolower(trim($row[20])) == 'laki-laki' ? 1 : 2,
-                        'birth_date' => F::parseIndoDate($row[19]) ?? '1990-01-01',
-                        'job' => null,
-                        'job_phone' => null,
-                        'last_education_level' => null,
-                        'institution_name' => trim($row[21] ?? '') ?: null,
-                    ]);
-                    $totalInserted++;
-                }
+            // =========================
+            // CATEGORY (PP, PT, dll)
+            // =========================
+            if ($colB && !$colF) {
+                $currentCategory = \App\Models\JobCategory::updateOrCreate(
+                    ['code' => $colB],
+                    ['name' => $colD, 'is_active' => true]
+                );
+                continue;
             }
 
+            // =========================
+            // JOB PRICE
+            // =========================
+            if ($currentCategory && $colF && $colC) {
+                \App\Models\JobPrice::updateOrCreate(
+                    [
+                        'category_id' => $currentCategory->id,
+                        'code' => $colC
+                    ],
+                    [
+                        'name'  => $colD,
+                        'unit'  => $colE,
+                        'price' => (float) str_replace('.', '', $colF)
+                    ]
+                );
+            }
+        }
 
+        DB::commit();
+        return back()->with('success', 'Import UPH berhasil');
 
-
-        return back()->with('success', "Import Riwayat Pekerjaan selesai. Total: {$totalInserted}");
+    } catch (\Throwable $e) {
+        DB::rollBack();
+        return back()->with('error', $e->getMessage());
     }
-
-
 }
-
 }
 
 

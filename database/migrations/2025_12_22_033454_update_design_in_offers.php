@@ -11,18 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('invoices', function (Blueprint $table) {
-            $table->timestamp('downloaded_at')->nullable()->after('status');
+        Schema::table('offers', function (Blueprint $table) {
+            $table->uuid('design_package_id')->nullable()->change();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::table('invoices', function (Blueprint $table) {
-            //
+        Schema::table('offers', function (Blueprint $table) {
+            $table->uuid('design_package_id')->nullable(false)->change();
         });
     }
 };

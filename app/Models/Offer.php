@@ -22,7 +22,9 @@ class Offer extends Model
     protected $fillable = [
         'project_id',
         'design_package_id',
+        'rab_package_id',
         'offer_number',
+        'offer_type',
         'offer_date',
         'contact_name',
         'volume',
@@ -55,6 +57,11 @@ class Offer extends Model
     public function package()
     {
         return $this->belongsTo(DesignPackage::class, 'design_package_id');
+    }
+
+        public function rabpackage()
+    {
+        return $this->belongsTo(RabPackage::class, 'rab_package_id');
     }
 
     public function groupedItems()

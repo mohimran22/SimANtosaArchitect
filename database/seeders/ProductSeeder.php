@@ -25,13 +25,15 @@ class ProductSeeder extends Seeder
             $namaCell = $sheet->getCell("D{$row}");
             $satuanCell = $sheet->getCell("E{$row}");
 
-            $kode = trim((string) $kodeCell->getValue());
-            $nama = trim((string) $namaCell->getValue());
+            $kode   = trim((string) $kodeCell->getValue());
+            $nama   = trim((string) $namaCell->getValue());
             $satuan = trim((string) $satuanCell->getValue());
 
             if ($nama === '') continue;
 
-            // ===== DETEKSI WARNA =====
+            // ======================
+            // DETEKSI WARNA MERAH
+            // ======================
             $fontColor = strtoupper(
                 (string) $namaCell->getStyle()->getFont()->getColor()->getARGB()
             );
@@ -41,14 +43,16 @@ class ProductSeeder extends Seeder
             );
 
             $isRed =
-                str_contains($fontColor, 'FF') && $fontColor !== 'FF000000' ||
-                str_contains($fillColor, 'FF') && $fillColor !== 'FFFFFFFF';
+                ($fontColor && $fontColor !== 'FF000000') ||
+                ($fillColor && $fillColor !== 'FFFFFFFF');
 
-            // ===== DETEKSI HEADER =====
+            // ======================
+            // HEADER KATEGORI
+            // ======================
             $isHeader =
+                $isRed &&
                 empty($kode) &&
-                strtoupper($nama) === $nama &&
-                strlen($nama) > 10;
+                strlen($nama) > 5;
 
             if ($isHeader) {
 
@@ -63,7 +67,9 @@ class ProductSeeder extends Seeder
                 continue;
             }
 
-            // ===== ITEM =====
+            // ======================
+            // ITEM PRODUK
+            // ======================
             if (strlen($kode) === 1) continue;
 
             Product::updateOrCreate(

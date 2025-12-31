@@ -65,27 +65,51 @@
                         <th width="1%"></th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="consultation-items-body"
+                    data-project-type="{{ $project->project_type }}">
 
-                    @foreach($consultation->items as $i => $item)
-                    <tr>
-                        <td class="row-no text-center">{{ $i + 1 }}</td>
+                @if($project->consultation && $project->consultation->items->count())
 
-                        <td>
-                            <textarea name="items[{{ $i }}][description]" class="form-control" rows="2">{{ trim($item->description) }}</textarea>
-                        </td>
+                    @foreach($project->consultation->items as $i => $item)
+                        <tr data-fixed="{{ in_array($item->description, ['Desain Denah','Desain 3D','Desain DED']) ? 1 : 0 }}">
+                            <td class="row-no text-center">{{ $i + 1 }}</td>
 
-                        <td>
-                            <textarea name="items[{{ $i }}][remark]" class="form-control" rows="2">{{ trim($item->remark) }}</textarea>
-                        </td>
+                            <td>
+                                <input type="hidden"
+                                    name="items[{{ $i }}][description]"
+                                    value="{{ $item->description }}">
+                                {{ $item->description }}
+                            </td>
 
-                        <td>
-                            <button type="button" class="btn btn-sm btn-danger remove-row">−</button>
-                        </td>
-                    </tr>
+                            <td>
+                                <label class="me-3">
+                                    <input type="radio"
+                                        name="items[{{ $i }}][remark]"
+                                        value="Ada"
+                                        {{ $item->remark === 'Ada' ? 'checked' : '' }}>
+                                    Ada
+                                </label>
+                                <label>
+                                    <input type="radio"
+                                        name="items[{{ $i }}][remark]"
+                                        value="Tidak"
+                                        {{ $item->remark === 'Tidak' ? 'checked' : '' }}>
+                                    Tidak
+                                </label>
+                            </td>
+
+                            <td>
+                                @if(!in_array($item->description, ['Desain Denah','Desain 3D','Desain DED']))
+                                    <button type="button"
+                                            class="btn btn-sm btn-danger remove-row">-</button>
+                                @endif
+                            </td>
+                        </tr>
                     @endforeach
 
+                @endif
                 </tbody>
+
             </table>
 
             <button type="button" id="tambah-baris" class="btn btn-sm btn-dark">+ Tambah Uraian</button>

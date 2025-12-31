@@ -102,3 +102,18 @@
 //             ->route('projects.show', $project->id)
 //             ->with('success', 'Produk berhasil diperbarui.');
 // }
+
+
+                // ['level_order' => 7, 'level_name' => 'Form SPK Desain Denah'],
+                // ['level_order' => 8, 'level_name' => 'Pengerjaan Desain Denah'],
+                // ['level_order' => 9, 'level_name' => 'Revisi Desain Denah'],
+                // ['level_order' => 10, 'level_name' => 'Form SPK 3D'],
+                // ['level_order' => 11, 'level_name' => 'Pengerjaan 3D'],
+                // ['level_order' => 12, 'level_name' => 'Revisi 3D'],
+                // ['level_order' => 13, 'level_name' => 'Form SPK DED'],
+                // ['level_order' => 14, 'level_name' => 'Pengerjaan DED'],
+                // ['level_order' => 15, 'level_name' => 'Revisi DED'],
+                // ['level_order' => 16, 'level_name' => 'Form SPK RAB'],
+                
+                // ['level_order' => 8, 'level_name' => 'Pengerjaan RAB'],
+                // ['level_order' => 9, 'level_name' => 'Revisi RAB'],

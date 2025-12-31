@@ -20,7 +20,6 @@ class InvoiceController extends Controller
 
         Carbon::setLocale('id');
 
-        // BUAT / AMBIL INVOICE
         $invoice = Invoice::firstOrCreate(
             [
                 'project_id'   => $project->id,
@@ -34,8 +33,6 @@ class InvoiceController extends Controller
             ]
         );
 
-
-        // TANDAI SUDAH DOWNLOAD
         if (!$invoice->invoice_dp_downloaded_at) {
             $invoice->update([
                 'invoice_dp_downloaded_at' => now(),
@@ -111,12 +108,10 @@ public function invoiceFinal(Project $project)
 
     Carbon::setLocale('id');
 
-    // Ambil invoice survei
     $invoice = Invoice::where('project_id', $project->id)
         ->where('invoice_type', 'survey')
         ->firstOrFail();
 
-    // Tandai pernah dicetak (opsional)
     if (!$invoice->printed_at) {
         $invoice->update([
             'printed_at' => now(),
@@ -134,6 +129,49 @@ public function invoiceFinal(Project $project)
     return Pdf::loadView('invoice.survey', $data)
         ->setPaper('A4', 'portrait')
         ->stream('Invoice-Rencana-Survei-' . $project->project_name . '.pdf');
+}
+
+public function invoiceRab(Project $project)
+{
+    abort_if(!$project->offer, 404);
+    abort_if($project->project_type != 2, 403); // 🔒 khusus RAB
+
+    Carbon::setLocale('id');
+
+    $invoice = Invoice::firstOrCreate(
+        [
+            'project_id'   => $project->id,
+            'invoice_type' => Invoice::TYPE_RAB,
+        ],
+        [
+            'invoice_number' => $this->generateInvoiceNumber(),
+            'invoice_date'   => now(),
+            'amount'         => $project->offer->grand_total,
+            'status'         => Invoice::STATUS_WAITING,
+        ]
+    );
+
+    if (!$invoice->downloaded_at) {
+        $invoice->update([
+            'downloaded_at' => now(),
+        ]);
+    }
+
+    $offer = $project->offer;
+
+    $data = [
+        'invoice_number' => $invoice->invoice_number,
+        'invoice_date'   => $invoice->invoice_date->translatedFormat('d F Y'),
+        'client_name'    => $offer->contact_name,
+        'client_address' => optional($project->customer->user)->address,
+        'client_phone'   => optional($project->customer->user)->phone,
+        'project_name'   => $project->project_name,
+        'total_amount'   => $offer->grand_total,
+    ];
+
+    return Pdf::loadView('invoice.rab', $data)
+        ->setPaper('A4', 'portrait')
+        ->stream('Invoice-RAB-' . $project->project_name . '.pdf');
 }
 
     public function approve(Project $project)
@@ -165,7 +203,7 @@ public function invoiceFinal(Project $project)
                     ]);
                 }
             }
-            // LEVEL 6 SELESAI
+ 
             ProjectLevel::where([
                 'project_id'  => $project->id,
                 'level_order' => 6,
@@ -212,6 +250,37 @@ public function invoiceFinal(Project $project)
     return redirect()
         ->route('projects.create', ['project_id' => $project->id])
         ->with('success', 'Pelunasan disetujui. Proyek selesai.');
+}
+
+    public function approveRab(Project $project)
+{
+    DB::transaction(function () use ($project) {
+
+        $invoice = Invoice::where('project_id', $project->id)
+            ->where('invoice_type', Invoice::TYPE_RAB)
+            ->firstOrFail();
+
+        $invoice->update([
+            'status'      => Invoice::STATUS_PAID,
+            'approved_at' => now(),
+        ]);
+
+        // Level pengerjaan selesai
+        ProjectLevel::where([
+            'project_id'  => $project->id,
+            'level_order' => 5,
+        ])->update(['is_completed' => true]);
+
+        // Level selesai proyek
+        ProjectLevel::where([
+            'project_id'  => $project->id,
+            'level_order' => 6,
+        ])->update(['is_started' => true]);
+    });
+
+    return redirect()
+        ->route('projects.create', ['project_id' => $project->id])
+        ->with('success', 'RAB disetujui. Lanjut ke tahap pengerjaan.');
 }
 
 
@@ -284,7 +353,6 @@ public function approveSurvey(Invoice $invoice, $token)
         ]);
     }
 
-    // ✅ Approve invoice
     $invoice->update([
         'status' => 'approved',
         'approved_at' => now(),
@@ -341,7 +409,6 @@ public function rejectSurvey(Request $request, Invoice $invoice, $token)
         'reject_note' => 'required|min:5'
     ]);
 
-    // 1️⃣ Update invoice
     $invoice->update([
         'status'       => 'rejected',
         'reject_note'  => $request->reject_note,
@@ -353,7 +420,6 @@ public function rejectSurvey(Request $request, Invoice $invoice, $token)
 
     if ($project) {
 
-        // 2️⃣ RESET level "Survei"
         $surveyLevel = $project->levels()
             ->where('level_name', 'Survei')
             ->first();
@@ -367,7 +433,6 @@ public function rejectSurvey(Request $request, Invoice $invoice, $token)
             ]);
         }
 
-        // 3️⃣ AKTIFKAN kembali "Rencana Survei"
         $planningLevel = $project->levels()
             ->where('level_name', 'Rencana Survei')
             ->first();
@@ -380,7 +445,6 @@ public function rejectSurvey(Request $request, Invoice $invoice, $token)
         }
     }
 
-    // 4️⃣ REDIRECT ke create project (STEP 3 otomatis)
     return redirect()
         ->route('projects.create', ['project_id' => $project->id])
         ->with('error', 'Rencana survei ditolak oleh customer. Silakan perbaiki data.');

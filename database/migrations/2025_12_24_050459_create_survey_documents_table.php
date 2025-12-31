@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('survey_documents', function (Blueprint $table) {
-            $table->id();
+        Schema::create('consultation_documents', function (Blueprint $table) {
+            $table->id()->primary();
             $table->uuid('survey_id');           
             $table->foreign('survey_id')
                 ->references('id')

@@ -48,6 +48,14 @@ class ConsultationController extends Controller
         }
     }
 
+    if ($request->hasFile('documents')) {
+        foreach ($request->file('documents') as $file) {
+            $consultation->documents()->create([
+                'file_path' => $file->store('consultations/documents', 'public')
+            ]);
+        }
+    }
+
     foreach ($data['items'] as $i => $item) {
         ConsultationItem::create([
             'consultation_id' => $consultation->id,

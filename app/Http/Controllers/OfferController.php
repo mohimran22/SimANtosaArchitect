@@ -124,9 +124,6 @@ public function update(Request $request, $id)
 {
     $offer = Offer::findOrFail($id);
 
-    // ============================
-    // VALIDATION
-    // ============================
     $request->validate([
         'project_id'        => 'required|uuid|exists:projects,id',
         'offer_number'      => 'required|string',
@@ -147,9 +144,6 @@ public function update(Request $request, $id)
         'items'             => 'array',
     ]);
 
-    // ============================
-    // UPDATE MAIN OFFER
-    // ============================
     $offer->update([
         'project_id'               => $request->project_id,
         'offer_number'             => $request->offer_number,
@@ -178,9 +172,6 @@ public function update(Request $request, $id)
         'notes'                    => $request->notes,
     ]);
 
-    // ============================
-    // REPLACE OFFER ITEMS
-    // ============================
     $offer->items()->delete();
 
     if ($request->items && count($request->items) > 0) {

@@ -21,14 +21,13 @@ class ConsultationRequest extends FormRequest
             'site_area' => 'nullable|string|max:255',
             'building_area' => 'nullable|string|max:255',
             'notes' => 'nullable|string',
-
-            // items array
             'items' => 'required|array|min:1',
             'items.*.description' => 'required|string|max:2000',
             'items.*.remark' => 'nullable|string|max:2000',
-
-        'documentation'     => 'nullable|array',
-        'documentation.*'   => 'image|mimes:jpg,jpeg,png|max:2048',
+            'documentation'     => 'nullable|array',
+            'documentation.*'   => 'image|mimes:jpg,jpeg,png|max:2048',
+            'documents'     => 'nullable|array',
+            'documents.*'   => 'file|mimes:pdf|max:2048',
         ];
     }
 }

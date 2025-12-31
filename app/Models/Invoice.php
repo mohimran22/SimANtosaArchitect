@@ -12,11 +12,13 @@ class Invoice extends Model
     const TYPE_SURVEY = 'survey';
     const TYPE_DP = 'dp';
     const TYPE_FINAL = 'final';
+    const TYPE_RAB = 'rab';
 
     const STATUS_DRAFT = 'draft';
     const STATUS_WAITING = 'waiting_approval';
     const STATUS_APPROVED = 'approved';
     const STATUS_REJECTED = 'rejected';
+    const STATUS_PAID = 'paid';
 
     protected $keyType = 'string';
     public $incrementing = false;
