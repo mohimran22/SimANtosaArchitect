@@ -31,7 +31,7 @@ use App\Http\Controllers\UserImportController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\DesignPackageController;
 use App\Http\Controllers\RabPackageController;
-use App\Http\Controllers\AhspGroupController;
+use App\Http\Controllers\JobCategoryController;
 use App\Http\Controllers\AhspController;
 
 Route::get('/', function () {
@@ -239,13 +239,24 @@ Route::delete('rab-package-items/{item}',
 Route::get('rab-packages/json/{id}',
     [RabPackageController::class, 'getPackage'])->name('rab-packages.json');
 
-Route::resource('/ahsp-groups', AhspGroupController::class);
+Route::resource('/job-categories', JobCategoryController::class);
+Route::post('job-categories/{jobCategory}/items',
+    [JobCategoryController::class, 'addItem'])->name('job-categories.items.store');
 
-Route::resource('/ahsp-groups.ahsps', AhspController::class)
-    ->shallow()
-    ->except(['index', 'show']);
+Route::put('job-categories-items/{item}',
+    [JobCategoryController::class, 'updateItem'])->name('job-categories.items.update');
 
-Route::resource('/job-categories', \App\Http\Controllers\JobCategoryController::class);
+Route::delete('job-categories-items/{item}',
+    [JobCategoryController::class, 'deleteItem'])->name('job-categories.items.delete');
+    
+Route::post(
+    'job-categories/{jobCategory}/overhead-profit',
+    [JobCategoryController::class, 'saveOverheadProfit']
+)->name('job-categories.save-overhead-profit');
+
+Route::get('/ajax/items/{type}', [JobCategoryController::class, 'getItems']);
+Route::get('/ajax/item-detail/{type}/{id}', [JobCategoryController::class, 'getItemDetail']);
+
 
 
 Route::post('projects/consultations', [\App\Http\Controllers\ConsultationController::class, 'store'])

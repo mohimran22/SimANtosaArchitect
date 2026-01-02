@@ -6,38 +6,47 @@ use Illuminate\Database\Eloquent\Model;
 
 class JobCategoryItem extends Model
 {
-    protected $fillable = [
-        'job_category_id',
-        'labor_cost_id',
-        'equipment_cost_id',
-        'product_id',
-        'kode',
-        'satuan',
-        'koefisien',
-        'base_unit_price',
-        'total_price',
-        'overhead',
-        'profit',
-        'subtotal',
-        'grand_total',
-    ];
-        public function category()
+protected $fillable = [
+    'job_category_id',
+    'category',
+
+    'product_id',
+    'labor_cost_id',
+    'equipment_cost_id',
+
+    'name',        // ✅ INI KUNCI
+    'code',
+    'unit',
+
+    'coefisien',
+    'base_unit_price',
+    'total_price',
+
+    'overhead',
+    'profit',
+    'subtotal',
+    'grand_total',
+];
+
+
+    public function jobCategory()
     {
         return $this->belongsTo(JobCategory::class);
     }
 
-                public function labors()
+    public function labor()
     {
-        return $this->hasMany(LaborCost::class);
+        return $this->belongsTo(LaborCost::class, 'labor_cost_id');
     }
 
-            public function equipments()
+    public function equipment()
     {
-        return $this->hasMany(EquipmentCost::class);
+        return $this->belongsTo(EquipmentCost::class, 'equipment_cost_id');
     }
 
-            public function products()
+    public function product()
     {
-        return $this->hasMany(Products::class);
+        return $this->belongsTo(Product::class, 'product_id');
     }
 }
+

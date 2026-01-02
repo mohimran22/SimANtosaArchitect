@@ -10,13 +10,13 @@
             <div class="col-md-6 mb-3">
                 <label class="required">Upload Hasil File Keseluruhan</label>
                 <div class="text-muted mb-2">
-                    Dokumen hasil keseluruhan proyek desain (ZIP)
+                    Dokumen hasil keseluruhan proyek desain
                 </div>
 
                 <input type="file"
                        name="document"
                        class="form-control"
-                       accept=".zip,.rar"
+                       accept=".zip,.rar,.pdf"
                        required>
 
                 @error('document')

@@ -160,19 +160,13 @@ protected function checkAutoNextLevel(ProjectTask $task)
 {
     $projectId = $task->project_id;
 
-    $activeTaskIds = ProjectTask::where('project_id', $projectId)
-        ->whereIn('id', function ($q) {
-            $q->selectRaw('MAX(id)')
-              ->from('project_tasks')
-              ->groupBy(DB::raw('COALESCE(parent_task_id, id)'));
-        })
-        ->pluck('id');
+    // Ambil task aktif manual
+    $activeTasks = ProjectTask::where('project_id', $projectId)
+        ->get()
+        ->groupBy(fn ($t) => $t->parent_task_id ?? $t->id)
+        ->map(fn ($group) => $group->sortByDesc('revision_number')->first());
 
-    $hasUnfinished = ProjectTask::whereIn('id', $activeTaskIds)
-        ->where('status', '!=', 'selesai')
-        ->exists();
-
-    if ($hasUnfinished) {
+    if ($activeTasks->contains(fn ($t) => $t->status !== 'selesai')) {
         return;
     }
 
@@ -186,6 +180,7 @@ protected function checkAutoNextLevel(ProjectTask $task)
         'level_order' => 8,
     ])->update(['is_started' => true]);
 }
+
 
 
 public function reject(Request $request, ProjectTask $task)

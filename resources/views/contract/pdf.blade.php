@@ -152,7 +152,7 @@ body {
 
 <table>
 <tr><td width="120">Nama</td><td>: {{ $offer->contact_name }}</td></tr>
-<tr><td>NIK</td><td>: {{ $project->customer->user->nik ?? '..................' }}</td></tr>
+<tr><td>NIK</td><td>: {{ $project->customer->user->identity_number ?? '..................' }}</td></tr>
 <tr><td>Alamat</td><td>: {{ $project->customer->user->address }}</td></tr>
 <tr><td>Telepon</td><td>: {{ $project->customer->user->phone }}</td></tr>
 </table>
@@ -465,24 +465,36 @@ Namun apabila terjadi Force Majeure atau bencana alam yang diluar kemampuan Para
 
 
 <!-- TANDA TANGAN -->
-<table class="ttd">
+<table width="100%" style="margin-top:20px;">
 <tr>
-    <td width="50%" style="text-align:center; vertical-align:top;"><strong>Pemilik Rumah</strong><br><br><br><br><br><u>{{ strtoupper($offer->contact_name) }}</u></td>
 
+    <!-- PEMILIK -->
     <td width="50%" style="text-align:center; vertical-align:top;">
-        <strong>Arsitek</strong><br><br>
+        <strong>Pemilik Rumah</strong>
 
-        @if($offer->approved_at)
-            <img src="{{ public_path('images/ttd-dwiantosa.png') }}" style="height:160px;"><br>
-            <strong>
-                <u>Ir. Ar. Dwiantosa Ahmad F., IAI., IPP</u>
-            </strong>
-        @else
-            <br><br><br><br>
-            <u>(Ir. Ar. Dwiantosa Ahmad F., IAI., IPP)</u>
-        @endif
+        <div style="height:180px; margin-top:5px;">
+            <!-- ruang tanda tangan -->
+        </div>
+
+        <u>{{ strtoupper($offer->contact_name) }}</u>
     </td>
+
+    <!-- ARSITEK -->
+    <td width="50%" style="text-align:center; vertical-align:top;">
+        <strong>Arsitek</strong>
+
+        <div style="height:180px; margin-top:5px;">
+            @if($offer->approved_at)
+                <img src="{{ public_path('images/ttd-dwiantosa.png') }}"
+                     style="height:140px; margin-top:5px;">
+            @endif
+        </div>
+
+        <u>Ir. Ar. Dwiantosa Ahmad F., IAI., IPP</u>
+    </td>
+
 </tr>
 </table>
+
 </body>
 </html>

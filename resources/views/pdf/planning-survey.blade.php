@@ -6,20 +6,44 @@
 
 <style>
 @page {
-    margin: 140px 30px 110px 30px;
+    margin: 150px 40px 120px 40px;
 }
 
 /* ================= BODY ================= */
 body {
     font-family: DejaVu Sans, sans-serif;
-    font-size: 10px;
-    line-height: 1.5;
-    margin: 0;
-    padding: 0;
+    font-size: 11px;
+    line-height: 1.6;
 }
+
+h3 {
+    font-size: 15px;
+    letter-spacing: 0.5px;
+}
+
+h4 {
+    font-size: 12px;
+    margin-bottom: 6px;
+}
+.table-info {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table-info td {
+    border: 1px solid #000;
+    padding: 6px;
+    vertical-align: top;
+}
+
+.table-info .label {
+    width: 30%;
+    font-weight: bold;
+}
+
 .header {
     position: fixed;
-    top: -110px;
+    top: -140px;
     left: 0;
     right: 0;
     width: 100%;
@@ -27,7 +51,7 @@ body {
 
 .footer {
     position: fixed;
-    bottom: -70px;
+    bottom: -100px;
     left: 0;
     right: 0;
     width: 100%;
@@ -44,25 +68,31 @@ body {
     <img src="{{ public_path('images/footer-penawaran.jpg') }}" style="width:100%;">
 </div>
 
-<h3 style="text-align:center; margin-bottom:20px;">
+<h3 style="
+    text-align:center;
+    margin-bottom:25px;
+    text-transform:uppercase;
+    border-bottom:2px solid #000;
+    padding-bottom:6px;
+">
     RENCANA SURVEI LAPANGAN
 </h3>
 
-<table width="100%" cellpadding="6" cellspacing="0" border="1">
+<table class="table-info">
     <tr>
-        <td width="30%"><strong>Nama Proyek</strong></td>
+        <td class="label">Nama Proyek</td>
         <td>{{ $project->project_name }}</td>
     </tr>
     <tr>
-        <td><strong>Tanggal Survei</strong></td>
+        <td class="label">Tanggal Survei</td>
         <td>{{ \Carbon\Carbon::parse($planning->planning_date)->format('d/m/Y') }}</td>
     </tr>
     <tr>
-        <td><strong>Waktu Survei</strong></td>
+        <td class="label">Waktu Survei</td>
         <td>{{ $planning->planning_time }}</td>
     </tr>
     <tr>
-        <td><strong>Petugas Survei</strong></td>
+        <td class="label">Petugas Survei</td>
         <td>
             @foreach($planningEmployees as $emp)
                 {{ $emp->display_name }}@if(!$loop->last), @endif
@@ -71,81 +101,83 @@ body {
     </tr>
 </table>
 
+
 <h4 style="margin-top:20px;">Alamat Survei</h4>
 
-<table width="100%" cellpadding="6" cellspacing="0" border="1">
+<table class="table-info">
     <tr>
         <td colspan="2">{{ $planning->survey_address }}</td>
     </tr>
     <tr>
-        <td>Provinsi</td>
+        <td class="label">Provinsi</td>
         <td>{{ $planning->province->name ?? '-' }}</td>
     </tr>
     <tr>
-        <td>Kab/Kota</td>
+        <td class="label">Kab/Kota</td>
         <td>{{ $planning->city->name ?? '-' }}</td>
     </tr>
     <tr>
-        <td>Kecamatan</td>
+        <td class="label">Kecamatan</td>
         <td>{{ $planning->district->name ?? '-' }}</td>
     </tr>
     <tr>
-        <td>Kelurahan</td>
+        <td class="label">Kelurahan</td>
         <td>{{ $planning->subDistrict->name ?? '-' }}</td>
     </tr>
     <tr>
-        <td>Kode Pos</td>
+        <td class="label">Kode Pos</td>
         <td>{{ $planning->postalCode->postal_code ?? '-' }}</td>
     </tr>
 </table>
 
+
 <h4 style="margin-top:20px;">Biaya Survei</h4>
 
-<table width="100%" cellpadding="6" cellspacing="0" border="1">
+<table class="table-info">
     <tr>
-        <td width="30%"><strong>Total Biaya</strong></td>
+        <td class="label">Total Biaya</td>
         <td>
             @if($invoice->amount > 0)
                 Rp {{ number_format($invoice->amount,0,',','.') }}
             @else
-                GRATIS
+                <strong>GRATIS</strong>
             @endif
         </td>
     </tr>
 </table>
+
 @if($planning->planning_notes)
 <h4 style="margin-top:20px;">Catatan</h4>
 <p>{{ $planning->planning_notes }}</p>
 @endif
 <table width="100%" style="margin-top:50px;">
     <tr>
-        <td width="50%" style="text-align:center; vertical-align:top;">
-            <p>Disusun oleh,</p>
+<td width="50%" style="text-align:center; vertical-align:top;">
+    <p>Disusun oleh,</p>
 
-            @if($invoice->status === 'approved')
-                <img src="{{ public_path('images/ttd-dwiantosa.png') }}" style="height:160px;">
+    <div style="height:160px;">
+        @if($invoice->status === 'approved')
+            <img src="{{ public_path('images/ttd-dwiantosa.png') }}"
+                 style="height:140px;">
+        @endif
+    </div>
 
-                <p>
-                    <strong><u>Ir. Ar. Dwiantosa Ahmad Fathony, IAI., IPP</u></strong><br>
-                </p>
-            @else
-                <br><br><br>
-                <p>
-                    <strong>Ir. Ar. Dwiantosa Ahmad Fathony, IAI., IPP</strong>
-                </p>
-            @endif
-        </td>
-
+    <strong>
+        Ir. Ar. Dwiantosa Ahmad Fathony, IAI., IPP
+    </strong>
+</td>
         <td width="50%" style="text-align:center; vertical-align:top;">
             <p>Disetujui oleh Customer,</p>
 
-            @if($invoice->status === 'approved')
-                <br><br>
-                <strong>{{ $invoice->approve_by_name }}</strong><br>
-            @else
-                <br><br><br>
-                <strong>{{ $project->customer->user->fullname ?? '................' }}</strong>
-            @endif
+            <div style="height:160px;">
+                @if($invoice->status === 'approved')
+                    <strong>{{ $invoice->approve_by_name }}</strong>
+                @endif
+            </div>
+
+            <strong>
+                {{ $project->customer->user->fullname ?? '................' }}
+            </strong>
         </td>
 
 

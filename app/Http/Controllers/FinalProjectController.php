@@ -13,7 +13,7 @@ class FinalProjectController extends Controller
 public function store(Request $request, Project $project)
 {
     $request->validate([
-        'document' => 'required|file|mimes:zip,pdf|max:51200', // max 50MB
+        'document' => 'required|file|mimes:zip,pdf,rar|max:51200', // max 50MB
     ]);
 
     // Pastikan pelunasan sudah approve

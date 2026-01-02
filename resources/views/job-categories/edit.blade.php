@@ -7,7 +7,7 @@
         <div class="card shadow-sm border-0 mb-4">
             <div class="card-body p-5">
 
-                <h2 class="fw-bold mb-4">Edit Group: {{ $jobCategory->nama_group }}</h2>
+                <h2 class="fw-bold mb-4">Edit Grup: {{ $jobCategory->nama_group }}</h2>
 
                 {{-- Update paket --}}
                 <form action="{{ route('job-categories.update', $jobCategory->id) }}"
@@ -16,28 +16,40 @@
                     @csrf @method('PUT')
 
                     <div class="row g-4">
-                        <div class="col-md-6 mb-4">
-                            <label class="form-label fw-bold">Kode Group</label>
+                        <div class="col-md-2 mb-4">
+                            <label class="form-label fw-bold">Bidang</label>
+                            <input type="text" name="bidang" class="form-control" 
+                                value="{{ $jobCategory->bidang }}" required>
+                        </div>
+                        <div class="col-md-2 mb-4">
+                            <label class="form-label fw-bold">Kode Grup</label>
                             <input type="text" name="kode_group" class="form-control" 
                                 value="{{ $jobCategory->kode_group }}" required>
                         </div>
                         <div class="col-md-6 mb-4">
-                            <label class="form-label fw-bold">Nama Group</label>
+                            <label class="form-label fw-bold">Nama Grup</label>
 
                             <select name="nama_group" class="form-select" required>
                             @foreach($groups as $bidang => $items)
-                                <optgroup label="{{ $bidang }}">
+                                
                                     @foreach($items as $g)
                                         <option value="{{ $g->nama_group }}"
                                             {{ $jobCategory->nama_group === $g->nama_group ? 'selected' : '' }}>
                                             {{ $g->nama_group }}
                                         </option>
                                     @endforeach
-                                </optgroup>
+                                
                             @endforeach
                             </select>
                         </div>
-                        <div class="col-md-6 mb-4">
+                    </div>
+                    <div class="row g-4">
+                        <div class="col-md-2 mb-4">
+                            <label class="form-label fw-bold">Kode</label>
+                            <input type="text" name="kode" class="form-control" 
+                                value="{{ $jobCategory->kode }}" required>
+                        </div>
+                        <div class="col-md-2 mb-4">
                             <label class="form-label fw-bold">Kode Urut</label>
                             <input type="text" name="kode_urut" class="form-control" 
                                 value="{{ $jobCategory->kode_urut }}" required>
@@ -47,7 +59,7 @@
                             <input type="text" name="nama_pekerjaan" class="form-control" 
                                 value="{{ $jobCategory->nama_pekerjaan }}" required>
                         </div>
-                        
+                     
                         <div class="col-md-2 mb-4">
                             <label class="form-label fw-bold">Satuan</label>
                             <input type="text" name="satuan" class="form-control" 
@@ -55,7 +67,7 @@
                         </div>
                     </div>
                     <div class="text-end">
-                        <button class="btn btn-dark px-4">Update Paket</button>
+                        <button class="btn btn-dark px-4">Update Grup</button>
                     </div>
                 </form>
 
@@ -64,51 +76,74 @@
                 {{-- FORM TAMBAH ITEM --}}
                 <h3 class="fw-bold mb-3">Tambah Item Rincian</h3>
 
-                <form action="{{ route('job-categories.store', $jobCategory->id) }}"
+                <form action="{{ route('job-categories.items.store', $jobCategory->id) }}"
                       method="POST" class="mb-5">
 
                     @csrf
 
-                    <div class="row g-3">
+                    <div class="row g-4">
                         <div class="col-md-2">
                             <label class="form-label">Kategori</label>
-                                <select name="category" class="form-select" required>
-                                    <option value="">-- Pilih --</option>
-                                    <option value="1" {{ old('category') == '1' ? 'selected' : '' }}>Produk</option>
-                                    <option value="2" {{ old('category') == '2' ? 'selected' : '' }}>Tenaga</option>
-                                    <option value="3" {{ old('category') == '3' ? 'selected' : '' }}>Peralatan</option>
-                                </select>
+                            <select name="category" id="categorySelect" class="form-select" required>
+                                <option value="">-- Pilih --</option>
+                                <option value="product">Produk</option>
+                                <option value="labor">Tenaga</option>
+                                <option value="equipment">Peralatan</option>
+                            </select>
                         </div>
 
-                        <div class="col-md-2">
+                        <div class="col-md-3">
+                            <label class="form-label">Item</label>
+                            <select id="itemSelect" class="form-select select2" disabled>
+                                <option value="">-- Pilih Item --</option>
+                            </select>
+                            <input type="hidden" name="product_id" id="product_id">
+                            <input type="hidden" name="labor_cost_id" id="labor_cost_id">
+                            <input type="hidden" name="equipment_cost_id" id="equipment_cost_id">
+                            <input type="hidden" name="name" id="item_name">
+                        </div>
+
+                        <div class="col-md-1">
                             <label class="form-label">Kode</label>
-                            <input type="text" name="code" class="form-control" required>
+                            <input type="text" name="code" id="code" class="form-control" readonly>
                         </div>
 
-                        <div class="col-md-2">
+                        <div class="col-md-1">
                             <label class="form-label">Satuan</label>
-                            <input type="text" name="unit" class="form-control" required>
+                            <input type="text" name="unit" id="unit" class="form-control" readonly>
                         </div>
 
                         <div class="col-md-2">
                             <label class="form-label">Koefisien</label>
-                            <input type="text" name="coefisien" class="form-control" required>
+                            <input type="number"
+                                step="0.0001"
+                                name="coefisien"
+                                id="coefisien"
+                                class="form-control"
+                                required>
                         </div>
 
                         <div class="col-md-2">
                             <label class="form-label">Harga Satuan</label>
-                            <input type="text" name="base_unit_price" class="form-control" required>
+                            <input type="text"
+                                id="price"
+                                class="form-control"
+                                readonly>
+                            <input type="hidden" name="base_unit_price" id="price_raw">
                         </div>
 
                         <div class="col-md-2">
                             <label class="form-label">Jumlah Harga</label>
-                            <input type="text" name="total_price" class="form-control" required>
+                            <input type="text"
+                                id="total_price"
+                                class="form-control"
+                                readonly>
                         </div>
 
-                        <div class="col-md-2 d-flex align-items-end">
-                            <button class="btn btn-dark w-100">Tambah</button>
-                        </div>
                     </div>
+                        <div class="text-end mt-2">
+                            <button class="btn btn-dark px-4">Tambah</button>
+                        </div>
                 </form>
 
                 <hr>
@@ -116,9 +151,9 @@
                 {{-- TABLE ITEM --}}
                 <h3 class="fw-bold mb-3">Daftar Analisa</h3>
 
-                {{-- @include('job-categories.partials.items-table', [
+                @include('job-categories.partials.items-table', [
                     'items' => $jobCategory->items
-                ]) --}}
+                ])
 
             </div>
         </div>
@@ -126,3 +161,100 @@
     </div>
 </div>
 @endsection
+
+@push('js')
+  <script>
+    $(document).ready(function() {
+        $('.select2').select2({
+            placeholder: "-- Pilih --",
+            width: '100%'
+        });
+    });
+</script>  
+<script>
+$('#categorySelect').on('change', function () {
+    const type = this.value;
+    const itemSelect = $('#itemSelect');
+
+    itemSelect.empty()
+        .append('<option value="">-- Pilih Item --</option>')
+        .prop('disabled', true)
+        .trigger('change');
+
+    if (!type) return;
+
+    fetch(`/ajax/items/${type}`)
+        .then(res => res.json())
+        .then(data => {
+            data.forEach(item => {
+                itemSelect.append(
+                    new Option(item.name, item.id)
+                );
+            });
+            itemSelect.prop('disabled', false).trigger('change');
+        });
+});
+
+$('#itemSelect').on('change', function () {
+    const type = $('#categorySelect').val();
+    const id = this.value;
+
+    if (!id) return;
+
+    // reset FK
+    $('#product_id, #labor_cost_id, #equipment_cost_id').val('');
+
+    fetch(`/ajax/item-detail/${type}/${id}`)
+        .then(res => res.json())
+        .then(item => {
+
+            // simpan nilai angka (RAW)
+            $('#price_raw').val(item.price);
+
+            // tampilkan format rupiah
+            $('#price').val(formatRp(item.price));
+
+            $('#code').val(item.code);
+            $('#unit').val(item.unit);
+            $('#item_name').val(item.name);
+
+            // reset FK
+            $('#product_id, #labor_cost_id, #equipment_cost_id').val('');
+
+            if (type === 'product') $('#product_id').val(item.id);
+            if (type === 'labor') $('#labor_cost_id').val(item.id);
+            if (type === 'equipment') $('#equipment_cost_id').val(item.id);
+
+            hitungTotal();
+        });
+
+});
+</script>
+<script>
+    function formatRp(num) {
+    return new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        minimumFractionDigits: 0
+    }).format(num || 0);
+}
+
+function hitungTotal() {
+    const coef = parseFloat($('#coefisien').val()) || 0;
+    const price = parseFloat($('#price_raw').val()) || 0;
+
+    const total = coef * price;
+
+    $('#total_price').val(formatRp(total));
+}
+
+// ketika koefisien diketik
+$('#coefisien').on('input', hitungTotal);
+
+// ketika item berubah (harga berubah)
+$('#itemSelect').on('change', function () {
+    setTimeout(hitungTotal, 100);
+});
+</script>
+
+@endpush

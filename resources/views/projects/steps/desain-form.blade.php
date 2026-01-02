@@ -111,8 +111,9 @@
                     <tr>
                         <th colspan="5" class="text-end">DISCOUNT</th>
                         <th>
-                            <input type="number" class="form-control form-control-sm"
-                                name="discount" id="discount" value="0">
+<input type="text" class="form-control rupiah" id="discount_display">
+<input type="hidden" name="discount" id="discount">
+
                         </th>
                     </tr>
 
@@ -124,8 +125,8 @@
                     <tr>
                         <th colspan="5" class="text-end">TAX RATE (%)</th>
                         <th>
-                            <input type="number" class="form-control form-control-sm"
-                                name="tax_rate" id="tax_rate" value="0">
+                            <input type="number" class="form-control"
+                                name="tax_rate" id="tax_rate">
                         </th>
                     </tr>
 
@@ -137,8 +138,9 @@
                     <tr>
                         <th colspan="5" class="text-end">SHIPPING / HANDLING</th>
                         <th>
-                            <input type="number" class="form-control form-control-sm"
-                                name="shipping" id="shipping" value="0">
+<input type="text" class="form-control rupiah" id="shipping_display">
+<input type="hidden" name="shipping" id="shipping">
+
                         </th>
                     </tr>
 
@@ -161,6 +163,15 @@
 
 @push('js')
 <script>
+    function formatRp(num) {
+    return new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        minimumFractionDigits: 0
+    }).format(num || 0);
+}
+</script>
+<script>
 document.addEventListener('DOMContentLoaded', function () {
 
     const packageSelect = document.getElementById('designPackageSelect');
@@ -177,10 +188,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const taxRateInput = document.getElementById('tax_rate');
     const shippingInput = document.getElementById('shipping');
 
-    function formatRp(num) {
-        num = parseFloat(num) || 0;
-        return "Rp " + num.toLocaleString('id-ID');
-    }
+
+
 
     packageSelect.addEventListener('change', function () {
 
@@ -250,9 +259,10 @@ document.addEventListener('DOMContentLoaded', function () {
             });
     });
 
-    [volumeInput, discountInput, taxRateInput, shippingInput].forEach(input => {
-        input.addEventListener('input', hitungTotal);
+    [volumeInput, taxRateInput].forEach(input => {
+        input?.addEventListener('input', hitungTotal);
     });
+
 
     function hitungTotal() {
 
@@ -276,7 +286,8 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         let discount = parseFloat(discountInput.value) || 0;
-        let subAfterDiscount = subtotal - discount;
+        let subAfterDiscount = Math.max(subtotal - discount, 0);
+
         document.getElementById("subAfterDiscountDisplay").innerText = formatRp(subAfterDiscount);
 
         let taxRate = parseFloat(taxRateInput.value) || 0;
@@ -284,9 +295,34 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById("totalTaxDisplay").innerText = formatRp(totalTax);
 
         let shippingCost = parseFloat(shippingInput.value) || 0;
-        let grandTotal = subAfterDiscount + totalTax + shippingCost;
+        let grandTotal = Math.max(subAfterDiscount + totalTax + shippingCost, 0);
+
         document.getElementById("grandTotalDisplay").innerText = formatRp(grandTotal);
     }
+    hitungTotal();
+
+    function bindRupiah(displayInput, hiddenInput) {
+    displayInput.addEventListener('input', function () {
+        let raw = this.value.replace(/[^\d]/g, '');
+        let number = parseInt(raw || 0);
+
+        hiddenInput.value = number;
+        this.value = formatRp(number);
+
+        hitungTotal();
+    });
+}
+
+// ✅ PANGGIL LANGSUNG (TANPA DOMContentLoaded LAGI)
+bindRupiah(
+    document.getElementById('discount_display'),
+    document.getElementById('discount')
+);
+
+bindRupiah(
+    document.getElementById('shipping_display'),
+    document.getElementById('shipping')
+);
 
 });
 </script>

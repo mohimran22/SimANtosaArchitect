@@ -246,7 +246,7 @@
                                             {{-- MODE TAMPIL --}}
                                             <p class="mb-1 price-text">
                                                 <strong class="text-dark price-label">
-                                                    Rp {{ number_format($product->pivot->buying_prices) }}
+                                                    Rp {{ number_format($product->pivot->selling_prices) }}
                                                 </strong>
 
                                                 <button type="button"

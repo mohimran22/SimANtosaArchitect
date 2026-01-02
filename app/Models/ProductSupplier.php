@@ -16,6 +16,7 @@ class ProductSupplier extends Pivot
         'product_id',
         'stock',
         'buying_prices',
+        'selling_prices',
         'tax_percentage',
         'discount',
     ];

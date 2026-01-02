@@ -278,15 +278,16 @@
                             <a href="{{ route('projects.contract.pdf', $project->id) }}"
                             class="btn btn-dark"
                             target="_blank">
-                                <i class="ti ti-download"></i> Download Draft Kontrak
+                                <i class="ti ti-download"></i> 
+                                {{ $project->offer->approved_at ? 'Download Kontrak' : 'Download Draft Kontrak' }}
                             </a>
 
                             @if(!$project->offer->approved_at)
                                 <form action="{{ route('projects.contract.approve', $project->id) }}"
                                     method="POST"
-                                    onsubmit="return confirm('Approve kontrak dan lanjut ke tahap Invoice DP?')">
+                                    class="approve-form">
                                     @csrf
-                                    <button class="btn btn-dark">
+                                    <button type="submit" class="btn btn-dark">
                                         <i class="ti ti-check"></i> Approve Kontrak
                                     </button>
                                 </form>
@@ -296,6 +297,7 @@
                                     Disetujui {{ $project->offer->approved_at->format('d M Y') }}
                                 </span>
                             @endif
+
                         </div>
                     </div>
                 </div>
@@ -347,14 +349,16 @@
                                 $invoice?->invoice_dp_downloaded_at &&
                                 !$invoice?->invoice_dp_approved_at
                             )
-                                <form action="{{ route('projects.invoice.approve', $project->id) }}"
-                                    method="POST"
-                                    onsubmit="return confirm('Lanjut ke tahap pengerjaan desain?')">
-                                    @csrf
-                                    <button class="btn btn-dark">
-                                        <i class="ti ti-arrow-right"></i> Lanjut ke tahap berikutnya
-                                    </button>
-                                </form>
+                            <form action="{{ route('projects.invoice.approve', $project->id) }}"
+                                method="POST"
+                                class="approve-form"
+                                data-title="Lanjut ke Tahap Berikutnya?"
+                                data-text="Invoice DP akan disetujui dan proses berlanjut.">
+                                @csrf
+                                <button type="submit" class="btn btn-dark">
+                                    <i class="ti ti-check"></i> Lanjut ke Tahap Berikutnya?
+                                </button>
+                            </form>
                             @endif
 
                             @if(
@@ -362,14 +366,16 @@
                                 $invoice?->downloaded_at &&
                                 !$invoice?->approved_at
                             )
-                                <form action="{{ route('projects.invoice.rab.approve', $project->id) }}"
-                                    method="POST"
-                                    onsubmit="return confirm('Approve invoice RAB dan lanjut ke pengerjaan?')">
-                                    @csrf
-                                    <button class="btn btn-dark">
-                                        <i class="ti ti-check"></i> Lanjut ke tahap berikutnya
-                                    </button>
-                                </form>
+                            <form action="{{ route('projects.invoice.rab.approve', $project->id) }}"
+                                method="POST"
+                                class="approve-form"
+                                data-title="Approve Invoice RAB?"
+                                data-text="Invoice RAB akan disetujui dan proses pengerjaan dimulai.">
+                                @csrf
+                                <button type="submit" class="btn btn-dark">
+                                    <i class="ti ti-check"></i> Lanjut ke tahap berikutnya
+                                </button>
+                            </form>
                             @endif
                         </div>
 
@@ -414,9 +420,11 @@
                             )
                                 <form action="{{ route('projects.invoice.final.approve', $project->id) }}"
                                     method="POST"
-                                    onsubmit="return confirm('Lanjut ke tahap berikutnya?')">
+                                    class="approve-form"
+                                    data-title="Lanjut ke Tahap Berikutnya?"
+                                    data-text="Invoice Pelunasan akan disetujui dan proses berlanjut.">
                                     @csrf
-                                    <button class="btn btn-success">
+                                    <button type="submit" class="btn btn-dark">
                                         <i class="ti ti-check"></i> Konfirmasi Pelunasan
                                     </button>
                                 </form>
@@ -434,7 +442,7 @@
             </div>
             @endif
             @if($activeStep == 9)
-            <div id="step-9" class="step-section">
+            <div id="step-10" class="step-section">
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body px-5 py-4">
                         <div class="d-flex justify-content-between align-items-center mb-4">
@@ -463,23 +471,7 @@
                                 target="_blank">
                                     <i class="ti ti-download"></i>Download File
                                 </a>
-
-                                {{-- Upload ulang --}}
-
-
-                                {{-- <form action="{{ route('projects.finals.destroy', $project->id) }}"
-                                    method="POST"
-                                    onsubmit="return confirm('Yakin ingin menghapus hasil proyek?')">
-                                    @csrf
-                                    @method('DELETE')
-
-                                    <button class="btn btn-outline-danger btn-sm">
-                                        <i class="ti ti-trash"></i>
-                                    </button>
-                                </form> --}}
                             </div>
-                        
-
                         <form id="form-reupload"
                             action="{{ route('projects.finals.store', $project->id) }}"
                             method="POST"
@@ -493,7 +485,7 @@
                                 <input type="file"
                                     name="document"
                                     class="form-control"
-                                    accept=".zip,.rar"
+                                    accept=".zip,.rar,.pdf"
                                     required>
                             </div>
 
@@ -1048,5 +1040,34 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 </script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.approve-form').forEach(function (form) {
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            Swal.fire({
+                title: form.dataset.title || 'Apakah Anda yakin?',
+                text: form.dataset.text || 'Proses ini akan dilanjutkan.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Lanjutkan',
+                cancelButtonText: 'Batal',
+                confirmButtonColor: '#212529',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: 'Memproses...',
+                        allowOutsideClick: false,
+                        didOpen: () => Swal.showLoading()
+                    });
+                    form.submit();
+                }
+            });
+        });
+    });
+});
+</script>
+
 
 @endpush

@@ -112,7 +112,7 @@
                             <td>{{ $item->supplier->name }}</td>
 
                             <td>
-                                Rp {{ number_format($item->buying_prices, 0, ',', '.') }}
+                                Rp {{ number_format($item->selling_prices, 0, ',', '.') }}
                             </td>
 
                             <td>{{ $item->stock ?? 0 }}</td>

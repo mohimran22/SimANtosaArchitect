@@ -153,31 +153,41 @@ p {
 <br>
 
 {{-- TERBILANG --}}
-<p>
+<p style="margin-bottom:4px;">
     <strong>Terbilang :</strong><br>
     {{ terbilang($invoice->amount) }} Rupiah
 </p>
 
 {{-- CATATAN --}}
 <p class="bold">Catatan :</p>
-<ul>
+<ul style="margin:4px 0 6px 18px;">
     <li>Invoice ini merupakan persetujuan biaya rencana survei.</li>
     <li>Tim survei akan dijadwalkan setelah invoice disetujui.</li>
 </ul>
 
-<br>
+<div style="
+    page-break-inside: avoid;
+    page-break-before: avoid;
+    margin-top:15px;
+">
 
-{{-- TTD --}}
-<p>PT. Tosa Ahmad Jaya<br><strong>Antosa Architect</strong></p>
+    <p style="margin-bottom:4px;">PT. Tosa Ahmad Jaya<br>
+       <strong>Antosa Architect</strong>
+    </p>
 
-<div style="height:90px;">
-    <img src="{{ public_path('images/ttd-dwiantosa.png') }}" style="height:90px;">
+    @if($invoice->status === 'approved')
+        <img src="{{ public_path('images/ttd-dwiantosa.png') }}"
+             style="height:100px; margin:6px 0;">
+    @else
+        <br><br><br>
+    @endif
+
+    <p style="margin-top:4px;">
+        <strong><u>Ir. Ar. Dwiantosa Ahmad Fathony, IAI., IPP</u></strong><br>
+        Direktur Utama
+    </p>
+
 </div>
-
-<p>
-    <strong><u>Ir. Ar. Dwiantosa Ahmad Fathony, IAI., IPP</u></strong><br>
-    Direktur Utama
-</p>
 
 </body>
 </html>

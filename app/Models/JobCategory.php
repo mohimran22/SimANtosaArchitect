@@ -14,6 +14,12 @@ class JobCategory extends Model
         'kode_urut',
         'nama_pekerjaan',
         'satuan',
+        'overhead_percent',
+        'profit_percent',
+        'overhead_value',
+        'profit_value',
+        'subtotal',
+        'grand_total',
     ];
         public function group()
     {

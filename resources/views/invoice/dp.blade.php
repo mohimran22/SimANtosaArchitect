@@ -201,18 +201,23 @@ p {
         akan ditagihkan pada pembayaran berikutnya.
     </li>
 </ul>
+<div style="
+    page-break-inside: avoid;
+    page-break-before: avoid;
+    margin-top:15px;
+">
 
-<br>
+    <p style="margin-bottom:4px;">PT. Tosa Ahmad Jaya<br>
+       <strong>Antosa Architect</strong>
+    </p>
 
-<p>PT. Tosa Ahmad Jaya<br><strong>Antosa Architect</strong></p>
+        <img src="{{ public_path('images/ttd-dwiantosa.png') }}"
+             style="height:160px; margin:6px 0;">
+    <p style="margin-top:4px;">
+        <strong><u>Ir. Ar. Dwiantosa Ahmad Fathony, IAI., IPP</u></strong><br>
+        Direktur Utama
+    </p>
 
-<div style="height:90px;">
-<img src="{{ public_path('images/ttd-dwiantosa.png') }}" style="height:90px;">
 </div>
-
-<p><strong><u>Ir. Ar. Dwiantosa Ahmad Fathony, IAI., IPP</strong></u>
-    <br>
-    Direktur Utama
-</p>
 </body>
 </html>
