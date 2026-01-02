@@ -28,7 +28,14 @@ return new class extends Migration
             $table->string('shipping');
             $table->decimal('grand_total');
             $table->string('notes')->nullable();
-            $table->uuid('created_by')->nullable();            
+            $table->string('contract_number')->nullable();
+            $table->date('contract_date')->nullable();
+            $table->uuid('created_by')->nullable();       
+            $table->enum('status', ['draft', 'approved', 'rejected'])
+                ->default('draft');
+            $table->text('reject_reason')->nullable();
+            $table->timestamp('approved_at')->nullable();
+            $table->foreignUuid('approved_by')->nullable();     
             
             $table->foreign('project_id')->references('id')->on('projects')->cascadeOnDelete();
             $table->foreign('design_package_id')->references('id')->on('design_packages')->cascadeOnDelete();

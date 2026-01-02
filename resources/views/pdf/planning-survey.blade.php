@@ -47,6 +47,7 @@ body {
 <h3 style="text-align:center; margin-bottom:20px;">
     RENCANA SURVEI LAPANGAN
 </h3>
+
 <table width="100%" cellpadding="6" cellspacing="0" border="1">
     <tr>
         <td width="30%"><strong>Nama Proyek</strong></td>
@@ -69,6 +70,7 @@ body {
         </td>
     </tr>
 </table>
+
 <h4 style="margin-top:20px;">Alamat Survei</h4>
 
 <table width="100%" cellpadding="6" cellspacing="0" border="1">
@@ -96,6 +98,7 @@ body {
         <td>{{ $planning->postalCode->postal_code ?? '-' }}</td>
     </tr>
 </table>
+
 <h4 style="margin-top:20px;">Biaya Survei</h4>
 
 <table width="100%" cellpadding="6" cellspacing="0" border="1">
@@ -120,7 +123,7 @@ body {
             <p>Disusun oleh,</p>
 
             @if($invoice->status === 'approved')
-                <img src="{{ public_path('images/ttd-dwiantosa.png') }}" style="height:90px;">
+                <img src="{{ public_path('images/ttd-dwiantosa.png') }}" style="height:160px;">
 
                 <p>
                     <strong><u>Ir. Ar. Dwiantosa Ahmad Fathony, IAI., IPP</u></strong><br>

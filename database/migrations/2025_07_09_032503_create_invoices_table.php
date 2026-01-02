@@ -13,8 +13,15 @@ return new class extends Migration
     {
         Schema::create('invoices', function (Blueprint $table) {
             $table->uuid('id')->primary();
+                        $table->uuid('project_id');
             $table->string('invoice_number')->nullable();
             $table->date('invoice_date')->nullable();
+            $table->timestamp('invoice_dp_downloaded_at')->nullable();
+            $table->timestamp('invoice_dp_approved_at')->nullable();
+            $table->foreign('project_id')
+                ->references('id')
+                ->on('projects')
+                ->onDelete('cascade');
             $table->timestamps();
         });
     }

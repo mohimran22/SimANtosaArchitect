@@ -473,7 +473,7 @@ Namun apabila terjadi Force Majeure atau bencana alam yang diluar kemampuan Para
         <strong>Arsitek</strong><br><br>
 
         @if($offer->approved_at)
-            <img src="{{ public_path('images/ttd-dwiantosa.png') }}" style="height:90px;"><br>
+            <img src="{{ public_path('images/ttd-dwiantosa.png') }}" style="height:160px;"><br>
             <strong>
                 <u>Ir. Ar. Dwiantosa Ahmad F., IAI., IPP</u>
             </strong>

@@ -15,6 +15,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->uuid('project_id')->index();
             $table->date('planning_date');
+            $table->boolean('same_address')->default(false);
             $table->text('survey_address')->nullable();
             $table->unsignedBigInteger('province_id');
             $table->foreign('province_id')->references('id')->on('provinces')->onDelete('cascade');
