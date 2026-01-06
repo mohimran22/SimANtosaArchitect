@@ -27,12 +27,12 @@ use App\Http\Controllers\ProductCategoryController;
 use App\Http\Controllers\SupplierCatalogController;
 use App\Http\Controllers\ProductCatalogController;
 use App\Http\Controllers\RoleSwitchController;
-use App\Http\Controllers\UserImportController;
+use App\Http\Controllers\UpahImportController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\DesignPackageController;
 use App\Http\Controllers\RabPackageController;
 use App\Http\Controllers\JobCategoryController;
-use App\Http\Controllers\AhspController;
+
 
 Route::get('/', function () {
     return view('welcome');
@@ -238,8 +238,16 @@ Route::delete('rab-package-items/{item}',
 // API aman untuk frontend
 Route::get('rab-packages/json/{id}',
     [RabPackageController::class, 'getPackage'])->name('rab-packages.json');
+// Route::get('/job-categories/import-upah', function () {
+//     return view('job-categories.import_upah');
+// })->middleware('auth');
 
-Route::resource('/job-categories', JobCategoryController::class);
+// Route::post('/job-categories/import-upah', [UpahImportController::class, 'importUpah'])
+//     ->middleware('auth')
+//     ->name('job-categories.import-upah');
+
+Route::resource('/job-categories', JobCategoryController::class)
+    ->except(['show']);
 Route::post('job-categories/{jobCategory}/items',
     [JobCategoryController::class, 'addItem'])->name('job-categories.items.store');
 
@@ -257,7 +265,8 @@ Route::post(
 Route::get('/ajax/items/{type}', [JobCategoryController::class, 'getItems']);
 Route::get('/ajax/item-detail/{type}/{id}', [JobCategoryController::class, 'getItemDetail']);
 
-
+Route::get('job-categories/json/{id}',
+    [JobCategoryController::class, 'getCategory'])->name('job-categories.json');
 
 Route::post('projects/consultations', [\App\Http\Controllers\ConsultationController::class, 'store'])
     ->name('projects.consultations.store');
@@ -504,18 +513,3 @@ Route::get('/api/postal_codes/{sub_district_id}', function ($sub_district_id) {
 Route::get('/api/banks', function () {
     return \App\Models\Bank::select('id', 'name', 'code')->orderBy('name')->get();
 });
-
-
-
-
-
-
-// Route::get('/import-licenses', [LicenseImportController::class, 'showForm'])->name('licenses.import.form');
-// Route::post('/import-licenses', [LicenseImportController::class, 'import'])->name('licenses.import');
-
-// Route::get('/import-users', [UserImportController::class, 'showForm'])->name('users.import.form');
-// Route::post('/import-users', [UserImportController::class, 'import'])->name('users.import');
-Route::post('/upah/import', [UpahImportController::class, 'importUpah'])
-    ->name('upah.import');
-
-

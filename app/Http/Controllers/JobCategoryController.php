@@ -16,11 +16,53 @@ use DB;
 
 class JobCategoryController extends Controller
 {
-    public function index()
-    {
-        $jobs = JobCategory::orderBy('kode_urut')->get();
-        return view('job-categories.index', compact('jobs'));
+public function index(Request $request)
+{
+    if ($request->ajax()) {
+$jobs = JobCategory::select('*')
+    ->orderByRaw("
+        lower(split_part(kode_urut, '.', 1)),
+        (
+            SELECT array_agg(val::int)
+            FROM regexp_split_to_table(
+                trim(trailing '.' from kode_urut),
+                '\\.'
+            ) AS val
+            WHERE val ~ '^[0-9]+$'
+        )
+    ");
+
+
+
+
+        return DataTables::of($jobs)
+            ->addIndexColumn() // untuk kolom No
+            ->editColumn('grand_total', function ($row) {
+                return 'Rp ' . number_format($row->grand_total ?? 0, 0, ',', '.');
+            })
+            ->addColumn('aksi', function ($row) {
+                return '
+                    <a href="'.route('job-categories.edit', $row->id).'" 
+                       class="btn btn-sm btn-dark">
+                        <i class="ti ti-edit"></i>
+                    </a>
+
+                    <form action="'.route('job-categories.destroy', $row->id).'"
+                          method="POST" class="d-inline"
+                          onsubmit="return confirm(\'Hapus data ini?\')">
+                        '.csrf_field().method_field('DELETE').'
+                        <button class="btn btn-sm btn-dark">
+                            <i class="ti ti-trash"></i>
+                        </button>
+                    </form>
+                ';
+            })
+            ->rawColumns(['aksi']) // penting!
+            ->make(true);
     }
+
+    return view('job-categories.index');
+}
     
 public function create()
 {
@@ -235,4 +277,48 @@ protected function getProductWithSupplierPrice($productId)
         'price' => $supplier?->selling_prices ?? 0,
     ];
 }
+
+// public function getPackage($id)
+// {
+//     $category = JobCategory::with('items')->findOrFail($id);
+
+//     return response()->json([
+//         'id' => $category->id,
+//         'nama' => $category->nama_pekerjaan,
+//         'satuan' => $category->satuan ?? 'm2',
+//         'price_meter' => $category->grand_total,
+//         'items' => $category->items->map(fn ($item) => [
+//             'id' => $item->id,
+//             'category' => $item->category,
+//             'name' => $item->name,
+//             'unit' => $item->unit,
+//             // 'coefisien' => $item->coefisien,
+//             // 'base_unit_price' => $item->base_unit_price,
+//             'total_price' => $item->total_price,
+//         ])
+//     ]);
+// }
+public function getCategory($id)
+{
+    $category = JobCategory::with('items')->findOrFail($id);
+
+    return response()->json([
+        'id' => $category->id,
+        'nama_pekerjaan' => $category->nama_pekerjaan,
+        'satuan' => $category->satuan,
+        'grand_total' => $category->grand_total,
+        'items' => $category->items->map(function ($item) {
+            return [
+                'category' => $item->category,
+                'name' => $item->name,
+                'unit' => $item->unit,
+                'coefisien' => $item->coefisien,
+                'base_unit_price' => $item->base_unit_price,
+                'total_price' => $item->total_price,
+            ];
+        }),
+    ]);
+}
+
+
 }

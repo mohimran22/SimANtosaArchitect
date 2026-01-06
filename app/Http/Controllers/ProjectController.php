@@ -14,6 +14,7 @@ use App\Models\PostalCode;
 use App\Models\Project;
 use App\Models\ProjectLevel;
 use App\Models\ProjectTask;
+use App\Models\JobCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
@@ -39,9 +40,15 @@ class ProjectController extends Controller
     ]);
 
     // Jika ada hak akses untuk membatasi data
-    if ($auth->can('lihat data proyek') && !$auth->can('lihat daftar proyek')) {
-        $query->where('user_id', $auth->id);
+    if (
+        $auth->can('lihat data proyek') &&
+        !$auth->can('lihat daftar proyek')
+    ) {
+        $query->whereHas('customer', function ($q) use ($auth) {
+            $q->where('user_id', $auth->id);
+        });
     }
+
 
     if ($request->ajax()) {
         $projects = $query->get();
@@ -202,29 +209,6 @@ class ProjectController extends Controller
         'isFreeSurvey', 'surveyWaiting', 'surveyRejected', 'invoiceDp', 'invoiceRab')
         ));
     }
-    // public function store(ProjectRequest $request)
-    // {
-    //     $project = DB::transaction(function () use ($request) {
-
-    //         $project = Project::create($request->validated());
-
-    //         $project->levels()->createMany([
-    //             ['level_order' => 1, 'level_name' => 'Konsultasi'],
-    //             ['level_order' => 2, 'level_name' => 'Rencana Survei'],
-    //             ['level_order' => 3, 'level_name' => 'Survei'],
-    //             ['level_order' => 4, 'level_name' => 'Penawaran Jasa Desain'],
-    //             ['level_order' => 5, 'level_name' => 'Kontrak Desain'],
-    //             ['level_order' => 6, 'level_name' => 'Invoice Desain DP'],
-    //             ['level_order' => 7, 'level_name' => 'Proses Pengerjaan'],
-    //             ['level_order' => 8, 'level_name' => 'Invoice Pelunasan Desain'],
-    //             ['level_order' => 9, 'level_name' => 'Cetak & Softcopy'],
-    //         ]);
-    //         return $project;
-    //     });
-    //     return redirect()
-    //         ->route('projects.create', ['project_id' => $project->id])
-    //         ->with('success', 'Project berhasil dibuat, lanjut ke form konsultasi.');
-    // }
 
     public function store(ProjectRequest $request)
 {
@@ -334,6 +318,7 @@ public function update(Request $request, Project $project)
             'provinces'     =>  Province::all(),
             'designPackages' => \App\Models\DesignPackage::orderBy('name')->orderBy('price_meter')->get(),
             'rabPackages' => \App\Models\RabPackage::orderBy('name')->orderBy('price_meter')->get(),
+            'jobCategories' => JobCategory::orderBy('kode_urut')->orderBy('nama_pekerjaan')->get(),
             'projectStatus' => [
                 1 => 'Proses',
                 2 => 'Revisi',

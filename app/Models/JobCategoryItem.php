@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class JobCategoryItem extends Model
 {
+    protected $table = 'job_category_items';
 protected $fillable = [
     'job_category_id',
     'category',
@@ -47,6 +48,11 @@ protected $fillable = [
     public function product()
     {
         return $this->belongsTo(Product::class, 'product_id');
+    }
+
+        public function category()
+    {
+        return $this->belongsTo(JobCategory::class);
     }
 }
 

@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class JobCategory extends Model
 {
+    protected $table = 'job_categories';
     protected $fillable = [
         'bidang',
         'kode_group',
@@ -20,13 +21,14 @@ class JobCategory extends Model
         'profit_value',
         'subtotal',
         'grand_total',
+        'subtotal_labor',
+        'subtotal_material',
+        'subtotal_equipment'
     ];
-        public function group()
-    {
-        return $this->belongsTo(AhspGroup::class, 'ahsp_group_id');
-    }
-        public function items()
-    {
-        return $this->hasMany(JobCategoryItem::class);
-    }
+
+    public function items()
+{
+    return $this->hasMany(JobCategoryItem::class, 'job_category_id');
+}
+
 }

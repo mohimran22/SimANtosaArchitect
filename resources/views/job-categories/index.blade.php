@@ -13,7 +13,7 @@
             </div>
 
             <div class="table-responsive">
-                <table class="table table-vcenter">
+                <table class="table table-vcenter" id="jobTable">
                     <thead>
                         <tr>
                             <th>No</th>
@@ -22,44 +22,10 @@
                             <th>Kode Urut</th>
                             <th>Nama Pekerjaan</th>
                             <th>Satuan</th>
+                            <th width="120">Harga</th>
                             <th width="120">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        @foreach($jobs as $job)
-                        <tr>
-                            <td>{{ $loop->iteration }}</td>
-                            <td>{{ $job->bidang }}</td>
-                            <td>{{ $job->nama_group }}</td>
-                            <td>{{ $job->kode_urut }}</td>
-                            <td>{{ $job->nama_pekerjaan }}</td>
-                            <td>{{ $job->satuan }}</td>
-                            <td>
-                                <a href="{{ route('job-categories.edit', $job->id) }}"
-                                   class="btn btn-sm btn-dark">
-                                    <i class="ti ti-edit"></i>
-                                </a>
-
-                                <form action="{{ route('job-categories.destroy', $job->id) }}"
-                                      method="POST" class="d-inline"
-                                      onsubmit="return confirm('Hapus data ini?')">
-                                    @csrf @method('DELETE')
-                                    <button class="btn btn-sm btn-dark">
-                                        <i class="ti ti-trash"></i>
-                                    </button>
-                                </form>
-                            </td>
-                        </tr>
-                        @endforeach
-
-                        @if($jobs->isEmpty())
-                        <tr>
-                            <td colspan="7" class="text-center text-muted">
-                                Belum ada data
-                            </td>
-                        </tr>
-                        @endif
-                    </tbody>
                 </table>
             </div>
 
@@ -68,3 +34,26 @@
     </div>
 </div>
 @endsection
+
+@push('js')
+
+<script>
+$(function () {
+    $('#jobTable').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: "{{ route('job-categories.index') }}",
+        columns: [
+            { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
+            { data: 'bidang', name: 'bidang' },
+            { data: 'nama_group', name: 'nama_group' },
+            { data: 'kode_urut', name: 'kode_urut' },
+            { data: 'nama_pekerjaan', name: 'nama_pekerjaan' },
+            { data: 'satuan', name: 'satuan' },
+            { data: 'grand_total', name: 'grand_total' },
+            { data: 'aksi', name: 'aksi', orderable: false, searchable: false },
+        ]
+    });
+});
+</script>
+@endpush

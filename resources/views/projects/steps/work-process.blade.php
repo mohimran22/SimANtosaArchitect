@@ -469,8 +469,9 @@ document.addEventListener('click', function (e) {
     ).show();
 });
 
-document.getElementById('btnConfirmReject')
-.addEventListener('click', function () {
+const btnConfirmReject = document.getElementById('btnConfirmReject');
+if (btnConfirmReject) {
+    btnConfirmReject.addEventListener('click', function () {
 
     if (!currentRejectTaskId) return;
 
@@ -553,6 +554,7 @@ document.getElementById('btnConfirmReject')
     })
     .catch(() => alert('Gagal meminta revisi'));
 });
+}
 </script>
 
 
