@@ -278,47 +278,22 @@ protected function getProductWithSupplierPrice($productId)
     ];
 }
 
-// public function getPackage($id)
-// {
-//     $category = JobCategory::with('items')->findOrFail($id);
-
-//     return response()->json([
-//         'id' => $category->id,
-//         'nama' => $category->nama_pekerjaan,
-//         'satuan' => $category->satuan ?? 'm2',
-//         'price_meter' => $category->grand_total,
-//         'items' => $category->items->map(fn ($item) => [
-//             'id' => $item->id,
-//             'category' => $item->category,
-//             'name' => $item->name,
-//             'unit' => $item->unit,
-//             // 'coefisien' => $item->coefisien,
-//             // 'base_unit_price' => $item->base_unit_price,
-//             'total_price' => $item->total_price,
-//         ])
-//     ]);
-// }
-public function getCategory($id)
+public function simple($id)
 {
-    $category = JobCategory::with('items')->findOrFail($id);
+    $job = JobCategory::findOrFail($id);
 
     return response()->json([
-        'id' => $category->id,
-        'nama_pekerjaan' => $category->nama_pekerjaan,
-        'satuan' => $category->satuan,
-        'grand_total' => $category->grand_total,
-        'items' => $category->items->map(function ($item) {
-            return [
-                'category' => $item->category,
-                'name' => $item->name,
-                'unit' => $item->unit,
-                'coefisien' => $item->coefisien,
-                'base_unit_price' => $item->base_unit_price,
-                'total_price' => $item->total_price,
-            ];
-        }),
+        'id'    => $job->id,
+        'kode_group'  => $job->kode_group,
+        'nama_group'  => $job->nama_group,
+        'nama'  => $job->nama_pekerjaan,
+        'satuan'=> $job->satuan,
+        'harga' => $job->grand_total,
     ]);
 }
+
+
+
 
 
 }

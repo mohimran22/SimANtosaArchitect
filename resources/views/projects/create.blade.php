@@ -211,7 +211,7 @@
                             </h3>
 
                             <div class="btn-group">
-                                {{-- 🔥 BUTTON EDIT --}}
+                                
                                 <button type="button"
                                         class="btn btn-sm btn-dark me-2 btn-toggle-offer"
                                         data-view="offer-view"
@@ -220,7 +220,6 @@
                                     <i class="ti ti-edit"></i>
                                 </button>
 
-                                {{-- PDF --}}
                                 @if($project->offer?->id)
                                     @if($project->project_type == 1)
                                     <a href="{{ route('projects.offers.desain.pdf', $project->offer->id) }}"
@@ -255,14 +254,14 @@
                             @else
                                 @include('projects.edit.raboffer-form')
                             @endif
-                            <div class="mt-3">
+                            {{-- <div class="mt-3">
                                 <button type="button"
                                         class="btn btn-secondary btn-cancel-offer"
                                         data-view="offer-view"
                                         data-edit="offer-edit">
                                     Batal
                                 </button>
-                            </div>
+                            </div> --}}
                         </div>
                     </div>
                 </div>
@@ -384,7 +383,6 @@
             </div>
             @endif
 
-            {{-- @if($activeStep >= 8) --}}
             @if(
                 ($project?->project_type == 1 && $activeStep >= 8 && $project->offer->approved_at)
                 ||
@@ -404,12 +402,68 @@
                 </div>
             </div>
             @endif
-            @if($activeStep >= 9)
+            {{-- @if($activeStep >= 9) --}}
+            @if(
+                ($project?->project_type == 1 && $activeStep >= 9)
+                ||
+                ($project?->project_type == 2 && $activeStep == 7)
+            )
             <div id="step-9" class="step-section">
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body px-5 py-4">
-                        <h3 class="mb-3 fw-bold">8. Invoice Pelunasan Desain</h3>
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h3 class="mb-3 fw-bold">
+                                {{ $project->project_type == 1 ? '4. Penawaran Jasa Desain' : '4. Penawaran Jasa RAB' }}
+                            </h3>
 
+                            <div class="btn-group">
+                                
+                                <button type="button"
+                                        class="btn btn-sm btn-dark me-2 btn-toggle-offer"
+                                        data-view="offer-view"
+                                        data-edit="offer-edit"
+                                        title="Edit Data">
+                                    <i class="ti ti-edit"></i>
+                                </button>
+
+                                @if($project->offer?->id)
+                                    @if($project->project_type == 1)
+                                    <a href="{{ route('projects.offers.desain.pdf', $project->offer->id) }}"
+                                        class="btn btn-sm btn-dark"
+                                        target="_blank"
+                                        title="Download PDF">
+                                            <i class="ti ti-download"></i>
+                                    </a>
+                                    @else
+                                    <a href="{{ route('projects.offers.rab.pdf', $project->offer->id) }}"
+                                        class="btn btn-sm btn-dark"
+                                        target="_blank"
+                                        title="Download PDF">
+                                            <i class="ti ti-download"></i>
+                                    </a>
+                                    @endif
+                                @endif
+                            </div>
+                        </div>
+                        <div id="offer-view">
+                            @if($project->project_type == 2)
+                                @include('projects.details.rab-process')
+                            @endif
+                        </div>
+
+                        <div id="offer-edit" style="display:none;">
+                            @if($project->project_type == 2)
+                                @include('projects.edit.offer-form')
+                            @endif
+                            {{-- <div class="mt-3">
+                                <button type="button"
+                                        class="btn btn-secondary btn-cancel-offer"
+                                        data-view="offer-view"
+                                        data-edit="offer-edit">
+                                    Batal
+                                </button>
+                            </div> --}}
+                        </div>
                         @php
                             $invoiceFinal = $project->invoices
                                 ->where('invoice_type', 'final')
@@ -451,7 +505,7 @@
                 </div>
             </div>
             @endif
-            @if($activeStep == 9)
+            @if($activeStep >= 10)
             <div id="step-10" class="step-section">
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body px-5 py-4">
@@ -998,6 +1052,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
 });
 </script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+    const view = document.getElementById("rab-view");
+    const edit = document.getElementById("rab-edit");
+
+    document.getElementById("btn-edit-rab").addEventListener("click", () => {
+        view.style.display = "none";
+        edit.style.display = "block";
+    });
+
+    document.getElementById("btn-cancel-rab").addEventListener("click", () => {
+        edit.style.display = "none";
+        view.style.display = "block";
+    });
+
+});
+</script>
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
@@ -1078,6 +1150,4 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 </script>
-
-
 @endpush

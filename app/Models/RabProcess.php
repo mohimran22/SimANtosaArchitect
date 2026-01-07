@@ -6,5 +6,27 @@ use Illuminate\Database\Eloquent\Model;
 
 class RabProcess extends Model
 {
-    //
+    protected $table = 'rab_process';
+    public $timestamps = false;
+
+    protected $fillable = [
+    'project_id',
+    'contact_name',
+    'job_location',
+    'job_duration',
+    'subtotal',
+    'discount',
+    'subtotal_after_discount',
+    'tax_rate',
+    'tax_total',
+    'shipping',
+    'grand_total',
+    'notes'
+];
+
+    public function items()
+    {
+        return $this->hasMany(RabProcessItem::class);
+    }
+
 }

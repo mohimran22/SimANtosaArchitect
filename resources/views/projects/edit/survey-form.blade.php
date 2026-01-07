@@ -234,7 +234,7 @@
 </div>
 
 @push('js')
-<script>
+{{-- <script>
 document.getElementById('tambah-bariss').addEventListener('click', function () {
     let table = document.querySelector("#items-table tbody");
     let index = table.rows.length;
@@ -258,9 +258,9 @@ document.addEventListener('click', function(e) {
         });
     }
 });
-</script>
+</script> --}}
 
-<script>
+{{-- <script>
 document.getElementById('result-images-input')
     .addEventListener('change', function(e) {
   document.getElementById('old-result-images')?.remove();
@@ -281,7 +281,6 @@ document.getElementById('result-images-input')
 });
 </script>
 
-// PREVIEW DOKUMENTASI
 <script>
 document.getElementById('documentation-input')
     .addEventListener('change', function(e) {
@@ -301,6 +300,6 @@ document.getElementById('documentation-input')
         reader.readAsDataURL(file);
     });
 });
-</script>
+</script> --}}
 
 @endpush

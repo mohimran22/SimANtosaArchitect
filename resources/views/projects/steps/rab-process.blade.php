@@ -1,4 +1,4 @@
-<form action="{{ route('projects.offer.store') }}" method="POST">
+<form action="{{ route('projects.rab.store') }}" method="POST">
     @csrf
                         @if ($errors->any())
                                         <div class="alert alert-danger">
@@ -12,7 +12,7 @@
 
     <input type="hidden" name="project_id" value="{{ $project->id }}">
 
-    <h4 class="fw-bold mb-3">Informasi Pembuatan</h4>
+    <h4 class="fw-bold mb-3">Informasi Pembuatan Rab</h4>
 
     <div class="row mb-3">
         <div class="col-md-4">
@@ -21,268 +21,407 @@
         </div>
         <div class="col-md-4">
             <label>Lokasi Pekerjaan</label>
-            <input type="text" name="contact_name" value="{{ $project->city->name ?? '-' }}" class="form-control">
+            <input type="text" name="job_location" value="{{ $project->city->name ?? '-' }}" class="form-control">
         </div>
         <div class="col-md-4">
             <label>Durasi Pekerjaan</label>
-            <input type="text" name="contact_name" class="form-control">
+            <input type="text" name="job_duration" class="form-control">
         </div>
-        {{-- <div class="col-md-4">
-            <label>Nomor Penawaran</label>
-            <input type="text" name="offer_number" class="form-control" value="{{ old('offer_number') ?? '' }}" placeholder="Auto Generate" readonly>
-        </div> --}}
-        {{-- <div class="col-md-4">
-            <label>Tanggal Penawaran</label>
-            <input type="date" name="offer_date" class="form-control">
-        </div> --}}
     </div>
 
     <div class="row mb-4 mt-4">
         <div class="col-md-4">
-            <label class="form-label">Pilih Paket RAB</label>
-            <select name="rab_category_id" class="form-select select2" id="jobCategorySelect" required>
-                <option value="">-- Pilih Paket --</option>
-                @foreach($jobCategories as $category)
-                    <option value="{{ $category->id }}">{{ $category->nama_pekerjaan }}</option>
-                @endforeach
-            </select>
-        </div>
-        <div class="col-md-2">
-            <label class="form-label">Satuan</label>
-            <input type="text" name="satuan" class="form-control" id="satuan" readonly>
+            <label class="form-label">Pilih Pekerjaan</label>
+                <select class="form-select select2" id="jobCategorySelect">
+                    <option value="">-- Pilih Pekerjaan --</option>
+                    @foreach($jobCategories as $job)
+                        <option value="{{ $job->id }}">
+                            {{ $job->nama_pekerjaan }}
+                        </option>
+                    @endforeach
+                </select>
+
         </div>
         <div class="col-md-2">
             <label class="form-label">Volume</label>
-            <input type="text" name="volume" class="form-control">
+            <input type="number" name="volume" class="form-control" step="0.01" min="0">
         </div>
-
+        <div class="col-md-2">
+            <label class="form-label">Satuan</label>
+            <input type="text" name="satuan" class="form-control" id="rab_satuan" readonly>
+        </div>
         <div class="col-md-2">
             <label class="form-label">Harga Satuan (Rp)</label>
-            <input type="hidden" name="base_unit_price" id="priceMeter">
-        <input type="text" id="priceMeterFormatted"
-       class="form-control bg-light" readonly>
+            <input type="hidden" name="price_meter" id="rab_priceMeter">
+            <span id="rab_priceMeterFormatted" class="form-control bg-light"></span>
 
         </div>
         <div class="col-md-2">
             <label class="form-label">Total Harga (Rp)</label>
-            <input type="hidden" name="total_price" id="totalPrice">
-        <input type="text" id="totalPriceFormatted"
-       class="form-control bg-light" readonly>
+            <input type="hidden" name="total_price" id="rab_totalPrice">
+            <span id="rab_totalPriceFormatted" class="form-control bg-light"></span>
         </div>
     </div>
+  
+    <div class="row mb-4">
+        <h4 class="fw-bold mb-3">Rincian Pekerjaan</h4>
 
-        <div class="row mb-4">
-            <h4 class="fw-bold mb-3">Rencana Anggaran Biaya</h4>
+        <table class="table table-bordered align-middle" id="offerItemsTable">
+            <thead>
+                <tr>
+                    <th width="50">No.</th>
+                    <th>Uraian Pekerjaan</th>
+                    <th>Volume</th>
+                    <th>Satuan</th>
+                    <th>Harga Satuan (Rp)</th>
+                    <th>Total Harga</th>
+                    <th width="60">Aksi</th>
+                </tr>
+            </thead>
 
-            <table class="table table-bordered align-middle" id="offerItemsTable">
-                <thead>
-                    <tr>
-                        <th width="50">No.</th>
-                        <th>Uraian Pekerjaan</th>
-                        <th>Satuan</th>
-                        <th>Volume</th>
-                        <th>Harga Satuan (Rp)</th>
-                        <th>Total Harga</th>
-                        
-                    </tr>
-                </thead>
+            <tbody id="rab_offerItemsBody">
+            </tbody>
 
-                <tbody id="offerItemsBody">
-                </tbody>
+            <tfoot>
+                <tr>
+                    <th colspan="5" class="text-end">SUBTOTAL</th>
+                    <th id="rab_subtotalDisplay">Rp 0</th>
+                </tr>
 
-                <tfoot>
-                    <tr>
-                        <th colspan="5" class="text-end">SUBTOTAL</th>
-                        <th id="subtotalDisplay">Rp 0</th>
-                    </tr>
+                <tr>
+                    <th colspan="5" class="text-end">DISCOUNT</th>
+                    <th>
+                        <input type="text" class="form-control" id="rab_discount_display">
+                        <input type="hidden" name="discount" id="rab_discount">
 
-                    <tr>
-                        <th colspan="5" class="text-end">DISCOUNT</th>
-                        <th>
-                            <input type="number" class="form-control"
-                                name="discount" id="discount" value="0">
-                        </th>
-                    </tr>
+                    </th>
+                </tr>
 
-                    <tr>
-                        <th colspan="5" class="text-end">SUBTOTAL AFTER DISCOUNT</th>
-                        <th id="subAfterDiscountDisplay">Rp 0</th>
-                    </tr>
+                <tr>
+                    <th colspan="5" class="text-end">SUBTOTAL AFTER DISCOUNT</th>
+                    <th id="rab_subAfterDiscountDisplay">Rp 0</th>
+                </tr>
 
-                    <tr>
-                        <th colspan="5" class="text-end">TAX RATE (%)</th>
-                        <th>
-                            <input type="number" class="form-control"
-                                name="tax_rate" id="tax_rate" value="0">
-                        </th>
-                    </tr>
+                <tr>
+                    <th colspan="5" class="text-end">TAX RATE (%)</th>
+                    <th>
+                        <input type="number" class="form-control"
+                            name="tax_rate" id="rab_tax_rate">
+                    </th>
+                </tr>
 
-                    <tr>
-                        <th colspan="5" class="text-end">TOTAL TAX</th>
-                        <th id="totalTaxDisplay">Rp 0</th>
-                    </tr>
+                <tr>
+                    <th colspan="5" class="text-end">TOTAL TAX</th>
+                    <th id="rab_totalTaxDisplay">Rp 0</th>
+                </tr>
 
-                    <tr>
-                        <th colspan="5" class="text-end">SHIPPING / HANDLING</th>
-                        <th>
-                            <input type="number" class="form-control"
-                                name="shipping" id="shipping" value="0">
-                        </th>
-                    </tr>
+                <tr>
+                    <th colspan="5" class="text-end">SHIPPING / HANDLING</th>
+                    <th>
+                        <input type="text" class="form-control" id="rab_shipping_display">
+                        <input type="hidden" name="shipping" id="rab_shipping">
 
-                    <tr>
-                        <th colspan="5" class="text-end">GRAND TOTAL</th>
-                        <th id="grandTotalDisplay">Rp 0</th>
-                    </tr>
-                </tfoot>
-            </table>
-        </div>
+                    </th>
+                </tr>
+
+                <tr>
+                    <th colspan="5" class="text-end">GRAND TOTAL</th>
+                    <th id="rab_grandTotalDisplay">Rp 0</th>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+        <input type="hidden" name="subtotal" id="rab_subtotal">
+        <input type="hidden" name="subtotal_after_discount" id="rab_subAfterDiscount">
+        <input type="hidden" name="tax_total" id="rab_tax_total">
+        <input type="hidden" name="grand_total" id="rab_grand_total">
 
     <h4 class="fw-bold mb-3">Keterangan</h4>
 
-    <textarea name="notes" rows="5" class="form-control"></textarea>
+    <textarea name="notes" rows="3" class="form-control"></textarea>
 
     <div class="mt-4">
-        <button class="btn btn-dark">Simpan Penawaran</button>
+        <button class="btn btn-dark">Simpan RAB</button>
     </div>
 </form>
 
-@push('scripts')
+@push('js')
 <script>
-$(document).ready(function () {
-    console.log('SCRIPT OFFER LOADED');
-    $('.select2').select2({
-        width: '100%'
+    $(document).ready(function() {
+        $('.select2').select2({
+            placeholder: "-- Pilih --",
+            width: '100%'
+        });
     });
 
-    const priceMeterInput = $('#priceMeter');
-    const priceMeterFormatted = $('#priceMeterFormatted');
-    const volumeInput = $('input[name="volume"]');
-    const satuanInput = $('#satuan');
-    const totalPriceInput = $('#totalPrice');
-    const totalPriceFormatted = $('#totalPriceFormatted');
-    const tableBody = $('#offerItemsBody');
+function formatRp(num) {
+    return new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        minimumFractionDigits: 0
+    }).format(num || 0);
+}
+function cleanNumber(val) {
+    if (!val) return 0;
+    return parseFloat(
+        val.toString().replace(/[^0-9.-]+/g, '')
+    ) || 0;
+}
 
-    const discountInput = $('#discount');
-    const taxRateInput = $('#tax_rate');
-    const shippingInput = $('#shipping');
+let currentRabJob = null;
+let rabItems = {};
 
-    function formatRp(num) {
-        num = parseFloat(num) || 0;
-        return 'Rp ' + num.toLocaleString('id-ID');
-    }
+// document.addEventListener('change', function(e) {
 
-    // ✅ EVENT SELECT2 (INI KUNCI)
-    $('#jobCategorySelect').on('select2:select', function (e) {
-        const categoryId = e.params.data.id;
-        console.log('SELECTED ID =', categoryId);
+//     if (e.target.id !== 'jobCategorySelect') return;
 
-        console.log('CHANGE FIRED, ID =', categoryId);
-        if (!categoryId) return;
+//     const jobId = e.target.value;
+//     if (!jobId) return;
 
-        fetch(`/job-categories/json/${categoryId}`)
-            .then(res => res.json())
-            .then(data => {
-                    setTimeout(() => {
-        $('#satuan').val(data.satuan ?? '-');
+//     fetch(`/job-categories/${jobId}/simple`)
+//         .then(res => res.json())
+//         .then(job => {
 
-        $('#priceMeter').val(data.grand_total ?? 0);
-        $('#priceMeterFormatted').val(
-            'Rp ' + Number(data.grand_total ?? 0).toLocaleString('id-ID')
-        );
-    }, 100);
+//             currentRabJob = job;
 
-                // SATUAN
-                // satuanInput.val(data.satuan ?? '-');
+//             let harga = parseFloat(job.harga) || 0;
 
-                // // HARGA SATUAN
-                // priceMeterInput.val(data.grand_total ?? 0);
-                // priceMeterFormatted.val(formatRp(data.grand_total ?? 0));
+//             document.getElementById('rab_satuan').value = job.satuan;
+//             document.getElementById('rab_priceMeter').value = harga;
+//             document.getElementById('rab_priceMeterFormatted').innerText = formatRp(harga);
 
-                // RESET TABLE
-                tableBody.empty();
+//             // reset volume
+//             document.querySelector('input[name="volume"]').value = '';
+//             document.getElementById('rab_totalPriceFormatted').innerText = '';
+//         });
+// });
+$('#jobCategorySelect').on('change', function () {
+    const jobId = $(this).val();
+    if (!jobId) return;
 
-                const categoryLabel = {
-                    labor: 'TENAGA KERJA',
-                    product: 'BAHAN',
-                    equipment: 'PERALATAN'
-                };
+    fetch(`/job-categories/${jobId}/simple`)
+        .then(res => res.json())
+        .then(job => {
 
-                let grouped = {};
-                data.items.forEach(item => {
-                    grouped[item.category] ??= [];
-                    grouped[item.category].push(item);
-                });
+            currentRabJob = job;
 
-                let idx = 0;
+            let harga = parseFloat(job.harga) || 0;
 
-                Object.keys(grouped).forEach(cat => {
+            document.getElementById('rab_satuan').value = job.satuan;
+            document.getElementById('rab_priceMeter').value = harga;
+            document.getElementById('rab_priceMeterFormatted').innerText = formatRp(harga);
 
-                    tableBody.append(`
-                        <tr class="table-secondary">
-                            <td></td>
-                            <td class="fw-bold">${categoryLabel[cat]}</td>
-                            <td colspan="4"></td>
-                        </tr>
-                    `);
-
-                    grouped[cat].forEach(item => {
-                        tableBody.append(`
-                            <tr>
-                                <td></td>
-                                <td>
-                                    - ${item.name}
-                                    
-                                <input type="hidden" name="items[${idx}][item_id]" value="${item.id}">
-                                <input type="hidden" name="items[${idx}][category]" value="${cat}">
-                                <input type="hidden" name="items[${idx}][name]" value="${item.name}">
-                                <input type="hidden" name="items[${idx}][unit]" value="${item.unit}">
-                                <input type="hidden" name="items[${idx}][coefisien]" value="${item.coefisien}">
-                                <input type="hidden" name="items[${idx}][price]" value="${item.base_unit_price}">
-                                </td>
-                                <td>${item.unit}</td>
-                                <td>${item.coefisien}</td>
-                                <td>${formatRp(item.base_unit_price)}</td>
-                                <td>${formatRp(item.total_price)}</td>
-                            </tr>
-                        `);
-                        idx++;
-                    });
-                });
-
-                hitungTotal();
-            });
-    });
-
-    function hitungTotal() {
-        let volume = parseFloat(volumeInput.val()) || 0;
-        let price = parseFloat(priceMeterInput.val()) || 0;
-
-        if (volume > 0 && volume < 100) volume = 100;
-
-        const subtotal = volume * price;
-
-        totalPriceInput.val(subtotal);
-        totalPriceFormatted.val(formatRp(subtotal));
-
-        $('#subtotalDisplay').text(formatRp(subtotal));
-
-        const discount = parseFloat(discountInput.val()) || 0;
-        const afterDiscount = subtotal - discount;
-        $('#subAfterDiscountDisplay').text(formatRp(afterDiscount));
-
-        const taxRate = parseFloat(taxRateInput.val()) || 0;
-        const tax = afterDiscount * (taxRate / 100);
-        $('#totalTaxDisplay').text(formatRp(tax));
-
-        const shipping = parseFloat(shippingInput.val()) || 0;
-        $('#grandTotalDisplay').text(formatRp(afterDiscount + tax + shipping));
-    }
-
-    volumeInput.add(discountInput)
-        .add(taxRateInput)
-        .add(shippingInput)
-        .on('input', hitungTotal);
+            document.querySelector('input[name="volume"]').value = '';
+            document.getElementById('rab_totalPriceFormatted').innerText = '';
+        });
 });
+
+
+document.addEventListener('input', function(e) {
+
+    if (e.target.name !== 'volume') return;
+    if (!currentRabJob) return;
+
+    const volume = parseFloat(e.target.value) || 0;
+    if (volume <= 0) return;
+
+    const harga = parseFloat(currentRabJob.harga) || 0;
+
+    let total = volume * harga;
+    document.getElementById('rab_totalPrice').value = total;
+    document.getElementById('rab_totalPriceFormatted').innerText = formatRp(total);
+
+    const jobId = currentRabJob.id;
+
+    rabItems[jobId] = {
+        ...currentRabJob,
+        volume: volume,
+        harga: harga,
+        total: total
+    };
+
+    document.getElementById('rab_discount_display').value = '';
+    document.getElementById('rab_shipping_display').value = '';
+    document.getElementById('rab_discount').value = 0;
+    document.getElementById('rab_shipping').value = 0;
+
+    renderRabTable();
+});
+
+function renderRabTable() {
+
+    const tbody = document.getElementById('rab_offerItemsBody');
+    tbody.innerHTML = '';
+
+    let grouped = {};
+    let rowIndex = 0;
+
+    // 🔹 GROUPING
+    Object.values(rabItems).forEach(item => {
+        if (!grouped[item.kode_group]) {
+            grouped[item.kode_group] = {
+                name: item.nama_group,
+                items: [],
+                subtotal: 0
+            };
+        }
+
+        grouped[item.kode_group].items.push(item);
+        grouped[item.kode_group].subtotal += Number(item.total);
+    });
+
+    // 🔹 RENDER
+    Object.keys(grouped).forEach(groupCode => {
+
+        const group = grouped[groupCode];
+
+        // HEADER GROUP
+        tbody.insertAdjacentHTML('beforeend', `
+            <tr class="table-secondary fw-bold">
+                <td>${groupCode}</td>
+                <td colspan="5">${group.name}</td>
+            </tr>
+        `);
+
+        let no = 1;
+
+        group.items.forEach(item => {
+
+            tbody.insertAdjacentHTML('beforeend', `
+                <tr>
+                    <td>${no}</td>
+                    <td>${item.nama}</td>
+                    <td>
+                        <input type="number" class="form-control"
+                            value="${item.volume}"
+                            onchange="updateVolume(${item.id}, this.value)">
+                    </td>
+                    <td>${item.satuan}</td>
+                    <td>${formatRp(item.harga)}</td>
+                    <td class="text-end">${formatRp(item.total)}</td>
+                    <td class="text-center">
+                        <button type="button"
+                            class="btn btn-sm btn-danger"
+                            onclick="removeItem(${item.id})">
+                            ✕
+                        </button>
+                    </td>
+
+                    <input type="hidden" name="items[${rowIndex}][job_category_id]" value="${item.id}">
+                    <input type="hidden" name="items[${rowIndex}][job_name]" value="${item.nama}">
+                    <input type="hidden" name="items[${rowIndex}][satuan]" value="${item.satuan}">
+                    <input type="hidden" name="items[${rowIndex}][volume]" value="${item.volume}">
+                    <input type="hidden" name="items[${rowIndex}][price]" value="${item.harga}">
+                    <input type="hidden" name="items[${rowIndex}][total]" value="${item.total}">
+                </tr>
+            `);
+
+            rowIndex++;
+            no++;
+        });
+
+        // 🔹 SUBTOTAL PER GROUP
+        tbody.insertAdjacentHTML('beforeend', `
+            <tr class="fw-bold">
+                <td colspan="5" class="text-end">Subtotal ${group.name}</td>
+                <td class="text-end">${formatRp(group.subtotal)}</td>
+            </tr>
+        `);
+
+    });
+
+    recalculateSummary();
+}
+
+function recalculateSummary() {
+
+    let subtotal = 0;
+
+    Object.values(rabItems).forEach(item => {
+        subtotal += item.total;
+    });
+
+    // DISCOUNT
+    let discount = cleanNumber(document.getElementById('rab_discount').value);
+    let subAfterDiscount = subtotal - discount;
+    if (subAfterDiscount < 0) subAfterDiscount = 0;
+
+    // TAX
+    let taxRate = parseFloat(document.getElementById('rab_tax_rate').value) || 0;
+    let totalTax = subAfterDiscount * (taxRate / 100);
+
+    // SHIPPING
+    let shipping = cleanNumber(document.getElementById('rab_shipping').value);
+
+    // GRAND TOTAL
+    let grandTotal = subAfterDiscount + totalTax + shipping;
+
+    // DISPLAY
+    document.getElementById('rab_subtotalDisplay').innerText = formatRp(subtotal);
+    document.getElementById('rab_subAfterDiscountDisplay').innerText = formatRp(subAfterDiscount);
+    document.getElementById('rab_totalTaxDisplay').innerText = formatRp(totalTax);
+    document.getElementById('rab_grandTotalDisplay').innerText = formatRp(grandTotal);
+    document.getElementById('rab_subtotal').value = subtotal;
+    document.getElementById('rab_subAfterDiscount').value = subAfterDiscount;
+    document.getElementById('rab_tax_total').value = totalTax;
+    document.getElementById('rab_grand_total').value = grandTotal;
+}
+
+const discountInput = document.getElementById('rab_discount_display');
+
+discountInput.addEventListener('input', function () {
+    let val = cleanNumber(this.value);
+    document.getElementById('rab_discount').value = val;
+    recalculateSummary();
+});
+
+discountInput.addEventListener('blur', function () {
+    let val = cleanNumber(this.value);
+    this.value = formatRp(val);
+});
+
+
+const shippingInput = document.getElementById('rab_shipping_display');
+
+shippingInput.addEventListener('input', function () {
+    let val = cleanNumber(this.value);
+    document.getElementById('rab_shipping').value = val;
+    recalculateSummary();
+});
+
+shippingInput.addEventListener('blur', function () {
+    let val = cleanNumber(this.value);
+    this.value = formatRp(val);
+});
+
+
+document.getElementById('rab_tax_rate').addEventListener('input', function () {
+    recalculateSummary();
+});
+
+function updateVolume(jobId, newVolume) {
+
+    newVolume = parseFloat(newVolume) || 0;
+    if (newVolume <= 0) return;
+
+    let item = rabItems[jobId];
+
+    let total = newVolume * item.harga;
+
+    item.volume = newVolume;
+    item.total = total;
+
+    renderRabTable();
+}
+
+function removeItem(itemId) {
+
+    if (!confirm('Hapus item ini dari RAB?')) return;
+
+    delete rabItems[itemId];
+
+    renderRabTable();
+}
+
 </script>
 @endpush

@@ -265,8 +265,9 @@ Route::post(
 Route::get('/ajax/items/{type}', [JobCategoryController::class, 'getItems']);
 Route::get('/ajax/item-detail/{type}/{id}', [JobCategoryController::class, 'getItemDetail']);
 
-Route::get('job-categories/json/{id}',
-    [JobCategoryController::class, 'getCategory'])->name('job-categories.json');
+Route::get('/job-categories/{id}/simple', [JobCategoryController::class, 'simple']);
+
+
 
 Route::post('projects/consultations', [\App\Http\Controllers\ConsultationController::class, 'store'])
     ->name('projects.consultations.store');
@@ -330,6 +331,8 @@ Route::post('/offer/{offer}/reject', [\App\Http\Controllers\OfferRABController::
 Route::get('/projects/offer/{offer}/pdf', [\App\Http\Controllers\OfferRABController::class, 'printPdf'])
     ->name('projects.offers.rab.pdf');
 
+Route::post('projects/rab', [\App\Http\Controllers\RabProcessController::class, 'store'])
+    ->name('projects.rab.store');
 // routes/web.php
 Route::get(
     'projects/{project}/contract/pdf',
