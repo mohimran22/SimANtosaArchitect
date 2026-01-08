@@ -75,7 +75,7 @@
                     <th>Satuan</th>
                     <th>Harga Satuan (Rp)</th>
                     <th>Total Harga</th>
-                    <th width="60">Aksi</th>
+                    <th width="1%"></th>
                 </tr>
             </thead>
 
@@ -140,7 +140,7 @@
 
     <textarea name="notes" rows="3" class="form-control"></textarea>
 
-    <div class="mt-4">
+    <div class="text-end mt-4">
         <button class="btn btn-dark">Simpan RAB</button>
     </div>
 </form>
@@ -303,7 +303,7 @@ function renderRabTable() {
                         <button type="button"
                             class="btn btn-sm btn-danger"
                             onclick="removeItem(${item.id})">
-                            ✕
+                            -
                         </button>
                     </td>
 

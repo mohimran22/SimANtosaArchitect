@@ -6,11 +6,8 @@
 
 @if($offer)
 <div class="card shadow-sm border-0 mb-4">
-    <div class="card-header fw-bold">Detail Penawaran</div>
 
     <div class="card-body">
-
-        <h4 class="fw-bold mb-4">Detail Penawaran RAB</h4>
 
         <div class="row g-4">
 

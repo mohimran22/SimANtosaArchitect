@@ -27,7 +27,6 @@ use App\Http\Controllers\ProductCategoryController;
 use App\Http\Controllers\SupplierCatalogController;
 use App\Http\Controllers\ProductCatalogController;
 use App\Http\Controllers\RoleSwitchController;
-use App\Http\Controllers\UpahImportController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\DesignPackageController;
 use App\Http\Controllers\RabPackageController;
@@ -333,6 +332,9 @@ Route::get('/projects/offer/{offer}/pdf', [\App\Http\Controllers\OfferRABControl
 
 Route::post('projects/rab', [\App\Http\Controllers\RabProcessController::class, 'store'])
     ->name('projects.rab.store');
+Route::get('/projects/{project}/rab/pdf', [\App\Http\Controllers\RabProcessController::class, 'exportPdf'])
+    ->name('projects.rab.pdf');
+
 // routes/web.php
 Route::get(
     'projects/{project}/contract/pdf',

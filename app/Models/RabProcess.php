@@ -24,9 +24,14 @@ class RabProcess extends Model
     'notes'
 ];
 
+        public function project()
+    {
+        return $this->belongsTo(Project::class);
+    }
+    
     public function items()
     {
-        return $this->hasMany(RabProcessItem::class);
+        return $this->hasMany(RabProcessItem::class, 'rab_process_id');
     }
 
 }

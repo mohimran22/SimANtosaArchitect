@@ -5,9 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\RabProcess;
 use App\Models\RabProcessItem;
 use App\Models\JobCategory;
-use App\Models\ProjectLevel;
+use App\Models\Project;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class RabProcessController extends Controller
 {
@@ -38,11 +39,14 @@ public function store(Request $request)
         'notes' => 'nullable|string',
     ]);
 
-    DB::transaction(function () use ($request, &$rab) {
+    DB::transaction(function () use ($request) {
+
+        // 🔹 Ambil project
+        $project = Project::findOrFail($request->project_id);
 
         // 1️⃣ SIMPAN RAB
         $rab = RabProcess::create([
-            'project_id' => $request->project_id,
+            'project_id' => $project->id,
             'contact_name' => $request->contact_name,
             'job_location' => $request->job_location,
             'job_duration' => $request->job_duration,
@@ -73,22 +77,51 @@ public function store(Request $request)
             ]);
         }
 
-        // 3️⃣ UPDATE LEVEL PROJECT
-        ProjectLevel::where([
-            'project_id'  => $request->project_id,
-            'level_order' => 6,
-        ])->update(['is_completed' => true]);
+        // 3️⃣ TANDAI LEVEL TERAKHIR SELESAI
+        $finalLevel = $project->levels()
+            ->where('level_name', 'Proses Pengerjaan RAB')
+            ->first();
 
-        ProjectLevel::where([
-            'project_id'  => $request->project_id,
-            'level_order' => 7,
-        ])->update(['is_started' => true]);
+        if ($finalLevel && !$finalLevel->is_completed) {
+            $finalLevel->update([
+                'is_completed' => true,
+                'completed_at' => now(),
+            ]);
+        }
     });
 
-    return redirect()
-        ->route('projects.create', $rab->id)
-        ->with('success', 'RAB berhasil disimpan. Lanjut ke tahap berikutnya.');
+    return back()->with('success', 'RAB berhasil disimpan dan proyek dinyatakan selesai');
 }
 
+public function exportPdf(Project $project)
+{
+    $rab = $project->rab;
+    if (!$rab) abort(404);
+
+    $grouped = [];
+
+    foreach ($rab->items as $item) {
+
+        $kode = $item->category->kode_group ?? '-';
+        $nama = $item->category->nama_group ?? 'PEKERJAAN LAIN-LAIN';
+
+        if (!isset($grouped[$kode])) {
+            $grouped[$kode] = [
+                'kode' => $kode,
+                'nama' => $nama,
+                'items' => [],
+                'subtotal' => 0
+            ];
+        }
+
+        $grouped[$kode]['items'][] = $item;
+        $grouped[$kode]['subtotal'] += $item->total;
+    }
+
+    $pdf = Pdf::loadView('rab.pdf', compact('rab', 'project', 'grouped'))
+        ->setPaper('A4', 'portrait');
+
+    return $pdf->stream('RAB-'.$project->name.'.pdf');
+}
 
 }

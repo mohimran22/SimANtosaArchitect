@@ -463,30 +463,26 @@ Namun apabila terjadi Force Majeure atau bencana alam yang diluar kemampuan Para
     Demikian Kontrak Kerja ini telah di sepakati dan di tanda tangani diatas materai yang cukup, untuk dilaksanakan dengan penuh rasa tanggung jawab tanpa adanya campur tangan dari pihak lain. 
 </p>
 
-
-<!-- TANDA TANGAN -->
 <table width="100%" style="margin-top:20px;">
 <tr>
 
-    <!-- PEMILIK -->
-    <td width="50%" style="text-align:center; vertical-align:top;">
-        <strong>Pemilik Rumah</strong>
+    <td width="50%" style="text-align:center; vertical-align:top;">Pemilik Rumah
+        {{-- <strong>Pemilik Rumah</strong> --}}
 
-        <div style="height:180px; margin-top:5px;">
+        <div style="height:140px;">
             <!-- ruang tanda tangan -->
         </div>
 
         <u>{{ strtoupper($offer->contact_name) }}</u>
     </td>
 
-    <!-- ARSITEK -->
-    <td width="50%" style="text-align:center; vertical-align:top;">
-        <strong>Arsitek</strong>
+    <td width="50%" style="text-align:center; vertical-align:top;">PT. Tosa Ahmad Jaya<br>
+        <strong>Antosa Architect</strong>
 
-        <div style="height:180px; margin-top:5px;">
+        <div style="height:120px;">
             @if($offer->approved_at)
                 <img src="{{ public_path('images/ttd-dwiantosa.png') }}"
-                     style="height:140px; margin-top:5px;">
+                     style="height:140px;">
             @endif
         </div>
 

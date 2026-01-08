@@ -28,7 +28,7 @@
             <div id="step-1" class="step-section">
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body px-5 py-4">
-                        <h3 class="mb-4 fw-bold">Buat Proyek Baru</h3>
+                        <h3 class="mb-4 fw-bold" id="step-1">Buat Proyek Baru</h3>
                         @include('projects.steps.create-project')
                     </div>
                 </div>
@@ -39,7 +39,7 @@
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body px-5 py-4">
                         <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h3 class="fw-bold m-0">Proyek</h3>
+                            <h3 class="fw-bold m-0" id="step-2">Proyek</h3>
 
                             <div class="btn-group">
                                 <button type="button" id="btn-edit-project"
@@ -71,7 +71,7 @@
 
                     <div class="card shadow-sm border-0 mb-4">
                         <div class="card-body px-5 py-4">
-                            <h3 class="mb-4 fw-bold">1. Form Konsultasi</h3>
+                            <h3 class="mb-4 fw-bold" id="step-2">1. Form Konsultasi</h3>
                             @include('projects.steps.consultation-form')
                         </div>
                     </div>  
@@ -83,7 +83,7 @@
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body px-5 py-4">
                         <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h3 class="fw-bold m-0">1. Tahap Konsultasi</h3>
+                            <h3 class="fw-bold m-0" id="step-3">1. Tahap Konsultasi</h3>
                             <div class="btn-group">
                                 <button type="button" id="btn-edit-consultation" 
                                     class="btn btn-sm btn-dark me-2"
@@ -111,7 +111,7 @@
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body px-5 py-4">
                         <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h3 class="fw-bold mb-0">2. Rencana Survei</h3>
+                        <h3 class="fw-bold mb-0" id="step-3">2. Rencana Survei</h3>
                             <button type="button"
                                 id="btn-edit-planning"
                                 class="btn btn-sm btn-dark {{ $disableEdit ? 'disabled' : '' }}"
@@ -152,21 +152,21 @@
                     $project->levels->firstWhere('level_order', 3)?->is_started
                 )
             )
-            <div id="step-4" class="step-section">
+            {{-- <div id="step-4" class="step-section"> --}}
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body px-5 py-4">
                         <h3 class="mb-3 fw-bold">3. Form Survei Lapangan</h3>
                         @include('projects.steps.survey-form')
                     </div>
                 </div>
-            </div>
+            {{-- </div> --}}
             @endif
             @if($activeStep >= 5)
             <div id="step-5" class="step-section">
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body px-5 py-4">       
                         <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h3 class="fw-bold m-0">3. Survei</h3>
+                            <h3 class="fw-bold m-0" id="step-5">3. Survei</h3>
                             <div class="btn-group">
                                 <button type="button" id="btn-edit-survey"
                                     class="btn btn-sm btn-dark me-2"
@@ -206,7 +206,7 @@
                     <div class="card-body px-5 py-4">
 
                         <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h3 class="mb-3 fw-bold">
+                            <h3 class="mb-3 fw-bold" id="step-6">
                                 {{ $project->project_type == 1 ? '4. Penawaran Jasa Desain' : '4. Penawaran Jasa RAB' }}
                             </h3>
 
@@ -254,21 +254,13 @@
                             @else
                                 @include('projects.edit.raboffer-form')
                             @endif
-                            {{-- <div class="mt-3">
-                                <button type="button"
-                                        class="btn btn-secondary btn-cancel-offer"
-                                        data-view="offer-view"
-                                        data-edit="offer-edit">
-                                    Batal
-                                </button>
-                            </div> --}}
                         </div>
                     </div>
                 </div>
             </div>
             @endif
             @if($activeStep >= 6 && $project->project_type == 1)
-            <div id="step-6" class="step-section">
+            {{-- <div id="step-6" class="step-section"> --}}
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body px-5 py-4">
                         <h3 class="mb-3 fw-bold">5. Draft Kontrak Pelaksanaan Pekerjaan</h3>
@@ -300,7 +292,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            {{-- </div> --}}
             @endif
             @if(
                 ($project?->project_type == 1 && $activeStep >= 7 && $project->offer->approved_at)
@@ -310,14 +302,12 @@
             <div id="step-7" class="step-section">
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body px-5 py-4">
-
-                        <h3 class="mb-3 fw-bold">
+                        <h3 class="mb-3 fw-bold" id="step-7">
                             {{ $project->project_type == 1
                                 ? '6. Invoice Pembayaran Desain (DP)'
                                 : '5. Invoice Jasa Pembuatan RAB'
                             }}
                         </h3>
-
                         @php
                             $invoice = $project->project_type == 1
                                 ? $invoiceDp
@@ -386,16 +376,16 @@
             @if(
                 ($project?->project_type == 1 && $activeStep >= 8 && $project->offer->approved_at)
                 ||
-                ($project?->project_type == 2 && $activeStep >= 7)
+                ($project?->project_type == 2 && $activeStep == 7)
             )
             <div id="step-8" class="step-section">
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body px-5 py-4">
                         @if($project->project_type == 1)
-                            <h3 class="mb-3 fw-bold">7. Form Pengerjaan</h3>
+                            <h3 class="mb-3 fw-bold" id="step-8">7. Form Pengerjaan</h3>
                             @include('projects.steps.work-process')
                         @elseif($project->project_type == 2)
-                            <h3 class="mb-3 fw-bold">6. Form Pembuatan RAB</h3>
+                            <h3 class="mb-3 fw-bold" id="step-8">6. Form Pembuatan RAB</h3>
                             @include('projects.steps.rab-process')
                         @endif
                     </div>
@@ -406,70 +396,50 @@
             @if(
                 ($project?->project_type == 1 && $activeStep >= 9)
                 ||
-                ($project?->project_type == 2 && $activeStep == 7)
+                ($project?->project_type == 2 && $activeStep >= 9)
             )
             <div id="step-9" class="step-section">
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body px-5 py-4">
                         <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h3 class="mb-3 fw-bold">
-                                {{ $project->project_type == 1 ? '4. Penawaran Jasa Desain' : '4. Penawaran Jasa RAB' }}
+                            <h3 class="mb-3 fw-bold" id="step-9">
+                                {{ $project->project_type == 1 ? '8. Invoice Pelunasan Desain' : '6. Rencana Anggaran Biaya' }}
                             </h3>
-
+                            @if($project->project_type == 2)
                             <div class="btn-group">
-                                
                                 <button type="button"
                                         class="btn btn-sm btn-dark me-2 btn-toggle-offer"
-                                        data-view="offer-view"
-                                        data-edit="offer-edit"
+                                        data-view="rab-view"
+                                        data-edit="rab-edit"
                                         title="Edit Data">
                                     <i class="ti ti-edit"></i>
                                 </button>
-
-                                @if($project->offer?->id)
-                                    @if($project->project_type == 1)
-                                    <a href="{{ route('projects.offers.desain.pdf', $project->offer->id) }}"
+                                    <a href="{{ route('projects.rab.pdf', $project->id) }}"
                                         class="btn btn-sm btn-dark"
                                         target="_blank"
                                         title="Download PDF">
                                             <i class="ti ti-download"></i>
                                     </a>
-                                    @else
-                                    <a href="{{ route('projects.offers.rab.pdf', $project->offer->id) }}"
-                                        class="btn btn-sm btn-dark"
-                                        target="_blank"
-                                        title="Download PDF">
-                                            <i class="ti ti-download"></i>
-                                    </a>
-                                    @endif
-                                @endif
                             </div>
+                            @endif
                         </div>
-                        <div id="offer-view">
+                        <div id="rab-view">
                             @if($project->project_type == 2)
                                 @include('projects.details.rab-process')
                             @endif
                         </div>
 
-                        <div id="offer-edit" style="display:none;">
+                        <div id="rab-edit" style="display:none;">
                             @if($project->project_type == 2)
-                                @include('projects.edit.offer-form')
+                                @include('projects.edit.rab-process')
                             @endif
-                            {{-- <div class="mt-3">
-                                <button type="button"
-                                        class="btn btn-secondary btn-cancel-offer"
-                                        data-view="offer-view"
-                                        data-edit="offer-edit">
-                                    Batal
-                                </button>
-                            </div> --}}
                         </div>
                         @php
                             $invoiceFinal = $project->invoices
                                 ->where('invoice_type', 'final')
                                 ->first();
                         @endphp
-
+                        @if($project->project_type == 1)
                         <div class="d-flex gap-2">
                             <a href="{{ route('projects.invoice.final', $project->id) }}"
                             class="btn btn-dark"
@@ -501,16 +471,23 @@
                                 </span>
                             @endif
                         </div>
+                        @endif
                     </div>
                 </div>
             </div>
             @endif
-            @if($activeStep >= 10)
+            {{-- @if($activeStep == 9) --}}
+            @if(
+                $activeStep == 9 &&
+                (
+                    $project->levels->firstWhere('level_order', 9)?->is_started
+                )
+            )
             <div id="step-10" class="step-section">
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body px-5 py-4">
                         <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h3 class="mb-4 fw-bold">9. Hasil Proyek</h3>
+                            <h3 class="mb-4 fw-bold" id="step-10">9. Hasil Proyek</h3>
                             @if($project->finalDocument)
                                 <div class="btn-group">
                                     <button class="btn btn-sm btn-dark"

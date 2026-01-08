@@ -18,5 +18,9 @@ class RabProcessItem extends Model
     'price',
     'total'
 ];
+public function category()
+{
+    return $this->belongsTo(JobCategory::class, 'job_category_id');
+}
 
 }

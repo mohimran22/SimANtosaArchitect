@@ -20,7 +20,11 @@
                         </div>
 
                         {{-- LABEL --}}
-                        <div class="step-label">
+                        {{-- <div class="step-label">
+                            {{ $step['label'] }}
+                        </div> --}}
+                        <div class="step-label"
+                            data-target="step-{{ $number }}">
                             {{ $step['label'] }}
                         </div>
 
@@ -160,7 +164,7 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 
-<script>
+{{-- <script>
 document.addEventListener("DOMContentLoaded", function () {
 
     // Auto-scroll to current step
@@ -184,5 +188,30 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
 });
-</script>
+</script> --}}
 
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    document.querySelectorAll(".step-label").forEach(label => {
+        label.addEventListener("click", function (e) {
+            e.stopPropagation();
+
+            const targetId = this.dataset.target;
+            const target = document.getElementById(targetId);
+
+            if (target) {
+                target.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start"
+                });
+            }
+
+            // center timeline ke step ini
+            this.closest('.step-item')
+                .scrollIntoView({ behavior: "smooth", inline: "center" });
+        });
+    });
+
+});
+</script>

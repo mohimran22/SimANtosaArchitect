@@ -111,7 +111,7 @@
                     <tr>
                         <th colspan="5" class="text-end">DISCOUNT</th>
                         <th>
-                            <input type="number" class="form-control form-control-sm"
+                            <input type="number" class="form-control"
                                 name="discount" id="discount" value="0">
                         </th>
                     </tr>
@@ -124,7 +124,7 @@
                     <tr>
                         <th colspan="5" class="text-end">TAX RATE (%)</th>
                         <th>
-                            <input type="number" class="form-control form-control-sm"
+                            <input type="number" class="form-control"
                                 name="tax_rate" id="tax_rate" value="0">
                         </th>
                     </tr>
@@ -137,7 +137,7 @@
                     <tr>
                         <th colspan="5" class="text-end">SHIPPING / HANDLING</th>
                         <th>
-                            <input type="number" class="form-control form-control-sm"
+                            <input type="number" class="form-control"
                                 name="shipping" id="shipping" value="0">
                         </th>
                     </tr>

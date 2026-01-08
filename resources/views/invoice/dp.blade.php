@@ -207,13 +207,14 @@ p {
     margin-top:15px;
 ">
 
-    <p style="margin-bottom:4px;">PT. Tosa Ahmad Jaya<br>
+    <p>PT. Tosa Ahmad Jaya<br>
        <strong>Antosa Architect</strong>
     </p>
-
+    <div style="height:120px;">
         <img src="{{ public_path('images/ttd-dwiantosa.png') }}"
-             style="height:160px; margin:6px 0;">
-    <p style="margin-top:4px;">
+             style="height:140px;">
+    </div>
+    <p>
         <strong><u>Ir. Ar. Dwiantosa Ahmad Fathony, IAI., IPP</u></strong><br>
         Direktur Utama
     </p>

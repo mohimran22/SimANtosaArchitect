@@ -218,11 +218,12 @@ berikut kami sampaikan penawaran harga untuk pelaksanaan pekerjaan:
 <p>Hormat Kami,</p>
 <p><strong>PT. Tosa Ahmad Jaya</strong><br><strong>Antosa Architect</strong></p>
 
-<div style="height:90px;">
-<img src="{{ public_path('images/ttd-dwiantosa.png') }}" style="height:90px;">
+<div style="height:120px;">
+<img src="{{ public_path('images/ttd-dwiantosa.png') }}" style="height:140px;">
 </div>
 
-<p><strong>Ir. Ar. Dwiantosa Ahmad Fathony, IAI., IPP</strong><br>Direktur Utama</p>
+<p>
+    <strong><u>Ir. Ar. Dwiantosa Ahmad Fathony, IAI., IPP</u></strong><br>Direktur Utama</p>
 
 </body>
 </html>

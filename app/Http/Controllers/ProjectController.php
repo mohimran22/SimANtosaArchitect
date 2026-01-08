@@ -248,6 +248,7 @@ class ProjectController extends Controller
         'planning',
         'survey.items',
         'offer.items',
+        'rab.items.category',
         ])->findOrFail($projectId);
     }
 
@@ -261,6 +262,7 @@ class ProjectController extends Controller
         'planning',
         'survey.items',
         'offer.items',
+        'rab.items.category'
     ]);
 
     $activeStep = $this->computeActiveStep($project);
