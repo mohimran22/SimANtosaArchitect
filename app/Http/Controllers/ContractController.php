@@ -78,26 +78,32 @@ class ContractController extends Controller
             ->with('success', 'Kontrak disetujui. Tahap Invoice DP dimulai.');
     }
 
-    protected function generateContractNumber()
+protected function generateContractNumber()
 {
-    $now   = now();
-    $bulan = GeneralHelper::bulanRomawi($now->month);
-    $tahun = $now->year;
+    $tahunFull = date('Y');   // 2026
+    $tahun = date('y');       // 26
+    $bulan = date('n');       // 1-12
+    $romawiBulan = \App\Helpers\GeneralHelper::bulanRomawi($bulan);
 
     // Ambil nomor terakhir di tahun ini
-    $last = \App\Models\Offer::whereYear('contract_date', $tahun)
+    $last = \App\Models\Offer::whereYear('contract_date', $tahunFull)
         ->whereNotNull('contract_number')
         ->orderByDesc('id')
         ->first();
 
-    $urut = 1;
-
-    if ($last && preg_match('/^(\d+)/', $last->contract_number, $m)) {
-        $urut = (int) $m[1] + 1;
+    if ($last) {
+        // SPK/DSN/26/I/001 → ambil 001
+        $explode = explode('/', $last->contract_number);
+        $lastNumber = (int) end($explode) + 1;
+    } else {
+        $lastNumber = 1;
     }
 
-    return str_pad($urut, 3, '0', STR_PAD_LEFT)
-        . ".TAJ/SPK/{$bulan}/{$tahun}";
+    // Format 3 digit: 1 → 001
+    $nomorUrut = str_pad($lastNumber, 3, '0', STR_PAD_LEFT);
+
+    return "SPK/DSN/$tahun/$romawiBulan/$nomorUrut";
 }
+
 
 }

@@ -96,29 +96,31 @@ public function store(OfferRequest $request)
 
 private function generateOfferNumber()
 {
-    $tahun = date('Y');
-    $bulan = date('n'); // 1-12
+    $tahunFull = date('Y');        // 2026
+    $tahun = date('y');            // 26
+    $bulan = date('n');            // 1-12
     $romawiBulan = \App\Helpers\GeneralHelper::bulanRomawi($bulan);
 
-    // Ambil nomor terakhir bulan & tahun ini
-    $lastOffer = \App\Models\Offer::whereYear('offer_date', $tahun)
-        ->whereMonth('offer_date', $bulan)
-        ->orderBy('offer_number', 'DESC')
+    // Ambil nomor terakhir di tahun ini saja
+    $lastOffer = \App\Models\Offer::whereYear('offer_date', $tahunFull)
+        ->orderBy('id', 'DESC')
         ->first();
 
     if ($lastOffer) {
-        // Ambil angka urut terakhir (003 → 4)
+        // PH/DSN/26/I/001 → ambil 001
         $explode = explode('/', $lastOffer->offer_number);
         $lastNumber = intval(end($explode)) + 1;
     } else {
+        // Kalau belum ada di tahun ini → mulai dari 1
         $lastNumber = 1;
     }
 
-    // Format ke 3 digit
+    // Format ke 3 digit: 1 → 001
     $nomorUrut = str_pad($lastNumber, 3, '0', STR_PAD_LEFT);
 
-    return "PH/SO/$tahun/$romawiBulan/$nomorUrut";
+    return "PH/DSN/$tahun/$romawiBulan/$nomorUrut";
 }
+
 
 public function update(Request $request, $id)
 {

@@ -60,7 +60,6 @@
                         </small>
                     </div>
 
-                    {{-- ========== SECTION 1: INFORMASI PRIBADI ========== --}}
                     <div class="section-block mb-5">
                         <h3 class="fw-semibold mb-3 border-bottom pb-2">🧍 Informasi Pribadi</h3>
                         <div class="row g-4">

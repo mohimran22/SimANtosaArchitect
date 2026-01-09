@@ -162,7 +162,7 @@ p {
 <p class="bold">Catatan :</p>
 <ul style="margin:4px 0 6px 18px;">
     <li>Invoice ini merupakan persetujuan biaya rencana survei.</li>
-    <li>Tim survei akan dijadwalkan setelah invoice disetujui.</li>
+    <li>Tim survei akan dijadwalkan setelah invoice dibayarkan.</li>
 </ul>
 
 <div style="

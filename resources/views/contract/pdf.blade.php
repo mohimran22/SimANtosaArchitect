@@ -115,13 +115,14 @@ body {
             antara
     </div>
     <div class="pihak">
-            {{ strtoupper($offer->contact_name) }}
+            {{ strtoupper($offer->project->customer->display_name_with_title) }}
+
     </div>
     <div class="dan">
             dengan
     </div>
     <div class="pihak garis">
-            (Ir. Ar. Dwiantosa Ahmad F., IAI., IPP)
+            Ir. Ar. Dwiantosa Ahmad F., IAI., IPP
     </div>
 </div>
 
@@ -151,7 +152,7 @@ body {
 
 
 <table>
-<tr><td width="120">Nama</td><td>: {{ $offer->contact_name }}</td></tr>
+<tr><td width="120">Nama</td><td>: {{ $offer->project->customer->display_name_with_title }}</td></tr>
 <tr><td>NIK</td><td>: {{ $project->customer->user->identity_number ?? '..................' }}</td></tr>
 <tr><td>Alamat</td><td>: {{ $project->customer->user->address }}</td></tr>
 <tr><td>Telepon</td><td>: {{ $project->customer->user->phone }}</td></tr>
@@ -196,7 +197,7 @@ Dengan ketentuan yang disebutkan dalam pasal-pasal sebagai berikut :
 <p >
 Tujuan kontrak ini adalah sebagai ikatan kesepakatan kedua belah pihak yang tertuang dalam dokumen kontrak,
 sebagai dasar dalam Pelaksanaan Pekerjaan {{ strtoupper($offer->project->project_name) }} 
-<strong>{{ strtoupper($offer->contact_name) }}</strong>
+<strong>{{ strtoupper($offer->project->customer->display_name_with_title) }}</strong>
 yang berlokasi di
 <strong>{{ $offer->project->project_location }}</strong>
 {{ $offer->project->city->name }}, {{ $offer->project->province->name }}.
@@ -267,7 +268,7 @@ adalah sebagai berikut:
 
 <p >
 Biaya Pelaksanaan Pekerjaan {{ strtoupper($offer->project->project_name) }}  
-{{ strtoupper($offer->contact_name) }} yang telah disepakati kedua belah pihak adalah senilai
+{{ strtoupper($offer->project->customer->display_name_with_title) }} yang telah disepakati kedua belah pihak adalah senilai
 <b>Rp {{ number_format($offer->grand_total, 0, ',', '.') }}</b>
 ({{ terbilang($offer->grand_total) }} rupiah).
 <p>
@@ -343,7 +344,7 @@ telah diterima oleh <strong>Pihak Pertama</strong>.
 </p>
 
 <p>
-Jangka waktu pelaksanaan pekerjaan desain rumah hunian {{ strtoupper($offer->contact_name) }} estimasi maksimal adalah 60( enam puluh ) hari kerja, 
+Jangka waktu pelaksanaan pekerjaan desain rumah hunian {{ strtoupper($offer->project->customer->display_name_with_title) }} estimasi maksimal adalah 60( enam puluh ) hari kerja, 
 terhitung sejak disepakati awal mulai pekerjaan yaitu pada tanggal {{ \Carbon\Carbon::parse($project->start_date ?? now())->translatedFormat('d F Y') }} dan estimasi selesai pada 
 tanggal {{ \Carbon\Carbon::parse($project->end_date ?? now())->translatedFormat('d F Y') }}.
 </p>
@@ -473,7 +474,7 @@ Namun apabila terjadi Force Majeure atau bencana alam yang diluar kemampuan Para
             <!-- ruang tanda tangan -->
         </div>
 
-        <u>{{ strtoupper($offer->contact_name) }}</u>
+        <u>{{ strtoupper($offer->project->customer->display_name_with_title) }}</u>
     </td>
 
     <td width="50%" style="text-align:center; vertical-align:top;">PT. Tosa Ahmad Jaya<br>

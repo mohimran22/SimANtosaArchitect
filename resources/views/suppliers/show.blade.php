@@ -603,8 +603,6 @@ $(document).ready(function () {
                 `);
             }
 
-
-            // FILL SUPPLIER DEFAULTS
             $("[name='buying_prices']").val(p.default_buying_prices);
             $("[name='discount']").val(p.default_discount);
             $("[name='tax_percentage']").val(p.tax_percentage);
@@ -614,7 +612,6 @@ $(document).ready(function () {
             $('#discount').val(p.default_discount);
 
             setTimeout(() => recalculatePrice(), 200);
-
 
             $('#supplierFormArea').show();
         });
@@ -642,11 +639,9 @@ $(document).ready(function () {
                     alert("Gagal membuat produk baru.");
                     return;
                 }
-
                 // SET ID PRODUK BARU
                 $("#product_id").val(res.product_id);
 
-                // LANJUTKAN KE SIMPAN SUPPLIER
                 submitSupplierProduct();
             },
             error: function(xhr) {
@@ -660,10 +655,7 @@ $(document).ready(function () {
         submitSupplierProduct();
     }
 });
-
-
     function submitSupplierProduct() {
-
         let form = $("#formSupplier");
 
         $.ajax({

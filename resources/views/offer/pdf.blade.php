@@ -13,7 +13,7 @@
 /* ================= BODY ================= */
 body {
     font-family: DejaVu Sans, sans-serif;
-    font-size: 10px;
+    font-size: 12px;
     line-height: 1.5;
     margin: 0;
     padding: 0;
@@ -79,6 +79,20 @@ th {
 .bold { font-weight: bold; }
 
 p { margin: 10px 0; }
+
+.closing-block {
+    page-break-inside: avoid;
+    margin-top: 20px;
+}
+
+.signature {
+    margin-top: 10px;
+}
+
+.signature img {
+    height: 140px;
+}
+
 </style>
 </head>
 
@@ -202,28 +216,32 @@ berikut kami sampaikan penawaran harga untuk pelaksanaan pekerjaan:
 </table>
 
 <p><strong>TERBILANG :</strong> {{ strtoupper(terbilang($offer->grand_total)) }} RUPIAH</p>
+<div class="closing-block">
+    <h4>Keterangan:</h4>
+    <ol>
+    <li>Penawaran berlaku 7 hari.</li>
+    <li>Estimasi pengerjaan 10–20 hari.</li>
+    <li>Free revisi minor 3x.</li>
+    <li>Pembayaran: DP 70%, pelunasan 30%.</li>
+    </ol>
 
-<h4>Keterangan:</h4>
-<ol>
-<li>Penawaran berlaku 7 hari.</li>
-<li>Estimasi pengerjaan 10–20 hari.</li>
-<li>Free revisi minor 3x.</li>
-<li>Pembayaran: DP 70%, pelunasan 30%.</li>
-</ol>
+    <p>Demikian penawaran harga kami sampaikan. Atas perhatiannya kami ucapkan terima kasih.</p>
 
-<p>Demikian penawaran harga kami sampaikan. Atas perhatiannya kami ucapkan terima kasih.</p>
+    <div class="signature">
+        <p>Hormat Kami,</p>
 
-<br>
+        <p>
+            <strong>PT. Tosa Ahmad Jaya</strong><br>
+            <strong>Antosa Architect</strong>
+        </p>
 
-<p>Hormat Kami,</p>
-<p><strong>PT. Tosa Ahmad Jaya</strong><br><strong>Antosa Architect</strong></p>
+        <img src="{{ public_path('images/ttd-dwiantosa.png') }}">
 
-<div style="height:120px;">
-<img src="{{ public_path('images/ttd-dwiantosa.png') }}" style="height:140px;">
+        <p>
+            <strong><u>Ir. Ar. Dwiantosa Ahmad Fathony, IAI., IPP</u></strong><br>
+            Direktur Utama
+        </p>
+    </div>
 </div>
-
-<p>
-    <strong><u>Ir. Ar. Dwiantosa Ahmad Fathony, IAI., IPP</u></strong><br>Direktur Utama</p>
-
 </body>
 </html>

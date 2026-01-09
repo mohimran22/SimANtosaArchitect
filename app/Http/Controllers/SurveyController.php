@@ -107,15 +107,6 @@ public function store(SurveyRequest $request)
         ->with('success', 'Form survey berhasil disimpan.');
 }
 
-    // public function pdf(Survey $Survey)
-    // {
-    //     $Survey->load('items', 'project.customer.user', 'creator');
-    //     $view = view('projects.Surveys.pdf', compact('Survey'))->render();
-
-    //     $pdf = Pdf::loadHTML($view)->setPaper('a4', 'portrait');
-    //     return $pdf->download("Survey-{$Survey->id}.pdf");
-    // }
-
     public function update(Request $request, Survey $survey)
 {
     $validated = $request->validate([

@@ -87,13 +87,25 @@
                     <th colspan="5" class="text-end">SUBTOTAL</th>
                     <th id="rab_subtotalDisplay">Rp 0</th>
                 </tr>
-
+                <tr>
+                    <th colspan="5" class="text-end">PROFIT</th>
+                    <th>
+                        <input type="text" class="form-control" id="rab_profit_display">
+                        <input type="hidden" name="profit_percent" id="rab_profit">
+                    </th>
+                </tr>
+                <tr>
+                    <th colspan="5" class="text-end">OVERHEAD</th>
+                    <th>
+                        <input type="text" class="form-control" id="rab_overhead_display">
+                        <input type="hidden" name="overhead_percent" id="rab_overhead">
+                    </th>
+                </tr>
                 <tr>
                     <th colspan="5" class="text-end">DISCOUNT</th>
                     <th>
-                        <input type="text" class="form-control" id="rab_discount_display">
+                        <input type="number" class="form-control" id="rab_discount_display">
                         <input type="hidden" name="discount" id="rab_discount">
-
                     </th>
                 </tr>
 

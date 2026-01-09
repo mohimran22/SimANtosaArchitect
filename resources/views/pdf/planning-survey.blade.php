@@ -155,38 +155,37 @@ h4 {
 <td width="50%" style="text-align:center; vertical-align:top;">
     <p>Disusun oleh,</p>
 
-    <div style="height:160px;">
+    <div style="height:120px;">
         @if($invoice->status === 'approved')
             <img src="{{ public_path('images/ttd-dwiantosa.png') }}"
                  style="height:140px;">
         @endif
     </div>
 
-    <strong>
+    <strong><u>
         Ir. Ar. Dwiantosa Ahmad Fathony, IAI., IPP
-    </strong>
+    </strong></u>
 </td>
         <td width="50%" style="text-align:center; vertical-align:top;">
             <p>Disetujui oleh Customer,</p>
 
-            <div style="height:160px;">
-                @if($invoice->status === 'approved')
-                    <strong>{{ $invoice->approve_by_name }}</strong>
-                @endif
+            <div style="height:120px;">
+                {{-- @if($invoice->status === 'approved')
+                    <strong><u>{{ $invoice->approve_by_name }}</u></strong>
+                @endif --}}
             </div>
-
-            <strong>
+            <strong><u>
                 {{ $project->customer->user->fullname ?? '................' }}
-            </strong>
+            </u></strong>
+
         </td>
 
 
     </tr>
 </table>
 @if($invoice->status === 'waiting_approval')
-<hr>
 
-<p style="text-align:center; font-size:12px;">
+<p style="text-align:center; font-size:12px; margin-top:20px;">
 Silakan menyetujui atau menolak rencana survei melalui tautan berikut:
 </p>
 

@@ -235,7 +235,7 @@ class ProjectController extends Controller
             ->sortBy('level_order')
             ->first();
 
-        return $current ? $current->level_order + 1 : 9;
+        return $current ? $current->level_order + 1 : 12;
     }
 
     private function loadFullProject($projectId)
@@ -288,7 +288,7 @@ private function computeActiveStep($project, $request = null)
         ->sortBy('level_order')
         ->first();
 
-    return $current ? $current->level_order + 1 : 9;
+    return $current ? $current->level_order + 1 : 12;
 }
 
 public function update(Request $request, Project $project)

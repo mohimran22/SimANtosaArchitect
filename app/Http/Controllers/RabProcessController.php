@@ -50,11 +50,11 @@ public function store(Request $request)
             'contact_name' => $request->contact_name,
             'job_location' => $request->job_location,
             'job_duration' => $request->job_duration,
-
+            'overhead' => $request->overhead,
             'subtotal' => $request->subtotal,
             'discount' => $request->discount ?? 0,
             'subtotal_after_discount' => $request->subtotal_after_discount,
-
+            'profit' => $request->profit,
             'tax_rate' => $request->tax_rate ?? 0,
             'tax_total' => $request->tax_total,
 

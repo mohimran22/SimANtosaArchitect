@@ -241,6 +241,7 @@ public function reject(Request $request, ProjectTask $task)
         // task revisi baru
         'revision' => [
             'id'           => $newTask->id,
+            'parent_task_id' => $newTask->parent_task_id,
             'name'         => $newTask->task_name,
             'category'     => $newTask->category,
             'category_key' => Str::slug($newTask->category),

@@ -19,21 +19,18 @@ class JobCategoryController extends Controller
 public function index(Request $request)
 {
     if ($request->ajax()) {
-$jobs = JobCategory::select('*')
-    ->orderByRaw("
-        lower(split_part(kode_urut, '.', 1)),
-        (
-            SELECT array_agg(val::int)
-            FROM regexp_split_to_table(
-                trim(trailing '.' from kode_urut),
-                '\\.'
-            ) AS val
-            WHERE val ~ '^[0-9]+$'
-        )
-    ");
-
-
-
+        $jobs = JobCategory::select('*')
+            ->orderByRaw("
+                lower(split_part(kode_urut, '.', 1)),
+                (
+                    SELECT array_agg(val::int)
+                    FROM regexp_split_to_table(
+                        trim(trailing '.' from kode_urut),
+                        '\\.'
+                    ) AS val
+                    WHERE val ~ '^[0-9]+$'
+                )
+            ");
 
         return DataTables::of($jobs)
             ->addIndexColumn() // untuk kolom No

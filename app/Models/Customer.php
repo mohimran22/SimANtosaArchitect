@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class Customer extends Model
 {
@@ -111,6 +112,24 @@ public function scopeLoyalty($query, $level)
         3 => 'Lainnya',
     ][$this->loyalty_level] ?? 'Tidak diketahui';
     }
+
+    protected function displayNameWithTitle(): Attribute
+{
+    return Attribute::make(
+        get: function () {
+            $name = $this->display_name ?? '';
+
+            $gender = optional($this->user)->gender;
+
+            return match ($gender) {
+                1 => 'Bapak ' . $name,
+                2 => 'Ibu ' . $name,
+                default => $name,
+            };
+        }
+    );
+}
+
 
     use HasFactory, HasUuids;
 

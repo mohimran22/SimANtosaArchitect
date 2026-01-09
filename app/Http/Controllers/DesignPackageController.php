@@ -9,11 +9,15 @@ use Illuminate\Http\Request;
 class DesignPackageController extends Controller
 {
 
-    public function index()
-    {
-        $packages = DesignPackage::withCount('items')->get();
-        return view('design-packages.index', compact('packages'));
-    }
+public function index()
+{
+    $packages = DesignPackage::withCount('items')
+        ->orderByRaw("SUBSTRING(name FROM 'Paket ([A-Z])') ASC")
+        ->get();
+
+    return view('design-packages.index', compact('packages'));
+}
+
 
     /**
      * Form create

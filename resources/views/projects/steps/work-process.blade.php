@@ -24,7 +24,14 @@ $colors = [
 
 <h3 class="fw-bold mt-4">{{ $category }}</h3>
 
-    <table class="table table-bordered align-middle">
+    <table class="table table-bordered align-middle table-fixed">
+        <colgroup>
+            <col style="width: 35%">
+            <col style="width: 15%">
+            <col style="width: 15%">
+            <col style="width: 20%">
+            <col style="width: 15%">
+        </colgroup>
         <thead>
             <tr>
                 <th>Uraian Pekerjaan</th>
@@ -36,7 +43,12 @@ $colors = [
         </thead>
         <tbody data-category="{{ $categoryKey }}">
             @foreach($tasks as $task)
-                <tr>
+                    <tr
+                        data-task-row="{{ $task->id }}"
+                        data-task-id="{{ $task->id }}"
+                        data-parent-id="{{ $task->parent_task_id }}"
+                        data-is-revision="{{ $task->parent_task_id ? 1 : 0 }}"
+                    >
                     <td>
                         <div class="task-name">
                             {{ $task->task_name }}
@@ -316,8 +328,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 `tr[data-task-row="${taskId}"]`
             );
 
-            // ⛔ task lama (REVISI) → stop di sini
-            if (row?.dataset.isRevision !== '1') return;
+            if (row && row.dataset.isRevision === '1') return;
 
             if (actionCell) {
                 actionCell.innerHTML = `
@@ -538,15 +549,28 @@ if (btnConfirmReject) {
             `;
         }
 
-        /* === APPEND TASK REVISI BARU === */
         const tbody = document.querySelector(
             `tbody[data-category="${data.revision.category_key}"]`
         );
+
         if (tbody) {
-            tbody.insertAdjacentHTML(
-                'beforeend',
-                renderRevisionRow(data.revision)
+            // cari semua row yg parent-nya sama
+            const relatedRows = tbody.querySelectorAll(
+                `tr[data-task-id="${data.revision.parent_task_id}"],
+                tr[data-parent-id="${data.revision.parent_task_id}"]`
             );
+
+            if (relatedRows.length) {
+                // sisipkan setelah baris terakhir (parent / revisi terakhir)
+                relatedRows[relatedRows.length - 1]
+                    .insertAdjacentHTML('afterend', renderRevisionRow(data.revision));
+            } else {
+                // fallback
+                tbody.insertAdjacentHTML(
+                    'beforeend',
+                    renderRevisionRow(data.revision)
+                );
+            }
         }
 
         bootstrap.Modal.getInstance(
@@ -563,7 +587,13 @@ if (btnConfirmReject) {
 <script>
 function renderRevisionRow(task) {
     return `
-    <tr data-task-row="${task.id}" data-is-revision="1" class="table-warning">
+    <tr 
+        data-task-id="${task.id}"
+        data-parent-id="${task.parent_task_id}"
+        data-revision="${task.revision}"
+        data-is-revision="1"
+        class="table-warning"
+    >
         <td>
             ${renderTaskNameCell(task)}
         </td>

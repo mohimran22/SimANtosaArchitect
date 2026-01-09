@@ -478,7 +478,7 @@
             @endif
             {{-- @if($activeStep == 9) --}}
             @if(
-                $activeStep == 9 &&
+                $activeStep >= 10 &&
                 (
                     $project->levels->firstWhere('level_order', 9)?->is_started
                 )
