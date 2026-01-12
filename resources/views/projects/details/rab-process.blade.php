@@ -127,9 +127,17 @@
                 <tr>
                     <th colspan="5" class="text-end">SUBTOTAL</th>
                     <th>Rp {{ number_format($rab->subtotal,0,',','.') }}</th>
+                </tr>
+                <tr>
+                    <th colspan="5" class="text-end">Profit</th>
+                    <th>{{ $rab->profit }}%</th>
                     
                 </tr>
-
+                <tr>
+                    <th colspan="5" class="text-end">OVERHEAD</th>
+                    <th>{{ $rab->overhead }}%</th>
+                    
+                </tr>
                 <tr>
                     <th colspan="5" class="text-end">DISCOUNT</th>
                     <th>Rp {{ number_format($rab->discount,0,',','.') }}</th>

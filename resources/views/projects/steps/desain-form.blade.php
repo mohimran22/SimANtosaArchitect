@@ -156,7 +156,7 @@
 
     <textarea name="notes" rows="5" class="form-control"></textarea>
 
-    <div class="mt-4">
+    <div class="text-end mt-4">
         <button class="btn btn-dark">Simpan Penawaran</button>
     </div>
 </form>

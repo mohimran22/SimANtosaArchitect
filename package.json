@@ -19,6 +19,7 @@
         "autoprefixer": "^10.4.2",
         "autosize": "^6.0.1",
         "axios": "^1.7.4",
+        "baseline-browser-mapping": "^2.9.14",
         "bootstrap": "5.3.6",
         "choices.js": "^11.1.0",
         "concurrently": "^9.0.1",

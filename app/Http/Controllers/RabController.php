@@ -6,11 +6,12 @@ use App\Models\RabProcess;
 use App\Models\RabProcessItem;
 use App\Models\JobCategory;
 use App\Models\Project;
+use App\Services\RabRecalculator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
 
-class RabProcessController extends Controller
+class RabController extends Controller
 {
     public function store(Request $request)
 {
@@ -155,4 +156,10 @@ public function exportPdf(Project $project)
     return $pdf->stream('RAB-'.$project->name.'.pdf');
 }
 
+public function recalculateAll()
+{
+    RabRecalculator::recalcAll();
+
+    return back()->with('success', 'Semua RAB berhasil direfresh dari harga master');
+}
 }

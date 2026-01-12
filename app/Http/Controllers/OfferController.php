@@ -93,7 +93,6 @@ public function store(OfferRequest $request)
     }
 }
 
-
 private function generateOfferNumber()
 {
     $tahunFull = date('Y');        // 2026

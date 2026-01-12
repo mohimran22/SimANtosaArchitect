@@ -78,10 +78,8 @@
                     <th width="1%"></th>
                 </tr>
             </thead>
-
             <tbody id="rab_offerItemsBody">
             </tbody>
-
             <tfoot>
                 <tr>
                     <th colspan="5" class="text-end">SUBTOTAL</th>
@@ -91,14 +89,14 @@
                     <th colspan="5" class="text-end">PROFIT</th>
                     <th>
                         <input type="text" class="form-control" id="rab_profit_display">
-                        <input type="hidden" name="profit_percent" id="rab_profit">
+                        <input type="hidden" name="profit" id="rab_profit">
                     </th>
                 </tr>
                 <tr>
                     <th colspan="5" class="text-end">OVERHEAD</th>
                     <th>
                         <input type="text" class="form-control" id="rab_overhead_display">
-                        <input type="hidden" name="overhead_percent" id="rab_overhead">
+                        <input type="hidden" name="overhead" id="rab_overhead">
                     </th>
                 </tr>
                 <tr>
@@ -108,12 +106,10 @@
                         <input type="hidden" name="discount" id="rab_discount">
                     </th>
                 </tr>
-
                 <tr>
                     <th colspan="5" class="text-end">SUBTOTAL AFTER DISCOUNT</th>
                     <th id="rab_subAfterDiscountDisplay">Rp 0</th>
                 </tr>
-
                 <tr>
                     <th colspan="5" class="text-end">TAX RATE (%)</th>
                     <th>
@@ -126,7 +122,6 @@
                     <th colspan="5" class="text-end">TOTAL TAX</th>
                     <th id="rab_totalTaxDisplay">Rp 0</th>
                 </tr>
-
                 <tr>
                     <th colspan="5" class="text-end">SHIPPING / HANDLING</th>
                     <th>
@@ -135,7 +130,6 @@
 
                     </th>
                 </tr>
-
                 <tr>
                     <th colspan="5" class="text-end">GRAND TOTAL</th>
                     <th id="rab_grandTotalDisplay">Rp 0</th>
@@ -353,6 +347,15 @@ function recalculateSummary() {
         subtotal += item.total;
     });
 
+        // PROFIT & OVERHEAD (%)
+    let profitPercent = parseFloat(document.getElementById('rab_profit').value) || 0;
+    let overheadPercent = parseFloat(document.getElementById('rab_overhead').value) || 0;
+
+    let profitValue = subtotal * (profitPercent / 100);
+    let overheadValue = subtotal * (overheadPercent / 100);
+
+    let subtotalWithPO = subtotal + profitValue + overheadValue;
+
     // DISCOUNT
     let discount = cleanNumber(document.getElementById('rab_discount').value);
     let subAfterDiscount = subtotal - discount;
@@ -378,6 +381,23 @@ function recalculateSummary() {
     document.getElementById('rab_tax_total').value = totalTax;
     document.getElementById('rab_grand_total').value = grandTotal;
 }
+
+const profitInput = document.getElementById('rab_profit_display');
+const overheadInput = document.getElementById('rab_overhead_display');
+
+// PROFIT
+profitInput.addEventListener('input', function () {
+    let val = parseFloat(this.value) || 0;
+    document.getElementById('rab_profit').value = val;
+    recalculateSummary();
+});
+
+// OVERHEAD
+overheadInput.addEventListener('input', function () {
+    let val = parseFloat(this.value) || 0;
+    document.getElementById('rab_overhead').value = val;
+    recalculateSummary();
+});
 
 const discountInput = document.getElementById('rab_discount_display');
 

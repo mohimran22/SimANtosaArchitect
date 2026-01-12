@@ -22,10 +22,8 @@ class RabProcess extends Model
     'shipping',
     'grand_total',
     'notes',
-    'overhead_percent',
-    'profit_percent',
-    'overhead_value',
-    'profit_value',
+    'overhead',
+    'profit',
 ];
 
         public function project()

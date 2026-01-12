@@ -88,6 +88,7 @@ protected function generateContractNumber()
     // Ambil nomor terakhir di tahun ini
     $last = \App\Models\Offer::whereYear('contract_date', $tahunFull)
         ->whereNotNull('contract_number')
+        ->lockForUpdate() 
         ->orderByDesc('id')
         ->first();
 
@@ -104,6 +105,4 @@ protected function generateContractNumber()
 
     return "SPK/DSN/$tahun/$romawiBulan/$nomorUrut";
 }
-
-
 }

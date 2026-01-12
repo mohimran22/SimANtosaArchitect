@@ -103,7 +103,14 @@
                             <input type="hidden" name="name" id="item_name">
                         </div>
 
-                        <div class="col-md-1">
+                        <div class="col-md-3">
+                            <label class="form-label">Mitra Supplier</label>
+                            <select id="supplierSelect" class="form-select select2" disabled>
+                                <option value="">-- Pilih Mitra --</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-2">
                             <label class="form-label">Kode</label>
                             <input type="text" name="code" id="code" class="form-control" readonly>
                         </div>
@@ -148,8 +155,13 @@
 
                 <hr>
 
-                {{-- TABLE ITEM --}}
                 <h3 class="fw-bold mb-3">Daftar Analisa</h3>
+                <form method="POST" action="/rab/recalculate-all">
+                    @csrf
+                    <button class="btn btn-warning">
+                        🔁 Refresh Harga RAB dari Master
+                    </button>
+                </form>
 
                 @include('job-categories.partials.items-table', [
                     'items' => $jobCategory->items
@@ -163,23 +175,27 @@
 @endsection
 
 @push('js')
-  <script>
-    $(document).ready(function() {
-        $('.select2').select2({
-            placeholder: "-- Pilih --",
-            width: '100%'
-        });
-    });
-</script>  
 <script>
+$(document).ready(function() {
+    $('.select2').select2({
+        placeholder: "-- Pilih --",
+        width: '100%'
+    });
+});
+
+/* ==============================
+   KETIKA GANTI KATEGORI
+============================== */
 $('#categorySelect').on('change', function () {
     const type = this.value;
     const itemSelect = $('#itemSelect');
+    const supplierSelect = $('#supplierSelect');
 
-    itemSelect.empty()
-        .append('<option value="">-- Pilih Item --</option>')
-        .prop('disabled', true)
-        .trigger('change');
+    itemSelect.empty().append('<option value="">-- Pilih Item --</option>').prop('disabled', true);
+    supplierSelect.empty().append('<option value="">-- Pilih Mitra --</option>').prop('disabled', true);
+
+    $('#price, #price_raw, #code, #unit, #item_name').val('');
+    $('#total_price').val('');
 
     if (!type) return;
 
@@ -187,14 +203,15 @@ $('#categorySelect').on('change', function () {
         .then(res => res.json())
         .then(data => {
             data.forEach(item => {
-                itemSelect.append(
-                    new Option(item.name, item.id)
-                );
+                itemSelect.append(new Option(item.name, item.id));
             });
             itemSelect.prop('disabled', false).trigger('change');
         });
 });
 
+/* ==============================
+   KETIKA PILIH ITEM
+============================== */
 $('#itemSelect').on('change', function () {
     const type = $('#categorySelect').val();
     const id = this.value;
@@ -204,34 +221,71 @@ $('#itemSelect').on('change', function () {
     // reset FK
     $('#product_id, #labor_cost_id, #equipment_cost_id').val('');
 
+    if (type === 'product') {
+
+        // 🔥 load supplier khusus product ini
+        fetch(`/ajax/product/${id}/suppliers`)
+            .then(res => res.json())
+            .then(data => {
+                const supplierSelect = $('#supplierSelect');
+                supplierSelect.empty().append('<option value="">-- Pilih Mitra --</option>');
+
+                data.forEach(s => {
+                    supplierSelect.append(new Option(s.name, s.id));
+                });
+
+                supplierSelect.prop('disabled', false).trigger('change');
+            });
+
+        $('#product_id').val(id);
+        return;
+    }
+
+    // === selain product (labor, equipment) ===
     fetch(`/ajax/item-detail/${type}/${id}`)
         .then(res => res.json())
         .then(item => {
 
-            // simpan nilai angka (RAW)
             $('#price_raw').val(item.price);
-
-            // tampilkan format rupiah
             $('#price').val(formatRp(item.price));
-
             $('#code').val(item.code);
             $('#unit').val(item.unit);
             $('#item_name').val(item.name);
 
-            // reset FK
-            $('#product_id, #labor_cost_id, #equipment_cost_id').val('');
-
-            if (type === 'product') $('#product_id').val(item.id);
             if (type === 'labor') $('#labor_cost_id').val(item.id);
             if (type === 'equipment') $('#equipment_cost_id').val(item.id);
 
             hitungTotal();
         });
-
 });
-</script>
-<script>
-    function formatRp(num) {
+
+/* ==============================
+   KETIKA PILIH SUPPLIER
+============================== */
+$('#supplierSelect').on('change', function () {
+    const productId  = $('#itemSelect').val();
+    const supplierId = this.value;
+
+    if (!productId || !supplierId) return;
+
+    fetch(`/ajax/product/${productId}/supplier/${supplierId}`)
+        .then(res => res.json())
+        .then(item => {
+
+            $('#price_raw').val(item.price);
+            $('#price').val(formatRp(item.price));
+            $('#code').val(item.code);
+            $('#unit').val(item.unit);
+            $('#item_name').val(item.name);
+
+            hitungTotal();
+        });
+});
+
+/* ==============================
+   UTIL
+============================== */
+function formatRp(num) {
     return new Intl.NumberFormat('id-ID', {
         style: 'currency',
         currency: 'IDR',
@@ -240,7 +294,7 @@ $('#itemSelect').on('change', function () {
 }
 
 function hitungTotal() {
-    const coef = parseFloat($('#coefisien').val()) || 0;
+    const coef  = parseFloat($('#coefisien').val()) || 0;
     const price = parseFloat($('#price_raw').val()) || 0;
 
     const total = coef * price;
@@ -248,13 +302,6 @@ function hitungTotal() {
     $('#total_price').val(formatRp(total));
 }
 
-// ketika koefisien diketik
 $('#coefisien').on('input', hitungTotal);
-
-// ketika item berubah (harga berubah)
-$('#itemSelect').on('change', function () {
-    setTimeout(hitungTotal, 100);
-});
 </script>
-
 @endpush

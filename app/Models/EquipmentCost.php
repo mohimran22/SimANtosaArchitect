@@ -22,4 +22,9 @@ class EquipmentCost extends Model
     protected $casts = [
         'base_unit_price' => 'decimal:2',
     ];
+
+        public function jobCategoryItems()
+    {
+        return $this->hasMany(JobCategoryItem::class);
+    }
 }

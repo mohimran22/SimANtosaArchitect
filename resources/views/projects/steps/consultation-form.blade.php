@@ -145,8 +145,10 @@
                 class="mt-3 d-flex flex-wrap gap-3"></div>
         </div>
 
-    <div class="d-flex gap-2 mt-3">
-        <button class="btn btn-dark">Simpan Konsultasi</button>
+    <div class="text-end mt-5">
+        <button type="submit" class="btn btn-dark px-4">
+            <i class="ti ti-device-floppy me-1"></i>Simpan Konsultasi
+        </button>
     </div>
 </form>
 @push('js')

@@ -258,6 +258,7 @@ public function generateSupplierIdAjax()
             'supplier' => $supplier,
             'products' => $supplier->products()
                 ->withPivot(['buying_prices', 'selling_prices', 'special_prices', 'stock'])
+                ->orderByRaw('products.sku_code')
                 ->get(),
             'product' => new Product(),
             'colors' => ProductColor::all(),

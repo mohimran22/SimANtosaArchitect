@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\LaborCost;
+use App\Models\JobCategoryItem;
+use App\Services\RabRecalculator;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class LaborCostController extends Controller
 {
@@ -71,8 +74,15 @@ class LaborCostController extends Controller
             'base_unit_price'  => 'required|string',
             'notes'            => 'nullable|string',
         ]);
+        DB::transaction(function () use ($request, $laborCost) {
 
-        $laborCost->update($request->all());
+            $laborCost->update($request->all());
+
+            JobCategoryItem::where('labor_cost_id', $laborCost->id)->update([
+                'base_unit_price' => $laborCost->base_unit_price,
+                'total_price' => DB::raw('coefisien * ' . $laborCost->base_unit_price),
+            ]);
+        });
 
         return redirect()->route('labor_costs.index')
             ->with('success', 'Labor cost updated successfully.');

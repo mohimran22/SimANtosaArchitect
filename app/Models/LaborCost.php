@@ -23,4 +23,8 @@ class LaborCost extends Model
         'base_unit_price' => 'decimal:2',
     ];
 
+        public function jobCategoryItems()
+    {
+        return $this->hasMany(JobCategoryItem::class);
+    }
 }

@@ -34,6 +34,6 @@ class AppServiceProvider extends ServiceProvider
     Blade::if('activeperm', function ($permission) {
         return ActiveRole::hasPermission($permission);
     });
-    
+
     }
 }

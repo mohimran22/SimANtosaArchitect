@@ -53,7 +53,10 @@
                     <select name="rab_package_id" class="form-select" id="rabPackageSelect" required>
                         <option value="">-- Pilih Paket --</option>
                         @foreach($rabPackages as $package)
-                            <option value="{{ $package->id }}">{{ $package->name }}</option>
+                            <option value="{{ $package->id }}"
+                                {{ old('rab_package_id', $offer->rab_package_id) == $package->id ? 'selected' : '' }}>
+                                {{ $package->name }}
+                            </option>
                         @endforeach
                     </select>
                 </div>
@@ -75,20 +78,23 @@
 
                 <div class="col-md-2">
                     <label class="form-label">Harga Satuan (Rp)</label>
-                    <input type="hidden" name="price_meter" id="priceMeter"
+                    <input type="hidden" name="price_meter" id="edit_priceMeter"
                         value="{{ $offer->price_meter }}">
-                    <span id="priceMeterFormatted" class="form-control bg-light">
+                    <span id="edit_priceMeterFormatted" class="form-control bg-light">
                         {{ number_format($offer->price_meter, 0, ',', '.') }}
                     </span>
                 </div>
 
                 <div class="col-md-2">
                     <label class="form-label">Total Harga (Rp)</label>
-                    <input type="hidden" name="total_price" id="totalPrice"
+                    <input type="hidden" name="total_price" id="edit_totalPrice"
                         value="{{ $offer->total_price }}">
-                    <span id="totalPriceFormatted" class="form-control bg-light">
+                    <span id="edit_totalPriceFormatted" class="form-control bg-light">
                         {{ number_format($offer->total_price, 0, ',', '.') }}
                     </span>
+                <small class="text-warning d-none" id="edit_minOrderNote">
+                    * Volume < 100 m² dihitung sebagai 100 m²
+                </small>
                 </div>
             </div>
 
@@ -111,7 +117,7 @@
                         </tr>
                     </thead>
 
-                    <tbody id="offerItemsBody">
+                    <tbody id="edit_offerItemsBody">
 
                         {{-- ========================= --}}
                         {{--   LOAD EXISTING ITEMS    --}}
@@ -159,14 +165,14 @@
                             <th colspan="5" class="text-end">DISCOUNT</th>
                             <th>
                                 <input type="number" class="form-control form-control-sm"
-                                    name="discount" id="discount"
+                                    name="discount" id="edit_discount"
                                     value="{{ $offer->discount }}">
                             </th>
                         </tr>
 
                         <tr>
                             <th colspan="5" class="text-end">SUBTOTAL AFTER DISCOUNT</th>
-                            <th id="subAfterDiscountDisplay">
+                            <th id="edit_subAfterDiscountDisplay">
                                 {{ number_format($offer->subtotal_after_discount, 0, ',', '.') }}
                             </th>
                         </tr>
@@ -175,14 +181,14 @@
                             <th colspan="5" class="text-end">TAX RATE (%)</th>
                             <th>
                                 <input type="number" class="form-control form-control-sm"
-                                    name="tax_rate" id="tax_rate"
+                                    name="tax_rate" id="edit_tax_rate"
                                     value="{{ $offer->tax_rate }}">
                             </th>
                         </tr>
 
                         <tr>
                             <th colspan="5" class="text-end">TOTAL TAX</th>
-                            <th id="totalTaxDisplay">
+                            <th id="edit_totalTaxDisplay">
                                 {{ number_format($offer->tax_total, 0, ',', '.') }}
                             </th>
                         </tr>
@@ -191,14 +197,14 @@
                             <th colspan="5" class="text-end">SHIPPING / HANDLING</th>
                             <th>
                                 <input type="number" class="form-control form-control-sm"
-                                    name="shipping" id="shipping"
+                                    name="shipping" id="edit_shipping"
                                     value="{{ $offer->shipping }}">
                             </th>
                         </tr>
 
                         <tr>
                             <th colspan="5" class="text-end">GRAND TOTAL</th>
-                            <th id="grandTotalDisplay">
+                            <th id="edit_grandTotalDisplay">
                                 {{ number_format($offer->grand_total, 0, ',', '.') }}
                             </th>
                         </tr>
@@ -222,18 +228,18 @@
 document.addEventListener('DOMContentLoaded', function () {
 
     const packageSelect = document.getElementById('rabPackageSelect');
-    const priceMeterInput = document.getElementById('priceMeter');
-    const priceMeterFormatted = document.getElementById('priceMeterFormatted');
+    const priceMeterInput = document.getElementById('edit_priceMeter');
+    const priceMeterFormatted = document.getElementById('edit_priceMeterFormatted');
     const volumeInput = document.querySelector('input[name="volume"]');
     const satuanInput = document.getElementById('satuan');
-    const totalPriceInput = document.getElementById('totalPrice');
-    const totalPriceFormatted = document.getElementById('totalPriceFormatted');
+    const totalPriceInput = document.getElementById('edit_totalPrice');
+    const totalPriceFormatted = document.getElementById('edit_totalPriceFormatted');
 
-    const tableBody = document.getElementById('offerItemsBody');
+    const tableBody = document.getElementById('edit_offerItemsBody');
 
-    const discountInput = document.getElementById('discount');
-    const taxRateInput = document.getElementById('tax_rate');
-    const shippingInput = document.getElementById('shipping');
+    const discountInput = document.getElementById('edit_discount');
+    const taxRateInput = document.getElementById('edit_tax_rate');
+    const shippingInput = document.getElementById('edit_shipping');
 
     function formatRp(num) {
         num = parseFloat(num) || 0;
@@ -326,25 +332,33 @@ document.addEventListener('DOMContentLoaded', function () {
         totalPriceFormatted.innerText = formatRp(subtotal);
 
         document.getElementById("subtotalDisplay").innerText = formatRp(subtotal);
-        const minNote = document.getElementById('minOrderNote');
-        if (inputVolume > 0 && inputVolume < 100) {
-            minNote.classList.remove('d-none');
-        } else {
-            minNote.classList.add('d-none');
+        const minNote = document.getElementById('edit_minOrderNote');
+        if (minNote) {
+            if (inputVolume > 0 && inputVolume < 100) {
+                minNote.classList.remove('d-none');
+            } else {
+                minNote.classList.add('d-none');
+            }
         }
+
 
         let discount = parseFloat(discountInput.value) || 0;
         let subAfterDiscount = subtotal - discount;
-        document.getElementById("subAfterDiscountDisplay").innerText = formatRp(subAfterDiscount);
+        document.getElementById("edit_subAfterDiscountDisplay").innerText = formatRp(subAfterDiscount);
 
         let taxRate = parseFloat(taxRateInput.value) || 0;
         let totalTax = subAfterDiscount * (taxRate / 100);
-        document.getElementById("totalTaxDisplay").innerText = formatRp(totalTax);
+        document.getElementById("edit_totalTaxDisplay").innerText = formatRp(totalTax);
 
         let shippingCost = parseFloat(shippingInput.value) || 0;
         let grandTotal = subAfterDiscount + totalTax + shippingCost;
-        document.getElementById("grandTotalDisplay").innerText = formatRp(grandTotal);
+        document.getElementById("edit_grandTotalDisplay").innerText = formatRp(grandTotal);
     }
+            if (packageSelect.value) {
+            packageSelect.dispatchEvent(new Event('change'));
+        }
+
+        hitungTotal();
 
 });
 </script>

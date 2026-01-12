@@ -108,41 +108,58 @@
                     </div>
                 </div>
 
-                <div class="card shadow-sm border-0 mb-4">
-                    <div class="card-body px-5 py-4">
-                        <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h3 class="fw-bold mb-0" id="step-3">2. Rencana Survei</h3>
-                            <button type="button"
-                                id="btn-edit-planning"
-                                class="btn btn-sm btn-dark {{ $disableEdit ? 'disabled' : '' }}"
-                                {{ $disableEdit ? 'disabled' : '' }}
-                                title="{{ $disableEdit ? 'Menunggu persetujuan biaya survei' : 'Edit Data' }}">
-                                <i class="ti ti-edit"></i>
-                            </button>
-                        </div>
-                        @if(!$project->planning)
-                            @include('projects.steps.planning-form')
-                        @else
-                            <div id="planning-view">
-                                @include('projects.details.planning')
-                            </div>
-                            @if(!$surveyWaiting && !$surveyApproved)
-                                <div id="planning-edit" style="display:none;">
-                                    @include('projects.edit.planning-form')
-                                </div>
-                            @endif
-                            @if($surveyInvoice && $surveyInvoice->status === 'rejected')
-                                <div class="alert alert-danger mt-4">
-                                    Biaya survei ditolak:<br>{{ $surveyInvoice->reject_note }}     
-                                </div>
-                            @elseif($surveyInvoice && $surveyInvoice->status === 'waiting_approval' && $surveyInvoice->amount > 0)
-                                <div class="alert alert-warning mt-4">
-                                    Menunggu persetujuan biaya survei dari customer (via PDF)<br>Data rencana survei tidak dapat diubah selama proses persetujuan.
-                                </div>
-                            @endif
-                        @endif
-                    </div>
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body px-5 py-4">
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="fw-bold mb-0">2. Rencana Survei</h3>
+
+            @if($project->planning)
+                <button type="button"
+                    id="btn-edit-planning"
+                    class="btn btn-sm btn-dark {{ $disableEdit ? 'disabled' : '' }}"
+                    {{ $disableEdit ? 'disabled' : '' }}
+                    title="{{ $disableEdit ? 'Menunggu persetujuan biaya survei' : 'Edit Data' }}">
+                    <i class="ti ti-edit"></i>
+                </button>
+            @endif
+        </div>
+
+        {{-- ================= CONTENT ================= --}}
+
+        @if(!$project->planning)
+            {{-- FORM INPUT PERTAMA --}}
+            @include('projects.steps.planning-form')
+        @else
+            {{-- VIEW MODE --}}
+            <div id="planning-view">
+                @include('projects.details.planning')
+            </div>
+
+            {{-- EDIT MODE --}}
+            @if(!$surveyWaiting && !$surveyApproved)
+                <div id="planning-edit" style="display:none;">
+                    @include('projects.edit.planning-form')
                 </div>
+            @endif
+        @endif
+
+        {{-- ================= ALERT ================= --}}
+
+        @if($surveyInvoice && $surveyInvoice->status === 'rejected')
+            <div class="alert alert-danger mt-4">
+                Biaya survei ditolak:<br>{{ $surveyInvoice->reject_note }}     
+            </div>
+        @elseif($surveyInvoice && $surveyInvoice->status === 'waiting_approval' && $surveyInvoice->amount > 0)
+            <div class="alert alert-warning mt-4">
+                Menunggu persetujuan biaya survei dari customer (via PDF)<br>
+                Data rencana survei tidak dapat diubah selama proses persetujuan.
+            </div>
+        @endif
+
+    </div>
+</div>
+
             </div>
             @endif
             @if(

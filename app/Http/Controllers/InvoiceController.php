@@ -17,27 +17,31 @@ class InvoiceController extends Controller
     public function invoiceDp(Project $project)
     {
         abort_if(!$project->offer, 404);
-
         Carbon::setLocale('id');
 
-        $invoice = Invoice::firstOrCreate(
-            [
-                'project_id'   => $project->id,
-                'invoice_type' => Invoice::TYPE_DP,
-            ],
-            [
-                'invoice_number' => $this->generateInvoiceNumber(),
-                'invoice_date'   => now(),
-                'amount'         => $project->offer->grand_total * 0.7,
-                'status'         => Invoice::STATUS_WAITING,
-            ]
-        );
+        $invoice = DB::transaction(function () use ($project) {
 
-        if (!$invoice->invoice_dp_downloaded_at) {
-            $invoice->update([
-                'invoice_dp_downloaded_at' => now(),
-            ]);
-        }
+            $invoice = Invoice::firstOrCreate(
+                [
+                    'project_id'   => $project->id,
+                    'invoice_type' => Invoice::TYPE_DP,
+                ],
+                [
+                    'invoice_number' => $this->generateInvoiceNumber(Invoice::TYPE_DP),
+                    'invoice_date'   => now(),
+                    'amount'         => $project->offer->grand_total * 0.7,
+                    'status'         => Invoice::STATUS_WAITING,
+                ]
+            );
+
+            if (!$invoice->invoice_dp_downloaded_at) {
+                $invoice->update([
+                    'invoice_dp_downloaded_at' => now(),
+                ]);
+            }
+
+            return $invoice;
+        });
 
         $offer = $project->offer;
 
@@ -58,19 +62,19 @@ class InvoiceController extends Controller
             ->stream('Invoice-DP-' . $project->project_name . '.pdf');
     }
 
+
     public function invoiceFinal(Project $project)
     {
         abort_if(!$project->offer, 404);
-
         Carbon::setLocale('id');
-
+        $invoice = DB::transaction(function () use ($project) {
         $invoice = Invoice::firstOrCreate(
             [
                 'project_id'   => $project->id,
                 'invoice_type' => Invoice::TYPE_FINAL,
             ],
             [
-                'invoice_number' => $this->generateInvoiceNumber(),
+                'invoice_number' => $this->generateInvoiceNumber(Invoice::TYPE_FINAL),
                 'invoice_date'   => now(),
                 'amount'         => $project->offer->grand_total * 0.3,
                 'status'         => Invoice::STATUS_WAITING,
@@ -82,6 +86,9 @@ class InvoiceController extends Controller
                 'downloaded_at' => now(),
             ]);
         }
+
+        return $invoice;
+    });
 
         $offer = $project->offer;
 
@@ -105,31 +112,30 @@ class InvoiceController extends Controller
     public function invoiceSurvey(Project $project)
     {
         abort_if(!$project->planning, 404);
-
         Carbon::setLocale('id');
 
-        $invoice = Invoice::where('project_id', $project->id)
-            ->where('invoice_type', 'survey')
-            ->firstOrFail();
+        $invoice = DB::transaction(function () use ($project) {
+            return Invoice::firstOrCreate(
+                [
+                    'project_id'   => $project->id,
+                    'invoice_type' => Invoice::TYPE_SURVEY,
+                ],
+                [
+                    'invoice_number' => $this->generateInvoiceNumber(Invoice::TYPE_SURVEY),
+                    'invoice_date'   => now(),
+                    'amount'         => $project->planning->survey_cost ?? 0,
+                    'status'         => Invoice::STATUS_WAITING,
+                ]
+            );
+        });
 
-        if (!$invoice->printed_at) {
-            $invoice->update([
-                'printed_at' => now(),
-            ]);
-        }
-
-        $planning = $project->planning;
-
-        $data = [
+        return Pdf::loadView('invoice.survey', [
             'invoice' => $invoice,
             'project' => $project,
-            'planning' => $planning,
-        ];
-
-        return Pdf::loadView('invoice.survey', $data)
-            ->setPaper('A4', 'portrait')
-            ->stream('Invoice-Rencana-Survei-' . $project->project_name . '.pdf');
+            'planning'=> $project->planning,
+        ])->stream('Invoice-Survey-' . $project->project_name . '.pdf');
     }
+
 
     public function invoiceRab(Project $project)
     {
@@ -137,14 +143,14 @@ class InvoiceController extends Controller
         abort_if($project->project_type != 2, 403); // 🔒 khusus RAB
 
         Carbon::setLocale('id');
-
+        $invoice = DB::transaction(function () use ($project) {
         $invoice = Invoice::firstOrCreate(
             [
                 'project_id'   => $project->id,
                 'invoice_type' => Invoice::TYPE_RAB,
             ],
             [
-                'invoice_number' => $this->generateInvoiceNumber(),
+                'invoice_number' => $this->generateInvoiceNumber(Invoice::TYPE_RAB),
                 'invoice_date'   => now(),
                 'amount'         => $project->offer->grand_total,
                 'status'         => Invoice::STATUS_WAITING,
@@ -156,7 +162,8 @@ class InvoiceController extends Controller
                 'downloaded_at' => now(),
             ]);
         }
-
+        return $invoice;
+    });
         $offer = $project->offer;
 
         $data = [
@@ -283,28 +290,53 @@ class InvoiceController extends Controller
             ->with('success', 'RAB disetujui. Lanjut ke tahap pengerjaan.');
     }
 
-    protected function generateInvoiceNumber()
-    {
-        $now = now();
+protected function generateInvoiceNumber(string $type)
+{
+    $now = now();
+    $tahunFull = $now->year;
+    $tahun = $now->format('y');
+    $bulanRomawi = \App\Helpers\GeneralHelper::bulanRomawi($now->month);
 
-        $last = Invoice::whereYear('invoice_date', $now->year)
-            ->whereMonth('invoice_date', $now->month)
-            ->orderBy('invoice_date', 'desc')
-            ->first();
+    // Tentukan prefix berdasarkan type
+    switch ($type) {
+        case Invoice::TYPE_SURVEY:
+            $prefix = "INV/SRV/$tahun/$bulanRomawi";
+            break;
 
-        $urut = 1;
+        case Invoice::TYPE_DP:
+            $prefix = "INV/DSN/A/$tahun/$bulanRomawi";
+            break;
 
-        if ($last && preg_match('/(\d{3})$/', $last->invoice_number, $m)) {
-            $urut = (int) $m[1] + 1;
-        }
+        case Invoice::TYPE_FINAL:
+            $prefix = "INV/DSN/B/$tahun/$bulanRomawi";
+            break;
 
-        return sprintf(
-            'INV/%s/%s/%03d',
-            $now->year,
-            $now->format('m'),
-            $urut
-        );
+        case Invoice::TYPE_RAB:
+            $prefix = "INV/RAB/$tahun/$bulanRomawi";
+            break;
+
+        default:
+            throw new \Exception("Tipe invoice tidak dikenal");
     }
+
+    // Ambil nomor terakhir DENGAN LOCK
+    $last = Invoice::where('invoice_number', 'like', $prefix.'/%')
+        ->whereYear('invoice_date', $tahunFull)
+        ->lockForUpdate()
+        ->orderByDesc('id')
+        ->first();
+
+    if ($last) {
+        $explode = explode('/', $last->invoice_number);
+        $lastNumber = (int) end($explode) + 1;
+    } else {
+        $lastNumber = 1;
+    }
+
+    $nomorUrut = str_pad($lastNumber, 3, '0', STR_PAD_LEFT);
+
+    return $prefix . '/' . $nomorUrut;
+}
 
     public function surveyPlanningPdf(Project $project)
     {
@@ -332,7 +364,7 @@ class InvoiceController extends Controller
 
         return Pdf::loadView('pdf.planning-survey', [
             'invoice'  => $invoice,
-            'invoice_number' => $this->generateInvoiceNumber(),
+            'invoice_number' => $invoice->invoice_number,
             'project'  => $project,
             'planning' => $project->planning,
             'planningEmployees'  => $planningEmployees,

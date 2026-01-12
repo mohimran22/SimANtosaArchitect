@@ -56,7 +56,13 @@ class UpahImportController extends Controller
                 // simpan job sebelumnya
                 if ($currentJobId && $itemsBuffer) {
                     JobCategoryItem::insert($itemsBuffer);
+
+                    $job = JobCategory::find($currentJobId);
+                    if ($job) {
+                        $this->recalcJobCategory($job); // 🔥 INI PENTING
+                    }
                 }
+
 
                 $jobName = trim($row[1]);
 
@@ -143,8 +149,37 @@ class UpahImportController extends Controller
         // simpan job terakhir
         if ($currentJobId && $itemsBuffer) {
             JobCategoryItem::insert($itemsBuffer);
+
+            $job = JobCategory::find($currentJobId);
+            if ($job) {
+                $this->recalcJobCategory($job); // 🔥 INI PENTING
+            }
         }
+
 
         return back()->with('success', 'Import item A/B/C berhasil 🔥');
     }
+
+
+
+private function recalcJobCategory(JobCategory $jobCategory)
+{
+    $subTotal = $jobCategory->items()->sum('total_price');
+
+    $overheadPercent = $jobCategory->overhead_percent ?? 0;
+    $profitPercent   = $jobCategory->profit_percent ?? 0;
+
+    $overheadValue = $subTotal * ($overheadPercent / 100);
+    $profitValue   = $subTotal * ($profitPercent / 100);
+
+    $grandTotal = $subTotal + $overheadValue + $profitValue;
+
+    $jobCategory->update([
+        'subtotal'       => $subTotal,
+        'overhead_value' => $overheadValue,
+        'profit_value'   => $profitValue,
+        'grand_total'    => $grandTotal,
+    ]);
+}
+
 }

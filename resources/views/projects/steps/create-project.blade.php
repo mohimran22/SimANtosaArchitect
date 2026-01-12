@@ -21,7 +21,7 @@
         <div class="row g-4">
             <div class="col-md-4">
                 <label class="form-label required">Nama Proyek</label>
-                <input type="text" name="project_name" class="form-control @error('project_name') is-invalid @enderror"  value="{{ old('project_name') }}" required>
+                <input type="text" name="project_name" placeholder="Sesuaikan dengan jenis proyek" class="form-control @error('project_name') is-invalid @enderror"  value="{{ old('project_name') }}" required>
                 @error('project_name')
                     <div class="invalid-feedback">{{ $message }}</div>
                 @enderror

@@ -30,6 +30,7 @@ use App\Http\Controllers\RoleSwitchController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\DesignPackageController;
 use App\Http\Controllers\RabPackageController;
+use App\Http\Controllers\RabController;
 use App\Http\Controllers\JobCategoryController;
 
 
@@ -201,7 +202,7 @@ Route::middleware(['auth', 'permission:lihat daftar proyek|lihat data proyek'])-
 
 Route::middleware(['auth', 'permission:lihat daftar proyek|lihat data proyek'])->group(function () {
 
-    Route::resource('/equipment_cost', \App\Http\Controllers\EquipmentCostController::class);
+    Route::resource('/equipment_costs', \App\Http\Controllers\EquipmentCostController::class);
 });
 
 Route::resource('design-packages', DesignPackageController::class)
@@ -237,13 +238,13 @@ Route::delete('rab-package-items/{item}',
 // API aman untuk frontend
 Route::get('rab-packages/json/{id}',
     [RabPackageController::class, 'getPackage'])->name('rab-packages.json');
-// Route::get('/job-categories/import-upah', function () {
-//     return view('job-categories.import_upah');
-// })->middleware('auth');
+Route::get('/job-categories/import-upah', function () {
+    return view('job-categories.import_upah');
+})->middleware('auth');
 
-// Route::post('/job-categories/import-upah', [UpahImportController::class, 'importUpah'])
-//     ->middleware('auth')
-//     ->name('job-categories.import-upah');
+Route::post('/job-categories/import-upah', [\App\Http\Controllers\UpahImportController::class, 'importUpah'])
+    ->middleware('auth')
+    ->name('job-categories.import-upah');
 
 Route::resource('/job-categories', JobCategoryController::class)
     ->except(['show']);
@@ -263,6 +264,8 @@ Route::post(
 
 Route::get('/ajax/items/{type}', [JobCategoryController::class, 'getItems']);
 Route::get('/ajax/item-detail/{type}/{id}', [JobCategoryController::class, 'getItemDetail']);
+Route::get('/ajax/product/{id}/suppliers', [JobCategoryController::class, 'getSuppliersByProduct']);
+Route::get('/ajax/product/{productId}/supplier/{supplierId}', [JobCategoryController::class, 'getProductSupplierDetail']);
 
 Route::get('/job-categories/{id}/simple', [JobCategoryController::class, 'simple']);
 
@@ -464,14 +467,7 @@ Route::middleware(['auth', 'role:Customer'])->group(function () {
 
 });
 
-Route::middleware(['auth', 'permission:lihat daftar rab|lihat data rab'])->group(function () {
-Route::prefix('rab')->name('rab.')->group(function () {
-    Route::get('/start/{rab}', [RABController::class, 'start'])->name('start');
-    Route::get('/create', [RABController::class, 'create'])->name('create');
-    Route::post('/', [RABController::class, 'store'])->name('store');
-});
-
-});
+    Route::post('/rab/recalculate-all', [RabController::class, 'recalculateAll']);
 
 
 Route::middleware(['auth', 'permission:lihat daftar user'])->group(function () {

@@ -113,7 +113,7 @@ public function updatePrice(Request $request)
         ->where('supplier_id', $request->supplier_id)
         ->where('product_id', $request->product_id)
         ->update([
-            'buying_prices' => $request->price,
+            'selling_prices' => $request->price,
             'updated_at'    => now()
         ]);
 

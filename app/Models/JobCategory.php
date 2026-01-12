@@ -31,4 +31,10 @@ class JobCategory extends Model
     return $this->hasMany(JobCategoryItem::class, 'job_category_id');
 }
 
+
+    //     public function laborCost()
+    // {
+    //     return $this->belongsTo(LaborCost::class);
+    // }
+
 }

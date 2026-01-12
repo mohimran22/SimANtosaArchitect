@@ -152,10 +152,8 @@
                     </div>
                 </div>
             </div>
-
         </div>
 
-        {{-- ================= TAB 2: LOYALTY ================= --}}
         <div class="tab-pane fade" id="tab-catalogue" role="tabpanel">
             <div class="card shadow-sm">
                 <div class="card-header">
@@ -165,121 +163,128 @@
                     <div class="p-3 text-center">
                         <button class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#modalAddProduct">
                             <i class="ti ti-plus"></i> Tambah Produk
-                        </button>       
+                        </button>    
+                        <input type="text" id="searchProduct"
+                            class="form-control"
+                            placeholder="🔍 Cari produk... (nama / SKU)">      
                     </div>
                 </div>
+                <div class="px-3 mb-3">
 
-                <div class="row" id="productCardContainer">
-                    @foreach($products as $product)
-                        <div class="col-md-4 col-lg-3 mb-4">
-                            <div class="card shadow-sm border-0 h-100">
+                </div>
+                    <div class="row" id="productCardContainer">
+                        @foreach($products as $product)
+                            <div class="col-md-4 col-lg-3 mb-4 product-card"
+                                data-name="{{ strtolower($product->name) }}"
+                                data-sku="{{ strtolower($product->sku_code ?? '') }}">
+                                <div class="card shadow-sm border-0 h-100">
 
-                                <div class="position-relative p-3 text-center product-image-wrapper">
+                                    <div class="position-relative p-3 text-center product-image-wrapper">
 
-                                    {{-- BADGE STOK --}}
-                                    @if ($product->pivot->stock == 0)
-                                        <span class="badge bg-danger position-absolute top-0 start-0 m-2">
-                                            Stok Habis
-                                        </span>
-                                    @elseif ($product->pivot->stock <= 10)
-                                        <span class="badge bg-warning text-dark position-absolute top-0 start-0 m-2">
-                                            Stok Terbatas
-                                        </span>
-                                    @endif
+                                        @if ($product->pivot->stock == 0)
+                                            <span class="badge bg-danger position-absolute top-0 start-0 m-2">
+                                                Stok Habis
+                                            </span>
+                                        @elseif ($product->pivot->stock <= 10)
+                                            <span class="badge bg-warning text-dark position-absolute top-0 start-0 m-2">
+                                                Stok Terbatas
+                                            </span>
+                                        @endif
 
-                                    {{-- FOTO --}}
-                                    @if ($product->photo)
-                                        <img src="{{ asset('storage/' . $product->photo) }}"
-                                            class="img-fluid rounded shadow-sm product-image"
-                                            style="width:180px;height:180px;object-fit:cover;">
-                                    @else
-                                        <div class="bg-light rounded d-flex align-items-center justify-content-center shadow-sm product-image"
-                                            style="width:180px;height:180px;margin:auto;">
-                                            <i class="ti ti-photo" style="font-size:32px;color:#999;"></i>
+                                        @if ($product->photo)
+                                            <img src="{{ asset('storage/' . $product->photo) }}"
+                                                class="img-fluid rounded shadow-sm product-image"
+                                                style="width:180px;height:180px;object-fit:cover;">
+                                        @else
+                                            <div class="bg-light rounded d-flex align-items-center justify-content-center shadow-sm product-image"
+                                                style="width:180px;height:180px;margin:auto;">
+                                                <i class="ti ti-photo" style="font-size:32px;color:#999;"></i>
+                                            </div>
+                                        @endif
+
+                                        <div class="product-hover-action">
+
+                                            <form action="#" method="POST" class="d-inline">
+                                                @csrf @method('DELETE')
+                                                <button type="submit" class="btn btn-sm btn-danger">
+                                                    <i class="ti ti-trash"></i>
+                                                </button>
+                                            </form>
                                         </div>
-                                    @endif
-
-                                    {{-- HOVER ACTION --}}
-                                    <div class="product-hover-action">
-
-                                        <form action="#" method="POST" class="d-inline">
-                                            @csrf @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-danger">
-                                                <i class="ti ti-trash"></i>
-                                            </button>
-                                        </form>
                                     </div>
 
-                                </div>
 
+                                    <div class="card-body">
 
-                                <div class="card-body">
+                                        {{-- NAMA PRODUK --}}
+                                        <h2 class="fw-bold">{{ $product->name }}</h2>
 
-                                    {{-- NAMA PRODUK --}}
-                                    <h2 class="fw-bold">{{ $product->name }}</h2>
+                                        @if($product->sku_code)
+                                            <small class="text-muted">SKU: {{ $product->sku_code }}</small>
+                                        @endif
 
-                                    {{-- SKU --}}
-                                    @if($product->sku_code)
-                                        <small class="text-muted">SKU: {{ $product->sku_code }}</small>
-                                    @endif
+                                        {{-- HARGA FINAL --}}
+                                        <div class="mt-3">
+                                            @php
+                                                $pivot = $product->pivot;
+                                                $buy   = $pivot->buying_prices;
+                                                $sell  = $pivot->selling_prices;
+                                                $spec  = $pivot->special_prices;
 
-                                    {{-- HARGA FINAL --}}
-                                    <div class="mt-3">
-                                        @php
-                                            $pivot = $product->pivot;
-                                            $buy   = $pivot->buying_prices;
-                                            $sell  = $pivot->selling_prices;
-                                            $spec  = $pivot->special_prices;
+                                                // PRIORITAS HARGA:
+                                                // 1. Harga Spesial
+                                                // 2. Harga Jual
+                                                // 3. Harga Beli (fallback)
+                                                $final = $spec ?: ($sell ?: $buy);
+                                            @endphp
 
-                                            // PRIORITAS HARGA:
-                                            // 1. Harga Spesial
-                                            // 2. Harga Jual
-                                            // 3. Harga Beli (fallback)
-                                            $final = $spec ?: ($sell ?: $buy);
-                                        @endphp
+                                            <div class="price-wrapper"
+                                                data-supplier="{{ $supplier->id }}"
+                                                data-product="{{ $product->id }}"
+                                                data-url="{{ route('supplier-product.update-price') }}">
 
-                                        <div class="price-wrapper"
-                                            data-supplier="{{ $supplier->id }}"
-                                            data-product="{{ $product->id }}"
-                                            data-url="{{ route('supplier-product.update-price') }}">
+                                                {{-- MODE TAMPIL --}}
+                                                <p class="mb-1 price-text">
+                                                    <strong class="text-dark price-label">
+                                                        Rp {{ number_format($product->pivot->selling_prices) }}
+                                                    </strong>
 
-                                            {{-- MODE TAMPIL --}}
-                                            <p class="mb-1 price-text">
-                                                <strong class="text-dark price-label">
-                                                    Rp {{ number_format($product->pivot->selling_prices) }}
-                                                </strong>
-
-                                                <button type="button"
-                                                        class="btn btn-xs btn-warning ms-2 btn-edit-price">
-                                                    <i class="ti ti-pencil"></i>
-                                                </button>
-                                            </p>
-
-                                            {{-- MODE EDIT --}}
-                                            <div class="price-edit d-none">
-                                                <input type="number"
-                                                    class="form-control form-control-sm price-input"
-                                                    value="{{ $product->pivot->buying_prices }}">
-
-                                                <div class="mt-1 d-flex gap-1">
-                                                    <button type="button" class="btn btn-xs btn-success btn-save-price">
-                                                        <i class="ti ti-check"></i>
+                                                    <button type="button"
+                                                            class="btn btn-xs btn-warning ms-2 btn-edit-price">
+                                                        <i class="ti ti-pencil"></i>
                                                     </button>
+                                                </p>
 
-                                                    <button type="button" class="btn btn-xs btn-danger btn-cancel-price">
-                                                        <i class="ti ti-x"></i>
-                                                    </button>
+                                                {{-- MODE EDIT --}}
+                                                <div class="price-edit d-none">
+                                                    <input type="number"
+                                                        class="form-control form-control-sm price-input"
+                                                        value="{{ $product->pivot->selling_prices }}">
+
+                                                    <div class="mt-1 d-flex gap-1">
+                                                        <button type="button" class="btn btn-xs btn-success btn-save-price">
+                                                            <i class="ti ti-check"></i>
+                                                        </button>
+
+                                                        <button type="button" class="btn btn-xs btn-danger btn-cancel-price">
+                                                            <i class="ti ti-x"></i>
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             </div>
+
+                                            <p class="mb-1">
+                                                <strong class="text-dark">Stok: {{ $product->pivot->stock }}</strong>
+                                            </p>
                                         </div>
-
-
-
-                                        <p class="mb-1">
-                                            <strong class="text-dark">Stok: {{ $product->pivot->stock }}</strong>
-                                        </p>
-
-
+                                    </div> 
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        </div>
                                         
                                         {{-- <div class="small text-muted">
                                             @if($sell)
@@ -292,16 +297,7 @@
 
                                             Harga Beli: Rp {{ number_format($buy) }}
                                         </div> --}}
-                                    </div>
-                                </div> 
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-            </div>
-        </div>
 
-        {{-- ================= TAB 3: SHIPPING ================= --}}
         <div class="tab-pane fade" id="tab-loyalty" role="tabpanel">
             <div class="card shadow-sm">
                 <div class="card-header">
@@ -407,51 +403,45 @@
                         </div>
 
                         <div class="mb-3">
-    <label>Harga Dasar Supplier</label>
-    <input type="text" class="form-control" id="base_price"
-           placeholder="Masukkan harga dasar">
-</div>
+                            <label>Harga Dasar Supplier</label>
+                            <input type="text" class="form-control" id="base_price"
+                                placeholder="Masukkan harga dasar">
+                        </div>
 
-<div class="mb-3">
-    <label>PPN (%)</label>
-    <input type="number" class="form-control" id="tax" name="tax_percentage">
-</div>
+                        <div class="mb-3">
+                            <label>PPN (%)</label>
+                            <input type="number" class="form-control" id="tax" name="tax_percentage">
+                        </div>
 
-<div class="mb-3">
-    <label>Diskon</label>
-    <input type="number" class="form-control" id="discount" name="discount">
-    <small class="text-muted">
-        ≤ 100 = persen | > 100 = rupiah
-    </small>
-</div>
+                        <div class="mb-3">
+                            <label>Diskon</label>
+                            <input type="number" class="form-control" id="discount" name="discount">
+                            <small class="text-muted">
+                                ≤ 100 = persen | > 100 = rupiah
+                            </small>
+                        </div>
 
-<div class="mb-3">
-    <label>Harga Final</label>
-    <input type="text"
-       class="form-control bg-light fw-bold"
-       id="final_price_display"
-       readonly>
+                        <div class="mb-3">
+                            <label>Harga Final</label>
+                            <input type="text"
+                            class="form-control bg-light fw-bold"
+                            id="final_price_display"
+                            readonly>
 
-<input type="hidden"
-       id="final_price"
-       name="buying_prices"
-       required>
+                        <input type="hidden"
+                            id="final_price"
+                            name="buying_prices"
+                            required>
+                        </div>
 
-</div>
-
-<!-- PREVIEW RUMUS -->
-<div class="alert alert-secondary small" id="priceFormulaPreview" style="display:none;"></div>
-
-
+                        <div class="alert alert-secondary small" id="priceFormulaPreview" style="display:none;"></div>
 
                         <button type="button" class="btn btn-dark w-100" id="btnSaveSupplierProduct">
                             Simpan Produk Supplier
                         </button>
                     </div>
                 </form>
-
             </div>
-
         </div>
     </div>
 </div>
@@ -806,12 +796,24 @@ document.addEventListener('click', function(e) {
 
 });
 </script>
+<script>
+document.getElementById('searchProduct').addEventListener('keyup', function () {
+    let keyword = this.value.toLowerCase();
+    let cards = document.querySelectorAll('.product-card');
 
+    cards.forEach(function(card) {
+        let name = card.dataset.name;
+        let sku  = card.dataset.sku;
+
+        if (name.includes(keyword) || sku.includes(keyword)) {
+            card.style.display = '';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+});
+</script>
 @endpush
-
-
-
-
 
 @push('css')
     <style>
