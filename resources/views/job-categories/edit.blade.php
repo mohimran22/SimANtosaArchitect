@@ -156,12 +156,12 @@
                 <hr>
 
                 <h3 class="fw-bold mb-3">Daftar Analisa</h3>
-                <form method="POST" action="/rab/recalculate-all">
+                {{-- <form method="POST" action="/rab/recalculate-all">
                     @csrf
                     <button class="btn btn-warning">
                         🔁 Refresh Harga RAB dari Master
                     </button>
-                </form>
+                </form> --}}
 
                 @include('job-categories.partials.items-table', [
                     'items' => $jobCategory->items
@@ -303,5 +303,6 @@ function hitungTotal() {
 }
 
 $('#coefisien').on('input', hitungTotal);
+
 </script>
 @endpush

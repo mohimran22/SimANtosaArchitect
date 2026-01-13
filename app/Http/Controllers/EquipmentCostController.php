@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\EquipmentCost;
+use App\Models\JobCategoryItem;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class EquipmentCostController extends Controller
 {
@@ -47,7 +49,7 @@ class EquipmentCostController extends Controller
 
         EquipmentCost::create($request->all());
 
-        return redirect()->route('equipment_cost.index')
+        return redirect()->route('equipment_costs.index')
             ->with('success', 'Labor cost created successfully.');
     }
 
@@ -71,10 +73,14 @@ class EquipmentCostController extends Controller
             'base_unit_price'  => 'required|string',
             'notes'            => 'nullable|string',
         ]);
-
+        DB::transaction(function () use ($request, $equipment_cost) {
         $equipment_cost->update($request->all());
-
-        return redirect()->route('equipment_cost.index')
+                    JobCategoryItem::where('labor_cost_id', $equipment_cost->id)->update([
+                'base_unit_price' => $equipment_cost->base_unit_price,
+                'total_price' => DB::raw('coefisien * ' . $equipment_cost->base_unit_price),
+            ]);
+        });
+        return redirect()->route('equipment_costs.index')
             ->with('success', 'Labor cost updated successfully.');
     }
 
@@ -85,7 +91,7 @@ class EquipmentCostController extends Controller
     {
         $equipment_cost->delete();
 
-        return redirect()->route('equipment_cost.index')
+        return redirect()->route('equipment_costs.index')
             ->with('success', 'Labor cost deleted successfully.');
     }
 }

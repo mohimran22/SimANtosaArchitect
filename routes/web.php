@@ -269,7 +269,7 @@ Route::get('/ajax/product/{productId}/supplier/{supplierId}', [JobCategoryContro
 
 Route::get('/job-categories/{id}/simple', [JobCategoryController::class, 'simple']);
 
-
+Route::post('/job-items/{item}/change-supplier', [\App\Http\Controllers\JobCategoryItemController::class, 'changeSupplier']);
 
 Route::post('projects/consultations', [\App\Http\Controllers\ConsultationController::class, 'store'])
     ->name('projects.consultations.store');
@@ -335,6 +335,9 @@ Route::get('/projects/offer/{offer}/pdf', [\App\Http\Controllers\OfferRABControl
 
 Route::post('projects/rab', [\App\Http\Controllers\RabProcessController::class, 'store'])
     ->name('projects.rab.store');
+Route::put('/projects/{project}/rab/{rab}', [\App\Http\Controllers\RabProcessController::class, 'update'])
+    ->name('projects.rab.update');
+
 Route::get('/projects/{project}/rab/pdf', [\App\Http\Controllers\RabProcessController::class, 'exportPdf'])
     ->name('projects.rab.pdf');
 

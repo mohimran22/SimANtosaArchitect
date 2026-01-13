@@ -11,12 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('ahsp_groups', function (Blueprint $table) {
-            $table->id();
-            $table->string('bidang', 10);           // PP
-            $table->string('kode', 50)->unique();   // A.2.2.1
-            $table->string('nama');                 // HARGA SATUAN PEKERJAAN PERSIAPAN
-            $table->timestamps();
+        Schema::table('job_category_items', function (Blueprint $table) {
+            $table->uuid('supplier_id')->nullable()->after('profit');
+
+            $table->foreign('supplier_id')->references('id')->on('suppliers')->nullOnDelete();
         });
     }
 
@@ -25,6 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('ahsp_groups');
+        //
     }
 };

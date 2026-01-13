@@ -8,6 +8,7 @@ use App\Models\Invoice;
 use App\Models\Project;
 use App\Models\ProjectLevel;
 use App\Models\ProjectTask;
+use App\Services\InvoiceNumberGenerator;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
@@ -20,20 +21,23 @@ class InvoiceController extends Controller
         Carbon::setLocale('id');
 
         $invoice = DB::transaction(function () use ($project) {
+                            $invoice = Invoice::where('project_id', $project->id)
+        ->where('invoice_type', Invoice::TYPE_DP)
+        ->lockForUpdate()
+        ->first();
+        if (!$invoice) {
 
-            $invoice = Invoice::firstOrCreate(
+            $invoice = Invoice::create([
                 [
                     'project_id'   => $project->id,
                     'invoice_type' => Invoice::TYPE_DP,
-                ],
-                [
-                    'invoice_number' => $this->generateInvoiceNumber(Invoice::TYPE_DP),
+                    'invoice_number' => InvoiceNumberGenerator::generate(Invoice::TYPE_DP),
                     'invoice_date'   => now(),
                     'amount'         => $project->offer->grand_total * 0.7,
                     'status'         => Invoice::STATUS_WAITING,
                 ]
-            );
-
+            ]);
+        }
             if (!$invoice->invoice_dp_downloaded_at) {
                 $invoice->update([
                     'invoice_dp_downloaded_at' => now(),
@@ -68,19 +72,23 @@ class InvoiceController extends Controller
         abort_if(!$project->offer, 404);
         Carbon::setLocale('id');
         $invoice = DB::transaction(function () use ($project) {
-        $invoice = Invoice::firstOrCreate(
-            [
-                'project_id'   => $project->id,
-                'invoice_type' => Invoice::TYPE_FINAL,
-            ],
-            [
-                'invoice_number' => $this->generateInvoiceNumber(Invoice::TYPE_FINAL),
-                'invoice_date'   => now(),
-                'amount'         => $project->offer->grand_total * 0.3,
-                'status'         => Invoice::STATUS_WAITING,
-            ]
-        );
+            $invoice = Invoice::where('project_id', $project->id)
+            ->where('invoice_type', Invoice::TYPE_FINAL)
+            ->lockForUpdate()
+            ->first();
 
+        if (!$invoice) {
+            $invoice = Invoice::create([
+                [
+                    'project_id'   => $project->id,
+                    'invoice_type' => Invoice::TYPE_FINAL,
+                    'invoice_number' => InvoiceNumberGenerator::generate(Invoice::TYPE_FINAL),
+                    'invoice_date'   => now(),
+                    'amount'         => $project->offer->grand_total * 0.3,
+                    'status'         => Invoice::STATUS_WAITING,
+                ]
+            ]);
+        }
         if (!$invoice->downloaded_at) {
             $invoice->update([
                 'downloaded_at' => now(),
@@ -115,18 +123,24 @@ class InvoiceController extends Controller
         Carbon::setLocale('id');
 
         $invoice = DB::transaction(function () use ($project) {
-            return Invoice::firstOrCreate(
+                            $invoice = Invoice::where('project_id', $project->id)
+        ->where('invoice_type', Invoice::TYPE_SURVEY)
+        ->lockForUpdate()
+        ->first();
+        if (!$invoice) {
+            $invoice = Invoice::firstOrCreate([
                 [
                     'project_id'   => $project->id,
                     'invoice_type' => Invoice::TYPE_SURVEY,
                 ],
                 [
-                    'invoice_number' => $this->generateInvoiceNumber(Invoice::TYPE_SURVEY),
+                    'invoice_number' => InvoiceNumberGenerator::generate(Invoice::TYPE_SURVEY),
                     'invoice_date'   => now(),
                     'amount'         => $project->planning->survey_cost ?? 0,
                     'status'         => Invoice::STATUS_WAITING,
                 ]
-            );
+            ]);
+        }
         });
 
         return Pdf::loadView('invoice.survey', [
@@ -137,49 +151,57 @@ class InvoiceController extends Controller
     }
 
 
-    public function invoiceRab(Project $project)
-    {
-        abort_if(!$project->offer, 404);
-        abort_if($project->project_type != 2, 403); // 🔒 khusus RAB
+public function invoiceRab(Project $project)
+{
+    abort_if(!$project->offer, 404);
+    abort_if($project->project_type != 2, 403); // 🔒 khusus RAB
 
-        Carbon::setLocale('id');
-        $invoice = DB::transaction(function () use ($project) {
-        $invoice = Invoice::firstOrCreate(
-            [
-                'project_id'   => $project->id,
-                'invoice_type' => Invoice::TYPE_RAB,
-            ],
-            [
-                'invoice_number' => $this->generateInvoiceNumber(Invoice::TYPE_RAB),
+    Carbon::setLocale('id');
+
+    $invoice = DB::transaction(function () use ($project) {
+
+        $invoice = Invoice::where('project_id', $project->id)
+            ->where('invoice_type', Invoice::TYPE_RAB)
+            ->lockForUpdate()
+            ->first();
+
+        if (!$invoice) {
+            $invoice = Invoice::create([
+                'project_id'     => $project->id,
+                'invoice_type'   => Invoice::TYPE_RAB,
+                'invoice_number' => InvoiceNumberGenerator::generate(Invoice::TYPE_RAB),
                 'invoice_date'   => now(),
                 'amount'         => $project->offer->grand_total,
                 'status'         => Invoice::STATUS_WAITING,
-            ]
-        );
+            ]);
+        }
 
         if (!$invoice->downloaded_at) {
             $invoice->update([
                 'downloaded_at' => now(),
             ]);
         }
+
         return $invoice;
     });
-        $offer = $project->offer;
 
-        $data = [
-            'invoice_number' => $invoice->invoice_number,
-            'invoice_date'   => $invoice->invoice_date->translatedFormat('d F Y'),
-            'client_name'    => $offer->contact_name,
-            'client_address' => optional($project->customer->user)->address,
-            'client_phone'   => optional($project->customer->user)->phone,
-            'project_name'   => $project->project_name,
-            'total_amount'   => $offer->grand_total,
-        ];
+    $offer = $project->offer;
 
-        return Pdf::loadView('invoice.rab', $data)
-            ->setPaper('A4', 'portrait')
-            ->stream('Invoice-RAB-' . $project->project_name . '.pdf');
-    }
+    $data = [
+        'invoice_number' => $invoice->invoice_number,
+        'invoice_date'   => $invoice->invoice_date->translatedFormat('d F Y'),
+        'client_name'    => $offer->contact_name,
+        'client_address' => optional($project->customer->user)->address,
+        'client_phone'   => optional($project->customer->user)->phone,
+        'project_name'   => $project->project_name,
+        'total_amount'   => $offer->grand_total,
+    ];
+
+    return Pdf::loadView('invoice.rab', $data)
+        ->setPaper('A4', 'portrait')
+        ->stream('Invoice-RAB-' . $project->project_name . '.pdf');
+}
+
 
     public function approve(Project $project)
     {
@@ -289,54 +311,6 @@ class InvoiceController extends Controller
             ->route('projects.create', ['project_id' => $project->id])
             ->with('success', 'RAB disetujui. Lanjut ke tahap pengerjaan.');
     }
-
-protected function generateInvoiceNumber(string $type)
-{
-    $now = now();
-    $tahunFull = $now->year;
-    $tahun = $now->format('y');
-    $bulanRomawi = \App\Helpers\GeneralHelper::bulanRomawi($now->month);
-
-    // Tentukan prefix berdasarkan type
-    switch ($type) {
-        case Invoice::TYPE_SURVEY:
-            $prefix = "INV/SRV/$tahun/$bulanRomawi";
-            break;
-
-        case Invoice::TYPE_DP:
-            $prefix = "INV/DSN/A/$tahun/$bulanRomawi";
-            break;
-
-        case Invoice::TYPE_FINAL:
-            $prefix = "INV/DSN/B/$tahun/$bulanRomawi";
-            break;
-
-        case Invoice::TYPE_RAB:
-            $prefix = "INV/RAB/$tahun/$bulanRomawi";
-            break;
-
-        default:
-            throw new \Exception("Tipe invoice tidak dikenal");
-    }
-
-    // Ambil nomor terakhir DENGAN LOCK
-    $last = Invoice::where('invoice_number', 'like', $prefix.'/%')
-        ->whereYear('invoice_date', $tahunFull)
-        ->lockForUpdate()
-        ->orderByDesc('id')
-        ->first();
-
-    if ($last) {
-        $explode = explode('/', $last->invoice_number);
-        $lastNumber = (int) end($explode) + 1;
-    } else {
-        $lastNumber = 1;
-    }
-
-    $nomorUrut = str_pad($lastNumber, 3, '0', STR_PAD_LEFT);
-
-    return $prefix . '/' . $nomorUrut;
-}
 
     public function surveyPlanningPdf(Project $project)
     {

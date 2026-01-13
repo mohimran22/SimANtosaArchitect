@@ -17,22 +17,22 @@
     <div class="row mb-3">
         <div class="col-md-4">
             <label>Nama Customer</label>
-            <input type="text" name="contact_name" value="{{ $project->customer->user->fullname }}" class="form-control">
+            <input type="text" name="contact_name" value="{{ old('contact_name', $project->customer->user->fullname ?? '') }}" class="form-control">
         </div>
         <div class="col-md-4">
             <label>Lokasi Pekerjaan</label>
-            <input type="text" name="job_location" value="{{ $project->city->name ?? '-' }}" class="form-control">
+            <input type="text" name="job_location" value="{{ old('job_location', $project->city->name ?? '-') }}" class="form-control">
         </div>
         <div class="col-md-4">
             <label>Durasi Pekerjaan</label>
-            <input type="text" name="job_duration" class="form-control">
+            <input type="text" name="job_duration" class="form-control" value="{{ old('job_duration') }}" placeholder="175 Hari Kerja">
         </div>
     </div>
 
-    <div class="row mb-4 mt-4">
+    <div class="row g-4">
         <div class="col-md-4">
             <label class="form-label">Pilih Pekerjaan</label>
-                <select class="form-select select2" id="jobCategorySelect">
+                <select class="form-select select2" id="jobCategorySelect" required>
                     <option value="">-- Pilih Pekerjaan --</option>
                     @foreach($jobCategories as $job)
                         <option value="{{ $job->id }}">
@@ -40,7 +40,6 @@
                         </option>
                     @endforeach
                 </select>
-
         </div>
         <div class="col-md-2">
             <label class="form-label">Volume</label>
@@ -53,17 +52,27 @@
         <div class="col-md-2">
             <label class="form-label">Harga Satuan (Rp)</label>
             <input type="hidden" name="price_meter" id="rab_priceMeter">
-            <span id="rab_priceMeterFormatted" class="form-control bg-light"></span>
-
+            <input type="text" id="rab_priceMeterFormatted" class="form-control bg-light">
         </div>
         <div class="col-md-2">
             <label class="form-label">Total Harga (Rp)</label>
             <input type="hidden" name="total_price" id="rab_totalPrice">
-            <span id="rab_totalPriceFormatted" class="form-control bg-light"></span>
+            <input type="text" id="rab_totalPriceFormatted" class="form-control bg-light">
+        </div>
+        
+        <div class="col-md-2">
+            <label class="form-label">Profit</label>
+            <input type="text" class="form-control" id="rab_profit_display">
+            <input type="hidden" name="profit" id="rab_profit">
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">Overhead</label>
+            <input type="text" class="form-control" id="rab_overhead_display">
+            <input type="hidden" name="overhead" id="rab_overhead">
         </div>
     </div>
   
-    <div class="row mb-4">
+    <div class="row mb-4 mt-3">
         <h4 class="fw-bold mb-3">Rincian Pekerjaan</h4>
 
         <table class="table table-bordered align-middle" id="offerItemsTable">
@@ -74,6 +83,8 @@
                     <th>Volume</th>
                     <th>Satuan</th>
                     <th>Harga Satuan (Rp)</th>
+                    {{-- <th>Profit (%)</th>
+                    <th>Overhead (%)</th> --}}
                     <th>Total Harga</th>
                     <th width="1%"></th>
                 </tr>
@@ -86,23 +97,9 @@
                     <th id="rab_subtotalDisplay">Rp 0</th>
                 </tr>
                 <tr>
-                    <th colspan="5" class="text-end">PROFIT</th>
-                    <th>
-                        <input type="text" class="form-control" id="rab_profit_display">
-                        <input type="hidden" name="profit" id="rab_profit">
-                    </th>
-                </tr>
-                <tr>
-                    <th colspan="5" class="text-end">OVERHEAD</th>
-                    <th>
-                        <input type="text" class="form-control" id="rab_overhead_display">
-                        <input type="hidden" name="overhead" id="rab_overhead">
-                    </th>
-                </tr>
-                <tr>
                     <th colspan="5" class="text-end">DISCOUNT</th>
                     <th>
-                        <input type="number" class="form-control" id="rab_discount_display">
+                        <input type="text" class="form-control" id="rab_discount_display">
                         <input type="hidden" name="discount" id="rab_discount">
                     </th>
                 </tr>
@@ -117,7 +114,6 @@
                             name="tax_rate" id="rab_tax_rate">
                     </th>
                 </tr>
-
                 <tr>
                     <th colspan="5" class="text-end">TOTAL TAX</th>
                     <th id="rab_totalTaxDisplay">Rp 0</th>
@@ -127,7 +123,6 @@
                     <th>
                         <input type="text" class="form-control" id="rab_shipping_display">
                         <input type="hidden" name="shipping" id="rab_shipping">
-
                     </th>
                 </tr>
                 <tr>
@@ -177,30 +172,13 @@ function cleanNumber(val) {
 let currentRabJob = null;
 let rabItems = {};
 
-// document.addEventListener('change', function(e) {
+function calculateItemTotal(volume, harga, profitPercent, overheadPercent) {
+    let base = volume * harga;
+    let profitValue = base * (profitPercent / 100);
+    let overheadValue = base * (overheadPercent / 100);
+    return base + profitValue + overheadValue;
+}
 
-//     if (e.target.id !== 'jobCategorySelect') return;
-
-//     const jobId = e.target.value;
-//     if (!jobId) return;
-
-//     fetch(`/job-categories/${jobId}/simple`)
-//         .then(res => res.json())
-//         .then(job => {
-
-//             currentRabJob = job;
-
-//             let harga = parseFloat(job.harga) || 0;
-
-//             document.getElementById('rab_satuan').value = job.satuan;
-//             document.getElementById('rab_priceMeter').value = harga;
-//             document.getElementById('rab_priceMeterFormatted').innerText = formatRp(harga);
-
-//             // reset volume
-//             document.querySelector('input[name="volume"]').value = '';
-//             document.getElementById('rab_totalPriceFormatted').innerText = '';
-//         });
-// });
 $('#jobCategorySelect').on('change', function () {
     const jobId = $(this).val();
     if (!jobId) return;
@@ -215,13 +193,25 @@ $('#jobCategorySelect').on('change', function () {
 
             document.getElementById('rab_satuan').value = job.satuan;
             document.getElementById('rab_priceMeter').value = harga;
-            document.getElementById('rab_priceMeterFormatted').innerText = formatRp(harga);
+            document.getElementById('rab_priceMeterFormatted').value = formatRp(harga);
 
             document.querySelector('input[name="volume"]').value = '';
-            document.getElementById('rab_totalPriceFormatted').innerText = '';
+            document.getElementById('rab_totalPriceFormatted').value = '';
         });
 });
 
+const profitInput = document.getElementById('rab_profit_display');
+const overheadInput = document.getElementById('rab_overhead_display');
+
+profitInput.addEventListener('input', function () {
+    document.getElementById('rab_profit').value = parseFloat(this.value) || 0;
+    applyProfitOverheadToAll();
+});
+
+overheadInput.addEventListener('input', function () {
+    document.getElementById('rab_overhead').value = parseFloat(this.value) || 0;
+    applyProfitOverheadToAll();
+});
 
 document.addEventListener('input', function(e) {
 
@@ -232,10 +222,14 @@ document.addEventListener('input', function(e) {
     if (volume <= 0) return;
 
     const harga = parseFloat(currentRabJob.harga) || 0;
+    
+    let profitPercent = parseFloat(document.getElementById('rab_profit').value) || 0;
+    let overheadPercent = parseFloat(document.getElementById('rab_overhead').value) || 0;
 
-    let total = volume * harga;
+
+    let total = calculateItemTotal(volume, harga, profitPercent, overheadPercent);
     document.getElementById('rab_totalPrice').value = total;
-    document.getElementById('rab_totalPriceFormatted').innerText = formatRp(total);
+    document.getElementById('rab_totalPriceFormatted').value = formatRp(total);
 
     const jobId = currentRabJob.id;
 
@@ -243,9 +237,15 @@ document.addEventListener('input', function(e) {
         ...currentRabJob,
         volume: volume,
         harga: harga,
+        profit: profitPercent,
+        overhead: overheadPercent,
         total: total
     };
 
+    document.getElementById('rab_profit_display').value = '';
+    document.getElementById('rab_overhead_display').value = '';
+    document.getElementById('rab_profit').value = 0;
+    document.getElementById('rab_overhead').value = 0;
     document.getElementById('rab_discount_display').value = '';
     document.getElementById('rab_shipping_display').value = '';
     document.getElementById('rab_discount').value = 0;
@@ -285,7 +285,7 @@ function renderRabTable() {
         tbody.insertAdjacentHTML('beforeend', `
             <tr class="table-secondary fw-bold">
                 <td>${groupCode}</td>
-                <td colspan="5">${group.name}</td>
+                <td colspan="7">${group.name}</td>
             </tr>
         `);
 
@@ -297,13 +297,15 @@ function renderRabTable() {
                 <tr>
                     <td>${no}</td>
                     <td>${item.nama}</td>
-                    <td>
-                        <input type="number" class="form-control"
-                            value="${item.volume}"
-                            onchange="updateVolume(${item.id}, this.value)">
-                    </td>
+        <td width="110">
+            <input type="number" class="form-control text-center"
+                value="${item.volume}"
+                min="0.01" step="0.01"
+                onchange="updateVolume(${item.id}, this.value)">
+        </td>
                     <td>${item.satuan}</td>
                     <td>${formatRp(item.harga)}</td>
+
                     <td class="text-end">${formatRp(item.total)}</td>
                     <td class="text-center">
                         <button type="button"
@@ -318,6 +320,8 @@ function renderRabTable() {
                     <input type="hidden" name="items[${rowIndex}][satuan]" value="${item.satuan}">
                     <input type="hidden" name="items[${rowIndex}][volume]" value="${item.volume}">
                     <input type="hidden" name="items[${rowIndex}][price]" value="${item.harga}">
+                    <input type="hidden" name="items[${rowIndex}][profit]" value="${item.profit}">
+                    <input type="hidden" name="items[${rowIndex}][overhead]" value="${item.overhead}">
                     <input type="hidden" name="items[${rowIndex}][total]" value="${item.total}">
                 </tr>
             `);
@@ -333,7 +337,6 @@ function renderRabTable() {
                 <td class="text-end">${formatRp(group.subtotal)}</td>
             </tr>
         `);
-
     });
 
     recalculateSummary();
@@ -346,15 +349,6 @@ function recalculateSummary() {
     Object.values(rabItems).forEach(item => {
         subtotal += item.total;
     });
-
-        // PROFIT & OVERHEAD (%)
-    let profitPercent = parseFloat(document.getElementById('rab_profit').value) || 0;
-    let overheadPercent = parseFloat(document.getElementById('rab_overhead').value) || 0;
-
-    let profitValue = subtotal * (profitPercent / 100);
-    let overheadValue = subtotal * (overheadPercent / 100);
-
-    let subtotalWithPO = subtotal + profitValue + overheadValue;
 
     // DISCOUNT
     let discount = cleanNumber(document.getElementById('rab_discount').value);
@@ -381,23 +375,6 @@ function recalculateSummary() {
     document.getElementById('rab_tax_total').value = totalTax;
     document.getElementById('rab_grand_total').value = grandTotal;
 }
-
-const profitInput = document.getElementById('rab_profit_display');
-const overheadInput = document.getElementById('rab_overhead_display');
-
-// PROFIT
-profitInput.addEventListener('input', function () {
-    let val = parseFloat(this.value) || 0;
-    document.getElementById('rab_profit').value = val;
-    recalculateSummary();
-});
-
-// OVERHEAD
-overheadInput.addEventListener('input', function () {
-    let val = parseFloat(this.value) || 0;
-    document.getElementById('rab_overhead').value = val;
-    recalculateSummary();
-});
 
 const discountInput = document.getElementById('rab_discount_display');
 
@@ -426,10 +403,32 @@ shippingInput.addEventListener('blur', function () {
     this.value = formatRp(val);
 });
 
-
 document.getElementById('rab_tax_rate').addEventListener('input', function () {
     recalculateSummary();
 });
+function applyProfitOverheadToAll() {
+    let p = parseFloat(document.getElementById('rab_profit').value) || 0;
+    let o = parseFloat(document.getElementById('rab_overhead').value) || 0;
+
+    if (p < 0) p = 0;
+    if (p > 100) p = 100;
+    if (o < 0) o = 0;
+    if (o > 100) o = 100;
+
+    Object.values(rabItems).forEach(item => {
+        item.profit = p;
+        item.overhead = o;
+
+        item.total = calculateItemTotal(
+            item.volume,
+            item.harga,
+            item.profit,
+            item.overhead
+        );
+    });
+
+    renderRabTable();
+}
 
 function updateVolume(jobId, newVolume) {
 
@@ -438,9 +437,56 @@ function updateVolume(jobId, newVolume) {
 
     let item = rabItems[jobId];
 
-    let total = newVolume * item.harga;
+    let total = calculateItemTotal(
+        newVolume,
+        item.harga,
+        item.profit,
+        item.overhead
+    );
 
     item.volume = newVolume;
+    item.total = total;
+
+    renderRabTable();
+}
+
+function updateProfit(jobId, newProfit) {
+    newProfit = parseFloat(newProfit) || 0;
+    if (newProfit < 0) newProfit = 0;
+    if (newProfit > 100) newProfit = 100;
+
+    let item = rabItems[jobId];
+
+    item.profit = newProfit;
+
+    let total = calculateItemTotal(
+        item.volume,
+        item.harga,
+        item.profit,
+        item.overhead
+    );
+
+    item.total = total;
+
+    renderRabTable();
+}
+
+function updateOverhead(jobId, newOverhead) {
+    newOverhead = parseFloat(newOverhead) || 0;
+    if (newOverhead < 0) newOverhead = 0;
+    if (newOverhead > 100) newOverhead = 100;
+
+    let item = rabItems[jobId];
+
+    item.overhead = newOverhead;
+
+    let total = calculateItemTotal(
+        item.volume,
+        item.harga,
+        item.profit,
+        item.overhead
+    );
+
     item.total = total;
 
     renderRabTable();

@@ -128,16 +128,7 @@
                     <th colspan="5" class="text-end">SUBTOTAL</th>
                     <th>Rp {{ number_format($rab->subtotal,0,',','.') }}</th>
                 </tr>
-                <tr>
-                    <th colspan="5" class="text-end">Profit</th>
-                    <th>{{ $rab->profit }}%</th>
-                    
-                </tr>
-                <tr>
-                    <th colspan="5" class="text-end">OVERHEAD</th>
-                    <th>{{ $rab->overhead }}%</th>
-                    
-                </tr>
+ 
                 <tr>
                     <th colspan="5" class="text-end">DISCOUNT</th>
                     <th>Rp {{ number_format($rab->discount,0,',','.') }}</th>
@@ -184,6 +175,14 @@
                 <div class="border p-3">{{ $rab->notes }}</div>
             </div>
         @endif
+        <div class="card mt-3">
+            <div class="card-body text-muted small">
+                <div>Dibuat oleh: {{ $rab->creator?->fullname ?? '-' }}</div>
+                <div>Dibuat pada: {{ $rab->created_at?->format('d M Y H:i') }}</div>
+                <div>Terakhir diubah: {{ $rab->updated_at?->format('d M Y H:i') }}</div>
+                <div>Diubah oleh: {{ $rab->editor?->fullname ?? '-' }}</div>
+            </div>
+        </div>
     </div>
 </div>
 @endif

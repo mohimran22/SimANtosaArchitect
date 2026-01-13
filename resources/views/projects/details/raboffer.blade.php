@@ -1,7 +1,6 @@
 @php
     $offer = $project->offer;
-
-    $groupedItems = $offer->items->groupBy('category');
+    $groupedItems = $offer?->items?->groupBy('category') ?? collect();
 @endphp
 
 @if($offer)

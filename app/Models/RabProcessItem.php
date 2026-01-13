@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 class RabProcessItem extends Model
 {
     protected $table = 'rab_process_items';
-    public $timestamps = false;
     
     protected $fillable = [
     'rab_process_id',
@@ -16,7 +15,9 @@ class RabProcessItem extends Model
     'satuan',
     'volume',
     'price',
-    'total'
+    'total',
+    'overhead',
+    'profit'
 ];
 public function category()
 {

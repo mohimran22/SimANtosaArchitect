@@ -59,5 +59,18 @@ protected $fillable = [
     {
         return $this->belongsTo(JobCategory::class);
     }
+
+    public function getSupplierNameAttribute()
+{
+    if (!$this->product_id) return null;
+
+    $ps = \App\Models\ProductSupplier::where('product_id', $this->product_id)
+        ->orderBy('selling_prices')
+        ->with('supplier')
+        ->first();
+
+    return $ps?->supplier?->name;
+}
+
 }
 

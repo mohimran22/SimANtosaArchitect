@@ -11,10 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('rab_process', function (Blueprint $table) {
+        Schema::table('rab_process_items', function (Blueprint $table) {
             $table->decimal('profit', 5, 2)->default(0)->after('subtotal');
             $table->decimal('overhead', 5, 2)->default(0)->after('profit');
-            $table->dropColumn(['profit_percent', 'overhead_percent', 'overhead_value', 'profit_value']);
+            // $table->dropColumn(['profit_percent', 'overhead_percent', 'overhead_value', 'profit_value']);
         });
     }
 
@@ -23,7 +23,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('rab_process', function (Blueprint $table) {
+        Schema::table('rab_process_items', function (Blueprint $table) {
             $table->dropColumn(['profit', 'overhead']);
         });
     }

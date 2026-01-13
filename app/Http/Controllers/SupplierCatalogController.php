@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
+use App\Services\RabRecalculator;
 
 class SupplierCatalogController extends Controller
 {
@@ -101,6 +102,27 @@ class SupplierCatalogController extends Controller
         ]);
     }
 
+// public function updatePrice(Request $request)
+// {
+//     $request->validate([
+//         'supplier_id' => 'required',
+//         'product_id'  => 'required',
+//         'price'       => 'required|numeric|min:0',
+//     ]);
+
+//     DB::table('product_supplier')
+//         ->where('supplier_id', $request->supplier_id)
+//         ->where('product_id', $request->product_id)
+//         ->update([
+//             'selling_prices' => $request->price,
+//             'updated_at'    => now()
+//         ]);
+
+//     return response()->json([
+//         'success' => true,
+//         'price'   => number_format($request->price)
+//     ]);
+// }
 public function updatePrice(Request $request)
 {
     $request->validate([
@@ -109,20 +131,23 @@ public function updatePrice(Request $request)
         'price'       => 'required|numeric|min:0',
     ]);
 
-    DB::table('product_supplier')
-        ->where('supplier_id', $request->supplier_id)
-        ->where('product_id', $request->product_id)
-        ->update([
-            'selling_prices' => $request->price,
-            'updated_at'    => now()
-        ]);
+    DB::transaction(function () use ($request) {
+
+        DB::table('product_supplier')
+            ->where('supplier_id', $request->supplier_id)
+            ->where('product_id', $request->product_id)
+            ->update([
+                'selling_prices' => $request->price,
+                'updated_at'    => now()
+            ]);
+
+        // 🔥 PAKSA UPDATE SEMUA RAB YANG PAKAI PRODUCT INI
+        RabRecalculator::recalcByProduct($request->product_id);
+    });
 
     return response()->json([
         'success' => true,
         'price'   => number_format($request->price)
     ]);
 }
-
-
-
 }

@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Helpers\InvoiceNumberHelper;
 use App\Models\Customer;
 use App\Models\Project;
 use App\Models\Planning;
 use App\Models\ProjectLevel;
 use App\Models\Invoice;
+use App\Services\InvoiceNumberGenerator;
 use Yajra\DataTables\DataTables;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
@@ -101,7 +101,8 @@ public function store(Request $request)
             // BERBAYAR → buat invoice survei
             Invoice::create([
                 'project_id'   => $planning->project_id,
-                'invoice_type' => Invoice::TYPE_SURVEY,
+                'invoice_type'   => Invoice::TYPE_SURVEY,
+                'invoice_number' => InvoiceNumberGenerator::generate(Invoice::TYPE_SURVEY),
                 'amount'       => $surveyFee,
                 'status'       => Invoice::STATUS_WAITING,
                 'invoice_date' => now(),
@@ -177,7 +178,7 @@ public function update(Request $request, Planning $planning)
         Invoice::create([
             'project_id'     => $project->id,
             'invoice_type'   => 'survey',
-            'invoice_number' => InvoiceNumberHelper::survey(),
+            'invoice_number' => InvoiceNumberGenerator::generate(Invoice::TYPE_SURVEY),
             'amount'         => $amount,
             'status'         => $amount > 0 ? 'waiting_approval' : 'approved',
             'approval_token' => $amount > 0 ? Str::uuid() : null,

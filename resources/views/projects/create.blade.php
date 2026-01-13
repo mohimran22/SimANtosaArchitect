@@ -256,28 +256,28 @@
                                 @endif
                             </div>
                         </div>
-
-                        <div id="offer-view">
-                            @if($project->project_type == 1)
-                                @include('projects.details.offer')
-                            @else
-                                @include('projects.details.raboffer')
-                            @endif
-                        </div>
-
-                        <div id="offer-edit" style="display:none;">
-                            @if($project->project_type == 1)
-                                @include('projects.edit.offer-form')
-                            @else
-                                @include('projects.edit.raboffer-form')
-                            @endif
-                        </div>
+                        @if($activeStep >= 6 && $project->offer)
+                            <div id="offer-view">
+                                @if($project->project_type == 1)
+                                    @include('projects.details.offer')
+                                @else
+                                    @include('projects.details.raboffer')
+                                @endif
+                            </div>
+                        
+                            <div id="offer-edit" style="display:none;">
+                                @if($project->project_type == 1)
+                                    @include('projects.edit.offer-form')
+                                @else
+                                    @include('projects.edit.raboffer-form')
+                                @endif
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>
             @endif
-            @if($activeStep >= 6 && $project->project_type == 1)
-            {{-- <div id="step-6" class="step-section"> --}}
+            @if($activeStep >= 6 && $project->project_type == 1 && $project->offer)
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body px-5 py-4">
                         <h3 class="mb-3 fw-bold">5. Draft Kontrak Pelaksanaan Pekerjaan</h3>
@@ -286,11 +286,11 @@
                             <a href="{{ route('projects.contract.pdf', $project->id) }}"
                             class="btn btn-dark"
                             target="_blank">
-                                <i class="ti ti-download"></i> 
-                                {{ $project->offer->approved_at ? 'Download Kontrak' : 'Download Draft Kontrak' }}
+                                <i class="ti ti-download"></i>
+                                {{ $project->offer?->approved_at ? 'Download Kontrak' : 'Download Draft Kontrak' }}
                             </a>
 
-                            @if(!$project->offer->approved_at)
+                            @if(!$project->offer?->approved_at)
                                 <form action="{{ route('projects.contract.approve', $project->id) }}"
                                     method="POST"
                                     class="approve-form">
@@ -309,7 +309,6 @@
                         </div>
                     </div>
                 </div>
-            {{-- </div> --}}
             @endif
             @if(
                 ($project?->project_type == 1 && $activeStep >= 7 && $project->offer->approved_at)
@@ -424,11 +423,9 @@
                             </h3>
                             @if($project->project_type == 2)
                             <div class="btn-group">
-                                <button type="button"
-                                        class="btn btn-sm btn-dark me-2 btn-toggle-offer"
-                                        data-view="rab-view"
-                                        data-edit="rab-edit"
-                                        title="Edit Data">
+                                <button type="button" id="btn-edit-rab"
+                                    class="btn btn-sm btn-dark me-2"
+                                    title="Edit Data">
                                     <i class="ti ti-edit"></i>
                                 </button>
                                     <a href="{{ route('projects.rab.pdf', $project->id) }}"
@@ -1055,6 +1052,9 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("btn-edit-rab").addEventListener("click", () => {
         view.style.display = "none";
         edit.style.display = "block";
+        setTimeout(() => {
+            loadExistingRab(); // 🔥 INI PENTING
+        }, 100);
     });
 
     document.getElementById("btn-cancel-rab").addEventListener("click", () => {
@@ -1083,6 +1083,41 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
     document.querySelectorAll('.btn-cancel-offer').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const viewId = btn.dataset.view;
+            const editId = btn.dataset.edit;
+
+            const view = document.getElementById(viewId);
+            const edit = document.getElementById(editId);
+
+            if (!view || !edit) return;
+
+            edit.style.display = 'none';
+            view.style.display = 'block';
+        });
+    });
+
+});
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+    document.querySelectorAll('.btn-toggle-rab').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const viewId = btn.dataset.view;
+            const editId = btn.dataset.edit;
+
+            const view = document.getElementById(viewId);
+            const edit = document.getElementById(editId);
+
+            if (!view || !edit) return;
+
+            view.style.display = 'none';
+            edit.style.display = 'block';
+        });
+    });
+    document.querySelectorAll('.btn-cancel-rab').forEach(btn => {
         btn.addEventListener('click', () => {
             const viewId = btn.dataset.view;
             const editId = btn.dataset.edit;

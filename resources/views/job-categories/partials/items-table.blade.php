@@ -3,7 +3,7 @@
         <tr>
             <th width="40">No</th>
             <th>Uraian</th>
-            <th width="80">Supplier</th>
+            <th width="100">Supplier</th>
             <th width="80">Kode</th>
             <th width="80">Satuan</th>
             <th width="90">Koefisien</th>
@@ -12,7 +12,6 @@
             <th width="60">Aksi</th>
         </tr>
     </thead>
-
 <tbody>
 @php
     $groups = [
@@ -21,7 +20,15 @@
         'equipment' => 'HARGA ALAT',
     ];
 @endphp
-
+    @if ($errors->any())
+                    <div class="alert alert-danger">
+                        <ul class="mb-0">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
 @foreach($groups as $key => $label)
 
     {{-- HEADER GROUP --}}
@@ -39,7 +46,21 @@
         <tr>
             <td class="text-center">{{ $no++ }}</td>
             <td>{{ $item->name }}</td>
-            <td>{{ $item->supplier }}</td>
+            <td>
+                @if($item->product_id)
+                <select class="form-select supplier-change"
+                        data-item-id="{{ $item->id }}"
+                        data-product-id="{{ $item->product_id }}">
+                    @foreach($item->product->suppliers as $sup)
+                        <option value="{{ $sup->id }}"
+                            @selected($item->supplier_id == $sup->id)>
+                            {{ $sup->name }}
+                        </option>
+                    @endforeach
+                </select>
+                @endif
+            </td>
+
             <td class="text-center">{{ $item->code }}</td>
             <td class="text-center">{{ $item->unit }}</td>
             <td class="text-end">{{ number_format($item->coefisien, 4) }}</td>
@@ -207,7 +228,29 @@ $(document).ready(function () {
     });
     hitungTotal();
     autoSave();
+
+    document.addEventListener('change', function(e) {
+    if (e.target.classList.contains('supplier-change')) {
+
+        let itemId = e.target.dataset.itemId;
+        let supplierId = e.target.value;
+
+        fetch(`/job-items/${itemId}/change-supplier`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                supplier_id: supplierId
+            })
+        }).then(() => location.reload());
+    }
 });
+
+});
+
+
 </script>
 
 @endpush

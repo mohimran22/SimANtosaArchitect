@@ -26,11 +26,9 @@ class RabProcessController extends Controller
         'items.*.satuan' => 'required|string',
         'items.*.volume' => 'required|numeric|min:0.01',
         'items.*.price' => 'required|numeric|min:0',
+        'items.*.profit' => 'required|numeric|max:100',
+        'items.*.overhead' => 'required|numeric|max:100',
         'items.*.total' => 'required|numeric|min:0',
-
-        // SUMMARY INPUT
-        'profit'   => 'nullable|numeric|min:0|max:100',
-        'overhead' => 'nullable|numeric|min:0|max:100',
         'discount' => 'nullable|numeric|min:0',
         'tax_rate' => 'nullable|numeric|min:0|max:100',
         'shipping' => 'nullable|numeric|min:0',
@@ -42,23 +40,15 @@ class RabProcessController extends Controller
 
         $project = Project::findOrFail($request->project_id);
 
-        // ================================
-        // 🔹 HITUNG ULANG DARI ITEMS
-        // ================================
         $subtotal = collect($request->items)->sum(function ($item) {
             return (float) $item['total'];
         });
 
-        $profitPercent   = (float) ($request->profit ?? 0);
-        $overheadPercent = (float) ($request->overhead ?? 0);
         $discount        = (float) ($request->discount ?? 0);
         $taxRate         = (float) ($request->tax_rate ?? 0);
         $shipping        = (float) ($request->shipping ?? 0);
 
-        $profitValue   = $subtotal * ($profitPercent / 100);
-        $overheadValue = $subtotal * ($overheadPercent / 100);
-
-        $base = $subtotal + $profitValue + $overheadValue;
+        $base = $subtotal;
 
         $subtotalAfterDiscount = max($base - $discount, 0);
 
@@ -66,9 +56,6 @@ class RabProcessController extends Controller
 
         $grandTotal = $subtotalAfterDiscount + $taxTotal + $shipping;
 
-        // ================================
-        // 🔹 SIMPAN RAB
-        // ================================
         $rab = RabProcess::create([
             'project_id' => $project->id,
             'contact_name' => $request->contact_name,
@@ -76,8 +63,6 @@ class RabProcessController extends Controller
             'job_duration' => $request->job_duration,
 
             'subtotal' => $subtotal,
-            'profit' => $profitPercent,
-            'overhead' => $overheadPercent,
             'discount' => $discount,
             'subtotal_after_discount' => $subtotalAfterDiscount,
 
@@ -88,26 +73,30 @@ class RabProcessController extends Controller
             'grand_total' => $grandTotal,
 
             'notes' => $request->notes,
+            'created_by' => auth()->id(),
+            'updated_by' => auth()->id(),
         ]);
 
-        // ================================
-        // 🔹 SIMPAN ITEMS
-        // ================================
         foreach ($request->items as $item) {
+            $base = $item['volume'] * $item['price'];
+
+            $profitValue = $base * (($item['profit'] ?? 0) / 100);
+            $overheadValue = $base * (($item['overhead'] ?? 0) / 100);
+
+            $total = $base + $profitValue + $overheadValue;
             RabProcessItem::create([
                 'rab_process_id' => $rab->id,
                 'job_category_id' => $item['job_category_id'],
                 'job_name' => $item['job_name'],
                 'satuan' => $item['satuan'],
                 'volume' => $item['volume'],
+                'profit' => $item['profit'],
+                'overhead' => $item['overhead'],
                 'price' => $item['price'],
                 'total' => $item['total'],
             ]);
         }
 
-        // ================================
-        // 🔹 UPDATE STATUS PROJECT
-        // ================================
         $finalLevel = $project->levels()
             ->where('level_name', 'Proses Pengerjaan RAB')
             ->first();
@@ -154,5 +143,89 @@ public function exportPdf(Project $project)
 
     return $pdf->stream('RAB-'.$project->name.'.pdf');
 }
+
+public function update(Request $request, Project $project, RabProcess $rab)
+{
+    $request->validate([
+        'contact_name' => 'required|string',
+        'job_location' => 'required|string',
+        'job_duration' => 'nullable|string',
+
+        'items' => 'required|array|min:1',
+        'items.*.job_category_id' => 'required|exists:job_categories,id',
+        'items.*.job_name' => 'required|string',
+        'items.*.satuan' => 'required|string',
+        'items.*.volume' => 'required|numeric|min:0.01',
+        'items.*.price' => 'required|numeric|min:0',
+        'items.*.profit' => 'required|numeric|max:100',
+        'items.*.overhead' => 'required|numeric|max:100',
+        'items.*.total' => 'required|numeric|min:0',
+
+        'discount' => 'nullable|numeric|min:0',
+        'tax_rate' => 'nullable|numeric|min:0|max:100',
+        'shipping' => 'nullable|numeric|min:0',
+        'notes' => 'nullable|string',
+    ]);
+
+    DB::transaction(function () use ($request, $rab, $project) {
+
+        // ================= HITUNG ULANG SUMMARY =================
+        $subtotal = collect($request->items)->sum(fn ($item) => (float) $item['total']);
+
+        $discount = (float) ($request->discount ?? 0);
+        $taxRate  = (float) ($request->tax_rate ?? 0);
+        $shipping = (float) ($request->shipping ?? 0);
+
+        $subtotalAfterDiscount = max($subtotal - $discount, 0);
+        $taxTotal = $subtotalAfterDiscount * ($taxRate / 100);
+        $grandTotal = $subtotalAfterDiscount + $taxTotal + $shipping;
+
+        // ================= UPDATE RAB HEADER =================
+        $rab->update([
+            'contact_name' => $request->contact_name,
+            'job_location' => $request->job_location,
+            'job_duration' => $request->job_duration,
+
+            'subtotal' => $subtotal,
+            'discount' => $discount,
+            'subtotal_after_discount' => $subtotalAfterDiscount,
+
+            'tax_rate' => $taxRate,
+            'tax_total' => $taxTotal,
+
+            'shipping' => $shipping,
+            'grand_total' => $grandTotal,
+
+            'notes' => $request->notes,
+            'updated_by' => auth()->id(),
+        ]);
+
+        // ================= DELETE ITEM LAMA =================
+        $rab->items()->delete();
+
+        // ================= INSERT ITEM BARU =================
+        foreach ($request->items as $item) {
+
+            $base = $item['volume'] * $item['price'];
+            $profitValue = $base * ($item['profit'] / 100);
+            $overheadValue = $base * ($item['overhead'] / 100);
+            $total = $base + $profitValue + $overheadValue;
+
+            $rab->items()->create([
+                'job_category_id' => $item['job_category_id'],
+                'job_name' => $item['job_name'],
+                'satuan' => $item['satuan'],
+                'volume' => $item['volume'],
+                'profit' => $item['profit'],
+                'overhead' => $item['overhead'],
+                'price' => $item['price'],
+                'total' => $total,
+            ]);
+        }
+    });
+
+    return back()->with('success', 'RAB berhasil diperbarui');
+}
+
 
 }

@@ -261,7 +261,7 @@ public function saveOverheadProfit(Request $request, JobCategory $jobCategory)
     {
         return match ($type) {
 
-        'product' => $this->getProductWithSupplierPrice($id),
+        // 'product' => $this->getProductWithSupplierPrice($id),
 
             'labor' => LaborCost::select(
                 'id',
@@ -283,34 +283,56 @@ public function saveOverheadProfit(Request $request, JobCategory $jobCategory)
         };
     }
 
-    protected function getProductWithSupplierPrice($productId)
-    {
-        $product = Product::select(
-            'id',
-            'name',
-            'sku_code as code',
-            'unit_1_name as unit'
-        )->findOrFail($productId);
+    // protected function getProductWithSupplierPrice($productId)
+    // {
+    //     $product = Product::select(
+    //         'id',
+    //         'name',
+    //         'sku_code as code',
+    //         'unit_1_name as unit'
+    //     )->findOrFail($productId);
 
-        $supplier = ProductSupplier::where('product_id', $productId)
-            ->orderBy('selling_prices') // bisa diganti: supplier utama
-            ->first();
+    //     $supplier = ProductSupplier::where('product_id', $productId)
+    //         ->orderBy('selling_prices') // bisa diganti: supplier utama
+    //         ->first();
 
-        return [
-            'id'    => $product->id,
-            'name'  => $product->name,
-            'code'  => $product->code,
-            'unit'  => $product->unit,
-            'price' => $supplier?->selling_prices ?? 0,
-        ];
-    }
+    //     return [
+    //         'id'    => $product->id,
+    //         'name'  => $product->name,
+    //         'code'  => $product->code,
+    //         'unit'  => $product->unit,
+    //         'price' => $supplier?->selling_prices ?? 0,
+    //     ];
+    // }
 
-        public function getSuppliersByProduct($productId)
-    {
-        return Supplier::whereHas('products', function ($q) use ($productId) {
+public function getSuppliersByProduct($productId)
+{
+    return Supplier::whereHas('products', function ($q) use ($productId) {
             $q->where('products.id', $productId);
-        })->select('id','name')->get();
-    }
+        })
+        ->with(['products' => function ($q) use ($productId) {
+            $q->where('products.id', $productId);
+        }])
+        ->get()
+        ->map(function ($supplier) {
+            $pivot = $supplier->products->first()->pivot;
+
+            return [
+                'id'    => $supplier->id,
+                'name'  => $supplier->name,
+                'price' => $pivot->selling_prices,
+            ];
+        });
+}
+
+// public function getSuppliersByProduct($productId)
+// {
+//     return Supplier::whereHas('products', function ($q) use ($productId) {
+//         $q->where('products.id', $productId);
+//     })->select('id','name')->get();
+// }
+
+
 
         public function getProductSupplierDetail($productId, $supplierId)
     {
@@ -347,4 +369,22 @@ public function saveOverheadProfit(Request $request, JobCategory $jobCategory)
             'harga' => $job->grand_total,
         ]);
     }
+
+    public function changeSupplier(Request $request, JobCategoryItem $item)
+{
+    $supplierId = $request->supplier_id;
+
+    $pivot = ProductSupplier::where('product_id', $item->product_id)
+        ->where('supplier_id', $supplierId)
+        ->firstOrFail();
+
+    $item->update([
+        'supplier_id' => $supplierId,
+        'base_unit_price' => $pivot->selling_prices,
+        'total_price' => $item->coefisien * $pivot->selling_prices,
+    ]);
+
+    return response()->json(['success' => true]);
+}
+
 }

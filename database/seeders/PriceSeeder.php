@@ -18,7 +18,7 @@ class PriceSeeder extends Seeder
         $highestRow = $sheet->getHighestRow();
 
         // SUPPLIER DEFAULT
-        $supplierId = Supplier::where('name', 'Antosa Architect')->value('id');
+        $supplierId = Supplier::where('name', 'Kebon Jaya')->value('id');
 
         if (!$supplierId) {
             throw new \Exception('Supplier default belum ada');

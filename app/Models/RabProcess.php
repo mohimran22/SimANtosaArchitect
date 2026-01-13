@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 class RabProcess extends Model
 {
     protected $table = 'rab_process';
-    public $timestamps = false;
 
     protected $fillable = [
     'project_id',
@@ -24,6 +23,8 @@ class RabProcess extends Model
     'notes',
     'overhead',
     'profit',
+    'created_by',
+    'updated_by',
 ];
 
         public function project()
@@ -35,5 +36,15 @@ class RabProcess extends Model
     {
         return $this->hasMany(RabProcessItem::class, 'rab_process_id');
     }
+
+    public function creator()
+{
+    return $this->belongsTo(User::class, 'created_by');
+}
+
+public function editor()
+{
+    return $this->belongsTo(User::class, 'updated_by');
+}
 
 }

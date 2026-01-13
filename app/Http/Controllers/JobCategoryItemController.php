@@ -6,10 +6,29 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use App\Models\AhspGroup;
 use App\Models\Ahsp;
+use App\Models\ProductSupplier;
+use App\Models\JobCategoryItem;
 
 
-class AhspController extends Controller
+class JobCategoryItemController extends Controller
 {
+        public function changeSupplier(Request $request, JobCategoryItem $item)
+{
+    $supplierId = $request->supplier_id;
+
+    $pivot = ProductSupplier::where('product_id', $item->product_id)
+        ->where('supplier_id', $supplierId)
+        ->firstOrFail();
+
+    $item->update([
+        'supplier_id' => $supplierId,
+        'base_unit_price' => $pivot->selling_prices,
+        'total_price' => $item->coefisien * $pivot->selling_prices,
+    ]);
+
+    return response()->json(['success' => true]);
+}
+
     public function create(AhspGroup $ahspGroup)
     {
         return view('ahsps.create', compact('ahspGroup'));
