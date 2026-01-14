@@ -76,11 +76,11 @@ p {
         <table class="no-border" align="right">
             <tr>
                 <td style="padding-right:10px;">Invoice No</td>
-                <td><strong>{{ $invoice_number }}</strong></td>
+                <td><strong>{{ $invoice->invoice_number  }}</strong></td>
             </tr>
             <tr>
                 <td>Tanggal</td>
-                <td>{{ $invoice_date }}</td>
+                <td>{{ $invoice->invoice_date->format('d F Y') }}</td>
             </tr>
         </table>
     </td>
@@ -95,10 +95,11 @@ p {
     <td width="50%" valign="top">
         <p class="bold">Tagihan Kepada</p>
         <p>
-            <strong>{{ $client_name }}</strong><br>
-            {{ $client_address }}<br>
-            Telp: {{ $client_phone }}
+            <strong>{{ $offer->contact_name }}</strong><br>
+            {{ optional($project->customer->user)->address }}<br>
+            Telp: {{ optional($project->customer->user)->phone }}
         </p>
+
     </td>
 
     <!-- KANAN -->
@@ -148,11 +149,11 @@ p {
 <tbody>
 <tr>
     <td>
-        Pembayaran I Proyek {{ $project_name }}
+        Pembayaran I Proyek {{ $project->project_name }}
     </td>
     <td class="text-center">70%</td>
-    <td class="text-right">{{ number_format($grand_total,0,',','.') }}</td>
-    <td class="text-right">{{ number_format($dp_amount,0,',','.') }}</td>
+    <td class="text-right">{{ number_format($offer->grand_total,0,',','.') }}</td>
+    <td class="text-right">{{ number_format($invoice->amount,0,',','.') }}</td>
 </tr>
 </tbody>
 
@@ -161,17 +162,17 @@ p {
     <tr>
         <th colspan="3" class="text-right">SUBTOTAL</th>
         <th class="text-right">
-            {{ number_format($total_price,0,',','.') }}
+            {{ number_format($offer->total_price,0,',','.') }}
         </th>
     </tr>
     @endif
 
     {{-- DISCOUNT --}}
-    @if(($discount ?? 0) > 0)
+    @if(($offer->discount ?? 0) > 0)
     <tr>
         <th colspan="3" class="text-right">DISCOUNT</th>
         <th class="text-right">
-            {{ number_format($discount,0,',','.') }}
+            {{ number_format($offer->discount,0,',','.') }}
         </th>
     </tr>
     @endif
@@ -180,7 +181,7 @@ p {
     <tr>
         <th colspan="3" class="text-right bold">TOTAL DP (70%)</th>
         <th class="text-right bold">
-            {{ number_format($dp_amount,0,',','.') }}
+            {{ number_format($invoice->amount,0,',','.') }}
         </th>
     </tr>
 </tfoot>
@@ -189,15 +190,18 @@ p {
 <br>
 
 <p><strong>Terbilang :</strong><br>
-{{ terbilang($dp_amount) }} Rupiah
+{{ terbilang($invoice->amount) }} Rupiah
 </p>
 
-{{-- KETERANGAN --}}
+@php
+    $remaining = $offer->grand_total - $invoice->amount;
+@endphp
+
 <p class="bold">Keterangan :</p>
 <ul>
     <li>
         Sisa pembayaran sebesar 30%
-        senilai Rp {{ number_format($remaining_amount, 0, ',', '.') }} ({{ terbilang($remaining_amount) }} rupiah) 
+        senilai Rp {{ number_format($remaining, 0, ',', '.') }} ({{ terbilang($remaining) }} rupiah) 
         akan ditagihkan pada pembayaran berikutnya.
     </li>
 </ul>

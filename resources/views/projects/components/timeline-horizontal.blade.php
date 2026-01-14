@@ -9,7 +9,8 @@
                 @foreach($timelineSteps as $index => $step)
                     @php $number = $index + 1; @endphp
 
-                    <div class="step-item" data-step="{{ $number }}">
+                    <div class="step-item" data-step="{{ $step['id'] }}">
+
                         
                         {{-- CIRCLE --}}
                         <div class="step-circle
@@ -24,10 +25,9 @@
                             {{ $step['label'] }}
                         </div> --}}
                         <div class="step-label"
-                            data-target="step-{{ $number }}">
+                            data-target="{{ $step['id'] }}">
                             {{ $step['label'] }}
                         </div>
-
                     </div>
                 @endforeach
 

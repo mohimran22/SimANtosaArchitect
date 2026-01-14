@@ -12,11 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('rab_process', function (Blueprint $table) {
-            $table->uuid('created_by')->nullable()->after('notes');
-            $table->uuid('updated_by')->nullable()->after('created_by');
-
-            $table->foreign('created_by')->references('id')->on('users')->nullOnDelete();
-            $table->foreign('updated_by')->references('id')->on('users')->nullOnDelete();
+            $table->unsignedBigInteger('analisa_version')->nullable();
         });
     }
 
@@ -26,9 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('rab_process', function (Blueprint $table) {
-            $table->dropForeign(['created_by']);
-            $table->dropForeign(['updated_by']);
-            $table->dropColumn(['created_by', 'updated_by']);
+            $table->dropColumn('analisa_version');
         });
     }
 };

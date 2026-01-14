@@ -25,21 +25,21 @@
                     $final = $project?->finalDocument;
                 @endphp
             @if($activeStep == 1)
-            <div id="step-1" class="step-section">
+            <div id="project" class="step-section">
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body px-5 py-4">
-                        <h3 class="mb-4 fw-bold" id="step-1">Buat Proyek Baru</h3>
+                        <h3 class="mb-4 fw-bold">Buat Proyek Baru</h3>
                         @include('projects.steps.create-project')
                     </div>
                 </div>
             </div>
             @endif
             @if($activeStep >= 2)
-            <div id="step-2" class="step-section">
+            <div id="konsultasi" class="step-section">
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body px-5 py-4">
                         <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h3 class="fw-bold m-0" id="step-2">Proyek</h3>
+                            <h3 class="fw-bold m-0">Proyek</h3>
 
                             <div class="btn-group">
                                 <button type="button" id="btn-edit-project"
@@ -68,22 +68,23 @@
                 </div>
 
                 @if($activeStep == 2)
-
+                {{-- <div id="konsultasi"> --}}
                     <div class="card shadow-sm border-0 mb-4">
                         <div class="card-body px-5 py-4">
-                            <h3 class="mb-4 fw-bold" id="step-2">1. Form Konsultasi</h3>
+                            <h3 class="mb-4 fw-bold">1. Form Konsultasi</h3>
                             @include('projects.steps.consultation-form')
                         </div>
                     </div>  
                 @endif
+                {{-- </div> --}}
             </div>
             @endif
             @if($activeStep >= 3)
-            <div id="step-3" class="step-section">
+            <div id="planning" class="step-section">
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body px-5 py-4">
                         <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h3 class="fw-bold m-0" id="step-3">1. Tahap Konsultasi</h3>
+                            <h3 class="fw-bold m-0">1. Tahap Konsultasi</h3>
                             <div class="btn-group">
                                 <button type="button" id="btn-edit-consultation" 
                                     class="btn btn-sm btn-dark me-2"
@@ -107,59 +108,51 @@
                         </div>
                     </div>
                 </div>
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body px-5 py-4">
 
-<div class="card shadow-sm border-0 mb-4">
-    <div class="card-body px-5 py-4">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h3 class="fw-bold mb-0">2. Rencana Survei</h3>
 
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h3 class="fw-bold mb-0">2. Rencana Survei</h3>
+                            @if($project->planning)
+                                <button type="button"
+                                    id="btn-edit-planning"
+                                    class="btn btn-sm btn-dark {{ $disableEdit ? 'disabled' : '' }}"
+                                    {{ $disableEdit ? 'disabled' : '' }}
+                                    title="{{ $disableEdit ? 'Menunggu persetujuan biaya survei' : 'Edit Data' }}">
+                                    <i class="ti ti-edit"></i>
+                                </button>
+                            @endif
+                        </div>
 
-            @if($project->planning)
-                <button type="button"
-                    id="btn-edit-planning"
-                    class="btn btn-sm btn-dark {{ $disableEdit ? 'disabled' : '' }}"
-                    {{ $disableEdit ? 'disabled' : '' }}
-                    title="{{ $disableEdit ? 'Menunggu persetujuan biaya survei' : 'Edit Data' }}">
-                    <i class="ti ti-edit"></i>
-                </button>
-            @endif
-        </div>
+                        @if(!$project->planning)
+                            
+                            @include('projects.steps.planning-form')
+                        @else
+                            
+                            <div id="planning-view">
+                                @include('projects.details.planning')
+                            </div>
+                            @if(!$surveyWaiting && !$surveyApproved)
+                                <div id="planning-edit" style="display:none;">
+                                    @include('projects.edit.planning-form')
+                                </div>
+                            @endif
+                        @endif
 
-        {{-- ================= CONTENT ================= --}}
+                        @if($surveyInvoice && $surveyInvoice->status === 'rejected')
+                            <div class="alert alert-danger mt-4">
+                                Biaya survei ditolak:<br>{{ $surveyInvoice->reject_note }}     
+                            </div>
+                        @elseif($surveyInvoice && $surveyInvoice->status === 'waiting_approval' && $surveyInvoice->amount > 0)
+                            <div class="alert alert-warning mt-4">
+                                Menunggu persetujuan biaya survei dari customer (via PDF)<br>
+                                Data rencana survei tidak dapat diubah selama proses persetujuan.
+                            </div>
+                        @endif
 
-        @if(!$project->planning)
-            {{-- FORM INPUT PERTAMA --}}
-            @include('projects.steps.planning-form')
-        @else
-            {{-- VIEW MODE --}}
-            <div id="planning-view">
-                @include('projects.details.planning')
-            </div>
-
-            {{-- EDIT MODE --}}
-            @if(!$surveyWaiting && !$surveyApproved)
-                <div id="planning-edit" style="display:none;">
-                    @include('projects.edit.planning-form')
+                    </div>
                 </div>
-            @endif
-        @endif
-
-        {{-- ================= ALERT ================= --}}
-
-        @if($surveyInvoice && $surveyInvoice->status === 'rejected')
-            <div class="alert alert-danger mt-4">
-                Biaya survei ditolak:<br>{{ $surveyInvoice->reject_note }}     
-            </div>
-        @elseif($surveyInvoice && $surveyInvoice->status === 'waiting_approval' && $surveyInvoice->amount > 0)
-            <div class="alert alert-warning mt-4">
-                Menunggu persetujuan biaya survei dari customer (via PDF)<br>
-                Data rencana survei tidak dapat diubah selama proses persetujuan.
-            </div>
-        @endif
-
-    </div>
-</div>
-
             </div>
             @endif
             @if(
@@ -169,7 +162,7 @@
                     $project->levels->firstWhere('level_order', 3)?->is_started
                 )
             )
-            {{-- <div id="step-4" class="step-section"> --}}
+            {{-- <div id="survei" class="step-section"> --}}
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body px-5 py-4">
                         <h3 class="mb-3 fw-bold">3. Form Survei Lapangan</h3>
@@ -179,11 +172,11 @@
             {{-- </div> --}}
             @endif
             @if($activeStep >= 5)
-            <div id="step-5" class="step-section">
+            <div id="survei" class="step-section">
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body px-5 py-4">       
                         <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h3 class="fw-bold m-0" id="step-5">3. Survei</h3>
+                            <h3 class="fw-bold m-0">3. Survei</h3>
                             <div class="btn-group">
                                 <button type="button" id="btn-edit-survey"
                                     class="btn btn-sm btn-dark me-2"
@@ -217,13 +210,13 @@
             @endif
             </div>
             @endif
-            @if($activeStep >= 6)
-            <div id="step-6" class="step-section">
+            @if($project && $project->offer)
+            <div id="offer" class="step-section">
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body px-5 py-4">
 
                         <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h3 class="mb-3 fw-bold" id="step-6">
+                            <h3 class="mb-3 fw-bold">
                                 {{ $project->project_type == 1 ? '4. Penawaran Jasa Desain' : '4. Penawaran Jasa RAB' }}
                             </h3>
 
@@ -256,7 +249,7 @@
                                 @endif
                             </div>
                         </div>
-                        @if($activeStep >= 6 && $project->offer)
+                        @if($project->offer)
                             <div id="offer-view">
                                 @if($project->project_type == 1)
                                     @include('projects.details.offer')
@@ -278,6 +271,7 @@
             </div>
             @endif
             @if($activeStep >= 6 && $project->project_type == 1 && $project->offer)
+            <div id="kontrak" class="step-section">
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body px-5 py-4">
                         <h3 class="mb-3 fw-bold">5. Draft Kontrak Pelaksanaan Pekerjaan</h3>
@@ -309,16 +303,17 @@
                         </div>
                     </div>
                 </div>
+            </div>    
             @endif
             @if(
                 ($project?->project_type == 1 && $activeStep >= 7 && $project->offer->approved_at)
                 ||
                 ($project?->project_type == 2 && $activeStep >= 6)
             )
-            <div id="step-7" class="step-section">
+            <div id="invoice" class="step-section">
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body px-5 py-4">
-                        <h3 class="mb-3 fw-bold" id="step-7">
+                        <h3 class="mb-3 fw-bold">
                             {{ $project->project_type == 1
                                 ? '6. Invoice Pembayaran Desain (DP)'
                                 : '5. Invoice Jasa Pembuatan RAB'
@@ -394,14 +389,14 @@
                 ||
                 ($project?->project_type == 2 && $activeStep == 7)
             )
-            <div id="step-8" class="step-section">
+            <div id="work" class="step-section">
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body px-5 py-4">
                         @if($project->project_type == 1)
-                            <h3 class="mb-3 fw-bold" id="step-8">7. Form Pengerjaan</h3>
+                            <h3 class="mb-3 fw-bold">7. Form Pengerjaan</h3>
                             @include('projects.steps.work-process')
                         @elseif($project->project_type == 2)
-                            <h3 class="mb-3 fw-bold" id="step-8">6. Form Pembuatan RAB</h3>
+                            <h3 class="mb-3 fw-bold">6. Form Pembuatan RAB</h3>
                             @include('projects.steps.rab-process')
                         @endif
                     </div>
@@ -414,11 +409,11 @@
                 ||
                 ($project?->project_type == 2 && $activeStep >= 9)
             )
-            <div id="step-9" class="step-section">
+            <div id="invoice-final" class="step-section">
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body px-5 py-4">
                         <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h3 class="mb-3 fw-bold" id="step-9">
+                            <h3 class="mb-3 fw-bold">
                                 {{ $project->project_type == 1 ? '8. Invoice Pelunasan Desain' : '6. Rencana Anggaran Biaya' }}
                             </h3>
                             @if($project->project_type == 2)
@@ -497,11 +492,11 @@
                     $project->levels->firstWhere('level_order', 9)?->is_started
                 )
             )
-            <div id="step-10" class="step-section">
+            <div id="final" class="step-section">
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body px-5 py-4">
                         <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h3 class="mb-4 fw-bold" id="step-10">9. Hasil Proyek</h3>
+                            <h3 class="mb-4 fw-bold">9. Hasil Proyek</h3>
                             @if($project->finalDocument)
                                 <div class="btn-group">
                                     <button class="btn btn-sm btn-dark"

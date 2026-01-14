@@ -472,4 +472,78 @@ public function getProducts($id)
     return response()->json($products);
 }
 
+public function datatableProducts(Request $request, Supplier $supplier)
+{
+    $query = $supplier->products()
+        ->select([
+            'products.id',
+            'products.name',
+            'products.sku_code',
+            'product_supplier.selling_prices',
+            'product_supplier.stock'
+        ]);
+
+    return DataTables::of($query)
+        ->addIndexColumn()
+
+        ->addColumn('aksi', function ($row) {
+            return '
+                <button class="btn btn-sm btn-warning">
+                    <i class="ti ti-pencil"></i>
+                </button>
+            ';
+        })
+        ->editColumn('selling_prices', function ($row) use ($supplier) {
+
+            return '
+            <span class="price-text">
+                Rp <span class="price-value">'.number_format($row->selling_prices).'</span>
+                <button class="btn btn-sm btn-warning ms-1 btn-edit-price"
+                    data-product="'.$row->id.'"
+                    data-price="'.$row->selling_prices.'"
+                    data-supplier="'.$supplier->id.'">
+                    <i class="ti ti-pencil"></i>
+                </button>
+            </span>
+
+            <span class="price-edit d-none">
+                <input type="number" class="form-control form-control-sm price-input"
+                    value="'.$row->selling_prices.'" style="width:120px;display:inline-block">
+
+                <button class="btn btn-sm btn-success btn-save-price"
+                    data-product="'.$row->id.'"
+                    data-supplier="'.$supplier->id.'">
+                    <i class="ti ti-check"></i>
+                </button>
+
+                <button class="btn btn-sm btn-danger btn-cancel-price">
+                    <i class="ti ti-x"></i>
+                </button>
+            </span>
+            ';
+        })
+->rawColumns(['selling_prices'])
+        ->make(true);
+}
+public function updatePrice(Request $request)
+{
+    $request->validate([
+        'supplier_id' => 'required',
+        'product_id' => 'required',
+        'price' => 'required|numeric|min:0'
+    ]);
+
+    DB::table('product_supplier')
+        ->where('supplier_id', $request->supplier_id)
+        ->where('product_id', $request->product_id)
+        ->update([
+            'selling_prices' => $request->price
+        ]);
+
+    return response()->json([
+        'success' => true,
+        'price' => number_format($request->price)
+    ]);
+}
+
 }

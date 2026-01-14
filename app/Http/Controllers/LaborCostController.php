@@ -7,6 +7,7 @@ use App\Models\JobCategoryItem;
 use App\Services\RabRecalculator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 
 class LaborCostController extends Controller
 {
@@ -77,12 +78,16 @@ class LaborCostController extends Controller
         DB::transaction(function () use ($request, $laborCost) {
 
             $laborCost->update($request->all());
-
-            JobCategoryItem::where('labor_cost_id', $laborCost->id)->update([
-                'base_unit_price' => $laborCost->base_unit_price,
-                'total_price' => DB::raw('coefisien * ' . $laborCost->base_unit_price),
+                    JobCategoryItem::where('labor_cost_id', $laborCost->id)
+            ->update([
+                'base_unit_price' => $request->base_unit_price,
+                'total_price' => DB::raw('coefisien * ' . (float) $request->base_unit_price),
             ]);
         });
+
+        RabRecalculator::recalcByLabor($laborCost->id);
+        
+        Cache::put('job_category_last_updated', now()->timestamp);
 
         return redirect()->route('labor_costs.index')
             ->with('success', 'Labor cost updated successfully.');

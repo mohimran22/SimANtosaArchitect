@@ -18,6 +18,8 @@
         $grouped[$kode]['items'][] = $item;
         $grouped[$kode]['subtotal'] += $item->total;
     }
+
+
 @endphp
 
 
@@ -74,6 +76,7 @@
                        value="Rp {{ number_format($rab->item->total_price, 0, ',', '.') }}">
             </div>
         </div> --}}
+
 
         <h5 class="fw-bold mt-5 mb-3">Rincian Pekerjaan</h5>
 

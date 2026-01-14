@@ -75,11 +75,11 @@ p {
         <table class="no-border" align="right">
             <tr>
                 <td style="padding-right:10px;">Invoice No</td>
-                <td><strong>{{ $invoice_number }}</strong></td>
+                <td><strong>{{ $invoice->invoice_number }}</strong></td>
             </tr>
             <tr>
                 <td>Tanggal</td>
-                <td>{{ $invoice_date }}</td>
+                <td>{{ $invoice->invoice_date->format('d F Y') }}</td>
             </tr>
         </table>
     </td>
@@ -92,9 +92,9 @@ p {
     <td width="50%" valign="top">
         <p class="bold">Tagihan Kepada</p>
         <p>
-            <strong>{{ $client_name }}</strong><br>
-            {{ $client_address }}<br>
-            Telp: {{ $client_phone }}
+            <strong>{{ $offer->contact_name }}</strong><br>
+            {{ optional($project->customer->user)->address }}<br>
+            Telp:             {{ optional($project->customer->user)->phone }}
         </p>
     </td>
 
@@ -141,17 +141,17 @@ p {
 </thead>
 <tbody>
 <tr>
-    <td>Pelunasan Proyek {{ $project_name }}</td>
+    <td>Pelunasan Proyek {{ $project->project_name }}</td>
     <td class="text-center">30%</td>
-    <td class="text-right">{{ number_format($grand_total,0,',','.') }}</td>
-    <td class="text-right">{{ number_format($final_amount,0,',','.') }}</td>
+    <td class="text-right">{{ number_format($offer->grand_total,0,',','.') }}</td>
+    <td class="text-right">{{ number_format($invoice->amount,0,',','.') }}</td>
 </tr>
 </tbody>
 <tfoot>
 <tr>
     <th colspan="3" class="text-right">TOTAL PELUNASAN</th>
     <th class="text-right">
-        {{ number_format($final_amount,0,',','.') }}
+        {{ number_format($invoice->amount,0,',','.') }}
     </th>
 </tr>
 </tfoot>
@@ -160,7 +160,7 @@ p {
 <br>
 
 <p><strong>Terbilang :</strong><br>
-{{ terbilang($final_amount) }} Rupiah
+{{ terbilang($invoice->amount) }} Rupiah
 </p>
 
 <br>

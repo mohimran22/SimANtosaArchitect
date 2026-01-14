@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\EquipmentCost;
 use App\Models\JobCategoryItem;
+use App\Services\RabRecalculator;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class EquipmentCostController extends Controller
@@ -75,11 +77,16 @@ class EquipmentCostController extends Controller
         ]);
         DB::transaction(function () use ($request, $equipment_cost) {
         $equipment_cost->update($request->all());
-                    JobCategoryItem::where('labor_cost_id', $equipment_cost->id)->update([
+                    JobCategoryItem::where('equipment_cost_id', $equipment_cost->id)->update([
                 'base_unit_price' => $equipment_cost->base_unit_price,
                 'total_price' => DB::raw('coefisien * ' . $equipment_cost->base_unit_price),
             ]);
         });
+
+        RabRecalculator::recalcByEquipment($equipment_cost->id);
+
+        Cache::put('job_category_last_updated', now()->timestamp);
+
         return redirect()->route('equipment_costs.index')
             ->with('success', 'Labor cost updated successfully.');
     }

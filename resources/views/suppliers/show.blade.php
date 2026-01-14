@@ -156,22 +156,31 @@
 
         <div class="tab-pane fade" id="tab-catalogue" role="tabpanel">
             <div class="card shadow-sm">
-                <div class="card-header">
-                    <h3 class="card-title mb-0">Katalog Produk</h3>
-                </div>
-                <div class="d-flex justify-content-between mb-3">
-                    <div class="p-3 text-center">
-                        <button class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#modalAddProduct">
-                            <i class="ti ti-plus"></i> Tambah Produk
-                        </button>    
-                        <input type="text" id="searchProduct"
-                            class="form-control"
-                            placeholder="🔍 Cari produk... (nama / SKU)">      
+                    <div class="card-header">
+                        <h3 class="card-title mb-0">Katalog Produk</h3>
                     </div>
-                </div>
-                <div class="px-3 mb-3">
+                    <div class="d-flex justify-content-between align-items-center p-3 mb-3">
+                        <div class="d-flex gap-2 align-items-center">
+                            <button class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#modalAddProduct">
+                                <i class="ti ti-plus"></i> Tambah Produk
+                            </button>
 
-                </div>
+                            <input type="text" id="searchProduct"
+                                class="form-control"
+                                placeholder="🔍 Cari produk... (nama / SKU)"
+                                style="width:260px;">
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn btn-outline-secondary active" id="btnGrid">
+                                <i class="ti ti-layout-grid"></i>
+                            </button>
+                            <button class="btn btn-outline-secondary" id="btnTable">
+                                <i class="ti ti-list"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                <div id="productViewWrapper">
                     <div class="row" id="productCardContainer">
                         @foreach($products as $product)
                             <div class="col-md-4 col-lg-3 mb-4 product-card"
@@ -281,6 +290,44 @@
                                 </div>
                             </div>
                         @endforeach
+                    </div>
+                    <div id="productTableContainer" class="d-none px-3">
+
+                        <table class="table table-hover align-middle" id="productTable">
+                            <thead>
+                            <tr>
+                                <th>No.</th>
+                                <th>Nama</th>
+                                <th>SKU</th>
+                                <th>Harga</th>
+                                <th>Stok</th>
+                                {{-- <th>Aksi</th> --}}
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {{-- @foreach($products as $product)
+                                <tr>
+                                    {{-- <td width="80">
+                                        @if ($product->photo)
+                                            <img src="{{ asset('storage/' . $product->photo) }}" width="60" class="rounded">
+                                        @else
+                                            <div class="bg-light rounded text-center" style="width:60px;height:60px;line-height:60px;">
+                                                <i class="ti ti-photo"></i>
+                                            </div>
+                                        @endif
+                                    </td> 
+                                    <td>{{ $loop->iteration }}</td>
+                                    <td>{{ $product->name }}</td>
+                                    <td>{{ $product->sku_code }}</td>
+                                    <td>Rp {{ number_format($product->pivot->selling_prices) }}</td>
+                                    <td>{{ $product->pivot->stock }}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-danger"><i class="ti ti-trash"></i></button>
+                                    </td>
+                                </tr>
+                            @endforeach --}}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -741,6 +788,110 @@ $(document).on('keyup change', '#tax, #discount', function () {
 });
 </script>
 
+{{-- <script>
+$(document).ready(function () {
+    window.productDataTable = $('#productTable').DataTable({
+        pageLength: 10,
+        lengthChange: false,
+        ordering: true,
+        info: true,
+        autoWidth: false,
+        responsive: true,
+        language: {
+            search: "Cari:",
+            zeroRecords: "Produk tidak ditemukan",
+            info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ produk",
+            infoEmpty: "Tidak ada data",
+            paginate: {
+                next: "›",
+                previous: "‹"
+            }
+        }
+    });
+});
+</script> --}}
+<script>
+$(document).ready(function () {
+    window.productDataTable = $('#productTable').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: "{{ route('supplier.products.datatable', $supplier->id) }}",
+
+        columns: [
+            { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
+            { data: 'name', name: 'products.name' },
+            { data: 'sku_code', name: 'products.sku_code' },
+            { data: 'selling_prices', name: 'product_supplier.selling_prices' },
+            { data: 'stock', name: 'product_supplier.stock' },
+            // { data: 'aksi', orderable: false, searchable: false }
+        ],
+
+        pageLength: 10,
+        lengthChange: false,
+
+        language: {
+            search: "Cari:",
+            zeroRecords: "Produk tidak ditemukan",
+            processing: "Loading..."
+        }
+    });
+});
+</script>
+<script>
+// === KLIK EDIT ===
+$(document).on('click', '.btn-edit-price', function () {
+    let td = $(this).closest('td');
+
+    td.find('.price-text').addClass('d-none');
+    td.find('.price-edit').removeClass('d-none');
+});
+
+// === CANCEL ===
+$(document).on('click', '.btn-cancel-price', function () {
+    let td = $(this).closest('td');
+
+    td.find('.price-edit').addClass('d-none');
+    td.find('.price-text').removeClass('d-none');
+});
+
+// === SAVE ===
+$(document).on('click', '.btn-save-price', function () {
+
+    let btn = $(this);
+    let td = btn.closest('td');
+
+    let productId = btn.data('product');
+    let supplierId = btn.data('supplier');
+    let newPrice = td.find('.price-input').val();
+
+    btn.prop('disabled', true);
+
+    fetch("{{ route('supplier-product.update-price') }}", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: JSON.stringify({
+            supplier_id: supplierId,
+            product_id: productId,
+            price: newPrice
+        })
+    })
+    .then(res => res.json())
+    .then(res => {
+
+        if (res.success) {
+            td.find('.price-value').text(res.price);
+        }
+
+        td.find('.price-edit').addClass('d-none');
+        td.find('.price-text').removeClass('d-none');
+        btn.prop('disabled', false);
+    });
+});
+</script>
+
 
 <script>
 document.addEventListener('click', function(e) {
@@ -799,11 +950,17 @@ document.addEventListener('click', function(e) {
 <script>
 document.getElementById('searchProduct').addEventListener('keyup', function () {
     let keyword = this.value.toLowerCase();
-    let cards = document.querySelectorAll('.product-card');
 
-    cards.forEach(function(card) {
-        let name = card.dataset.name;
-        let sku  = card.dataset.sku;
+    // Kalau table mode aktif → lempar ke DataTables
+    if (!document.getElementById('productTableContainer').classList.contains('d-none')) {
+        window.productDataTable.search(keyword).draw();
+        return;
+    }
+
+    // Kalau grid mode → pakai filter card
+    document.querySelectorAll('.product-card').forEach(function(card) {
+        let name = card.dataset.name || '';
+        let sku  = card.dataset.sku || '';
 
         if (name.includes(keyword) || sku.includes(keyword)) {
             card.style.display = '';
@@ -813,6 +970,31 @@ document.getElementById('searchProduct').addEventListener('keyup', function () {
     });
 });
 </script>
+
+
+<script>
+document.getElementById('btnGrid').addEventListener('click', function () {
+    this.classList.add('active');
+    btnTable.classList.remove('active');
+
+    document.getElementById('productCardContainer').classList.remove('d-none');
+    document.getElementById('productTableContainer').classList.add('d-none');
+});
+
+document.getElementById('btnTable').addEventListener('click', function () {
+    this.classList.add('active');
+    btnGrid.classList.remove('active');
+
+    document.getElementById('productCardContainer').classList.add('d-none');
+    document.getElementById('productTableContainer').classList.remove('d-none');
+
+    // 🔥 WAJIB: recalc DataTable width
+    setTimeout(() => {
+        window.productDataTable.columns.adjust().draw();
+    }, 100);
+});
+</script>
+
 @endpush
 
 @push('css')

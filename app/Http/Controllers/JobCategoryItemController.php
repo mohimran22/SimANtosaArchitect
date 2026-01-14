@@ -4,80 +4,86 @@ namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
-use App\Models\AhspGroup;
-use App\Models\Ahsp;
 use App\Models\ProductSupplier;
 use App\Models\JobCategoryItem;
 
 
 class JobCategoryItemController extends Controller
 {
-        public function changeSupplier(Request $request, JobCategoryItem $item)
-{
-    $supplierId = $request->supplier_id;
+    // public function changeSupplier(Request $request, JobCategoryItem $item)
+    // {
+    //     $request->validate([
+    //         'supplier_id' => 'required|exists:suppliers,id'
+    //     ]);
 
-    $pivot = ProductSupplier::where('product_id', $item->product_id)
-        ->where('supplier_id', $supplierId)
-        ->firstOrFail();
+    //     $pivot = ProductSupplier::where('product_id', $item->product_id)
+    //         ->where('supplier_id', $request->supplier_id)
+    //         ->firstOrFail();
 
-    $item->update([
-        'supplier_id' => $supplierId,
-        'base_unit_price' => $pivot->selling_prices,
-        'total_price' => $item->coefisien * $pivot->selling_prices,
-    ]);
+    //     $item->update([
+    //         'supplier_id' => $request->supplier_id,
+    //         'base_unit_price' => $pivot->selling_prices,
+    //         'total_price' => $item->coefisien * $pivot->selling_prices,
+    //     ]);
 
-    return response()->json(['success' => true]);
-}
+    //     return response()->json([
+    //         'base_unit_price' => $item->base_unit_price,
+    //         'total_price' => $item->total_price,
+    //     ]);
+    // }
 
-    public function create(AhspGroup $ahspGroup)
+    public function changeSupplier(Request $request, JobCategoryItem $item)
     {
-        return view('ahsps.create', compact('ahspGroup'));
-    }
-
-    public function store(Request $request, AhspGroup $ahspGroup)
-    {
-        $data = $request->validate([
-            'kode' => 'required|string|max:20',
-            'kode_urut' => 'required|string|max:50',
-            'nama_pekerjaan' => 'required|string',
-            'satuan' => 'required|string|max:10'
+        $request->validate([
+            'supplier_id' => 'required|exists:suppliers,id'
         ]);
 
-        $ahspGroup->ahsps()->create($data);
+        $pivot = ProductSupplier::where('product_id', $item->product_id)
+            ->where('supplier_id', $request->supplier_id)
+            ->firstOrFail();
 
-        return redirect()
-            ->route('ahsp-groups.show', $ahspGroup)
-            ->with('success', 'AHSP berhasil ditambahkan');
-    }
-
-    public function edit(Ahsp $ahsp)
-    {
-        return view('ahsps.edit', compact('ahsp'));
-    }
-
-    public function update(Request $request, Ahsp $ahsp)
-    {
-        $data = $request->validate([
-            'kode' => 'required|string|max:20',
-            'kode_urut' => 'required|string|max:50',
-            'nama_pekerjaan' => 'required|string',
-            'satuan' => 'required|string|max:10'
+        $item->update([
+            'supplier_id' => $request->supplier_id,
+            'base_unit_price' => $pivot->selling_prices,
+            'total_price' => $item->coefisien * $pivot->selling_prices,
         ]);
 
-        $ahsp->update($data);
+        // Hitung ulang subtotal category ini
+        $items = JobCategoryItem::where('job_category_id', $item->job_category_id)->get();
 
-        return back()->with('success', 'AHSP berhasil diupdate');
+        $totalLabor = $items->where('category','labor')->sum('total_price');
+        $totalProduct = $items->where('category','product')->sum('total_price');
+        $totalEquipment = $items->where('category','equipment')->sum('total_price');
+
+        $subTotal = $totalLabor + $totalProduct + $totalEquipment;
+
+        $jobCategory = $item->jobCategory;
+
+        $overheadValue = $subTotal * ($jobCategory->overhead_percent / 100);
+        $profitValue   = $subTotal * ($jobCategory->profit_percent / 100);
+        $grandTotal    = $subTotal + $overheadValue + $profitValue;
+        $jobCategory->update([
+            'subtotal' => $subTotal,
+            'overhead_value' => $overheadValue,
+            'profit_value' => $profitValue,
+            'grand_total' => $grandTotal,
+        ]);
+
+        return response()->json([
+            'item' => [
+                'id' => $item->id,
+                'base_unit_price' => $item->base_unit_price,
+                'total_price' => $item->total_price,
+            ],
+            'summary' => [
+                'subtotal' => $subTotal,
+                'overhead_value' => $overheadValue,
+                'profit_value' => $profitValue,
+                'grand_total' => $grandTotal,
+            ]
+        ]);
     }
 
-    public function destroy(Ahsp $ahsp)
-    {
-        $group = $ahsp->group;
-        $ahsp->delete();
-
-        return redirect()
-            ->route('ahsp-groups.show', $group)
-            ->with('success', 'AHSP berhasil dihapus');
-    }
 }
 
 

@@ -12,66 +12,66 @@ use App\Models\ProductSupplier;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Cache;
 use Yajra\DataTables\Facades\DataTables;
 use DB;
 
 class JobCategoryController extends Controller
 {
-public function index(Request $request)
-{
-    if ($request->ajax()) {
-        $jobs = JobCategory::select('*')
-            ->orderByRaw("
-                lower(split_part(kode_urut, '.', 1)),
-                (
-                    SELECT array_agg(val::int)
-                    FROM regexp_split_to_table(
-                        trim(trailing '.' from kode_urut),
-                        '\\.'
-                    ) AS val
-                    WHERE val ~ '^[0-9]+$'
-                )
-            ");
+    public function index(Request $request)
+    {
+        if ($request->ajax()) {
+            $jobs = JobCategory::select('*')
+                ->orderByRaw("
+                    lower(split_part(kode_urut, '.', 1)),
+                    (
+                        SELECT array_agg(val::int)
+                        FROM regexp_split_to_table(
+                            trim(trailing '.' from kode_urut),
+                            '\\.'
+                        ) AS val
+                        WHERE val ~ '^[0-9]+$'
+                    )
+                ");
 
-        return DataTables::of($jobs)
-            ->addIndexColumn() // untuk kolom No
-            ->editColumn('grand_total', function ($row) {
-                return 'Rp ' . number_format($row->grand_total ?? 0, 0, ',', '.');
-            })
-            ->addColumn('aksi', function ($row) {
-                return '
-                    <a href="'.route('job-categories.edit', $row->id).'" 
-                       class="btn btn-sm btn-dark">
-                        <i class="ti ti-edit"></i>
-                    </a>
+            return DataTables::of($jobs)
+                ->addIndexColumn() // untuk kolom No
+                ->editColumn('grand_total', function ($row) {
+                    return 'Rp ' . number_format($row->grand_total ?? 0, 0, ',', '.');
+                })
+                ->addColumn('aksi', function ($row) {
+                    return '
+                        <a href="'.route('job-categories.edit', $row->id).'" 
+                        class="btn btn-sm btn-dark">
+                            <i class="ti ti-edit"></i>
+                        </a>
 
-                    <form action="'.route('job-categories.destroy', $row->id).'"
-                          method="POST" class="d-inline"
-                          onsubmit="return confirm(\'Hapus data ini?\')">
-                        '.csrf_field().method_field('DELETE').'
-                        <button class="btn btn-sm btn-dark">
-                            <i class="ti ti-trash"></i>
-                        </button>
-                    </form>
-                ';
-            })
-            ->rawColumns(['aksi']) // penting!
-            ->make(true);
+                        <form action="'.route('job-categories.destroy', $row->id).'"
+                            method="POST" class="d-inline"
+                            onsubmit="return confirm(\'Hapus data ini?\')">
+                            '.csrf_field().method_field('DELETE').'
+                            <button class="btn btn-sm btn-dark">
+                                <i class="ti ti-trash"></i>
+                            </button>
+                        </form>
+                    ';
+                })
+                ->rawColumns(['aksi']) // penting!
+                ->make(true);
+        }
+
+        return view('job-categories.index');
     }
-
-    return view('job-categories.index');
-}
     
-public function create()
-{
-    $groups = JobCategory::select('nama_group')
-        ->distinct()
-        ->orderBy('nama_group')
-        ->pluck('nama_group');
+    public function create()
+    {
+        $groups = JobCategory::select('nama_group')
+            ->distinct()
+            ->orderBy('nama_group')
+            ->pluck('nama_group');
 
-    return view('job-categories.create', compact('groups'));
-}
-
+        return view('job-categories.create', compact('groups'));
+    }
 
     public function store(Request $request)
     {
@@ -92,24 +92,19 @@ public function create()
             ->with('success', 'Data pekerjaan berhasil ditambahkan.');
     }
 
+    public function edit(JobCategory $jobCategory)
+    {
+        $groups = JobCategory::select('bidang','nama_group')
+        ->distinct()
+        ->orderBy('bidang')
+        ->get()
+        ->groupBy('bidang');
 
-public function edit(JobCategory $jobCategory)
-{
-$groups = JobCategory::select('bidang','nama_group')
-    ->distinct()
-    ->orderBy('bidang')
-    ->get()
-    ->groupBy('bidang');
-        // $products = Product::all();
-        // $laborcosts = LaborCost::all();
-        // $equipments = EquipmentCost::all();
-
-    return view(
-        'job-categories.edit',
-        compact('jobCategory', 'groups')
-    );
-}
-
+        return view(
+            'job-categories.edit',
+            compact('jobCategory', 'groups')
+        );
+    }
 
     public function update(Request $request, JobCategory $jobCategory)
     {
@@ -137,63 +132,59 @@ $groups = JobCategory::select('bidang','nama_group')
             ->with('success', 'Data pekerjaan berhasil dihapus.');
     }
 
-public function addItem(Request $request, JobCategory $jobCategory)
-{
-    $data = $request->validate([
-        'category'          => 'required|in:product,labor,equipment',
-        'coefisien'         => 'required|numeric|min:0',
-        'base_unit_price'   => 'required|numeric|min:0',
+    public function addItem(Request $request, JobCategory $jobCategory)
+    {
+        $data = $request->validate([
+            'category'          => 'required|in:product,labor,equipment',
+            'coefisien'         => 'required|numeric|min:0',
+            'base_unit_price'   => 'required|numeric|min:0',
 
-        'product_id'        => 'nullable|exists:products,id',
-        'labor_cost_id'     => 'nullable|exists:labor_costs,id',
-        'equipment_cost_id' => 'nullable|exists:equipment_costs,id',
-        'supplier_id'        => 'nullable|exists:suppliers,id',
-        'code'              => 'nullable|string|max:50',
-        'unit'              => 'nullable|string|max:50',
-        'name'              => 'required|string|max:255',
-    ]);
+            'product_id'        => 'nullable|exists:products,id',
+            'labor_cost_id'     => 'nullable|exists:labor_costs,id',
+            'equipment_cost_id' => 'nullable|exists:equipment_costs,id',
+            'supplier_id'        => 'nullable|exists:suppliers,id',
+            'code'              => 'nullable|string|max:50',
+            'unit'              => 'nullable|string|max:50',
+            'name'              => 'required|string|max:255',
+        ]);
 
-    $data['job_category_id'] = $jobCategory->id;
-    $data['total_price']     = $data['coefisien'] * $data['base_unit_price'];
+        $data['job_category_id'] = $jobCategory->id;
+        $data['total_price']     = $data['coefisien'] * $data['base_unit_price'];
 
-    JobCategoryItem::create($data);
+        JobCategoryItem::create($data);
 
-    $this->recalcJobCategory($jobCategory);
+        $this->recalcJobCategory($jobCategory);
 
-    return back()->with('success', 'Item pekerjaan berhasil ditambahkan.');
-}
+        return back()->with('success', 'Item pekerjaan berhasil ditambahkan.');
+    }
 
-public function saveOverheadProfit(Request $request, JobCategory $jobCategory)
-{
-    $data = $request->validate([
-        'overhead_percent' => 'nullable|numeric|min:0',
-        'profit_percent'   => 'nullable|numeric|min:0',
-        'overhead_value' => 'nullable|numeric|min:0',
-        'profit_value'   => 'nullable|numeric|min:0',
-        'subtotal' => 'nullable|numeric|min:0',
-        'grand_total'   => 'nullable|numeric|min:0',
-    ]);
+    public function saveOverheadProfit(Request $request, JobCategory $jobCategory)
+    {
+        $data = $request->validate([
+            'overhead_percent' => 'nullable|numeric|min:0',
+            'profit_percent'   => 'nullable|numeric|min:0',
+            'overhead_value' => 'nullable|numeric|min:0',
+            'profit_value'   => 'nullable|numeric|min:0',
+            'subtotal' => 'nullable|numeric|min:0',
+            'grand_total'   => 'nullable|numeric|min:0',
+        ]);
 
-    $jobCategory->update([
-        'overhead_percent' => $data['overhead_percent'] ?? 0,
-        'profit_percent'   => $data['profit_percent'] ?? 0,
-        'overhead_value' => $data['overhead_value'] ?? 0,
-        'profit_value'   => $data['profit_value'] ?? 0,
-        'subtotal' => $data['subtotal'] ?? 0,
-        'grand_total'   => $data['grand_total'] ?? 0,
-    ]);
+        $jobCategory->update([
+            'overhead_percent' => $data['overhead_percent'] ?? 0,
+            'profit_percent'   => $data['profit_percent'] ?? 0,
+            'overhead_value' => $data['overhead_value'] ?? 0,
+            'profit_value'   => $data['profit_value'] ?? 0,
+            'subtotal' => $data['subtotal'] ?? 0,
+            'grand_total'   => $data['grand_total'] ?? 0,
+        ]);
 
-    $this->recalcJobCategory($jobCategory);
+        $this->recalcJobCategory($jobCategory);
 
-    return response()->json([
-        'success' => true
-    ]);
-}
+        return response()->json([
+            'success' => true
+        ]);
+    }
 
-
-    /**
-     * Update item pekerjaan
-     */
     public function updateItem(Request $request, JobCategoryItem $item)
     {
         $data = $request->validate([
@@ -240,6 +231,7 @@ public function saveOverheadProfit(Request $request, JobCategory $jobCategory)
             'profit_value'   => $profitValue,
             'grand_total'    => $grandTotal,
         ]);
+        Cache::put('job_category_last_updated', now()->timestamp);
     }
 
     public function getItems($type)
@@ -369,22 +361,5 @@ public function getSuppliersByProduct($productId)
             'harga' => $job->grand_total,
         ]);
     }
-
-    public function changeSupplier(Request $request, JobCategoryItem $item)
-{
-    $supplierId = $request->supplier_id;
-
-    $pivot = ProductSupplier::where('product_id', $item->product_id)
-        ->where('supplier_id', $supplierId)
-        ->firstOrFail();
-
-    $item->update([
-        'supplier_id' => $supplierId,
-        'base_unit_price' => $pivot->selling_prices,
-        'total_price' => $item->coefisien * $pivot->selling_prices,
-    ]);
-
-    return response()->json(['success' => true]);
-}
 
 }

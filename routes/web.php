@@ -84,6 +84,12 @@ Route::middleware(['auth', 'permission:lihat daftar affiliator|lihat data affili
 
 Route::middleware(['auth', 'permission:lihat daftar supplier|lihat data supplier','activerole:Mitra Supplier' ])->group(function () {
     Route::get('/suppliers/generate-SupplierId', [SupplierController::class, 'generateSupplierIdAjax'])->name('suppliers.generateSupplierId');
+    Route::get('/supplier/{supplier}/products-datatable', [SupplierController::class, 'datatableProducts'])
+    ->name('supplier.products.datatable');
+    // routes/web.php
+Route::post('/supplier-product/update-price', [SupplierController::class, 'updatePrice'])
+    ->name('supplier-product.update-price');
+
     Route::resource('/suppliers', SupplierController::class);
 });
 
@@ -340,6 +346,8 @@ Route::put('/projects/{project}/rab/{rab}', [\App\Http\Controllers\RabProcessCon
 
 Route::get('/projects/{project}/rab/pdf', [\App\Http\Controllers\RabProcessController::class, 'exportPdf'])
     ->name('projects.rab.pdf');
+Route::post('/projects/rab/{rab}/refresh-from-master', [\App\Http\Controllers\RabProcessController::class, 'refreshFromMaster'])
+    ->name('rab.refreshFromMaster');
 
 // routes/web.php
 Route::get(
@@ -470,8 +478,6 @@ Route::middleware(['auth', 'role:Customer'])->group(function () {
 
 });
 
-    Route::post('/rab/recalculate-all', [RabController::class, 'recalculateAll']);
-
 
 Route::middleware(['auth', 'permission:lihat daftar user'])->group(function () {
     route::resource('/users', UsersController::class);
@@ -494,7 +500,6 @@ Route::middleware(['auth'])->group(function () {
 // });
 
 Route::middleware(['auth', 'permission:Lihat daftar rab'])->group(function () {
-    Route::resource('/rab', RABController::class);
     Route::post('/rab/update-role', [AccountController::class, 'updateRole'])->name('accounts.update-role');
 });
 

@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 use App\Services\RabRecalculator;
 
 class SupplierCatalogController extends Controller
@@ -143,6 +144,7 @@ public function updatePrice(Request $request)
 
         // 🔥 PAKSA UPDATE SEMUA RAB YANG PAKAI PRODUCT INI
         RabRecalculator::recalcByProduct($request->product_id);
+        Cache::put('job_category_last_updated', now()->timestamp);
     });
 
     return response()->json([

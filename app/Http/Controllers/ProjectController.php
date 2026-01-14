@@ -189,14 +189,20 @@ class ProjectController extends Controller
             $activeStep = 4;
         }
 
+        $map = $this->stepKeyMap();
+
         $timelineSteps = $project
             ? $project->levels
                 ->sortBy('level_order')
-                ->map(function($level) use ($activeStep) {
+                ->map(function ($level) use ($activeStep, $map) {
+
+                    $order = $level->level_order + 1;
+
                     return [
-                        'label' => $level->level_name,
+                        'id'        => $map[$order] ?? 'step-' . $order,
+                        'label'     => $level->level_name,
                         'completed' => $level->is_completed,
-                        'current' => $activeStep == $level->level_order + 1,
+                        'current'   => $activeStep === $order,
                     ];
                 })
                 ->values()
@@ -235,7 +241,7 @@ class ProjectController extends Controller
             ->sortBy('level_order')
             ->first();
 
-        return $current ? $current->level_order + 1 : 12;
+        return $current ? $current->level_order + 1 : 10;
     }
 
     private function loadFullProject($projectId)
@@ -288,7 +294,23 @@ private function computeActiveStep($project, $request = null)
         ->sortBy('level_order')
         ->first();
 
-    return $current ? $current->level_order + 1 : 12;
+    return $current ? $current->level_order + 1 : 10;
+}
+
+private function stepKeyMap()
+{
+    return [
+        1 => 'project',
+        2 => 'konsultasi',
+        3 => 'planning',
+        4 => 'survei',
+        5 => 'offer',
+        6 => 'kontrak',
+        7 => 'invoice',
+        8 => 'work',
+        9 => 'invoice-final',
+        10 => 'final',
+    ];
 }
 
 public function update(Request $request, Project $project)

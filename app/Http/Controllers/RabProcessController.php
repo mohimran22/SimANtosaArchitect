@@ -8,6 +8,7 @@ use App\Models\JobCategory;
 use App\Models\Project;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class RabProcessController extends Controller
@@ -75,6 +76,7 @@ class RabProcessController extends Controller
             'notes' => $request->notes,
             'created_by' => auth()->id(),
             'updated_by' => auth()->id(),
+            'analisa_version' => Cache::get('job_category_last_updated', 0),
         ]);
 
         foreach ($request->items as $item) {
@@ -111,7 +113,6 @@ class RabProcessController extends Controller
 
     return back()->with('success', 'RAB berhasil disimpan dan proyek dinyatakan selesai');
 }
-
 
 public function exportPdf(Project $project)
 {
@@ -227,5 +228,57 @@ public function update(Request $request, Project $project, RabProcess $rab)
     return back()->with('success', 'RAB berhasil diperbarui');
 }
 
+public function refreshFromMaster(RabProcess $rab)
+{
+    DB::transaction(function () use ($rab) {
+
+        $subtotal = 0;
+
+        foreach ($rab->items as $item) {
+
+            // Ambil harga terbaru dari job_category
+            $job = JobCategory::find($item->job_category_id);
+
+            if (!$job) continue;
+
+            $newPrice = $job->grand_total;
+
+            $base = $item->volume * $newPrice;
+
+            $profitValue = $base * ($item->profit / 100);
+            $overheadValue = $base * ($item->overhead / 100);
+
+            $total = $base + $profitValue + $overheadValue;
+
+            $item->update([
+                'price' => $newPrice,
+                'total' => $total,
+            ]);
+
+            $subtotal += $total;
+
+        }
+
+        // Hitung ulang RAB header
+        $discount = $rab->discount;
+        $taxRate  = $rab->tax_rate;
+        $shipping = $rab->shipping;
+
+        $afterDiscount = max($subtotal - $discount, 0);
+        $taxTotal = $afterDiscount * ($taxRate / 100);
+        $grandTotal = $afterDiscount + $taxTotal + $shipping;
+
+        $rab->update([
+            'subtotal' => $subtotal,
+            'subtotal_after_discount' => $afterDiscount,
+            'tax_total' => $taxTotal,
+            'grand_total' => $grandTotal,
+            'analisa_version' => Cache::get('job_category_last_updated', 0),
+            'updated_by' => auth()->id(),
+        ]);
+    });
+
+    return response()->json(['success' => true]);
+}
 
 }

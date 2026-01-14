@@ -162,6 +162,7 @@ function formatRp(num) {
         minimumFractionDigits: 0
     }).format(num || 0);
 }
+
 function cleanNumber(val) {
     if (!val) return 0;
     return parseFloat(

@@ -25,6 +25,7 @@ class RabProcess extends Model
     'profit',
     'created_by',
     'updated_by',
+    'analisa_version',
 ];
 
         public function project()

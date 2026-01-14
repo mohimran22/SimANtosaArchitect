@@ -79,6 +79,10 @@ h4 {
 </h3>
 
 <table class="table-info">
+                <tr>
+                    <td width="30%">Nomor</td>
+                    <td> {{ $offer_number }}</td>
+                </tr>
     <tr>
         <td class="label">Nama Proyek</td>
         <td>{{ $project->project_name }}</td>

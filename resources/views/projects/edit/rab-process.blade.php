@@ -1,5 +1,8 @@
 @php
     $rab = $project->rab->load('items.category');
+        $latest = \Illuminate\Support\Facades\Cache::get('job_category_last_updated', 0);
+
+    $needRefresh = $rab->analisa_version < $latest;
 @endphp
 
 
@@ -18,7 +21,16 @@
                                     @endif
 
     <input type="hidden" name="project_id" value="{{ $project->id }}">
-
+        @if($needRefresh)
+        <div class="alert alert-warning d-flex justify-content-between align-items-center">
+            <div>
+                ⚠️ Harga analisa sudah berubah dari versi terakhir RAB ini dibuat.
+            </div>
+            <button type="button" class="btn btn-dark" id="btnRefreshRab">
+                🔄 Refresh Harga RAB
+            </button>
+        </div>
+        @endif
     <h4 class="fw-bold mb-3">Informasi Pembuatan Rab</h4>
 
     <div class="row mb-3">
@@ -164,7 +176,7 @@
     <textarea name="notes" rows="3" class="form-control"></textarea>
 
             <div class="mt-4">
-                <button class="btn btn-dark">Update Data RAB</button>
+                <button class="btn btn-dark" id="btnSubmitRab">Update Data RAB</button>
                 <button type="button" id="btn-cancel-rab" class="btn btn-light btn-sm">Batal</button>
             </div>
 </form>
@@ -581,4 +593,54 @@ window.existingRabMeta = {
         renderRabTable();
     }
 </script>
+@if($needRefresh)
+    <script>
+    document.getElementById('btnRefreshRab').addEventListener('click', function () {
+
+        Swal.fire({
+            title: 'Refresh harga dari master?',
+            text: 'Dengan merefresh ini, harga RAB akan mengikuti harga analisa terbaru.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, Refresh',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+
+            if (!result.isConfirmed) return;
+
+            fetch("{{ route('rab.refreshFromMaster', $rab->id) }}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+                    'Accept': 'application/json'
+                }
+            })
+            .then(res => res.json())
+            .then(res => {
+                if (res.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        text: 'Harga RAB berhasil disinkronkan dengan master.',
+                    }).then(() => {
+                        location.reload(); // reload biar UI sync total
+                    });
+                }
+            });
+
+        });
+    });
+    </script>
+
+    <script>
+    document.getElementById('btnSubmitRab').addEventListener('click', function(e){
+        e.preventDefault();
+        Swal.fire({
+            icon: 'warning',
+            title: 'Harga belum disinkronkan',
+            text: 'Silakan refresh harga RAB terlebih dahulu.',
+        });
+    });
+    </script>
+@endif
 @endpush

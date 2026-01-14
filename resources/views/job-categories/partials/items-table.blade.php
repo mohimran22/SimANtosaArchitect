@@ -43,12 +43,15 @@
 
     @foreach($items->where('category', $key) as $item)
         @php $subtotal += $item->total_price; @endphp
-        <tr>
+        <tr data-item-id="{{ $item->id }}"
+    data-category="{{ $item->category }}"
+    data-total="{{ $item->total_price }}">
+
             <td class="text-center">{{ $no++ }}</td>
             <td>{{ $item->name }}</td>
             <td>
                 @if($item->product_id)
-                <select class="form-select supplier-change"
+                <select class="form-select select2 supplier-change"
                         data-item-id="{{ $item->id }}"
                         data-product-id="{{ $item->product_id }}">
                     @foreach($item->product->suppliers as $sup)
@@ -64,12 +67,12 @@
             <td class="text-center">{{ $item->code }}</td>
             <td class="text-center">{{ $item->unit }}</td>
             <td class="text-end">{{ number_format($item->coefisien, 4) }}</td>
-            <td class="text-end">
-                Rp {{ number_format($item->base_unit_price, 0, ',', '.') }}
-            </td>
-            <td class="text-end">
-                Rp {{ number_format($item->total_price, 0, ',', '.') }}
-            </td>
+<td class="text-end" id="unit_price_{{ $item->id }}">
+    Rp {{ number_format($item->base_unit_price, 0, ',', '.') }}
+</td>
+<td class="text-end" id="total_price_{{ $item->id }}">
+    Rp {{ number_format($item->total_price, 0, ',', '.') }}
+</td>
             <td class="text-center">
                 <form action="{{ route('job-categories.items.delete', $item->id) }}"
                       method="POST"
@@ -168,13 +171,14 @@
     </tbody>
 </table>
 
-
-
 @push('js')
-
-<script>
+    <script>
 $(document).ready(function () {
-
+            $('.select2').select2({
+            placeholder: "-- Pilih --",
+            width: '100%'
+        });
+        
     function formatRp(num) {
         return new Intl.NumberFormat('id-ID', {
             style: 'currency',
@@ -183,57 +187,96 @@ $(document).ready(function () {
         }).format(num || 0);
     }
 
-    function hitungTotal() {
-        const subTotal = {{ $subTotal }};
+    function recalcAll() {
+        let subtotal = 0;
+
+        document.querySelectorAll('tr[data-item-id]').forEach(row => {
+            subtotal += parseFloat(row.dataset.total || 0);
+        });
+
         const overheadPercent = parseFloat($('#overhead_percent').val()) || 0;
         const profitPercent   = parseFloat($('#profit_percent').val()) || 0;
 
-        const overheadValue = subTotal * (overheadPercent / 100);
-        const profitValue   = subTotal * (profitPercent / 100);
-        const grandTotal    = subTotal + overheadValue + profitValue;
+        const overheadValue = subtotal * (overheadPercent / 100);
+        const profitValue   = subtotal * (profitPercent / 100);
+        const grandTotal    = subtotal + overheadValue + profitValue;
 
+        $('#subtotal').text(formatRp(subtotal));
         $('#overhead_value').text(formatRp(overheadValue));
         $('#profit_value').text(formatRp(profitValue));
         $('#grand_total').text(formatRp(grandTotal));
+
+        return {
+            subtotal,
+            overheadValue,
+            profitValue,
+            grandTotal
+        };
     }
 
     function autoSave() {
-        const subTotal = {{ $subTotal }};
-        const overheadPercent = parseFloat($('#overhead_percent').val()) || 0;
-        const profitPercent   = parseFloat($('#profit_percent').val()) || 0;
-
-        const overheadValue = subTotal * (overheadPercent / 100);
-        const profitValue   = subTotal * (profitPercent / 100);
-        const grandTotal    = subTotal + overheadValue + profitValue;
+        const result = recalcAll();
 
         $.post(
             "{{ route('job-categories.save-overhead-profit', $jobCategory->id) }}",
             {
                 _token: "{{ csrf_token() }}",
-                overhead_percent: overheadPercent,
-                profit_percent: profitPercent,
-                overhead_value: overheadValue,
-                profit_value: profitValue,
-                subtotal: subTotal,
-                grand_total: grandTotal
+                overhead_percent: parseFloat($('#overhead_percent').val()) || 0,
+                profit_percent: parseFloat($('#profit_percent').val()) || 0,
+                overhead_value: result.overheadValue,
+                profit_value: result.profitValue,
+                subtotal: result.subtotal,
+                grand_total: result.grandTotal
             }
         );
     }
 
     $('#overhead_percent, #profit_percent').on('input', function () {
-        console.log('INPUT BERUBAH');
-        hitungTotal();
+        recalcAll();
         clearTimeout(window.saveTimer);
         window.saveTimer = setTimeout(autoSave, 500);
     });
-    hitungTotal();
-    autoSave();
 
-    document.addEventListener('change', function(e) {
-    if (e.target.classList.contains('supplier-change')) {
+    recalcAll();
 
-        let itemId = e.target.dataset.itemId;
-        let supplierId = e.target.value;
+    // $(document).on('change', '.supplier-change', function () {
+
+    //     let itemId = this.dataset.itemId;
+    //     let supplierId = this.value;
+
+    //     fetch(`/job-items/${itemId}/change-supplier`, {
+    //         method: 'POST',
+    //         headers: {
+    //             'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+    //             'Content-Type': 'application/json'
+    //         },
+    //         body: JSON.stringify({
+    //             supplier_id: supplierId
+    //         })
+    //     })
+    //     .then(res => res.json())
+    //     .then(data => {
+
+    //         console.log('RESP:', data); // ⬅️ DEBUG
+
+    //         // Update UI row
+    //         document.getElementById('unit_price_' + itemId).innerText = formatRp(data.base_unit_price);
+    //         document.getElementById('total_price_' + itemId).innerText = formatRp(data.total_price);
+
+    //         // Update dataset
+    //         let row = document.querySelector(`tr[data-item-id="${itemId}"]`);
+    //         row.dataset.total = data.total_price;
+
+    //         // Recalculate all
+    //         recalcAll();
+    //         autoSave();
+    //     });
+
+    // });
+    $(document).on('change', '.supplier-change', function () {
+
+        let itemId = this.dataset.itemId;
+        let supplierId = this.value;
 
         fetch(`/job-items/${itemId}/change-supplier`, {
             method: 'POST',
@@ -244,13 +287,23 @@ $(document).ready(function () {
             body: JSON.stringify({
                 supplier_id: supplierId
             })
-        }).then(() => location.reload());
-    }
+        })
+        .then(res => res.json())
+        .then(data => {
+
+            // Update row
+            document.getElementById('unit_price_' + itemId).innerText = formatRp(data.item.base_unit_price);
+            document.getElementById('total_price_' + itemId).innerText = formatRp(data.item.total_price);
+
+            // Update summary
+            document.getElementById('subtotal').innerText = formatRp(data.summary.subtotal);
+            document.getElementById('overhead_value').innerText = formatRp(data.summary.overhead_value);
+            document.getElementById('profit_value').innerText = formatRp(data.summary.profit_value);
+            document.getElementById('grand_total').innerText = formatRp(data.summary.grand_total);
+        });
+    
 });
 
 });
-
-
 </script>
-
 @endpush

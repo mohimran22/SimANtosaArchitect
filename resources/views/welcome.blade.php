@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+{{-- <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
         <meta charset="utf-8">
@@ -130,4 +130,72 @@
             </div>
         </div>
     </body>
+</html> --}}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Sistem Informasi Antosa Architect</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap (kalau belum pakai, ini CDN) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            min-height: 100vh;
+        }
+        .card {
+            border-radius: 16px;
+        }
+    </style>
+</head>
+<body class="d-flex align-items-center justify-content-center">
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card shadow-lg">
+                    <div class="card-body text-center p-5">
+                        <h1 class="fw-bold mb-3">🏗️ Sistem Informasi</h1>
+                        <h3 class="mb-4">Antosa Architect</h3>
+
+                        <p class="text-muted mb-4">
+                            Sistem manajemen proyek, RAB, supplier, dan administrasi internal Antosa Architect.
+                        </p>
+
+                        <div class="d-grid gap-3">
+                            @if (Route::has('login'))
+                                @auth
+                                    <a href="{{ url('/dashboard') }}" class="btn btn-primary btn-lg">
+                                        Masuk ke Dashboard
+                                    </a>
+                                @else
+                                    <a href="{{ route('login') }}" class="btn btn-primary btn-lg">
+                                        Login
+                                    </a>
+
+                                    @if (Route::has('register'))
+                                        <a href="{{ route('register') }}" class="btn btn-outline-secondary">
+                                            Register
+                                        </a>
+                                    @endif
+                                @endauth
+                            @endif
+                        </div>
+
+                        <hr class="my-4">
+
+                        <small class="text-muted">
+                            © {{ date('Y') }} Antosa Architect
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
 </html>
