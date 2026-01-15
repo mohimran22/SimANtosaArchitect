@@ -56,8 +56,6 @@ public function invoiceDp(Project $project)
     ])->stream('Invoice-DP-' . $project->project_name . '.pdf');
 }
 
-
-
 public function invoiceFinal(Project $project)
 {
     abort_if(!$project->offer, 404);
@@ -185,6 +183,12 @@ public function invoiceRab(Project $project)
 
     public function approve(Project $project)
     {
+        abort_if(
+            $project->customer->user_id !== auth()->id()
+            && auth()->user()->cannot('lihat daftar proyek'),
+            403
+        );
+
         DB::transaction(function () use ($project) {
 
         $invoice = Invoice::where('project_id', $project->id)
@@ -232,6 +236,12 @@ public function invoiceRab(Project $project)
 
     public function approveFinal(Project $project)
     {
+        abort_if(
+            $project->customer->user_id !== auth()->id()
+            && auth()->user()->cannot('lihat daftar proyek'),
+            403
+        );
+
         DB::transaction(function () use ($project) {
 
             $invoice = Invoice::where('project_id', $project->id)
@@ -263,6 +273,12 @@ public function invoiceRab(Project $project)
 
     public function approveRab(Project $project)
     {
+        abort_if(
+            $project->customer->user_id !== auth()->id()
+            && auth()->user()->cannot('lihat daftar proyek'),
+            403
+        );
+
         DB::transaction(function () use ($project) {
 
             $invoice = Invoice::where('project_id', $project->id)
@@ -327,6 +343,16 @@ public function invoiceRab(Project $project)
 
     public function approveSurvey(Invoice $invoice, $token)
     {
+        $project = $invoice->project;
+        
+        abort_if(
+            !$project || !$project->customer || (
+                $project->customer->user_id !== auth()->id()
+                && auth()->user()->cannot('lihat daftar proyek')
+            ),
+            403
+        );
+
         abort_if(
             $invoice->approval_token !== $token ||
             $invoice->invoice_type !== 'survey',

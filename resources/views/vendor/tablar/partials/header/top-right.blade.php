@@ -19,7 +19,7 @@
                 @endphp
 
                 <div>{{ auth()->user()->fullname }}</div>
-                {{ $positionText }}
+                {{-- {{ $positionText }} --}}
             </div>
         </a>
         <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">

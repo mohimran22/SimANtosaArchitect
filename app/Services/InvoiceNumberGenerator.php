@@ -12,7 +12,7 @@ class InvoiceNumberGenerator
         return DB::transaction(function () use ($type) {
 
             $now = now();
-            $tahunFull = $now->year;
+            $tahunFull = $now->format('Y');
             $tahun = $now->format('y');
             $bulanRomawi = \App\Helpers\GeneralHelper::bulanRomawi($now->month);
 
@@ -37,24 +37,37 @@ class InvoiceNumberGenerator
                     throw new \Exception("Tipe invoice tidak dikenal");
             }
 
-            // 🔒 AMBIL DATA TERAKHIR DENGAN LOCK
-            $last = Invoice::where('invoice_number', 'like', $prefix . '/%')
-                ->whereYear('invoice_date', $tahunFull)
+            // 🔒 LOCK COUNTER PER PREFIX + TAHUN
+            $counter = DB::table('invoice_counters')
+                ->where('prefix', $prefix)
+                ->where('year', $tahunFull)
                 ->lockForUpdate()
-                ->orderByDesc('invoice_number')
                 ->first();
 
-            if ($last) {
-                $explode = explode('/', $last->invoice_number);
-                $lastNumber = (int) end($explode);
-                $next = $lastNumber + 1;
-            } else {
+            if (!$counter) {
+                DB::table('invoice_counters')->insert([
+                    'prefix' => $prefix,
+                    'year' => $tahunFull,
+                    'last_number' => 1,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
                 $next = 1;
+            } else {
+                $next = $counter->last_number + 1;
+
+                DB::table('invoice_counters')
+                    ->where('prefix', $prefix)
+                    ->where('year', $tahunFull)
+                    ->update([
+                        'last_number' => $next,
+                        'updated_at' => now(),
+                    ]);
             }
 
             $nomorUrut = str_pad($next, 3, '0', STR_PAD_LEFT);
 
             return $prefix . '/' . $nomorUrut;
-        });
+        }, 5);
     }
 }

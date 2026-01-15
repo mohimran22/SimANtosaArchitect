@@ -7,6 +7,9 @@ use App\Models\Project;
 use App\Models\Planning;
 use App\Models\ProjectLevel;
 use App\Models\Invoice;
+use App\Models\Employee;
+use App\Notifications\SurveyInvoiceCreatedNotification;
+use App\Notifications\PlanAssignedNotification;
 use App\Services\InvoiceNumberGenerator;
 use Yajra\DataTables\DataTables;
 use Illuminate\Support\Facades\Auth;
@@ -22,6 +25,8 @@ class PlanningController extends Controller
 
 public function store(Request $request)
 {
+    abort_if(auth()->user()->cannot('lihat daftar proyek'), 403);
+
     $project = Project::findOrFail($request->project_id);
     $request->merge([
     'same_address' => $request->boolean('same_address'),
@@ -63,53 +68,92 @@ public function store(Request $request)
         ])->validate();
     }
 
-    DB::transaction(function () use ($data, $project) {
+    $result = DB::transaction(function () use ($data, $project) {
 
-        $surveyFee = (int) preg_replace('/[^0-9]/', '', $data['survey_fee']);
+            $surveyFee = (int) preg_replace('/[^0-9]/', '', $data['survey_fee']);
 
-        $planning = Planning::create([
-            'project_id'      => $data['project_id'],
-            'planning_date'   => $data['planning_date'],
-            'planning_time'   => $data['planning_time'],
-            'survey_address'  => $data['survey_address'],
-            'province_id'     => $data['province_id'],
-            'city_id'         => $data['city_id'],
-            'district_id'     => $data['district_id'],
-            'sub_district_id' => $data['sub_district_id'],
-            'postal_code_id'  => $data['postal_code_id'],
-            'planning_notes'  => $data['planning_notes'] ?? null,
-        ]);
-
-        $projectLevel = ProjectLevel::where('project_id', $planning->project_id)
-            ->where('level_order', 2)
-            ->first();
-
-        if ($projectLevel) {
-            $projectLevel->employees()->sync($data['employee_id']);
-        }
-
-        if ($surveyFee === 0) {
-            // GRATIS → langsung ke Survei
-            ProjectLevel::where('project_id', $planning->project_id)
-                ->where('level_order', 2)
-                ->update(['is_completed' => true]);
-
-            ProjectLevel::where('project_id', $planning->project_id)
-                ->where('level_order', 3)
-                ->update(['is_started' => true]);
-        } else {
-            // BERBAYAR → buat invoice survei
-            Invoice::create([
-                'project_id'   => $planning->project_id,
-                'invoice_type'   => Invoice::TYPE_SURVEY,
-                'invoice_number' => InvoiceNumberGenerator::generate(Invoice::TYPE_SURVEY),
-                'amount'       => $surveyFee,
-                'status'       => Invoice::STATUS_WAITING,
-                'invoice_date' => now(),
-                'approval_token' => Str::uuid(),
+            $planning = Planning::create([
+                'project_id'      => $data['project_id'],
+                'planning_date'   => $data['planning_date'],
+                'planning_time'   => $data['planning_time'],
+                'survey_address'  => $data['survey_address'],
+                'province_id'     => $data['province_id'],
+                'city_id'         => $data['city_id'],
+                'district_id'     => $data['district_id'],
+                'sub_district_id' => $data['sub_district_id'],
+                'postal_code_id'  => $data['postal_code_id'],
+                'planning_notes'  => $data['planning_notes'] ?? null,
             ]);
+
+            $projectLevel = ProjectLevel::where('project_id', $planning->project_id)
+                ->where('level_order', 2)
+                ->first();
+
+            if ($projectLevel) {
+                $projectLevel->employees()->sync($data['employee_id']);
+            }
+
+            $invoice = null;
+
+            if ($surveyFee === 0) {
+                ProjectLevel::where('project_id', $planning->project_id)
+                    ->where('level_order', 2)
+                    ->update(['is_completed' => true]);
+
+                ProjectLevel::where('project_id', $planning->project_id)
+                    ->where('level_order', 3)
+                    ->update(['is_started' => true]);
+            } else {
+                $invoice = Invoice::create([
+                    'project_id'   => $planning->project_id,
+                    'invoice_type'   => Invoice::TYPE_SURVEY,
+                    'invoice_number' => InvoiceNumberGenerator::generate(Invoice::TYPE_SURVEY),
+                    'amount'       => $surveyFee,
+                    'status'       => Invoice::STATUS_WAITING,
+                    'invoice_date' => now(),
+                    'approval_token' => Str::uuid(),
+                ]);
+            }
+
+            return [
+                'planning' => $planning,
+                'invoice' => $invoice,
+            ];
+        });
+
+        $creatorUser = auth()->user();
+        $planning = $result['planning'];
+        $invoice  = $result['invoice'];
+        // Ambil level survei (level 2)
+        $level = $project->levels()->where('level_order', 2)->first();
+
+        if ($level) {
+            $employees = $level->employees()->with('user')->get();
+
+            foreach ($employees as $employee) {
+                if (!$employee->user) continue;
+
+                // Jangan kirim ke diri sendiri
+                if ($employee->user->id === $creatorUser->id) continue;
+
+                $employee->user->notify(
+                    new PlanAssignedNotification($planning, 'assigned_employee')
+                );
+            }
         }
-    });
+
+        // Kirim ke customer kalau ada invoice atau walau gratis
+        if ($project->customer?->user) {
+            $project->customer->user->notify(
+                new PlanAssignedNotification($planning, 'customer')
+            );
+        }
+
+        if ($invoice && $project->customer?->user) {
+            $project->customer->user->notify(
+                new SurveyInvoiceCreatedNotification($project, $invoice)
+            );
+        }
 
     return redirect()
         ->route('projects.create', ['project_id' => $data['project_id']])
@@ -137,6 +181,8 @@ public function planningSurveyPdf(Project $project)
 
 public function update(Request $request, Planning $planning)
 {
+    abort_if(auth()->user()->cannot('ubah data proyek'), 403);
+
     $request->validate([
         'planning_date' => 'required|date',
         'planning_time' => 'required',

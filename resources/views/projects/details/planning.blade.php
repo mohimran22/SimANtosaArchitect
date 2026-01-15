@@ -11,6 +11,7 @@
         : 0;
 @endphp
 
+@can('lihat data proyek')
 @if(isset($planning))
 <div class="card shadow-sm border-0 mb-4">
     <div class="card-header fw-bold">
@@ -115,5 +116,4 @@
     </div>
 </div>
 @endif
-
-
+@endcan

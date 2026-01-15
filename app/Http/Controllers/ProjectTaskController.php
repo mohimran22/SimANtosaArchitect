@@ -20,6 +20,8 @@ class ProjectTaskController extends Controller
 {
 public function assign(Request $request, ProjectTask $task)
 {
+    abort_if(auth()->user()->cannot('lihat daftar proyek'), 403);
+
     $request->validate([
         'employee_id' => 'required|uuid|exists:employees,id',
     ]);
@@ -43,6 +45,8 @@ public function assign(Request $request, ProjectTask $task)
 
     public function uploadFile(Request $request, ProjectTask $task)
     {
+        abort_if(auth()->user()->cannot('lihat daftar proyek'), 403);
+
         $request->validate([
             'file' => 'required|file|max:10240',
         ]);
@@ -268,6 +272,8 @@ public function viewFile(ProjectTaskFile $file)
 
 public function deleteFile(ProjectTaskFile $file)
 {
+    abort_if(auth()->user()->cannot('lihat daftar proyek'), 403);
+
     $task = $file->task;
 
     // OPTIONAL: authorization
@@ -291,8 +297,4 @@ public function deleteFile(ProjectTaskFile $file)
         'task_status' => $task->status,
     ]);
 }
-
-
-
 }
-

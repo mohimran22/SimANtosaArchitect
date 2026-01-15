@@ -15,6 +15,8 @@ use App\Models\Project;
 use App\Models\ProjectLevel;
 use App\Models\ProjectTask;
 use App\Models\JobCategory;
+use App\Models\User;
+use App\Notifications\ProjectAssignedNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
@@ -40,15 +42,19 @@ class ProjectController extends Controller
     ]);
 
     // Jika ada hak akses untuk membatasi data
-    if (
-        $auth->can('lihat data proyek') &&
-        !$auth->can('lihat daftar proyek')
-    ) {
-        $query->whereHas('customer', function ($q) use ($auth) {
-            $q->where('user_id', $auth->id);
+if (
+    $auth->can('lihat data proyek') &&
+    !$auth->can('lihat daftar proyek')
+) {
+    $query->where(function ($q) use ($auth) {
+        $q->whereHas('customer', function ($qq) use ($auth) {
+            $qq->where('user_id', $auth->id);
+        })
+        ->orWhereHas('employee', function ($qq) use ($auth) {
+            $qq->where('user_id', $auth->id);
         });
-    }
-
+    });
+}
 
     if ($request->ajax()) {
         $projects = $query->get();
@@ -208,16 +214,20 @@ class ProjectController extends Controller
                 ->values()
             : collect([]);
 
+        $canEdit = auth()->user()->can('lihat daftar proyek'); 
+
         return view('projects.create', array_merge(
             $this->formData(),
             compact('project', 'timelineSteps', 'activeStep', 'surveyInvoice',
         'surveyApproved',
-        'isFreeSurvey', 'surveyWaiting', 'surveyRejected', 'invoiceDp', 'invoiceRab')
+        'isFreeSurvey', 'surveyWaiting', 'surveyRejected', 'invoiceDp', 'invoiceRab', 'canEdit')
         ));
     }
 
     public function store(ProjectRequest $request)
 {
+    abort_if(auth()->user()->cannot('lihat daftar proyek'), 403);
+
     $project = DB::transaction(function () use ($request) {
 
         $project = Project::create($request->validated());
@@ -227,9 +237,43 @@ class ProjectController extends Controller
         return $project;
     });
 
-    return redirect()
-        ->route('projects.create', ['project_id' => $project->id])
-        ->with('success', 'Project berhasil dibuat.');
+    $project->load(['employee.user', 'customer.user']);
+
+    $creatorUser = auth()->user();
+
+    $creatorUser->notify(
+        new ProjectAssignedNotification($project, 'created_self')
+    );
+
+    $directors = User::role('Direktur')->get();
+
+    foreach ($directors as $director) {
+        // Jangan kirim ke diri sendiri kalau dia juga creator
+        if ($director->id !== $creatorUser->id) {
+            $director->notify(
+                new ProjectAssignedNotification($project, 'new_project_for_review')
+            );
+        }
+    }
+
+    if ($project->employee?->user) {
+
+        if ($project->employee->user->id !== $creatorUser->id) {
+            $project->employee->user->notify(
+                new ProjectAssignedNotification($project, 'assigned_employee')
+            );
+        }
+    }
+
+    if ($project->customer?->user) {
+        $project->customer->user->notify(
+            new ProjectAssignedNotification($project, 'customer')
+        );
+    }
+
+        return redirect()
+            ->route('projects.create', ['project_id' => $project->id])
+            ->with('success', 'Project berhasil dibuat.');
 }
 
     private function getCurrentStep($project)
@@ -241,7 +285,7 @@ class ProjectController extends Controller
             ->sortBy('level_order')
             ->first();
 
-        return $current ? $current->level_order + 1 : 10;
+        return $current ? $current->level_order + 1 : 9;
     }
 
     private function loadFullProject($projectId)
@@ -275,7 +319,7 @@ class ProjectController extends Controller
 
     return redirect()->route('projects.create', [
         'project_id' => $project->id,
-        'step'       => $activeStep,
+        'step'       => $activeStep
     ]);
 }
 
@@ -294,7 +338,7 @@ private function computeActiveStep($project, $request = null)
         ->sortBy('level_order')
         ->first();
 
-    return $current ? $current->level_order + 1 : 10;
+    return $current ? $current->level_order + 1 : 9;
 }
 
 private function stepKeyMap()
@@ -315,6 +359,8 @@ private function stepKeyMap()
 
 public function update(Request $request, Project $project)
 {
+    abort_if(auth()->user()->cannot('lihat daftar proyek'), 403);
+    
     $project->update($request->all());
 
     return redirect()

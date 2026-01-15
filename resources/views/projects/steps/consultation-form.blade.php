@@ -1,3 +1,4 @@
+@can('lihat daftar proyek')
 <form 
       action="{{ route('projects.consultations.store') }}"
       method="POST"
@@ -5,6 +6,15 @@
       data-project-type="{{ $project->project_type }}">
 
     @csrf
+        @if ($errors->any())
+        <div class="alert alert-danger">
+            <ul class="mb-0">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
     <input type="hidden" name="project_id" value="{{ $project->id }}">
 
     <div class="row g-4">
@@ -151,6 +161,8 @@
         </button>
     </div>
 </form>
+@endcan
+
 @push('js')
 <script>
     $(document).ready(function() {

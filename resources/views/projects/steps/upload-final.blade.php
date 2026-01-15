@@ -1,3 +1,4 @@
+@can('lihat daftar proyek')
 @if(!$final)
 <form action="{{ route('projects.finals.store', $project->id) }}"
       method="POST"
@@ -33,4 +34,4 @@
     </div>
 </form>
 @endif
-
+@endcan

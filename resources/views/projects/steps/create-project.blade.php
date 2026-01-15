@@ -1,3 +1,4 @@
+@can('lihat daftar proyek')
 <form action="{{ route('projects.store') }}" method="POST">
     @csrf
     @if ($errors->any())
@@ -200,6 +201,7 @@
         </button>
     </div>
 </form>
+@endcan
 
 @push('js')
     <script>

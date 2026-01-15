@@ -7,6 +7,7 @@ use App\Models\Offer;
 use App\Models\OfferItem;
 use App\Models\Project;
 use App\Models\ProjectLevel;
+use App\Models\OfferCounter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -15,6 +16,8 @@ class OfferController extends Controller
 {
 public function store(OfferRequest $request)
 {
+    abort_if(auth()->user()->cannot('lihat daftar proyek'), 403);
+
     $data = $request->validated();
 
     $project = Project::findOrFail($data['project_id']);
@@ -93,36 +96,42 @@ public function store(OfferRequest $request)
     }
 }
 
-private function generateOfferNumber()
+protected function generateOfferNumber(): string
 {
-    $tahunFull = date('Y');        // 2026
-    $tahun = date('y');            // 26
-    $bulan = date('n');            // 1-12
-    $romawiBulan = \App\Helpers\GeneralHelper::bulanRomawi($bulan);
+    return DB::transaction(function () {
 
-    // Ambil nomor terakhir di tahun ini saja
-    $lastOffer = \App\Models\Offer::whereYear('offer_date', $tahunFull)
-        ->orderBy('id', 'DESC')
-        ->first();
+        $now = now();
+        $yearFull = $now->format('Y'); // 2026
+        $yearShort = $now->format('y'); // 26
+        $bulanRomawi = \App\Helpers\GeneralHelper::bulanRomawi($now->month);
 
-    if ($lastOffer) {
-        // PH/DSN/26/I/001 → ambil 001
-        $explode = explode('/', $lastOffer->offer_number);
-        $lastNumber = intval(end($explode)) + 1;
-    } else {
-        // Kalau belum ada di tahun ini → mulai dari 1
-        $lastNumber = 1;
-    }
+        $counter = OfferCounter::where('year', $yearFull)
+            ->lockForUpdate()
+            ->first();
 
-    // Format ke 3 digit: 1 → 001
-    $nomorUrut = str_pad($lastNumber, 3, '0', STR_PAD_LEFT);
+        if (!$counter) {
+            $counter = OfferCounter::create([
+                'year' => $yearFull,
+                'last_number' => 0,
+            ]);
+        }
 
-    return "PH/DSN/$tahun/$romawiBulan/$nomorUrut";
+        $next = $counter->last_number + 1;
+
+        $counter->update([
+            'last_number' => $next,
+        ]);
+
+        $nomorUrut = str_pad($next, 3, '0', STR_PAD_LEFT);
+
+        return "PH/DSN/$yearShort/$bulanRomawi/$nomorUrut";
+    });
 }
-
 
 public function update(Request $request, $id)
 {
+    abort_if(auth()->user()->cannot('ubah data proyek'), 403);
+
     $offer = Offer::findOrFail($id);
 
     $request->validate([

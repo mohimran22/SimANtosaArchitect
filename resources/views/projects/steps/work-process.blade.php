@@ -1,8 +1,4 @@
 @php
-// $tasks = \App\Models\ProjectTask::where('project_id', $project->id)
-//     ->orderBy('parent_task_id')
-//     ->orderBy('revision_number')
-//     ->get();
 $tasks = \App\Models\ProjectTask::where('project_id', $project->id)
     ->orderByRaw('COALESCE(parent_task_id, id)')
     ->orderBy('revision_number')
@@ -15,188 +11,196 @@ $colors = [
     'selesai'     => 'success',
 ];
 
+    $isReadOnly = !$canEdit;
 @endphp
 
-@foreach($tasks->groupBy('category') as $category => $tasks)
-@php
-    $categoryKey = \Illuminate\Support\Str::slug($category);
-@endphp
+    @foreach($tasks->groupBy('category') as $category => $tasks)
+    @php
+        $categoryKey = \Illuminate\Support\Str::slug($category);
+    @endphp
 
-<h3 class="fw-bold mt-4">{{ $category }}</h3>
+    <h3 class="fw-bold mt-4">{{ $category }}</h3>
 
-    <table class="table table-bordered align-middle table-fixed">
-        <colgroup>
-            <col style="width: 35%">
-            <col style="width: 15%">
-            <col style="width: 15%">
-            <col style="width: 20%">
-            <col style="width: 15%">
-        </colgroup>
-        <thead>
-            <tr>
-                <th>Uraian Pekerjaan</th>
-                <th>PIC</th>
-                <th>Dokumen</th>
-                <th>Keterangan</th>
-                <th>Status</th>
-            </tr>
-        </thead>
-        <tbody data-category="{{ $categoryKey }}">
-            @foreach($tasks as $task)
-                    <tr
-                        data-task-row="{{ $task->id }}"
-                        data-task-id="{{ $task->id }}"
-                        data-parent-id="{{ $task->parent_task_id }}"
-                        data-is-revision="{{ $task->parent_task_id ? 1 : 0 }}"
-                    >
-                    <td>
-                        <div class="task-name">
-                            {{ $task->task_name }}
-                        </div>
-                        @if($task->revision_number > 0)
-                            <span class="badge bg-danger mt-1">
-                                Revisi {{ $task->revision_number }}
-                            </span>
-                        @endif
-                        @if($task->reject_note)
-                            <div class="text-muted small mt-1">
-                                <i class="ti ti-note"></i>
-                                {{ $task->reject_note }}
-                            </div>
-                        @endif
-                    </td>
-                    <td>
-                        <select class="form-select assign-employee"
-                                data-task="{{ $task->id }}">
-                            <option value="">-- Pilih --</option>
-                            @foreach($employees as $emp)
-                                <option value="{{ $emp->id }}"
-                                    @selected($task->employee_id == $emp->id)>
-                                    {{ $emp->user->fullname }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </td>
-                    <td class="task-document" data-task="{{ $task->id }}">
-                        @if($task->files->count())
-                            @foreach($task->files as $file)
-                                <div class="doc-cell">
-                                    <div class="doc-actions">
-                                        <a href="{{ route('tasks.files.view', $file) }}"
-                                        target="_blank"
-                                        class="btn btn-sm btn-outline-primary">
-                                            <i class="ti ti-eye"></i> Lihat File
-                                        </a>
-                                            <button type="button"
-                                                    class="btn btn-sm btn-outline-danger btn-delete-file"
-                                                    data-file="{{ $file->id }}">
-                                                <i class="ti ti-x"></i>
-                                            </button>
-
-                                    </div>
-                                    <div class="doc-meta">
-                                        <strong>{{ $file->uploader_name }}</strong><br>
-                                        {{ $file->created_at->format('d-m-Y H:i') }}
-                                    </div>
-
-                                </div>
-                            @endforeach
-                        @else
-                            <button class="btn btn-sm btn-dark btn-upload"
-                                    data-task="{{ $task->id }}">
-                                <i class="ti ti-upload"></i> Upload
-                            </button>
-                            <input type="file"
-                                class="d-none upload-input"
-                                data-task="{{ $task->id }}">
-                        @endif
-                    </td>
-                    <td class="task-action" data-task="{{ $task->id }}">
-
-                        {{-- ✅ TASK SELESAI --}}
-                        @if($task->status === 'selesai')
-                            <div class="action-cell">
-                                <span class="text-success">
-                                    <i class="ti ti-check" style="font-size:18px"></i>
-                                </span>
-                                <div class="action-meta text-muted small">
-                                    Disetujui oleh
-                                    <strong>{{ optional($task->approvedBy)->fullname ?? 'Sistem' }}</strong><br>
-                                    {{ optional($task->approved_at)?->format('d-m-Y H:i') }}
-                                </div>
-                            </div>
-
-                        {{-- ❌ TASK DITOLAK / REVISI --}}
-                        @elseif($task->status === 'revisi')
-                            <div class="action-cell">
-                                <span class="text-danger">
-                                    <i class="ti ti-x" style="font-size:18px"></i>
-                                </span>
-                                <div class="action-meta text-muted small">
-                                    Ditolak oleh
-                                    <strong>{{ optional($task->rejectedBy)->fullname ?? 'Sistem' }}</strong><br>
-                                    {{ optional($task->rejected_at)?->format('d-m-Y H:i') }}
-                                </div>
-                            </div>
-
-                        {{-- ⏳ TASK PROSES / KONFIRMASI --}}
-                        @else
-                            <div class="action-cell">
-                                <div class="action-buttons">
-                                    <button class="btn btn-sm btn-success btn-approve-task"
-                                            data-task="{{ $task->id }}">
-                                        <i class="ti ti-check"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-danger btn-open-reject"
-                                            data-task="{{ $task->id }}">
-                                        <i class="ti ti-x"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        @endif
-
-                    </td>
-                    <td class="task-status" data-task="{{ $task->id }}">
-                        <span class="badge bg-{{ $colors[$task->status] }}">
-                            {{ strtoupper($task->status) }}
-                        </span>
-                    </td>
+        <table class="table table-bordered align-middle table-fixed">
+            <colgroup>
+                <col style="width: 35%">
+                <col style="width: 15%">
+                <col style="width: 15%">
+                <col style="width: 20%">
+                <col style="width: 15%">
+            </colgroup>
+            <thead>
+                <tr>
+                    <th>Uraian Pekerjaan</th>
+                    <th>PIC</th>
+                    <th>Dokumen</th>
+                    <th>Keterangan</th>
+                    <th>Status</th>
                 </tr>
-            @endforeach
-        </tbody>
-    </table>
-    <div class="modal fade" id="globalRejectModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Tolak Hasil Pekerjaan</h5>
-                    <button type="button"
-                            class="btn-close"
-                            data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <textarea id="globalRejectNote"
-                            class="form-control"
-                            placeholder="Catatan revisi..."
-                            rows="4"
-                            required></textarea>
-                </div>
-                <div class="modal-footer">
-                    <button type="button"
-                            class="btn btn-secondary"
-                            data-bs-dismiss="modal">
-                        Batal
-                    </button>
-                    <button type="button"
-                            class="btn btn-danger"
-                            id="btnConfirmReject">
-                        Tolak & Minta Revisi
-                    </button>
+            </thead>
+            <tbody data-category="{{ $categoryKey }}">
+                @foreach($tasks as $task)
+                        <tr
+                            data-task-row="{{ $task->id }}"
+                            data-task-id="{{ $task->id }}"
+                            data-parent-id="{{ $task->parent_task_id }}"
+                            data-is-revision="{{ $task->parent_task_id ? 1 : 0 }}"
+                        >
+                        <td>
+                            <div class="task-name">
+                                {{ $task->task_name }}
+                            </div>
+                            @if($task->revision_number > 0)
+                                <span class="badge bg-danger mt-1">
+                                    Revisi {{ $task->revision_number }}
+                                </span>
+                            @endif
+                            @if($task->reject_note)
+                                <div class="text-muted small mt-1">
+                                    <i class="ti ti-note"></i>
+                                    {{ $task->reject_note }}
+                                </div>
+                            @endif
+                        </td>
+                        <td>
+                            @if(!$isReadOnly)
+                            <select class="form-select assign-employee"
+                                    data-task="{{ $task->id }}">
+                                <option value="">-- Pilih --</option>
+                                @foreach($employees as $emp)
+                                    <option value="{{ $emp->id }}"
+                                        @selected($task->employee_id == $emp->id)>
+                                        {{ $emp->user->fullname }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @else
+                                <div class="form-control bg-light">
+                                    {{ $task->employee?->user?->fullname ?? '-' }}
+                                </div>
+                            @endif
+                        </td>
+                        <td class="task-document" data-task="{{ $task->id }}">
+                            @if($task->files->count())
+                                @foreach($task->files as $file)
+                                    <div class="doc-cell">
+                                        <div class="doc-actions">
+                                            <a href="{{ route('tasks.files.view', $file) }}"
+                                            target="_blank"
+                                            class="btn btn-sm btn-outline-primary">
+                                                <i class="ti ti-eye"></i> Lihat File
+                                            </a>
+                                            @if(!$isReadOnly)
+                                                <button type="button"
+                                                        class="btn btn-sm btn-outline-danger btn-delete-file"
+                                                        data-file="{{ $file->id }}">
+                                                    <i class="ti ti-x"></i>
+                                                </button>
+                                            @endif
+                                        </div>
+                                        <div class="doc-meta">
+                                            <strong>{{ $file->uploader_name }}</strong><br>
+                                            {{ $file->created_at->format('d-m-Y H:i') }}
+                                        </div>
+
+                                    </div>
+                                @endforeach
+                            @elseif(!$isReadOnly)
+                                <button class="btn btn-sm btn-dark btn-upload"
+                                        data-task="{{ $task->id }}">
+                                    <i class="ti ti-upload"></i> Upload
+                                </button>
+                                <input type="file"
+                                    class="d-none upload-input"
+                                    data-task="{{ $task->id }}">
+                            @endif
+                        </td>
+                        <td class="task-action" data-task="{{ $task->id }}">
+
+                            {{-- ✅ TASK SELESAI --}}
+                            @if($task->status === 'selesai')
+                                <div class="action-cell">
+                                    <span class="text-success">
+                                        <i class="ti ti-check" style="font-size:18px"></i>
+                                    </span>
+                                    <div class="action-meta text-muted small">
+                                        Disetujui oleh
+                                        <strong>{{ optional($task->approvedBy)->fullname ?? 'Sistem' }}</strong><br>
+                                        {{ optional($task->approved_at)?->format('d-m-Y H:i') }}
+                                    </div>
+                                </div>
+
+                            {{-- ❌ TASK DITOLAK / REVISI --}}
+                            @elseif($task->status === 'revisi')
+                                <div class="action-cell">
+                                    <span class="text-danger">
+                                        <i class="ti ti-x" style="font-size:18px"></i>
+                                    </span>
+                                    <div class="action-meta text-muted small">
+                                        Ditolak oleh
+                                        <strong>{{ optional($task->rejectedBy)->fullname ?? 'Sistem' }}</strong><br>
+                                        {{ optional($task->rejected_at)?->format('d-m-Y H:i') }}
+                                    </div>
+                                </div>
+
+                            {{-- ⏳ TASK PROSES / KONFIRMASI --}}
+                            @else
+                                <div class="action-cell">
+                                    <div class="action-buttons">
+                                        <button class="btn btn-sm btn-success btn-approve-task"
+                                                data-task="{{ $task->id }}">
+                                            <i class="ti ti-check"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-danger btn-open-reject"
+                                                data-task="{{ $task->id }}">
+                                            <i class="ti ti-x"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            @endif
+
+                        </td>
+                        <td class="task-status" data-task="{{ $task->id }}">
+                            <span class="badge bg-{{ $colors[$task->status] }}">
+                                {{ strtoupper($task->status) }}
+                            </span>
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+        <div class="modal fade" id="globalRejectModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Tolak Hasil Pekerjaan</h5>
+                        <button type="button"
+                                class="btn-close"
+                                data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <textarea id="globalRejectNote"
+                                class="form-control"
+                                placeholder="Catatan revisi..."
+                                rows="4"
+                                required></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button"
+                                class="btn btn-secondary"
+                                data-bs-dismiss="modal">
+                            Batal
+                        </button>
+                        <button type="button"
+                                class="btn btn-danger"
+                                id="btnConfirmReject">
+                            Tolak & Minta Revisi
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-@endforeach
+    @endforeach
 
 @push('js')
 <script>

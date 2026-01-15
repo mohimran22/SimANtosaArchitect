@@ -18,11 +18,9 @@
         $grouped[$kode]['items'][] = $item;
         $grouped[$kode]['subtotal'] += $item->total;
     }
-
-
 @endphp
 
-
+@can('lihat data proyek')
 @if($rab)
 <div class="card shadow-sm border-0 mb-4">
 
@@ -178,14 +176,17 @@
                 <div class="border p-3">{{ $rab->notes }}</div>
             </div>
         @endif
-        <div class="card mt-3">
-            <div class="card-body text-muted small">
-                <div>Dibuat oleh: {{ $rab->creator?->fullname ?? '-' }}</div>
-                <div>Dibuat pada: {{ $rab->created_at?->format('d M Y H:i') }}</div>
-                <div>Terakhir diubah: {{ $rab->updated_at?->format('d M Y H:i') }}</div>
-                <div>Diubah oleh: {{ $rab->editor?->fullname ?? '-' }}</div>
+        @if(!$ReadOnly)
+            <div class="card mt-3">
+                <div class="card-body text-muted small">
+                    <div>Dibuat oleh: {{ $rab->creator?->fullname ?? '-' }}</div>
+                    <div>Dibuat pada: {{ $rab->created_at?->format('d M Y H:i') }}</div>
+                    <div>Terakhir diubah: {{ $rab->updated_at?->format('d M Y H:i') }}</div>
+                    <div>Diubah oleh: {{ $rab->editor?->fullname ?? '-' }}</div>
+                </div>
             </div>
-        </div>
+        @endif
     </div>
 </div>
 @endif
+@endcan

@@ -14,7 +14,7 @@
                     <form id="switchRoleForm" action="{{ route('switch.role') }}" method="POST" class="px-3 mb-2">
                         @csrf
 
-                        <select name="role_id" class="form-select-sm" data-input="true" data-custom="true"
+                        <select name="role_id" class="form-select" data-input="true" data-custom="true"
                             onchange="document.getElementById('switchRoleForm').submit()">
 
                             @foreach(auth()->user()->roles as $role)

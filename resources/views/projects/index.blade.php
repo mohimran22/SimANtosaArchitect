@@ -9,7 +9,7 @@
                 <!-- Page title actions -->
                 <div class="col-12 col-md-auto ms-auto d-print-none">
                     <div class="btn-list">
-                 @can('tambah data proyek')       
+                @can('tambah data proyek')       
                   <span class="d-none d-sm-inline">
                         <a href="{{ route("projects.create") }}" class="btn btn-dark d-none d-sm-inline-block" >
                             <!-- Download SVG icon from http://tabler-icons.io/i/plus -->

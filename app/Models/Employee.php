@@ -5,12 +5,13 @@ namespace App\Models;
 use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 class Employee extends Model
 {
-    use HasFactory, HasUuid;
+    use HasFactory, HasUuid, Notifiable;
 
     protected $table = 'employees';
     protected $keyType = 'string';

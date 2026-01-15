@@ -7,6 +7,7 @@ use App\Models\Consultation;
 use App\Models\ConsultationItem;
 use App\Models\Project;
 use App\Models\ProjectLevel;
+use App\Notifications\ConsultationAssignedNotification;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -16,6 +17,8 @@ class ConsultationController extends Controller
 {
     public function store(ConsultationRequest $request)
 {
+    abort_if(auth()->user()->cannot('lihat daftar proyek'), 403);
+
     $data = $request->validated();
 
     $project = Project::with(['employee', 'customer'])
@@ -80,7 +83,6 @@ class ConsultationController extends Controller
             ]);
         }
 
-        // Mulai tahap survei (level 2) otomatis
         ProjectLevel::where([
             'project_id'  => $project->id,
             'level_order' => 2,
@@ -89,13 +91,30 @@ class ConsultationController extends Controller
         ]);
     }
 
+    auth()->user()->notify(
+        new ConsultationAssignedNotification($consultation, 'created_self')
+    );
+
+    $employeeUser = $project->employee?->user;
+
+    if ($employeeUser) {
+        $employeeUser->notify(
+            new ConsultationAssignedNotification($consultation, 'assigned_employee')
+        );
+    }
+
+    $customerUser = $project->customer?->user;
+
+    if ($customerUser) {
+        $customerUser->notify(
+            new ConsultationAssignedNotification($consultation, 'customer')
+        );
+    }
+
     return redirect()
     ->route('projects.create', ['project_id' => $consultation->project_id])
     ->with('success', 'Form konsultasi berhasil disimpan.');
-
 }
-
-
 
     public function show(Consultation $consultation)
     {
@@ -114,6 +133,8 @@ class ConsultationController extends Controller
 
     public function update(Request $request, Consultation $consultation)
 {
+    abort_if(auth()->user()->cannot('ubah data proyek'), 403);
+
     $consultation->update($request->only([
         'contact_name',
         'contact_phone',

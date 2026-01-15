@@ -22,6 +22,8 @@ class SurveyController extends Controller
 
 public function store(SurveyRequest $request)
 {
+    abort_if(auth()->user()->cannot('lihat daftar proyek'), 403);
+
     DB::transaction(function () use ($request) {
 
         $data = $request->validated();
@@ -109,6 +111,8 @@ public function store(SurveyRequest $request)
 
     public function update(Request $request, Survey $survey)
 {
+    abort_if(auth()->user()->cannot('ubah data proyek'), 403);
+    
     $validated = $request->validate([
         'survey_date' => 'required|date',
         'survey_time' => 'required',

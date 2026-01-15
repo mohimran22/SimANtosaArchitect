@@ -244,13 +244,13 @@ Route::delete('rab-package-items/{item}',
 // API aman untuk frontend
 Route::get('rab-packages/json/{id}',
     [RabPackageController::class, 'getPackage'])->name('rab-packages.json');
-Route::get('/job-categories/import-upah', function () {
-    return view('job-categories.import_upah');
-})->middleware('auth');
+// Route::get('/job-categories/import-upah', function () {
+//     return view('job-categories.import_upah');
+// })->middleware('auth');
 
-Route::post('/job-categories/import-upah', [\App\Http\Controllers\UpahImportController::class, 'importUpah'])
-    ->middleware('auth')
-    ->name('job-categories.import-upah');
+// Route::post('/job-categories/import-upah', [\App\Http\Controllers\UpahImportController::class, 'importUpah'])
+//     ->middleware('auth')
+//     ->name('job-categories.import-upah');
 
 Route::resource('/job-categories', JobCategoryController::class)
     ->except(['show']);
@@ -276,80 +276,33 @@ Route::get('/ajax/product/{productId}/supplier/{supplierId}', [JobCategoryContro
 Route::get('/job-categories/{id}/simple', [JobCategoryController::class, 'simple']);
 
 Route::post('/job-items/{item}/change-supplier', [\App\Http\Controllers\JobCategoryItemController::class, 'changeSupplier']);
+Route::post('/notifications/{id}/read', function ($id) {
+    auth()->user()->notifications()
+        ->where('id', $id)
+        ->update(['read_at' => now()]);
 
-Route::post('projects/consultations', [\App\Http\Controllers\ConsultationController::class, 'store'])
-    ->name('projects.consultations.store');
+    return response()->json(['success' => true]);
+})->middleware('auth');
 
-Route::put('consultations/{consultation}', [\App\Http\Controllers\ConsultationController::class, 'update'])
-    ->name('consultations.update');
-
-Route::get('consultations/{consultation}/pdf', [\App\Http\Controllers\ConsultationController::class, 'pdf'])
+Route::middleware(['auth'])->group(function () {
+    Route::get('consultations/{consultation}/pdf', [\App\Http\Controllers\ConsultationController::class, 'pdf'])
     ->name('consultations.pdf');
-
-Route::post('projects/plannings', [\App\Http\Controllers\PlanningController::class, 'store'])
-    ->name('projects.plannings.store');
-
-Route::put('plannings/{planning}', [\App\Http\Controllers\PlanningController::class, 'update'])
-    ->name('plannings.update');
-
-Route::get('plannings/{planning}/pdf', [\App\Http\Controllers\PlanningController::class, 'pdf'])
+    Route::get('plannings/{planning}/pdf', [\App\Http\Controllers\PlanningController::class, 'pdf'])
     ->name('plannings.pdf');
-
-Route::post('projects/surveys', [\App\Http\Controllers\SurveyController::class, 'store'])
-    ->name('projects.surveys.store');
-
-Route::put('surveys/{survey}', [\App\Http\Controllers\SurveyController::class, 'update'])
-    ->name('surveys.update');
-
-Route::get('surveys/{survey}/pdf', [\App\Http\Controllers\SurveyController::class, 'pdf'])
+    Route::get('surveys/{survey}/pdf', [\App\Http\Controllers\SurveyController::class, 'pdf'])
     ->name('surveys.pdf');
-
-Route::post('projects/offers', [\App\Http\Controllers\OfferController::class, 'store'])
-    ->name('projects.offers.store');
-    
-
-Route::put('offers/{offer}', [\App\Http\Controllers\OfferController::class, 'update'])
-    ->name('offers.update');
-
-Route::post('/offers/{offer}/approve', [\App\Http\Controllers\OfferController::class, 'approve'])
-    ->name('offers.approve')
-    ->middleware('auth');
-
-Route::post('/offers/{offer}/reject', [\App\Http\Controllers\OfferController::class, 'reject'])
-    ->name('offers.reject');
-
-Route::get('/projects/offers/{offer}/pdf', [\App\Http\Controllers\OfferController::class, 'printPdf'])
+    Route::get('/projects/offers/{offer}/pdf', [\App\Http\Controllers\OfferController::class, 'printPdf'])
     ->name('projects.offers.desain.pdf');
-
-Route::post('projects/offer', [\App\Http\Controllers\OfferRABController::class, 'store'])
-    ->name('projects.offer.store');
-    
-
-Route::put('offer/{offer}', [\App\Http\Controllers\OfferRABController::class, 'update'])
-    ->name('offer.update');
-
-Route::post('/offer/{offer}/approve', [\App\Http\Controllers\OfferRABController::class, 'approve'])
-    ->name('offer.approve')
-    ->middleware('auth');
-
-Route::post('/offer/{offer}/reject', [\App\Http\Controllers\OfferRABController::class, 'reject'])
-    ->name('offer.reject');
-
-
-Route::get('/projects/offer/{offer}/pdf', [\App\Http\Controllers\OfferRABController::class, 'printPdf'])
+    Route::get('/projects/offer/{offer}/pdf', [\App\Http\Controllers\OfferRABController::class, 'printPdf'])
     ->name('projects.offers.rab.pdf');
-
-Route::post('projects/rab', [\App\Http\Controllers\RabProcessController::class, 'store'])
-    ->name('projects.rab.store');
-Route::put('/projects/{project}/rab/{rab}', [\App\Http\Controllers\RabProcessController::class, 'update'])
-    ->name('projects.rab.update');
-
-Route::get('/projects/{project}/rab/pdf', [\App\Http\Controllers\RabProcessController::class, 'exportPdf'])
+    Route::get('/projects/{project}/rab/pdf', [\App\Http\Controllers\RabProcessController::class, 'exportPdf'])
     ->name('projects.rab.pdf');
-Route::post('/projects/rab/{rab}/refresh-from-master', [\App\Http\Controllers\RabProcessController::class, 'refreshFromMaster'])
-    ->name('rab.refreshFromMaster');
-
-// routes/web.php
+    Route::get('/tasks/files/{file}', [\App\Http\Controllers\ProjectTaskController::class, 'viewFile'])
+    ->name('tasks.files.view');
+    Route::get(
+    '/projects/{project}/invoice-final',
+    [\App\Http\Controllers\InvoiceController::class, 'invoiceFinal']
+)->name('projects.invoice.final');
 Route::get(
     'projects/{project}/contract/pdf',
     [\App\Http\Controllers\ContractController::class, 'pdf']
@@ -381,13 +334,10 @@ Route::post(
     [\App\Http\Controllers\InvoiceController::class, 'approveRab']
 )->name('projects.invoice.rab.approve');
 
-Route::middleware(['auth'])->group(function () {
-
     Route::get(
         '/projects/{project}/planning-survey/pdf',
         [\App\Http\Controllers\InvoiceController::class, 'surveyPlanningPdf']
     )->name('projects.planning-survey.pdf');
-});
 
 Route::get(
     '/survey-invoice/{invoice}/{token}/approve',
@@ -408,7 +358,62 @@ Route::get(
     '/projects/{project}/invoice-survey',
     [\App\Http\Controllers\InvoiceController::class, 'invoiceSurvey']
 )->name('projects.invoice-survey');
+Route::post(
+    '/projects/{project}/invoice-final/approve',
+    [\App\Http\Controllers\InvoiceController::class, 'approveFinal']
+)->name('projects.invoice.final.approve');
 
+Route::middleware(['permission:lihat daftar proyek'])->group(function () {
+
+Route::post('projects/consultations', [\App\Http\Controllers\ConsultationController::class, 'store'])
+    ->name('projects.consultations.store');
+
+Route::put('consultations/{consultation}', [\App\Http\Controllers\ConsultationController::class, 'update'])
+    ->name('consultations.update');
+
+Route::post('projects/plannings', [\App\Http\Controllers\PlanningController::class, 'store'])
+    ->name('projects.plannings.store');
+
+Route::put('plannings/{planning}', [\App\Http\Controllers\PlanningController::class, 'update'])
+    ->name('plannings.update');
+
+Route::post('projects/surveys', [\App\Http\Controllers\SurveyController::class, 'store'])
+    ->name('projects.surveys.store');
+
+Route::put('surveys/{survey}', [\App\Http\Controllers\SurveyController::class, 'update'])
+    ->name('surveys.update');
+
+Route::post('projects/offers', [\App\Http\Controllers\OfferController::class, 'store'])
+    ->name('projects.offers.store');
+    
+Route::put('offers/{offer}', [\App\Http\Controllers\OfferController::class, 'update'])
+    ->name('offers.update');
+
+Route::post('/offers/{offer}/approve', [\App\Http\Controllers\OfferController::class, 'approve'])
+    ->name('offers.approve');
+
+Route::post('/offers/{offer}/reject', [\App\Http\Controllers\OfferController::class, 'reject'])
+    ->name('offers.reject');
+
+Route::post('projects/offer', [\App\Http\Controllers\OfferRABController::class, 'store'])
+    ->name('projects.offer.store');
+    
+Route::put('offer/{offer}', [\App\Http\Controllers\OfferRABController::class, 'update'])
+    ->name('offer.update');
+
+Route::post('/offer/{offer}/approve', [\App\Http\Controllers\OfferRABController::class, 'approve'])
+    ->name('offer.approve');
+
+Route::post('/offer/{offer}/reject', [\App\Http\Controllers\OfferRABController::class, 'reject'])
+    ->name('offer.reject');
+
+Route::post('projects/rab', [\App\Http\Controllers\RabProcessController::class, 'store'])
+    ->name('projects.rab.store');
+Route::put('/projects/{project}/rab/{rab}', [\App\Http\Controllers\RabProcessController::class, 'update'])
+    ->name('projects.rab.update');
+
+Route::post('/projects/rab/{rab}/refresh-from-master', [\App\Http\Controllers\RabProcessController::class, 'refreshFromMaster'])
+    ->name('rab.refreshFromMaster');
 
 Route::post('/tasks/{task}/assign', [\App\Http\Controllers\ProjectTaskController::class, 'assign'])
     ->name('tasks.assign');
@@ -425,9 +430,6 @@ Route::post('/tasks/{task}/reject', [\App\Http\Controllers\ProjectTaskController
 Route::post('/tasks/{task}/complete', [\App\Http\Controllers\ProjectTaskController::class, 'complete'])
     ->name('tasks.complete');
 
-Route::get('/tasks/files/{file}', [\App\Http\Controllers\ProjectTaskController::class, 'viewFile'])
-    ->name('tasks.files.view');
-
 Route::delete(
     '/tasks/files/{file}',
     [\App\Http\Controllers\ProjectTaskController::class, 'deleteFile']
@@ -439,16 +441,6 @@ Route::get('/survey-invoice/{invoice}/approve', [\App\Http\Controllers\SurveyInv
 Route::post('/survey-invoice/{invoice}/reject', [\App\Http\Controllers\SurveyInvoiceController::class, 'reject'])
     ->name('survey.reject.form');
 
-Route::get(
-    '/projects/{project}/invoice-final',
-    [\App\Http\Controllers\InvoiceController::class, 'invoiceFinal']
-)->name('projects.invoice.final');
-
-Route::post(
-    '/projects/{project}/invoice-final/approve',
-    [\App\Http\Controllers\InvoiceController::class, 'approveFinal']
-)->name('projects.invoice.final.approve');
-
 Route::post(
     '/projects/{project}/final',
     [\App\Http\Controllers\FinalProjectController::class, 'store']
@@ -457,33 +449,12 @@ Route::delete(
     '/projects/{project}/final',
     [\App\Http\Controllers\FinalProjectController::class, 'destroy']
 )->name('projects.finals.destroy');
-
-
-Route::middleware(['auth', 'role:Customer'])->group(function () {
-
-    Route::get(
-        '/customer/invoices/{invoice}',
-        [\App\Http\Controllers\CustomerInvoiceController::class, 'show']
-    )->name('customer.invoices.show');
-
-    Route::post(
-        '/customer/invoices/{invoice}/approve',
-        [\App\Http\Controllers\CustomerInvoiceController::class, 'approve']
-    )->name('customer.invoices.approve');
-
-    Route::post(
-        '/customer/invoices/{invoice}/reject',
-        [\App\Http\Controllers\CustomerInvoiceController::class, 'reject']
-    )->name('customer.invoices.reject');
-
 });
-
 
 Route::middleware(['auth', 'permission:lihat daftar user'])->group(function () {
     route::resource('/users', UsersController::class);
 });
-
-
+});
 
 Route::middleware(['auth', 'permission:lihat daftar role'])->group(function () {
     Route::resource('/roles', RoleController::class);

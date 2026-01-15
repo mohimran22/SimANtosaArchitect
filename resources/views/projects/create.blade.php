@@ -23,6 +23,7 @@
                     $disableEdit = $surveyWaiting;
                     use Illuminate\Support\Facades\Storage;
                     $final = $project?->finalDocument;
+                    $ReadOnly = !$canEdit;
                 @endphp
             @if($activeStep == 1)
             <div id="project" class="step-section">
@@ -40,7 +41,7 @@
                     <div class="card-body px-5 py-4">
                         <div class="d-flex justify-content-between align-items-center mb-4">
                             <h3 class="fw-bold m-0">Proyek</h3>
-
+                            @can('ubah data proyek')
                             <div class="btn-group">
                                 <button type="button" id="btn-edit-project"
                                     class="btn btn-sm btn-dark me-2"
@@ -55,6 +56,7 @@
                                     <i class="ti ti-download"></i>
                                 </a> --}}
                             </div>
+                            @endcan
                         </div>
                     
                         <div id="project-view">
@@ -85,6 +87,7 @@
                     <div class="card-body px-5 py-4">
                         <div class="d-flex justify-content-between align-items-center mb-4">
                             <h3 class="fw-bold m-0">1. Tahap Konsultasi</h3>
+                            @can('ubah data proyek')
                             <div class="btn-group">
                                 <button type="button" id="btn-edit-consultation" 
                                     class="btn btn-sm btn-dark me-2"
@@ -99,6 +102,7 @@
                                     <i class="ti ti-download"></i>
                                 </a> --}}
                             </div>
+                            @endcan
                         </div>
                         <div id="consultation-view">
                             @include('projects.details.consultation')
@@ -115,6 +119,7 @@
                             <h3 class="fw-bold mb-0">2. Rencana Survei</h3>
 
                             @if($project->planning)
+                                @can('ubah data proyek')
                                 <button type="button"
                                     id="btn-edit-planning"
                                     class="btn btn-sm btn-dark {{ $disableEdit ? 'disabled' : '' }}"
@@ -122,6 +127,7 @@
                                     title="{{ $disableEdit ? 'Menunggu persetujuan biaya survei' : 'Edit Data' }}">
                                     <i class="ti ti-edit"></i>
                                 </button>
+                                @endcan
                             @endif
                         </div>
 
@@ -177,6 +183,7 @@
                     <div class="card-body px-5 py-4">       
                         <div class="d-flex justify-content-between align-items-center mb-4">
                             <h3 class="fw-bold m-0">3. Survei</h3>
+                            @can('ubah data proyek')
                             <div class="btn-group">
                                 <button type="button" id="btn-edit-survey"
                                     class="btn btn-sm btn-dark me-2"
@@ -184,6 +191,7 @@
                                     <i class="ti ti-edit"></i>
                                 </button>
                             </div>
+                            @endcan
                         </div>
                         <div id="survey-view">
                             @include('projects.details.survey')
@@ -219,7 +227,7 @@
                             <h3 class="mb-3 fw-bold">
                                 {{ $project->project_type == 1 ? '4. Penawaran Jasa Desain' : '4. Penawaran Jasa RAB' }}
                             </h3>
-
+                            @can('ubah data proyek')
                             <div class="btn-group">
                                 
                                 <button type="button"
@@ -248,6 +256,7 @@
                                     @endif
                                 @endif
                             </div>
+                            @endcan
                         </div>
                         @if($project->offer)
                             <div id="offer-view">
@@ -417,6 +426,7 @@
                                 {{ $project->project_type == 1 ? '8. Invoice Pelunasan Desain' : '6. Rencana Anggaran Biaya' }}
                             </h3>
                             @if($project->project_type == 2)
+                            @can('ubah data proyek')
                             <div class="btn-group">
                                 <button type="button" id="btn-edit-rab"
                                     class="btn btn-sm btn-dark me-2"
@@ -430,6 +440,7 @@
                                             <i class="ti ti-download"></i>
                                     </a>
                             </div>
+                            @endcan
                             @endif
                         </div>
                         <div id="rab-view">
@@ -485,12 +496,10 @@
                 </div>
             </div>
             @endif
-            {{-- @if($activeStep == 9) --}}
+            
             @if(
-                $activeStep >= 10 &&
-                (
-                    $project->levels->firstWhere('level_order', 9)?->is_started
-                )
+                $project?->levels->firstWhere('level_order', 9)?->is_started
+                && !$ReadOnly
             )
             <div id="final" class="step-section">
                 <div class="card shadow-sm border-0 mb-4">
@@ -498,12 +507,14 @@
                         <div class="d-flex justify-content-between align-items-center mb-4">
                             <h3 class="mb-4 fw-bold">9. Hasil Proyek</h3>
                             @if($project->finalDocument)
+                                @can('ubah data proyek')
                                 <div class="btn-group">
                                     <button class="btn btn-sm btn-dark"
                                             onclick="document.getElementById('form-reupload').classList.toggle('d-none')">
                                         <i class="ti ti-edit"></i>
                                     </button>
                                 </div>
+                                @endcan
                             @endif
                         </div>
                         @include('projects.steps.upload-final')
@@ -538,7 +549,6 @@
                                     accept=".zip,.rar,.pdf"
                                     required>
                             </div>
-
                             <div class="mt-3">
                                 <button class="btn btn-sm btn-dark">
                                     <i class="ti ti-upload"></i> Simpan Perubahan

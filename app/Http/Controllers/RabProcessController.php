@@ -15,6 +15,8 @@ class RabProcessController extends Controller
 {
     public function store(Request $request)
 {
+    abort_if(auth()->user()->cannot('lihat daftar proyek'), 403);
+
     $request->validate([
         'project_id' => 'required|exists:projects,id',
         'contact_name' => 'required|string',
@@ -147,6 +149,8 @@ public function exportPdf(Project $project)
 
 public function update(Request $request, Project $project, RabProcess $rab)
 {
+    abort_if(auth()->user()->cannot('ubah data proyek'), 403);
+    
     $request->validate([
         'contact_name' => 'required|string',
         'job_location' => 'required|string',

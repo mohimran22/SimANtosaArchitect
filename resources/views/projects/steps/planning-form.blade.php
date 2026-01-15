@@ -9,6 +9,7 @@
 ];
 @endphp
 
+@can('lihat daftar proyek')
 <form action="{{ route('projects.plannings.store') }}" method="POST">
     @csrf
     @if ($errors->any())
@@ -167,7 +168,7 @@
         <button class="btn btn-dark">Simpan Form</button>
     </div>
 </form>
-
+@endcan
 
 @push('js')
 <script>

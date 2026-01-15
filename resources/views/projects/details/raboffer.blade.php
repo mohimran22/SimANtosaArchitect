@@ -3,6 +3,7 @@
     $groupedItems = $offer?->items?->groupBy('category') ?? collect();
 @endphp
 
+@can('lihat data proyek')
 @if($offer)
 <div class="card shadow-sm border-0 mb-4">
 
@@ -165,3 +166,4 @@
     </div>
 </div>
 @endif
+@endcan

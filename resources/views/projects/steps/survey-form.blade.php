@@ -1,3 +1,4 @@
+@can('lihat daftar proyek')
 <form 
       action="{{ route('projects.surveys.store') }}"
       method="POST"
@@ -217,6 +218,7 @@
         <button class="btn btn-dark">Simpan Form</button>
     </div>
 </form>
+@endcan
 
 @push('js')
 <script>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Helpers\GeneralHelper;
 use App\Models\Project;
 use App\Models\ProjectLevel;
+use App\Models\ContractCounter;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
@@ -46,6 +47,12 @@ class ContractController extends Controller
 
         public function approve(Project $project)
     {
+        abort_if(
+            $project->customer->user_id !== auth()->id()
+            && auth()->user()->cannot('lihat daftar proyek'),
+            403
+        );
+
         DB::transaction(function () use ($project) {
             $offer = $project->offer;
 
@@ -78,31 +85,65 @@ class ContractController extends Controller
             ->with('success', 'Kontrak disetujui. Tahap Invoice DP dimulai.');
     }
 
-protected function generateContractNumber()
+// protected function generateContractNumber()
+// {
+//     $tahunFull = date('Y');   // 2026
+//     $tahun = date('y');       // 26
+//     $bulan = date('n');       // 1-12
+//     $romawiBulan = \App\Helpers\GeneralHelper::bulanRomawi($bulan);
+
+//     // Ambil nomor terakhir di tahun ini
+//     $last = \App\Models\Offer::whereYear('contract_date', $tahunFull)
+//         ->whereNotNull('contract_number')
+//         ->lockForUpdate() 
+//         ->orderByDesc('id')
+//         ->first();
+
+//     if ($last) {
+//         // SPK/DSN/26/I/001 → ambil 001
+//         $explode = explode('/', $last->contract_number);
+//         $lastNumber = (int) end($explode) + 1;
+//     } else {
+//         $lastNumber = 1;
+//     }
+
+//     // Format 3 digit: 1 → 001
+//     $nomorUrut = str_pad($lastNumber, 3, '0', STR_PAD_LEFT);
+
+//     return "SPK/DSN/$tahun/$romawiBulan/$nomorUrut";
+// }
+protected function generateContractNumber(): string
 {
-    $tahunFull = date('Y');   // 2026
-    $tahun = date('y');       // 26
-    $bulan = date('n');       // 1-12
-    $romawiBulan = \App\Helpers\GeneralHelper::bulanRomawi($bulan);
+    return DB::transaction(function () {
 
-    // Ambil nomor terakhir di tahun ini
-    $last = \App\Models\Offer::whereYear('contract_date', $tahunFull)
-        ->whereNotNull('contract_number')
-        ->lockForUpdate() 
-        ->orderByDesc('id')
-        ->first();
+        $now = now();
+        $yearFull = $now->format('Y'); // 2026
+        $yearShort = $now->format('y'); // 26
+        $bulanRomawi = \App\Helpers\GeneralHelper::bulanRomawi($now->month);
 
-    if ($last) {
-        // SPK/DSN/26/I/001 → ambil 001
-        $explode = explode('/', $last->contract_number);
-        $lastNumber = (int) end($explode) + 1;
-    } else {
-        $lastNumber = 1;
-    }
+        $counter = ContractCounter::where('year', $yearFull)
+            ->lockForUpdate()
+            ->first();
 
-    // Format 3 digit: 1 → 001
-    $nomorUrut = str_pad($lastNumber, 3, '0', STR_PAD_LEFT);
+        if (!$counter) {
+            $counter = ContractCounter::create([
+                'year' => $yearFull,
+                'last_number' => 0,
+            ]);
+        }
 
-    return "SPK/DSN/$tahun/$romawiBulan/$nomorUrut";
+        $next = $counter->last_number + 1;
+
+        $counter->update([
+            'last_number' => $next,
+        ]);
+
+        $nomorUrut = str_pad($next, 3, '0', STR_PAD_LEFT);
+
+        return "SPK/DSN/$yearShort/$bulanRomawi/$nomorUrut";
+    });
 }
 }
+
+
+

@@ -1,3 +1,4 @@
+@can('lihat daftar proyek')
 <form action="{{ route('projects.rab.store') }}" method="POST">
     @csrf
                         @if ($errors->any())
@@ -145,6 +146,7 @@
         <button class="btn btn-dark">Simpan RAB</button>
     </div>
 </form>
+@endcan
 
 @push('js')
 <script>
