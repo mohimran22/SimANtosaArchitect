@@ -32,9 +32,9 @@ class PlanAssignedNotification extends Notification
             'project_id'  => $project->id,
             'project_name'=> $project->project_name,
             'message'     => match ($this->type) {
-                'created_self'      => 'Selamat, Anda berhasil membuat rencana survei',
-                'assigned_employee' => 'Anda ditugaskan untuk melakukan survei proyek',
-                'customer'          => 'Proyek Anda masuk tahap rencana survei',
+                'created_self'      => 'Selamat, Anda telah berhasil menyimpan form rencana survei',
+                'assigned_employee' => 'Anda direncanakan untuk melakukan survei proyek',
+                'customer'          => 'Form rencana survei Anda berhasil disimpan dan sekarang masuk ke tahap survei',
                 default             => 'Update proyek',
             },
             'url' => route('projects.continue', $project->id),

@@ -238,23 +238,7 @@
                                     <i class="ti ti-edit"></i>
                                 </button>
 
-                                @if($project->offer?->id)
-                                    @if($project->project_type == 1)
-                                    <a href="{{ route('projects.offers.desain.pdf', $project->offer->id) }}"
-                                        class="btn btn-sm btn-dark"
-                                        target="_blank"
-                                        title="Download PDF">
-                                            <i class="ti ti-download"></i>
-                                    </a>
-                                    @else
-                                    <a href="{{ route('projects.offers.rab.pdf', $project->offer->id) }}"
-                                        class="btn btn-sm btn-dark"
-                                        target="_blank"
-                                        title="Download PDF">
-                                            <i class="ti ti-download"></i>
-                                    </a>
-                                    @endif
-                                @endif
+
                             </div>
                             @endcan
                         </div>

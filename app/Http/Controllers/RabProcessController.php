@@ -22,20 +22,17 @@ class RabProcessController extends Controller
         'contact_name' => 'required|string',
         'job_location' => 'required|string',
         'job_duration' => 'nullable|string',
-
         'items' => 'required|array|min:1',
         'items.*.job_category_id' => 'required|exists:job_categories,id',
         'items.*.job_name' => 'required|string',
         'items.*.satuan' => 'required|string',
         'items.*.volume' => 'required|numeric|min:0.01',
         'items.*.price' => 'required|numeric|min:0',
-        'items.*.profit' => 'required|numeric|max:100',
-        'items.*.overhead' => 'required|numeric|max:100',
-        'items.*.total' => 'required|numeric|min:0',
+        'profit' => 'required|numeric|max:100',
+        'overhead' => 'required|numeric|max:100',
         'discount' => 'nullable|numeric|min:0',
         'tax_rate' => 'nullable|numeric|min:0|max:100',
         'shipping' => 'nullable|numeric|min:0',
-
         'notes' => 'nullable|string',
     ]);
 
@@ -43,35 +40,48 @@ class RabProcessController extends Controller
 
         $project = Project::findOrFail($request->project_id);
 
-        $subtotal = collect($request->items)->sum(function ($item) {
-            return (float) $item['total'];
-        });
+        $profitPercent   = (float) $request->profit;
+        $overheadPercent = (float) $request->overhead;
 
+        $baseSubtotal = collect($request->items)->sum(function ($item) {
+            return (float) $item['volume'] * (float) $item['price'];
+        });
+        
+        $profitValue   = $baseSubtotal * ($profitPercent / 100);
+        $overheadValue = $baseSubtotal * ($overheadPercent / 100);
         $discount        = (float) ($request->discount ?? 0);
         $taxRate         = (float) ($request->tax_rate ?? 0);
         $shipping        = (float) ($request->shipping ?? 0);
 
-        $base = $subtotal;
+        $profitValue = (($profit ?? 0) / 100);
+        $overheadValue = (($overhead ?? 0) / 100);
 
-        $subtotalAfterDiscount = max($base - $discount, 0);
+    $subtotal = $baseSubtotal + $profitValue + $overheadValue;
 
-        $taxTotal = $subtotalAfterDiscount * ($taxRate / 100);
+    $discount = (float) ($request->discount ?? 0);
+    $taxRate  = (float) ($request->tax_rate ?? 0);
+    $shipping = (float) ($request->shipping ?? 0);
 
-        $grandTotal = $subtotalAfterDiscount + $taxTotal + $shipping;
+    $subtotalAfterDiscount = max($subtotal - $discount, 0);
+
+    $taxTotal = $subtotalAfterDiscount * ($taxRate / 100);
+
+    $grandTotal = $subtotalAfterDiscount + $taxTotal + $shipping;
 
         $rab = RabProcess::create([
             'project_id' => $project->id,
             'contact_name' => $request->contact_name,
             'job_location' => $request->job_location,
             'job_duration' => $request->job_duration,
-
+            'base_subtotal' => $baseSubtotal,
             'subtotal' => $subtotal,
             'discount' => $discount,
             'subtotal_after_discount' => $subtotalAfterDiscount,
 
             'tax_rate' => $taxRate,
             'tax_total' => $taxTotal,
-
+            'profit' => $profitValue,
+            'overhead' => $overheadValue,
             'shipping' => $shipping,
             'grand_total' => $grandTotal,
 
@@ -82,22 +92,22 @@ class RabProcessController extends Controller
         ]);
 
         foreach ($request->items as $item) {
-            $base = $item['volume'] * $item['price'];
 
-            $profitValue = $base * (($item['profit'] ?? 0) / 100);
-            $overheadValue = $base * (($item['overhead'] ?? 0) / 100);
+            $base = (float) $item['volume'] * (float) $item['price'];
 
-            $total = $base + $profitValue + $overheadValue;
+            $itemProfit   = $base * ($profitPercent / 100);
+            $itemOverhead = $base * ($overheadPercent / 100);
+
+            $total = $base + $itemProfit + $itemOverhead;
+
             RabProcessItem::create([
                 'rab_process_id' => $rab->id,
                 'job_category_id' => $item['job_category_id'],
                 'job_name' => $item['job_name'],
                 'satuan' => $item['satuan'],
                 'volume' => $item['volume'],
-                'profit' => $item['profit'],
-                'overhead' => $item['overhead'],
                 'price' => $item['price'],
-                'total' => $item['total'],
+                'total' => $total, // 🔒 HITUNG SENDIRI, BUKAN DARI REQUEST
             ]);
         }
 

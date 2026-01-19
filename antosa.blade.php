@@ -179,3 +179,4 @@
     @stack('scripts')
 </body>
 </html>
+Anda mendapatkan proyek baru

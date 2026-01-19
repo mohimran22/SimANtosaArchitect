@@ -11,6 +11,7 @@ use App\Models\Employee;
 use App\Notifications\SurveyInvoiceCreatedNotification;
 use App\Notifications\PlanAssignedNotification;
 use App\Services\InvoiceNumberGenerator;
+use App\Services\ProjectNotifier;
 use Yajra\DataTables\DataTables;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
@@ -23,7 +24,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 class PlanningController extends Controller
 {
 
-public function store(Request $request)
+    public function store(Request $request)
 {
     abort_if(auth()->user()->cannot('lihat daftar proyek'), 403);
 
@@ -68,8 +69,7 @@ public function store(Request $request)
         ])->validate();
     }
 
-    $result = DB::transaction(function () use ($data, $project) {
-
+        $result = DB::transaction(function () use ($data, $project) {
             $surveyFee = (int) preg_replace('/[^0-9]/', '', $data['survey_fee']);
 
             $planning = Planning::create([
@@ -124,42 +124,76 @@ public function store(Request $request)
         $creatorUser = auth()->user();
         $planning = $result['planning'];
         $invoice  = $result['invoice'];
-        // Ambil level survei (level 2)
-        $level = $project->levels()->where('level_order', 2)->first();
 
-        if ($level) {
-            $employees = $level->employees()->with('user')->get();
+        $event = $invoice ? 'planning_created_paid' : 'planning_created_free';
+        $cfg   = config("project_events.$event");
 
-            foreach ($employees as $employee) {
-                if (!$employee->user) continue;
 
-                // Jangan kirim ke diri sendiri
-                if ($employee->user->id === $creatorUser->id) continue;
+        if (!$cfg) {
+            throw new \Exception("Config project_events.$event not found");
+        }
 
-                $employee->user->notify(
-                    new PlanAssignedNotification($planning, 'assigned_employee')
-                );
+        // Ambil level 2
+        $level2 = $project->levels->where('level_order', 2)->first();
+
+        // Kumpulkan target
+        $targets = [
+            'created_self' => $creatorUser,
+        ];
+
+        // Assigned employees
+        if ($level2) {
+            foreach ($level2->employees as $employee) {
+                if ($employee->user) {
+                    $targets['assigned_' . $employee->user->id] = $employee->user;
+                }
             }
         }
 
-        // Kirim ke customer kalau ada invoice atau walau gratis
+        // Customer
         if ($project->customer?->user) {
-            $project->customer->user->notify(
-                new PlanAssignedNotification($planning, 'customer')
+            $targets['customer'] = $project->customer->user;
+        }
+
+        // Kirim notifikasi
+        foreach ($targets as $key => $user) {
+            if (!$user) continue;
+
+            // Tentukan role
+            if ($user->id === $creatorUser->id) {
+                $role = 'created_self';
+            } elseif ($project->customer?->user && $user->id === $project->customer->user->id) {
+                $role = 'customer';
+            } else {
+                $role = 'assigned';
+            }
+
+            if (!isset($cfg['message'][$role])) {
+                continue;
+            }
+
+            ProjectNotifier::notifyUsers(
+                [$user],
+                ProjectNotifier::makePayload($project, [
+                    'type'    => $event,
+                    'role'    => $role,
+                    'title'   => $cfg['title'],
+                    'message' => $cfg['message'][$role],
+                    'url'     => route('projects.create', ['project_id' => $project->id]),
+                    // 'meta'    => [
+                    //     'planning_id' => $planning->id,
+                    //     'invoice_id'  => $invoice?->id,
+                    //     'is_paid'     => $invoice ? false : true,
+                    // ]
+                ])
             );
         }
 
-        if ($invoice && $project->customer?->user) {
-            $project->customer->user->notify(
-                new SurveyInvoiceCreatedNotification($project, $invoice)
-            );
-        }
 
     return redirect()
         ->route('projects.create', ['project_id' => $data['project_id']])
         ->with('success', 'Rencana survei berhasil disimpan.');
 }
-
 
 public function planningSurveyPdf(Project $project)
 {

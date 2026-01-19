@@ -13,6 +13,7 @@ class RabProcess extends Model
     'contact_name',
     'job_location',
     'job_duration',
+    'base_subtotal',
     'subtotal',
     'discount',
     'subtotal_after_discount',

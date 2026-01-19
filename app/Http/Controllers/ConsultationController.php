@@ -8,6 +8,7 @@ use App\Models\ConsultationItem;
 use App\Models\Project;
 use App\Models\ProjectLevel;
 use App\Notifications\ConsultationAssignedNotification;
+use App\Services\ProjectNotifier;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -70,7 +71,6 @@ class ConsultationController extends Controller
 
     if ($clientSigned) {
 
-        // Tandai level konsultasi selesai
         $level = ProjectLevel::where([
             'project_id'  => $project->id,
             'level_order' => 1,
@@ -78,7 +78,7 @@ class ConsultationController extends Controller
 
         if ($level) {
             $level->update([
-                'employee_id'  => $data['employee_id'], // karyawan yg handle
+                'employee_id'  => $data['employee_id'],
                 'is_completed' => true,
             ]);
         }
@@ -91,36 +91,83 @@ class ConsultationController extends Controller
         ]);
     }
 
-    auth()->user()->notify(
-        new ConsultationAssignedNotification($consultation, 'created_self')
-    );
+    $event = 'consult_created';
+    $cfg   = config("project_events.consult_created");
 
-    $employeeUser = $project->employee?->user;
-
-    if ($employeeUser) {
-        $employeeUser->notify(
-            new ConsultationAssignedNotification($consultation, 'assigned_employee')
-        );
+    if (!$cfg) {
+        throw new \Exception("Config project_events.$event not found");
     }
 
-    $customerUser = $project->customer?->user;
+    $targets = [
+        'created_self' => auth()->user(),
+        'assigned'     => $project->employee?->user,
+        'customer'     => $project->customer?->user,
+    ];
 
-    if ($customerUser) {
-        $customerUser->notify(
-            new ConsultationAssignedNotification($consultation, 'customer')
+    foreach ($targets as $role => $user) {
+        if (!$user) continue;
+
+        // Cegah kirim dobel ke user yang sama
+        if ($user->id === auth()->id() && $role !== 'created_self') {
+            continue;
+        }
+
+        if (!isset($cfg['message'][$role])) {
+            continue;
+        }
+
+        ProjectNotifier::notifyUsers(
+            [$user],
+            ProjectNotifier::makePayload($project, [
+                'type'    => $event,
+                'role'    => $role,
+                'title'   => $cfg['title'],
+                'message' => $cfg['message'][$role],
+                'url'     => route('projects.create', ['project_id' => $project->id]),
+            ])
         );
     }
+    // ProjectNotifier::notifyUsers(
+    //     [auth()->user()],
+    //     ProjectNotifier::makePayload($project, [
+    //         'type'    => $event,
+    //         'role'    => 'created_self',
+    //         'title'   => $cfg['title'],
+    //         'message' => $cfg['message']['created_self'],
+    //         'url'     => route('projects.create', ['project_id' => $project->id]),
+    //     ])
+    // );
+
+    // if ($project->employee?->user && $project->employee->user->id !== auth()->id()) {
+    //     ProjectNotifier::notifyUsers(
+    //         [$project->employee->user],
+    //         ProjectNotifier::makePayload($project, [
+    //             'type'    => $event,
+    //             'role'    => 'assigned',
+    //             'title'   => $cfg['title'],
+    //             'message' => $cfg['message']['assigned'],
+    //             'url'     => route('projects.create', ['project_id' => $project->id]),
+    //         ])
+    //     );
+    // }
+
+    // if ($project->customer?->user) {
+    //     ProjectNotifier::notifyUsers(
+    //         [$project->customer->user],
+    //         ProjectNotifier::makePayload($project, [
+    //             'type'    => $event,
+    //             'role'    => 'customer',
+    //             'title'   => $cfg['title'],
+    //             'message' => $cfg['message']['customer'],
+    //             'url'     => route('projects.create', ['project_id' => $project->id]),
+    //         ])
+    //     );
+    // }
 
     return redirect()
     ->route('projects.create', ['project_id' => $consultation->project_id])
     ->with('success', 'Form konsultasi berhasil disimpan.');
 }
-
-    public function show(Consultation $consultation)
-    {
-        $consultation->load('items', 'project.customer.user', 'creator');
-        return view('projects.consultations.show', compact('consultation'));
-    }
 
     public function pdf(Consultation $consultation)
     {

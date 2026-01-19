@@ -11,9 +11,6 @@ class SurveyInvoiceCreatedNotification extends Notification
 {
     use Queueable;
 
-    /**
-     * Create a new notification instance.
-     */
     public function __construct(public $project, public $invoice)
     {
         //
@@ -29,9 +26,6 @@ class SurveyInvoiceCreatedNotification extends Notification
         return ['database'];
     }
 
-    /**
-     * Get the mail representation of the notification.
-     */
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)

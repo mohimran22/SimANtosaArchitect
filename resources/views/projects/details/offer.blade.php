@@ -67,10 +67,6 @@
             </div>
         </div>
 
-        {{-- ======================= --}}
-        {{--        Rincian Item      --}}
-        {{-- ======================= --}}
-
         <h5 class="fw-bold mt-5 mb-3">Rincian Pekerjaan</h5>
 
         <table class="table table-bordered align-middle">
@@ -157,7 +153,6 @@
                     </th>
                 </tr>
             </tfoot>
-
         </table>
 
         {{-- Notes --}}
@@ -167,6 +162,25 @@
             <div class="border p-3">{{ $offer->notes }}</div>
         </div>
         @endif
+        <div class="d-flex align-items-center gap-2">
+            @if($project->offer?->id)
+                @if($project->project_type == 1)
+                <a href="{{ route('projects.offers.desain.pdf', $project->offer->id) }}"
+                    class="btn btn-dark"
+                    target="_blank"
+                    title="Download PDF">
+                        <i class="ti ti-file-text"></i>Download PDF
+                </a>
+                @else
+                <a href="{{ route('projects.offers.rab.pdf', $project->offer->id) }}"
+                    class="btn btn-dark"
+                    target="_blank"
+                    title="Download PDF">
+                        <i class="ti ti-file-text"></i>Download PDF
+                </a>
+                @endif
+            @endif
+        </div>
     </div>
 </div>
 @endif

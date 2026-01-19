@@ -16,7 +16,7 @@ use App\Models\ProjectLevel;
 use App\Models\ProjectTask;
 use App\Models\JobCategory;
 use App\Models\User;
-use App\Notifications\ProjectAssignedNotification;
+use App\Services\ProjectNotifier;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
@@ -239,35 +239,61 @@ if (
 
     $project->load(['employee.user', 'customer.user']);
 
-    $creatorUser = auth()->user();
+    $event = 'project_created';
+    $cfg   = config("project_events.project_created");
 
-    $creatorUser->notify(
-        new ProjectAssignedNotification($project, 'created_self')
+    if (!$cfg) {
+        throw new \Exception("Config project_events.$event not found");
+    }
+
+    ProjectNotifier::notifyUsers(
+        [auth()->user()],
+        ProjectNotifier::makePayload($project, [
+            'type'    => $event,
+            'role'    => 'created_self',
+            'title'   => $cfg['title'],
+            'message' => $cfg['message']['created_self'],
+            'url'     => route('projects.create', ['project_id' => $project->id]),
+        ])
     );
+
+    if ($project->employee?->user && $project->employee->user->id !== auth()->id()) {
+        ProjectNotifier::notifyUsers(
+            [$project->employee->user],
+            ProjectNotifier::makePayload($project, [
+                'type'    => $event,
+                'role'    => 'assigned',
+                'title'   => $cfg['title'],
+                'message' => $cfg['message']['assigned'],
+                'url'     => route('projects.create', ['project_id' => $project->id]),
+            ])
+        );
+    }
 
     $directors = User::role('Direktur')->get();
 
-    foreach ($directors as $director) {
-        // Jangan kirim ke diri sendiri kalau dia juga creator
-        if ($director->id !== $creatorUser->id) {
-            $director->notify(
-                new ProjectAssignedNotification($project, 'new_project_for_review')
-            );
-        }
-    }
-
-    if ($project->employee?->user) {
-
-        if ($project->employee->user->id !== $creatorUser->id) {
-            $project->employee->user->notify(
-                new ProjectAssignedNotification($project, 'assigned_employee')
-            );
-        }
-    }
+    ProjectNotifier::notifyUsers(
+        $directors,
+        ProjectNotifier::makePayload($project, [
+            'type'    => $event,
+            'role'    => 'director',
+            'title'   => $cfg['title'],
+            'message' => $cfg['message']['director'],
+            'url'     => route('projects.create', ['project_id' => $project->id]),
+        ]),
+        exceptUserId: auth()->id()
+    );
 
     if ($project->customer?->user) {
-        $project->customer->user->notify(
-            new ProjectAssignedNotification($project, 'customer')
+        ProjectNotifier::notifyUsers(
+            [$project->customer->user],
+            ProjectNotifier::makePayload($project, [
+                'type'    => $event,
+                'role'    => 'customer',
+                'title'   => $cfg['title'],
+                'message' => $cfg['message']['customer'],
+                'url'     => route('projects.create', ['project_id' => $project->id]),
+            ])
         );
     }
 

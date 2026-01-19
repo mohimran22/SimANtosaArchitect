@@ -167,17 +167,6 @@ p {
     </tr>
     @endif
 
-    {{-- DISCOUNT --}}
-    @if(($offer->discount ?? 0) > 0)
-    <tr>
-        <th colspan="3" class="text-right">DISCOUNT</th>
-        <th class="text-right">
-            {{ number_format($offer->discount,0,',','.') }}
-        </th>
-    </tr>
-    @endif
-
-    {{-- TOTAL DP --}}
     <tr>
         <th colspan="3" class="text-right bold">TOTAL DP (70%)</th>
         <th class="text-right bold">

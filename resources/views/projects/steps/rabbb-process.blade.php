@@ -17,15 +17,15 @@
     <div class="row mb-3">
         <div class="col-md-4">
             <label>Nama Customer</label>
-            <input type="text" name="contact_name" value="{{ $project->customer->user->fullname }}" class="form-control">
+            <input type="text" name="contact_name" value="{{ $project->customer->user->fullname }}" class="form-control" required>
         </div>
         <div class="col-md-4">
             <label>Lokasi Pekerjaan</label>
-            <input type="text" name="contact_name" value="{{ $project->city->name ?? '-' }}" class="form-control">
+            <input type="text" name="contact_name" value="{{ $project->city->name ?? '-' }}" class="form-control" required>
         </div>
         <div class="col-md-4">
             <label>Durasi Pekerjaan</label>
-            <input type="text" name="contact_name" class="form-control">
+            <input type="text" name="contact_name" class="form-control" required>
         </div>
         {{-- <div class="col-md-4">
             <label>Nomor Penawaran</label>

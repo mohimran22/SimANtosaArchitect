@@ -104,6 +104,63 @@ public function store(SurveyRequest $request)
         $this->surveyId = $survey->project_id;
     });
 
+    $creatorUser = auth()->user();
+    $event = 'survey_created';
+    $cfg   = config("project_events.survey_created");
+
+    if (!$cfg) {
+        throw new \Exception("Config project_events.$event not found");
+    }
+    $level3 = $project->levels->where('level_order', 3)->first();
+    $targets = [
+        'created_self' => $creatorUser,
+    ];
+        if ($level3) {
+            foreach ($level3->employees as $employee) {
+                if ($employee->user) {
+                    $targets['assigned_' . $employee->user->id] = $employee->user;
+                }
+            }
+        }
+
+        // Customer
+        if ($project->customer?->user) {
+            $targets['customer'] = $project->customer->user;
+        }
+
+        foreach ($targets as $key => $user) {
+            if (!$user) continue;
+
+            // Tentukan role
+            if ($user->id === $creatorUser->id) {
+                $role = 'created_self';
+            } elseif ($project->customer?->user && $user->id === $project->customer->user->id) {
+                $role = 'customer';
+            } else {
+                $role = 'assigned';
+            }
+
+            if (!isset($cfg['message'][$role])) {
+                continue;
+            }
+
+            ProjectNotifier::notifyUsers(
+                [$user],
+                ProjectNotifier::makePayload($project, [
+                    'type'    => $event,
+                    'role'    => $role,
+                    'title'   => $cfg['title'],
+                    'message' => $cfg['message'][$role],
+                    'url'     => route('projects.create', ['project_id' => $project->id]),
+                    // 'meta'    => [
+                    //     'planning_id' => $planning->id,
+                    //     'invoice_id'  => $invoice?->id,
+                    //     'is_paid'     => $invoice ? false : true,
+                    // ]
+                ])
+            );
+        }
+
     return redirect()
         ->route('projects.create', ['project_id' => $this->surveyId])
         ->with('success', 'Form survey berhasil disimpan.');

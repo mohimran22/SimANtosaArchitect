@@ -207,12 +207,52 @@ berikut kami sampaikan penawaran harga untuk pelaksanaan pekerjaan:
 @endforeach
 </tbody>
 
-<tfoot>
+{{-- <tfoot>
 <tr>
 <th colspan="5" class="text-right">GRAND TOTAL</th>
 <th class="text-right bold">{{ number_format($offer->grand_total,0,',','.') }}</th>
 </tr>
-</tfoot>
+</tfoot> --}}
+            <tfoot>
+                <tr>
+                    <th colspan="5" class="text-right">SUBTOTAL</th>
+                    <th>Rp {{ number_format($offer->total_price, 0, ',', '.') }}</th>
+                </tr>
+
+                <tr>
+                    <th colspan="5" class="text-right">DISCOUNT</th>
+                    <th>Rp {{ number_format($offer->discount, 0, ',', '.') }}</th>
+                </tr>
+
+                <tr>
+                    <th colspan="5" class="text-right">SUBTOTAL AFTER DISCOUNT</th>
+                    <th>
+                        Rp {{ number_format($offer->total_price - $offer->discount, 0, ',', '.') }}
+                    </th>
+                </tr>
+
+                <tr>
+                    <th colspan="5" class="text-right">TAX RATE (%)</th>
+                    <th>{{ $offer->tax_rate }}%</th>
+                </tr>
+
+                <tr>
+                    <th colspan="5" class="text-right">TOTAL TAX</th>
+                    <th>Rp {{ number_format($offer->total_tax, 0, ',', '.') }}</th>
+                </tr>
+
+                <tr>
+                    <th colspan="5" class="text-right">SHIPPING / HANDLING</th>
+                    <th>Rp {{ number_format($offer->shipping, 0, ',', '.') }}</th>
+                </tr>
+
+                <tr>
+                    <th colspan="5" class="text-right">GRAND TOTAL</th>
+                    <th class="fw-bold">
+                        Rp {{ number_format($offer->grand_total, 0, ',', '.') }}
+                    </th>
+                </tr>
+            </tfoot>
 </table>
 
 <p><strong>TERBILANG :</strong> {{ strtoupper(terbilang($offer->grand_total)) }} RUPIAH</p>

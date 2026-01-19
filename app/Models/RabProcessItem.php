@@ -15,9 +15,7 @@ class RabProcessItem extends Model
     'satuan',
     'volume',
     'price',
-    'total',
-    'overhead',
-    'profit'
+    'total'
 ];
 public function category()
 {

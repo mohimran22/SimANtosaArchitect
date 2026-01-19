@@ -50,7 +50,7 @@ class ProjectAssignedNotification extends Notification
             'message'      => match ($this->type) {
                 'created_self'      => 'Selamat, Anda berhasil membuat project',
                 'assigned_employee' => 'Anda ditugaskan ke proyek baru',
-                'customer'          => 'Anda mendapatkan proyek baru',
+                'customer'          => 'Data proyek Anda berhasil disimpan dan sekarang sedang masuk tahap konsultasi',
                 'new_project_for_review'=> 'Ada proyek baru yang perlu ditinjau',
                 default             => 'Update proyek',
             },

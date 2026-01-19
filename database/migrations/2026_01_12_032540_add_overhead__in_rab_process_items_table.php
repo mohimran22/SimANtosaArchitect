@@ -24,7 +24,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('rab_process_items', function (Blueprint $table) {
-            $table->dropColumn(['profit', 'overhead']);
+            
         });
     }
 };

@@ -10,7 +10,7 @@
                 <div class="col-12 col-md-auto ms-auto d-print-none">
                     <div class="btn-list">
                   
-                        <a href=" {{ route("labor_costs.index") }} " class="btn btn-primary d-none d-sm-inline-block" >
+                        <a href=" {{ route("labor_costs.index") }} " class="btn btn-outlien-dark d-none d-sm-inline-block" >
                             Kembali
                         </a>
                         
@@ -62,7 +62,7 @@
                                     <input type="text" name="notes" class="form-control" value="{{ old('notes', $labor_cost->notes) }}">
                                 </div>
                                 <div class="d-flex justify-content-between">
-                                    <button type="submit" class="btn btn-success">Simpan Perubahan</button>
+                                    <button type="submit" class="btn btn-dark">Simpan Perubahan</button>
                                 </div>
                             </form>
  
