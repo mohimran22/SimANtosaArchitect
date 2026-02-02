@@ -2,35 +2,52 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
-use Spatie\Permission\Models\Role;
+use App\Models\User;
+use App\Models\Religion;
+use App\Models\Province;
+use App\Models\City;
+use App\Models\District;
+use App\Models\SubDistrict;
+use App\Models\PostalCode;
 
 class UserSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        $user = User::firstOrCreate(
-            ['email' => 'admin@antosaarchitect.com'],
-            [
-                'id' => Str::uuid(),
-                'fullname' => 'Super Admin',
-                'nickname' => 'Admin',
-                'gender' => 1,
-                'password' => Hash::make('password123'),
-                'phone' => '08123456789',
-            ]
-        );
+        User::create([
+            'id' => Str::uuid(),
 
-        $role = Role::where('name', 'Super-Admin')->first();
+            'fullname' => 'Super Admin',
+            'nickname' => 'Admin',
+            'gender' => 1,
 
-        if ($role) {
-            $user->assignRole($role);
-        }
+            'email' => 'superadmin@gmail.com',
+            'email_verified_at' => now(),
+
+            'password' => Hash::make('password'),
+
+            'birth_place' => 'Jakarta',
+            'identity_number' => '1234567890123456',
+            'birth_date' => '1990-01-01',
+
+            // ambil FK pertama supaya aman
+            'religion_id' => Religion::first()->id ?? 1,
+            'province_id' => Province::first()->id ?? 1,
+            'city_id' => City::first()->id ?? 1,
+            'district_id' => District::first()->id ?? 1,
+            'sub_district_id' => SubDistrict::first()->id ?? 1,
+            'postal_code_id' => PostalCode::first()->id ?? 1,
+
+            'address' => 'Jl. Contoh Alamat No. 1',
+            'phone' => '08123456789',
+
+            'photo' => null,
+            'identity_photo' => null,
+
+            'remember_token' => Str::random(10),
+        ]);
     }
 }
