@@ -1,4 +1,4 @@
-FROM php:8.3-fpm
+FROM php:8.3-cli
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -10,6 +10,9 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     libpq-dev \
     zip \
+    curl \
+    nodejs \
+    npm \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install pdo pdo_mysql pdo_pgsql gd zip
 
@@ -24,10 +27,12 @@ COPY . .
 # Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader
 
+# Build frontend (kalau pakai Vite)
+RUN npm install && npm run build
+
 # Permission
 RUN chown -R www-data:www-data storage bootstrap/cache
 
 EXPOSE 8080
 
-CMD npm run build && php artisan serve --host=0.0.0.0 --port=8080
-
+CMD php artisan serve --host=0.0.0.0 --port=8080
