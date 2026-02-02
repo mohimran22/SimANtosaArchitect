@@ -239,7 +239,7 @@ class RolePermissionSeeder extends Seeder
             foreach ($roles as $roleName) {
                 Role::firstOrCreate(
                     ['name' => $roleName, 'guard_name' => 'web'],
-                    ['id' => (string) Str::uuid(), 'group' => $group] // tambahan kolom group
+                    ['id' => (string) Str::uuid(), 'role_group' => $group] // tambahan kolom group
                 );
             }
         }
