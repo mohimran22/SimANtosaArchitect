@@ -6,13 +6,7 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use App\Models\User;
-use App\Models\Religion;
-use App\Models\Province;
-use App\Models\City;
-use App\Models\District;
-use App\Models\SubDistrict;
-use App\Models\PostalCode;
-use Spatie\Permission\Models\Role;
+use App\Models\Role;
 
 class UserSeeder extends Seeder
 {
