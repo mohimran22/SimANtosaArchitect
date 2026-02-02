@@ -2,11 +2,11 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
+use Spatie\Permission\Models\Role;
 
 class UserSeeder extends Seeder
 {
@@ -15,30 +15,22 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-
-        $menus = [
-            
+        $user = User::firstOrCreate(
+            ['email' => 'admin@antosaarchitect.com'],
             [
-                'text' => 'Proyek Build',
-                        'icon' => 'ti ti-building-community',
-                        'url' => '/project/buid',
-                        'type' => 'url',
-                        'order' => 3,
-                        'is_active' => true,
-                        'permission_name' => 'lihat daftar proyek',
-            ],
-            [
-                'text' => 'Tenaga',
-                        'icon' => 'ti ti-building-community',
-                        'url' => '/project/labor',
-                        'type' => 'url',
-                        'order' => 3,
-                        'is_active' => true,
-                        'permission_name' => 'lihat daftar proyek',
-            ],
-            
-        ];
+                'id' => Str::uuid(),
+                'fullname' => 'Super Admin',
+                'nickname' => 'Admin',
+                'gender' => 'L',
+                'password' => Hash::make('password123'),
+                'phone' => '08123456789',
+            ]
+        );
 
-        DB::table('menus')->insert($menus);
+        $role = Role::where('name', 'Super-Admin')->first();
+
+        if ($role) {
+            $user->assignRole($role);
+        }
     }
 }
