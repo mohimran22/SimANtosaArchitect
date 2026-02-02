@@ -177,7 +177,7 @@ class RolePermissionSeeder extends Seeder
                 foreach ($roles as $roleName) {
                     Role::updateOrCreate(
                         ['name' => $roleName, 'guard_name' => 'web'],
-                        ['group' => $group]
+                        ['role_group' => $group]
                     );
                 }
             }
