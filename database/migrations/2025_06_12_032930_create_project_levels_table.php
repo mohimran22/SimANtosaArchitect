@@ -14,7 +14,7 @@ return new class extends Migration
                 Schema::create('project_levels', function (Blueprint $table) {
             $table->id();
 
-            $table->foreignId('project_id')
+            $table->foreignUuid('project_id')
                   ->constrained()
                   ->cascadeOnDelete();
 
