@@ -35,11 +35,11 @@ class UserSeeder extends Seeder
 
             // ambil FK pertama supaya aman
             'religion_id' => Religion::first()->id ?? 1,
-            'province_id' => Province::first()->id ?? 1,
-            'city_id' => City::first()->id ?? 1,
-            'district_id' => District::first()->id ?? 1,
-            'sub_district_id' => SubDistrict::first()->id ?? 1,
-            'postal_code_id' => PostalCode::first()->id ?? 1,
+            'province_id' => 5,
+            'city_id' => 91,
+            'district_id' => 1104,
+            'sub_district_id' => 15935,
+            'postal_code_id' => 15935,
 
             'address' => 'Jl. Contoh Alamat No. 1',
             'phone' => '08123456789',
