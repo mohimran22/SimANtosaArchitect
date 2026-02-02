@@ -49,7 +49,7 @@
                                 value="{{ old('start_date') }}"
                                 pattern="\d{4}-\d{2}-\d{2}" placeholder="YYYY-MM-DD">
             </div>
-            <div class="col-md-2">
+            {{-- <div class="col-md-2">
                 <label class="form-label">Status Proyek</label>
                 <select name="project_status" class="form-select">
                     <option value="">-- Pilih Status --</option>
@@ -60,7 +60,7 @@
                     @endforeach
                 </select>
             </div>
-            {{-- <div class="col-md-4">
+            <div class="col-md-4">
                 <label class="form-label">Tanggal Akhir Proyek</label>
                             <input type="date" name="end_date" class="form-control"
                                 value="{{ old('end_date') }}"

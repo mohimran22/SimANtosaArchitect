@@ -14,7 +14,6 @@
                 'subtotal' => 0
             ];
         }
-
         $grouped[$kode]['items'][] = $item;
         $grouped[$kode]['subtotal'] += $item->total;
     }

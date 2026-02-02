@@ -30,7 +30,7 @@ class ProjectTask extends Model
         'completed_at',
         'parent_task_id',
         'revision_number',
-        'aproved_at',
+        'approved_at',
         'approved_by',
         'rejected_at',
         'rejected_by',

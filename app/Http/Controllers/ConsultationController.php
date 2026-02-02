@@ -127,42 +127,6 @@ class ConsultationController extends Controller
             ])
         );
     }
-    // ProjectNotifier::notifyUsers(
-    //     [auth()->user()],
-    //     ProjectNotifier::makePayload($project, [
-    //         'type'    => $event,
-    //         'role'    => 'created_self',
-    //         'title'   => $cfg['title'],
-    //         'message' => $cfg['message']['created_self'],
-    //         'url'     => route('projects.create', ['project_id' => $project->id]),
-    //     ])
-    // );
-
-    // if ($project->employee?->user && $project->employee->user->id !== auth()->id()) {
-    //     ProjectNotifier::notifyUsers(
-    //         [$project->employee->user],
-    //         ProjectNotifier::makePayload($project, [
-    //             'type'    => $event,
-    //             'role'    => 'assigned',
-    //             'title'   => $cfg['title'],
-    //             'message' => $cfg['message']['assigned'],
-    //             'url'     => route('projects.create', ['project_id' => $project->id]),
-    //         ])
-    //     );
-    // }
-
-    // if ($project->customer?->user) {
-    //     ProjectNotifier::notifyUsers(
-    //         [$project->customer->user],
-    //         ProjectNotifier::makePayload($project, [
-    //             'type'    => $event,
-    //             'role'    => 'customer',
-    //             'title'   => $cfg['title'],
-    //             'message' => $cfg['message']['customer'],
-    //             'url'     => route('projects.create', ['project_id' => $project->id]),
-    //         ])
-    //     );
-    // }
 
     return redirect()
     ->route('projects.create', ['project_id' => $consultation->project_id])

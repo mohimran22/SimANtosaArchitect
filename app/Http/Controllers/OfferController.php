@@ -8,6 +8,7 @@ use App\Models\OfferItem;
 use App\Models\Project;
 use App\Models\ProjectLevel;
 use App\Models\OfferCounter;
+use App\Services\ProjectNotifier;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -45,7 +46,7 @@ public function store(OfferRequest $request)
         $offer = Offer::create([
             'project_id'        => $data['project_id'],
             'design_package_id' => $data['design_package_id'],
-            'offer_number'      => $data['offer_number'] ?: $this->generateOfferNumber(),
+            'offer_number'      => $data['offer_number'] ?: $this->generateOfferNumber('DSN'),
             'offer_date'        => $data['offer_date'],
             'contact_name'      => $data['contact_name'],
             'volume'            => $inputVolume,
@@ -85,6 +86,49 @@ public function store(OfferRequest $request)
 
         DB::commit();
 
+        $creatorUser = auth()->user();
+
+        $event = 'offer_created';
+        $cfg   = config("project_events.offer_created");
+
+
+        if (!$cfg) {
+            throw new \Exception("Config project_events.$event not found");
+        }
+
+        $targets = [
+            'created_self' => $creatorUser,
+        ];
+
+        if ($project->customer?->user) {
+            $targets['customer'] = $project->customer->user;
+        }
+
+        foreach ($targets as $key => $user) {
+            if (!$user) continue;
+
+            if ($user->id === $creatorUser->id) {
+                $role = 'created_self';
+            } elseif ($project->customer?->user && $user->id === $project->customer->user->id) {
+                $role = 'customer';
+            }
+
+            if (!isset($cfg['message'][$role])) {
+                continue;
+            }
+
+            ProjectNotifier::notifyUsers(
+                [$user],
+                ProjectNotifier::makePayload($project, [
+                    'type'    => $event,
+                    'role'    => $role,
+                    'title'   => $cfg['title'],
+                    'message' => $cfg['message'][$role],
+                    'url'     => route('projects.create', ['project_id' => $project->id]),
+                ])
+            );
+        }
+
         return redirect()
             ->route('projects.create', ['project_id' => $offer->project_id])
             ->with('success', 'Penawaran berhasil disimpan!');
@@ -96,22 +140,56 @@ public function store(OfferRequest $request)
     }
 }
 
-protected function generateOfferNumber(): string
+// protected function generateOfferNumber(): string
+// {
+//     return DB::transaction(function () {
+
+//         $now = now();
+//         $yearFull = $now->format('Y'); // 2026
+//         $yearShort = $now->format('y'); // 26
+//         $bulanRomawi = \App\Helpers\GeneralHelper::bulanRomawi($now->month);
+
+//         $counter = OfferCounter::where('year', $yearFull)
+//             ->lockForUpdate()
+//             ->first();
+
+//         if (!$counter) {
+//             $counter = OfferCounter::create([
+//                 'year' => $yearFull,
+//                 'last_number' => 0,
+//             ]);
+//         }
+
+//         $next = $counter->last_number + 1;
+
+//         $counter->update([
+//             'last_number' => $next,
+//         ]);
+
+//         $nomorUrut = str_pad($next, 3, '0', STR_PAD_LEFT);
+
+//         return "PH/DSN/$yearShort/$bulanRomawi/$nomorUrut";
+//     });
+// }
+
+protected function generateOfferNumber(string $type): string
 {
-    return DB::transaction(function () {
+    return DB::transaction(function () use ($type) {
 
         $now = now();
-        $yearFull = $now->format('Y'); // 2026
+        $yearFull  = $now->format('Y'); // 2026
         $yearShort = $now->format('y'); // 26
         $bulanRomawi = \App\Helpers\GeneralHelper::bulanRomawi($now->month);
 
-        $counter = OfferCounter::where('year', $yearFull)
+        $counter = OfferCounter::where('type', $type)
+            ->where('year', $yearFull)
             ->lockForUpdate()
             ->first();
 
         if (!$counter) {
             $counter = OfferCounter::create([
-                'year' => $yearFull,
+                'type'        => $type,
+                'year'        => $yearFull,
                 'last_number' => 0,
             ]);
         }
@@ -124,7 +202,7 @@ protected function generateOfferNumber(): string
 
         $nomorUrut = str_pad($next, 3, '0', STR_PAD_LEFT);
 
-        return "PH/DSN/$yearShort/$bulanRomawi/$nomorUrut";
+        return "PH/$type/$yearShort/$bulanRomawi/$nomorUrut";
     });
 }
 

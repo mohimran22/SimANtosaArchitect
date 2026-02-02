@@ -2,7 +2,7 @@
     <div class="nav-item dropdown d-none d-md-flex me-3">
         <a href="#" class="nav-link px-0" data-bs-toggle="dropdown" tabindex="-1"
            aria-label="Show notifications">
-            <!-- Download SVG icon from http://tabler-icons.io/i/bell -->
+
             <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24"
                  viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
                  stroke-linecap="round" stroke-linejoin="round">
@@ -12,7 +12,7 @@
                 <path d="M9 17v1a3 3 0 0 0 6 0v-1"/>
             </svg>
             @if(auth()->user()->unreadNotifications->count())
-                <span class="badge bg-red">{{ auth()->user()->unreadNotifications->count() }}</span>
+                <span id="notification-count" class="badge bg-red">{{ auth()->user()->unreadNotifications->count() }}</span>
             @endif
 
         </a>
@@ -21,12 +21,20 @@
                 <div class="card-header">
                     <h3 class="card-title">Last updates</h3>
                 </div>
-                <div class="list-group list-group-flush list-group-hoverable">
+                <div class="d-flex justify-content-between align-items-center px-3 py-2">
+                    <strong>Notifikasi</strong>
+                    @if(auth()->user()->unreadNotifications->count())
+                        <button onclick="markAllAsRead()" class="btn btn-sm btn-outline-primary">
+                            Tandai semua dibaca
+                        </button>
+                    @endif
+                </div>
+                <div id="notification-list" class="list-group list-group-flush list-group-hoverable">
 
                     @forelse(auth()->user()->unreadNotifications as $notif)
                         <a href="{{ $notif->data['url'] }}"
-                        class="list-group-item list-group-item-action"
-                        onclick="markAsRead('{{ $notif->id }}')">
+                        class="list-group-item list-group-item-action notification-item"
+                        onclick="markAsRead('{{ $notif->id }}', this)">
 
                             <div class="row align-items-start">
                                 <div class="col-auto pt-1">
@@ -38,7 +46,8 @@
                                         {{ $notif->data['message'] }}
                                     </div>
                                     <div class="text-muted small">
-                                        {{ $notif->data['project_name'] }}
+                                        <span>{{ $notif->data['project_name'] }}</span>
+                                        <span>{{ $notif->created_at->diffForHumans(['short' => true]) }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -53,15 +62,71 @@
             </div>
         </div>
     </div>
-@endif
+@endauth
 
 @push('js')
 <script>
-function markAsRead(notificationId) {
+function markAsRead(notificationId, el) {
     fetch('/notifications/' + notificationId + '/read', {
         method: 'POST',
         headers: {
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        }
+    }).then(() => {
+
+        const item = el.closest('.notification-item');
+        if (item) item.remove();
+
+        const badge = document.querySelector('#notification-count');
+        if (badge) {
+            let count = parseInt(badge.textContent || 0);
+            count = Math.max(count - 1, 0);
+
+            if (count === 0) {
+                badge.remove();
+            } else {
+                badge.textContent = count;
+            }
+        }
+
+        const container = document.querySelector('#notification-list');
+        if (container && container.children.length === 0) {
+            container.innerHTML = `
+                <div class="list-group-item text-center text-muted">
+                    Tidak ada notifikasi baru
+                </div>
+            `;
+        }
+    });
+}
+</script>
+<script>
+function markAllAsRead() {
+    fetch(`/notifications/read-all`, {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        }
+    })
+    .then(res => res.json())
+    .then(res => {
+        if (res.status === 'ok') {
+            document.querySelectorAll('.notification-item').forEach(el => el.remove());
+
+            const badge = document.querySelector('#notification-count');
+            if (badge) {
+                badge.textContent = '0';
+                badge.style.display = 'none';
+            }
+
+            const container = document.querySelector('#notification-list');
+            if (container) {
+                container.innerHTML = `
+                    <div class="list-group-item text-center text-muted">
+                        Tidak ada notifikasi baru
+                    </div>
+                `;
+            }
         }
     });
 }

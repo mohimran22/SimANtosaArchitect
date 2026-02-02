@@ -9,6 +9,7 @@ use App\Models\OfferItem;
 use App\Models\ProjectLevel;
 use App\Models\ProjectTask;
 use App\Models\ProjectTaskFile;
+use App\Services\ProjectNotifier;
 use Illuminate\Support\Carbon;
 use App\Models\User;
 use Illuminate\Support\Facades\Storage;
@@ -18,7 +19,7 @@ use Illuminate\Support\Facades\DB;
 
 class ProjectTaskController extends Controller
 {
-public function assign(Request $request, ProjectTask $task)
+    public function assign(Request $request, ProjectTask $task)
 {
     abort_if(auth()->user()->cannot('lihat daftar proyek'), 403);
 
@@ -32,6 +33,8 @@ public function assign(Request $request, ProjectTask $task)
         'started_at'  => $task->started_at ?? now(),
     ]);
 
+    $this->notifyTask($task, 'task_assigned');
+
     return response()->json([
         'status'  => 'ok',
         'message' => 'PIC berhasil ditetapkan',
@@ -42,30 +45,31 @@ public function assign(Request $request, ProjectTask $task)
     ]);
 }
 
-
     public function uploadFile(Request $request, ProjectTask $task)
-    {
-        abort_if(auth()->user()->cannot('lihat daftar proyek'), 403);
+{
+    abort_if(auth()->user()->cannot('lihat daftar proyek'), 403);
 
-        $request->validate([
-            'file' => 'required|file|max:10240',
-        ]);
+    $request->validate([
+        'file' => 'required|file|max:10240',
+    ]);
 
-        abort_if(!$task->employee_id, 403, 'PIC belum ditentukan');
-        $uploadedFile = $request->file('file');
+    abort_if(!$task->employee_id, 403, 'PIC belum ditentukan');
+    $uploadedFile = $request->file('file');
 
-        $path = $uploadedFile->store('project-tasks', 'public');
+    $path = $uploadedFile->store('project-tasks', 'public');
 
-        $file = $task->files()->create([
-            'file_path'   => $path,
-            'file_name'   => $request->file('file')->getClientOriginalName(),
-            'uploaded_by' => auth()->id(),
-            'is_revision' => $task->status === 'revisi',
-        ]);
+    $file = $task->files()->create([
+        'file_path'   => $path,
+        'file_name'   => $request->file('file')->getClientOriginalName(),
+        'uploaded_by' => auth()->id(),
+        'is_revision' => $task->status === 'revisi',
+    ]);
 
-        $task->update([
-            'status' => 'konfirmasi',
-        ]);
+    $task->update([
+        'status' => 'konfirmasi',
+    ]);
+
+    $this->notifyTask($task, 'task_file_uploaded');
 
     return response()->json([
         'status' => 'ok',
@@ -78,33 +82,8 @@ public function assign(Request $request, ProjectTask $task)
         ],
         'task_status' => $task->status,
     ]);
-    }
 
-//     public function complete(ProjectTask $task)
-// {
-//     abort_unless(auth()->user()->hasRole('Direktur'), 403);
-
-//     $task->update([
-//         'status'       => 'selesai',
-//         'completed_at' => now(),
-//     ]);
-
-//     // AUTO LANJUT LEVEL JIKA SEMUA TASK SELESAI
-//     if ($task->project->tasks()->where('status', '!=', 'selesai')->count() === 0) {
-
-//         ProjectLevel::where([
-//             'project_id'  => $task->project_id,
-//             'level_order' => 7,
-//         ])->update(['is_completed' => true]);
-
-//         ProjectLevel::where([
-//             'project_id'  => $task->project_id,
-//             'level_order' => 8,
-//         ])->update(['is_started' => true]);
-//     }
-
-//     return back()->with('success', 'Task diselesaikan.');
-// }
+}
 
 public function approve(ProjectTask $task)
 {
@@ -120,7 +99,6 @@ public function approve(ProjectTask $task)
         return response()->json(['message' => 'Status belum konfirmasi'], 403);
     }
 
-
     $approvedAt = now();
 
     $task->update([
@@ -130,6 +108,8 @@ public function approve(ProjectTask $task)
         'reject_note'     => null,
     ]);
 
+    $this->notifyTask($task, 'task_approved');
+
     $this->checkAutoNextLevel($task);
 
         return response()->json([
@@ -138,28 +118,9 @@ public function approve(ProjectTask $task)
     'approved_at' => $approvedAt->format('d-m-Y H:i'),
         'task_status' => 'selesai',
     ]);
+
 }
 
-// protected function checkAutoNextLevel(ProjectTask $task)
-// {
-//     if (
-//         ProjectTask::where('project_id', $task->project_id)
-//             ->where('status', '!=', 'selesai')
-//             ->exists()
-//     ) {
-//         return;
-//     }
-
-//     ProjectLevel::where([
-//         'project_id'  => $task->project_id,
-//         'level_order' => 7,
-//     ])->update(['is_completed' => true]);
-
-//     ProjectLevel::where([
-//         'project_id'  => $task->project_id,
-//         'level_order' => 8,
-//     ])->update(['is_started' => true]);
-// }
 protected function checkAutoNextLevel(ProjectTask $task)
 {
     $projectId = $task->project_id;
@@ -185,8 +146,6 @@ protected function checkAutoNextLevel(ProjectTask $task)
     ])->update(['is_started' => true]);
 }
 
-
-
 public function reject(Request $request, ProjectTask $task)
 {
     // ambil task aktif (revisi terakhir)
@@ -210,6 +169,8 @@ public function reject(Request $request, ProjectTask $task)
         'rejected_by'   => auth()->id(),
         'rejected_at'   => now(),
     ]);
+
+    $this->notifyTask($activeTask, 'task_rejected');
 
     $parentId = $activeTask->parent_task_id ?? $activeTask->id;
 
@@ -259,8 +220,6 @@ public function reject(Request $request, ProjectTask $task)
     ]);
 }
 
-
-
 public function viewFile(ProjectTaskFile $file)
 {
     // OPTIONAL: cek hak akses
@@ -297,4 +256,59 @@ public function deleteFile(ProjectTaskFile $file)
         'task_status' => $task->status,
     ]);
 }
+
+protected function notifyTask(ProjectTask $task, string $event, array $extra = [])
+{
+    $cfg = config("project_events.$event");
+    if (!$cfg) return;
+
+    $project  = $task->project;
+    $admin    = auth()->user();
+    $pic      = $task->employee?->user;
+    $customer = $project->customer?->user;
+
+    $base = [
+        ':task'     => $task->task_name,
+        ':employee' => $pic?->fullname ?? '-',
+        ':note'     => $task->reject_note ?? '',
+    ];
+
+    $targets = [];
+
+    if ($pic) {
+        $targets['assigned'] = $pic;
+    }
+
+    if ($admin) {
+        $targets['admin'] = $admin;
+    }
+
+    // ✅ Tambahkan customer
+    if ($customer) {
+        $targets['customer'] = $customer;
+    }
+
+    foreach ($targets as $role => $user) {
+        if (!isset($cfg['message'][$role])) continue;
+
+        $message = str_replace(
+            array_keys($base),
+            array_values($base),
+            $cfg['message'][$role]
+        );
+
+        ProjectNotifier::notifyUsers(
+            [$user],
+            ProjectNotifier::makePayload($project, array_merge([
+                'type'    => $event,
+                'role'    => $role,
+                'title'   => $cfg['title'],
+                'message' => $message,
+                'url'     => route('projects.create', ['project_id' => $project->id]),
+            ], $extra))
+        );
+    }
+}
+
+
 }

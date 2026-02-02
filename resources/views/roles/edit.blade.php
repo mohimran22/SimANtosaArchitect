@@ -22,7 +22,7 @@
                 <div class="mb-4">
                     <label for="roleName" class="form-label fw-bold text-secondary">Nama Role</label>
                     <input type="text" id="roleName" name="name" value="{{ $role->name }}" 
-                        class="form-control form-control-lg shadow-sm" placeholder="Masukkan nama role">
+                        class="form-control form-control-md shadow-sm" placeholder="Masukkan nama role">
                 </div>
 
                 <hr class="my-4">
@@ -71,7 +71,7 @@
                 @endforeach
 
                 <div class="text-end mt-4">
-                    <button type="submit" class="btn btn-dark btn-lg px-4">
+                    <button type="submit" class="btn btn-dark btn-md px-4">
                         <i class="ti ti-device-floppy me-1"></i> Simpan Perubahan
                     </button>
                 </div>

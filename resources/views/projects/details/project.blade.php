@@ -37,10 +37,10 @@
                 <input type="text" class="form-control" value="{{ $project->start_date }}" readonly>
             </div>
 
-            <div class="col-md-2">
+            {{-- <div class="col-md-2">
                 <label class="fw-semibold">Status Proyek</label>
                 <input type="text" class="form-control" value="{{ $status[$project->project_status] }}" readonly>
-            </div>
+            </div> --}}
 
             <div class="col-md-4">
                 <label class="fw-semibold">Customer</label>

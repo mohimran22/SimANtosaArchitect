@@ -51,7 +51,7 @@
 <tr style="font-weight:bold;">
     <td colspan="2" align="right">DIBULATKAN</td>
     <td align="right">
-        Rp {{ number_format(round($grand,-3),0,',','.') }}
+        Rp {{ number_format(round($grand,-5),0,',','.') }}
     </td>
 </tr>
 </tfoot>

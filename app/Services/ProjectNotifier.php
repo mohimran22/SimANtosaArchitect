@@ -7,18 +7,25 @@ use Illuminate\Support\Collection;
 
 class ProjectNotifier
 {
-    public static function notifyUsers(iterable $users, array $payload): void
-    {
-        $sent = [];
+public static function notifyUsers(iterable $users, array $payload, ?string $exceptUserId = null): void
+{
+    $sent = [];
 
-        foreach ($users as $user) {
-            if (!$user) continue;
-            if (in_array($user->id, $sent)) continue;
+    foreach ($users as $user) {
+        if (!$user) continue;
 
-            $user->notify(new ProjectFlowNotification($payload));
-            $sent[] = $user->id;
+        // Skip user tertentu (misalnya creator)
+        if ($exceptUserId && (string) $user->id === (string) $exceptUserId) {
+            continue;
         }
+
+        // Cegah double kirim
+        if (in_array($user->id, $sent)) continue;
+
+        $user->notify(new ProjectFlowNotification($payload));
+        $sent[] = $user->id;
     }
+}
 
     public static function makePayload($project, array $data): array
     {

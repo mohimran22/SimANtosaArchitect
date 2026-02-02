@@ -6,6 +6,7 @@ use App\Helpers\GeneralHelper;
 use App\Models\Project;
 use App\Models\ProjectLevel;
 use App\Models\ContractCounter;
+use App\Services\ProjectNotifier;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
@@ -79,6 +80,37 @@ class ContractController extends Controller
                 'is_started' => true,
             ]);
         });
+
+        $event = 'contract_created';
+        $cfg   = config("project_events.contract_created");
+
+        if (!$cfg) {
+            throw new \Exception("Config project_events.$event not found");
+        }
+
+        ProjectNotifier::notifyUsers(
+            [$project->createdBy ?? auth()->user()],
+            ProjectNotifier::makePayload($project, [
+                'type'    => $event,
+                'role'    => 'Super-Admin',
+                'title'   => $cfg['title'],
+                'message' => $cfg['message']['Super-Admin'],
+                'url'     => route('projects.create', ['project_id' => $project->id]),
+            ])
+        );
+
+        if ($project->customer?->user) {
+            ProjectNotifier::notifyUsers(
+                [$project->customer->user],
+                ProjectNotifier::makePayload($project, [
+                    'type'    => $event,
+                    'role'    => 'Customer',
+                    'title'   => $cfg['title'],
+                    'message' => $cfg['message']['customer'],
+                    'url'     => route('projects.create', ['project_id' => $project->id]),
+                ])
+            );
+        }
 
         return redirect()
             ->route('projects.create', ['project_id' => $project->id])

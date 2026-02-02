@@ -61,7 +61,7 @@
                                         <th>Kelurahan</th>
                                         <th>Kode Pos</th> --}}
                                         <th>Tahapan</th>
-                                        <th>Status</th>
+                                        {{-- <th>Status</th> --}}
                                         <th>Aksi</th>
                                     </tr>
                                 </thead>
@@ -103,7 +103,7 @@
                     // { data: 'sub_district_name', name: 'sub_district_name' },
                     // { data: 'postal_code', name: 'postal_code' },
                     { data: 'current_level', name: 'current_level' },
-                    { data: 'project_status', name: 'project_status' },
+                    // { data: 'project_status', name: 'project_status' },
                     { data: 'action', name: 'action', orderable: false, searchable: false }
                 ],
             });

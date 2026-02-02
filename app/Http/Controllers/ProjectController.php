@@ -370,8 +370,9 @@ private function computeActiveStep($project, $request = null)
 private function stepKeyMap()
 {
     return [
-        1 => 'project',
-        2 => 'konsultasi',
+        0 => 'project',
+        1 => 'form-konsultasi',
+        2 => 'detail-konsultasi',
         3 => 'planning',
         4 => 'survei',
         5 => 'offer',
@@ -382,6 +383,7 @@ private function stepKeyMap()
         10 => 'final',
     ];
 }
+
 
 public function update(Request $request, Project $project)
 {

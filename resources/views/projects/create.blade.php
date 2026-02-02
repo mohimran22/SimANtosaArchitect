@@ -36,7 +36,6 @@
             </div>
             @endif
             @if($activeStep >= 2)
-            <div id="konsultasi" class="step-section">
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body px-5 py-4">
                         <div class="d-flex justify-content-between align-items-center mb-4">
@@ -58,11 +57,9 @@
                             </div>
                             @endcan
                         </div>
-                    
                         <div id="project-view">
                             @include('projects.details.project')
                         </div>
-
                         <div id="project-edit" style="display:none;">
                             @include('projects.edit.project-form')    
                         </div>
@@ -70,19 +67,18 @@
                 </div>
 
                 @if($activeStep == 2)
-                {{-- <div id="konsultasi"> --}}
+                <div id="form-konsultasi" class="step-section">
                     <div class="card shadow-sm border-0 mb-4">
                         <div class="card-body px-5 py-4">
                             <h3 class="mb-4 fw-bold">1. Form Konsultasi</h3>
                             @include('projects.steps.consultation-form')
                         </div>
-                    </div>  
+                    </div>
+                </div>  
                 @endif
-                {{-- </div> --}}
-            </div>
             @endif
-            @if($activeStep >= 3)
-            <div id="planning" class="step-section">
+            @if($activeStep >= 3)   
+            <div id="detail-konsultasi" class="step-section">      
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body px-5 py-4">
                         <div class="d-flex justify-content-between align-items-center mb-4">
@@ -112,12 +108,12 @@
                         </div>
                     </div>
                 </div>
+            </div>
+            <div id="planning" class="step-section">
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body px-5 py-4">
-
                         <div class="d-flex justify-content-between align-items-center mb-4">
                             <h3 class="fw-bold mb-0">2. Rencana Survei</h3>
-
                             @if($project->planning)
                                 @can('ubah data proyek')
                                 <button type="button"
@@ -161,108 +157,101 @@
                 </div>
             </div>
             @endif
-            @if(
-                $activeStep == 4 &&
-                $planning &&
-                (
-                    $project->levels->firstWhere('level_order', 3)?->is_started
-                )
-            )
-            {{-- <div id="survei" class="step-section"> --}}
-                <div class="card shadow-sm border-0 mb-4">
-                    <div class="card-body px-5 py-4">
-                        <h3 class="mb-3 fw-bold">3. Form Survei Lapangan</h3>
-                        @include('projects.steps.survey-form')
-                    </div>
-                </div>
-            {{-- </div> --}}
-            @endif
-            @if($activeStep >= 5)
             <div id="survei" class="step-section">
-                <div class="card shadow-sm border-0 mb-4">
-                    <div class="card-body px-5 py-4">       
-                        <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h3 class="fw-bold m-0">3. Survei</h3>
-                            @can('ubah data proyek')
-                            <div class="btn-group">
-                                <button type="button" id="btn-edit-survey"
-                                    class="btn btn-sm btn-dark me-2"
-                                    title="Edit Data">
-                                    <i class="ti ti-edit"></i>
-                                </button>
-                            </div>
-                            @endcan
-                        </div>
-                        <div id="survey-view">
-                            @include('projects.details.survey')
-                        </div>
-                        <div id="survey-edit" style="display:none;">
-                            @include('projects.edit.survey-form')
+                @if(
+                    $activeStep == 4 &&
+                    $planning &&
+                    (
+                        $project->levels->firstWhere('level_order', 3)?->is_started
+                    )
+                )
+                    <div class="card shadow-sm border-0 mb-4">
+                        <div class="card-body px-5 py-4">
+                            <h3 class="mb-3 fw-bold">3. Form Survei Lapangan</h3>
+                            @include('projects.steps.survey-form')
                         </div>
                     </div>
-                </div>
-
-            @if($activeStep == 5)
-                <div class="card shadow-sm border-0 mb-4">
-                    <div class="card-body px-5 py-4">
-                        @if($project->project_type == 1)
-                            <h3 class="mb-3 fw-bold">4. Form Penawaran Jasa Desain</h3>
-                            @include('projects.steps.desain-form')
-
-                        @elseif($project->project_type == 2)
-                            <h3 class="mb-3 fw-bold">4. Form Penawaran Pembuatan RAB</h3>
-                            @include('projects.steps.rab-form')
-                        @endif
-                    </div>
-                </div>
-            @endif
-            </div>
-            @endif
-            @if($project && $project->offer)
-            <div id="offer" class="step-section">
-                <div class="card shadow-sm border-0 mb-4">
-                    <div class="card-body px-5 py-4">
-
-                        <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h3 class="mb-3 fw-bold">
-                                {{ $project->project_type == 1 ? '4. Penawaran Jasa Desain' : '4. Penawaran Jasa RAB' }}
-                            </h3>
-                            @can('ubah data proyek')
-                            <div class="btn-group">
-                                
-                                <button type="button"
-                                        class="btn btn-sm btn-dark me-2 btn-toggle-offer"
-                                        data-view="offer-view"
-                                        data-edit="offer-edit"
+                @endif
+                @if($activeStep >= 5)
+                    <div class="card shadow-sm border-0 mb-4">
+                        <div class="card-body px-5 py-4">       
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h3 class="fw-bold m-0">3. Survei</h3>
+                                @can('ubah data proyek')
+                                <div class="btn-group">
+                                    <button type="button" id="btn-edit-survey"
+                                        class="btn btn-sm btn-dark me-2"
                                         title="Edit Data">
-                                    <i class="ti ti-edit"></i>
-                                </button>
-
-
+                                        <i class="ti ti-edit"></i>
+                                    </button>
+                                </div>
+                                @endcan
                             </div>
-                            @endcan
+                            <div id="survey-view">
+                                @include('projects.details.survey')
+                            </div>
+                            <div id="survey-edit" style="display:none;">
+                                @include('projects.edit.survey-form')
+                            </div>
                         </div>
-                        @if($project->offer)
-                            <div id="offer-view">
-                                @if($project->project_type == 1)
-                                    @include('projects.details.offer')
-                                @else
-                                    @include('projects.details.raboffer')
-                                @endif
-                            </div>
-                        
-                            <div id="offer-edit" style="display:none;">
-                                @if($project->project_type == 1)
-                                    @include('projects.edit.offer-form')
-                                @else
-                                    @include('projects.edit.raboffer-form')
-                                @endif
-                            </div>
-                        @endif
                     </div>
-                </div>
+                @endif
             </div>
-            @endif
+            <div id="offer" class="step-section">
+                @if($activeStep == 5)
+                    <div class="card shadow-sm border-0 mb-4">
+                        <div class="card-body px-5 py-4">
+                            @if($project->project_type == 1)
+                                <h3 class="mb-3 fw-bold">4. Form Penawaran Jasa Desain</h3>
+                                @include('projects.steps.desain-form')
+                            @elseif($project->project_type == 2)
+                                <h3 class="mb-3 fw-bold">4. Form Penawaran Pembuatan RAB</h3>
+                                @include('projects.steps.rab-form')
+                            @endif
+                        </div>
+                    </div>
+                @endif
+                @if($project && $project->offer)
+                    <div class="card shadow-sm border-0 mb-4">
+                        <div class="card-body px-5 py-4">
+
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h3 class="mb-3 fw-bold">
+                                    {{ $project->project_type == 1 ? '4. Penawaran Jasa Desain' : '4. Penawaran Jasa RAB' }}
+                                </h3>
+                                @can('ubah data proyek')
+                                <div class="btn-group">
+                                    <button type="button"
+                                            class="btn btn-sm btn-dark me-2 btn-toggle-offer"
+                                            data-view="offer-view"
+                                            data-edit="offer-edit"
+                                            title="Edit Data">
+                                        <i class="ti ti-edit"></i>
+                                    </button>
+                                </div>
+                                @endcan
+                            </div>
+                            @if($project->offer)
+                                <div id="offer-view">
+                                    @if($project->project_type == 1)
+                                        @include('projects.details.offer')
+                                    @else
+                                        @include('projects.details.raboffer')
+                                    @endif
+                                </div>
+                            
+                                <div id="offer-edit" style="display:none;">
+                                    @if($project->project_type == 1)
+                                        @include('projects.edit.offer-form')
+                                    @else
+                                        @include('projects.edit.raboffer-form')
+                                    @endif
+                                </div>
+                            @endif
+                        </div>
+                    </div>    
+                @endif
+            </div>
             @if($activeStep >= 6 && $project->project_type == 1 && $project->offer)
             <div id="kontrak" class="step-section">
                 <div class="card shadow-sm border-0 mb-4">
@@ -292,7 +281,6 @@
                                     Disetujui {{ $project->offer->approved_at->format('d M Y') }}
                                 </span>
                             @endif
-
                         </div>
                     </div>
                 </div>
@@ -1038,12 +1026,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const view = document.getElementById("rab-view");
     const edit = document.getElementById("rab-edit");
 
-    document.getElementById("btn-edit-rab").addEventListener("click", () => {
+    document.getElementById("btn-edit-rab")?.addEventListener("click", () => {
         view.style.display = "none";
         edit.style.display = "block";
-        setTimeout(() => {
-            loadExistingRab(); // 🔥 INI PENTING
-        }, 100);
+            setTimeout(initRabEditMargin, 50);
     });
 
     document.getElementById("btn-cancel-rab").addEventListener("click", () => {

@@ -139,6 +139,7 @@ class PlanningController extends Controller
         // Kumpulkan target
         $targets = [
             'created_self' => $creatorUser,
+            'customer'     => $project->customer?->user,
         ];
 
         // Assigned employees

@@ -23,7 +23,7 @@
         </div>
         <div class="col-md-4">
             <label>Tanggal Penawaran</label>
-            <input type="date" name="offer_date" class="form-control">
+            <input type="date" name="offer_date" class="form-control" required>
         </div>
         <div class="col-md-4">
             <label>Nama Customer</label>

@@ -283,6 +283,10 @@ Route::post('/notifications/{id}/read', function ($id) {
 
     return response()->json(['success' => true]);
 })->middleware('auth');
+Route::post('/notifications/read-all', function () {
+    auth()->user()->unreadNotifications->markAsRead();
+    return response()->json(['status' => 'ok']);
+})->name('notifications.readAll');
 
 Route::middleware(['auth'])->group(function () {
     Route::get('consultations/{consultation}/pdf', [\App\Http\Controllers\ConsultationController::class, 'pdf'])

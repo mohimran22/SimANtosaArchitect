@@ -171,13 +171,6 @@
                     title="Download PDF">
                         <i class="ti ti-file-text"></i>Download PDF
                 </a>
-                @else
-                <a href="{{ route('projects.offers.rab.pdf', $project->offer->id) }}"
-                    class="btn btn-dark"
-                    target="_blank"
-                    title="Download PDF">
-                        <i class="ti ti-file-text"></i>Download PDF
-                </a>
                 @endif
             @endif
         </div>

@@ -25,8 +25,8 @@
             <input type="text" name="job_location" value="{{ old('job_location', $project->city->name ?? '-') }}" class="form-control">
         </div>
         <div class="col-md-4">
-            <label>Durasi Pekerjaan</label>
-            <input type="text" name="job_duration" class="form-control" value="{{ old('job_duration') }}" placeholder="Total rencana pengerjaan berdasarkan hari kerja">
+            <label class="form-label required">Durasi Pekerjaan</label>
+            <input type="text" name="job_duration" class="form-control" value="{{ old('job_duration') }}" placeholder="Total rencana pengerjaan berdasarkan hari kerja" required>
         </div>
     </div>
 
@@ -203,8 +203,6 @@ $('#jobCategorySelect').on('change', function () {
             document.getElementById('rab_priceMeter').value = harga;
             document.getElementById('rab_priceMeterFormatted').value = formatRp(harga);
 
-            updateDisplayedPrice();
-
             document.querySelector('input[name="volume"]').value = '';
             document.getElementById('rab_totalPriceFormatted').value = '';
         });
@@ -217,7 +215,6 @@ profitInput.addEventListener('input', function () {
     globalProfit = parseFloat(this.value) || 0;
     if (globalProfit < 0) globalProfit = 0;
     if (globalProfit > 100) globalProfit = 100;
-    updateDisplayedPrice(); 
     applyProfitOverheadToAll();
 });
 
@@ -225,10 +222,8 @@ overheadInput.addEventListener('input', function () {
     globalOverhead = parseFloat(this.value) || 0;
     if (globalOverhead < 0) globalOverhead = 0;
     if (globalOverhead > 100) globalOverhead = 100;
-    updateDisplayedPrice(); 
     applyProfitOverheadToAll();
 });
-
 
 document.addEventListener('input', function(e) {
 
@@ -259,7 +254,7 @@ document.addEventListener('input', function(e) {
     document.getElementById('rab_discount').value = 0;
     document.getElementById('rab_shipping').value = 0;
 
-    renderRabTable();
+    applyProfitOverheadToAll();
 });
 
 function renderRabTable() {
@@ -270,7 +265,6 @@ function renderRabTable() {
     let grouped = {};
     let rowIndex = 0;
 
-    // 🔹 GROUPING
     Object.values(rabItems).forEach(item => {
         if (!grouped[item.kode_group]) {
             grouped[item.kode_group] = {
@@ -411,14 +405,35 @@ shippingInput.addEventListener('blur', function () {
 document.getElementById('rab_tax_rate').addEventListener('input', function () {
     recalculateSummary();
 });
+// function applyProfitOverheadToAll() {
+
+//     Object.values(rabItems).forEach(item => {
+// // let multiplier = 1 + (globalProfit / 100) + (globalOverhead / 100);
+// let baseTotal = item.volume * item.base_price;
+// item.harga = item.base_price * multiplier;
+// item.total = item.volume * item.harga;
+
+//     });
+
+//     document.getElementById('final_profit').value = globalProfit;
+//     document.getElementById('final_overhead').value = globalOverhead;
+
+//     renderRabTable();
+// }
+
 function applyProfitOverheadToAll() {
 
     Object.values(rabItems).forEach(item => {
-let multiplier = 1 + (globalProfit / 100) + (globalOverhead / 100);
 
-item.harga = item.base_price * multiplier;
-item.total = item.volume * item.harga;
+        let baseTotal = item.volume * item.base_price;
 
+        let profitValue   = baseTotal * (globalProfit / 100);
+        let overheadValue = baseTotal * (globalOverhead / 100);
+
+        let finalTotal = baseTotal + profitValue + overheadValue;
+
+        item.harga = finalTotal / item.volume; // harga final PER SATUAN (tabel)
+        item.total = finalTotal;
     });
 
     document.getElementById('final_profit').value = globalProfit;
@@ -433,32 +448,11 @@ function updateVolume(jobId, newVolume) {
     if (newVolume <= 0) return;
 
     let item = rabItems[jobId];
-
-    let total = newVolume * item.harga;
-
     item.volume = newVolume;
-    item.total = total;
 
-    renderRabTable();
+    applyProfitOverheadToAll(); // 🔥 WAJIB
 }
 
-function updateDisplayedPrice() {
-    let multiplier = 1 + (globalProfit / 100) + (globalOverhead / 100);
-    let finalPrice = currentBasePrice * multiplier;
-
-    document.getElementById('rab_priceMeter').value = finalPrice;
-    document.getElementById('rab_priceMeterFormatted').value = formatRp(finalPrice);
-
-    // update total kalau volume sudah diisi
-    const volInput = document.querySelector('input[name="volume"]');
-    let volume = parseFloat(volInput.value) || 0;
-
-    if (volume > 0) {
-        let total = volume * finalPrice;
-        document.getElementById('rab_totalPrice').value = total;
-        document.getElementById('rab_totalPriceFormatted').value = formatRp(total);
-    }
-}
 
 function removeItem(itemId) {
 
@@ -468,5 +462,10 @@ function removeItem(itemId) {
 
     renderRabTable();
 }
+</script>
+<script>
+document.querySelector('form').addEventListener('submit', function () {
+    applyProfitOverheadToAll();   // 🔒 paksa update semua item ke harga final
+});
 </script>
 @endpush

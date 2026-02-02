@@ -6,6 +6,7 @@ use App\Models\RabProcess;
 use App\Models\RabProcessItem;
 use App\Models\JobCategory;
 use App\Models\Project;
+use App\Services\ProjectNotifier;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
@@ -13,7 +14,8 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class RabProcessController extends Controller
 {
-    public function store(Request $request)
+
+public function store(Request $request)
 {
     abort_if(auth()->user()->cannot('lihat daftar proyek'), 403);
 
@@ -28,6 +30,8 @@ class RabProcessController extends Controller
         'items.*.satuan' => 'required|string',
         'items.*.volume' => 'required|numeric|min:0.01',
         'items.*.price' => 'required|numeric|min:0',
+        'items.*.total' => 'required|numeric|min:0',
+
         'profit' => 'required|numeric|max:100',
         'overhead' => 'required|numeric|max:100',
         'discount' => 'nullable|numeric|min:0',
@@ -36,52 +40,39 @@ class RabProcessController extends Controller
         'notes' => 'nullable|string',
     ]);
 
-    DB::transaction(function () use ($request) {
+    $project = null;
+
+    DB::transaction(function () use ($request, &$project) {
 
         $project = Project::findOrFail($request->project_id);
 
-        $profitPercent   = (float) $request->profit;
-        $overheadPercent = (float) $request->overhead;
+        // 🔹 Ambil langsung dari form (hasil JS)
+        $subtotal = collect($request->items)->sum(fn($i) => (float) $i['total']);
 
-        $baseSubtotal = collect($request->items)->sum(function ($item) {
-            return (float) $item['volume'] * (float) $item['price'];
-        });
-        
-        $profitValue   = $baseSubtotal * ($profitPercent / 100);
-        $overheadValue = $baseSubtotal * ($overheadPercent / 100);
-        $discount        = (float) ($request->discount ?? 0);
-        $taxRate         = (float) ($request->tax_rate ?? 0);
-        $shipping        = (float) ($request->shipping ?? 0);
+        $discount = (float) ($request->discount ?? 0);
+        $taxRate  = (float) ($request->tax_rate ?? 0);
+        $shipping = (float) ($request->shipping ?? 0);
 
-        $profitValue = (($profit ?? 0) / 100);
-        $overheadValue = (($overhead ?? 0) / 100);
-
-    $subtotal = $baseSubtotal + $profitValue + $overheadValue;
-
-    $discount = (float) ($request->discount ?? 0);
-    $taxRate  = (float) ($request->tax_rate ?? 0);
-    $shipping = (float) ($request->shipping ?? 0);
-
-    $subtotalAfterDiscount = max($subtotal - $discount, 0);
-
-    $taxTotal = $subtotalAfterDiscount * ($taxRate / 100);
-
-    $grandTotal = $subtotalAfterDiscount + $taxTotal + $shipping;
+        $subtotalAfterDiscount = max($subtotal - $discount, 0);
+        $taxTotal = $subtotalAfterDiscount * ($taxRate / 100);
+        $grandTotal = $subtotalAfterDiscount + $taxTotal + $shipping;
 
         $rab = RabProcess::create([
             'project_id' => $project->id,
             'contact_name' => $request->contact_name,
             'job_location' => $request->job_location,
             'job_duration' => $request->job_duration,
-            'base_subtotal' => $baseSubtotal,
+
+            // 🔒 Snapshot dari JS
+            'base_subtotal' => $subtotal,
             'subtotal' => $subtotal,
             'discount' => $discount,
             'subtotal_after_discount' => $subtotalAfterDiscount,
 
             'tax_rate' => $taxRate,
             'tax_total' => $taxTotal,
-            'profit' => $profitValue,
-            'overhead' => $overheadValue,
+            'profit' => $request->profit,       // % saja
+            'overhead' => $request->overhead,    // % saja
             'shipping' => $shipping,
             'grand_total' => $grandTotal,
 
@@ -93,21 +84,14 @@ class RabProcessController extends Controller
 
         foreach ($request->items as $item) {
 
-            $base = (float) $item['volume'] * (float) $item['price'];
-
-            $itemProfit   = $base * ($profitPercent / 100);
-            $itemOverhead = $base * ($overheadPercent / 100);
-
-            $total = $base + $itemProfit + $itemOverhead;
-
             RabProcessItem::create([
                 'rab_process_id' => $rab->id,
                 'job_category_id' => $item['job_category_id'],
                 'job_name' => $item['job_name'],
                 'satuan' => $item['satuan'],
                 'volume' => $item['volume'],
-                'price' => $item['price'],
-                'total' => $total, // 🔒 HITUNG SENDIRI, BUKAN DARI REQUEST
+                'price' => $item['price'],   // ✅ SUDAH FINAL
+                'total' => $item['total'],   // ✅ SUDAH FINAL
             ]);
         }
 
@@ -122,6 +106,8 @@ class RabProcessController extends Controller
             ]);
         }
     });
+
+    $this->notifyProjectEvent($project, 'rab_created');
 
     return back()->with('success', 'RAB berhasil disimpan dan proyek dinyatakan selesai');
 }
@@ -207,7 +193,8 @@ public function update(Request $request, Project $project, RabProcess $rab)
 
             'tax_rate' => $taxRate,
             'tax_total' => $taxTotal,
-
+            'profit' => $request->profit,
+            'overhead' => $request->overhead,
             'shipping' => $shipping,
             'grand_total' => $grandTotal,
 
@@ -233,8 +220,8 @@ public function update(Request $request, Project $project, RabProcess $rab)
                 'volume' => $item['volume'],
                 'profit' => $item['profit'],
                 'overhead' => $item['overhead'],
-                'price' => $item['price'],
-                'total' => $total,
+                'price' => $item['price'],   // FINAL dari JS
+                'total' => $item['total'],
             ]);
         }
     });
@@ -270,10 +257,8 @@ public function refreshFromMaster(RabProcess $rab)
             ]);
 
             $subtotal += $total;
-
         }
 
-        // Hitung ulang RAB header
         $discount = $rab->discount;
         $taxRate  = $rab->tax_rate;
         $shipping = $rab->shipping;
@@ -293,6 +278,40 @@ public function refreshFromMaster(RabProcess $rab)
     });
 
     return response()->json(['success' => true]);
+}
+
+protected function notifyProjectEvent(Project $project, string $event)
+{
+    $cfg = config("project_events.$event");
+    if (!$cfg) return;
+
+    $admin    = auth()->user();
+    $customer = $project->customer?->user;
+
+    $targets = [];
+
+    if ($admin) {
+        $targets['admin'] = $admin;
+    }
+
+    if ($customer) {
+        $targets['customer'] = $customer;
+    }
+
+    foreach ($targets as $role => $user) {
+        if (!isset($cfg['message'][$role])) continue;
+
+        ProjectNotifier::notifyUsers(
+            [$user],
+            ProjectNotifier::makePayload($project, [
+                'type'    => $event,
+                'role'    => $role,
+                'title'   => $cfg['title'],
+                'message' => $cfg['message'][$role],
+                'url'     => route('projects.create', ['project_id' => $project->id]),
+            ])
+        );
+    }
 }
 
 }

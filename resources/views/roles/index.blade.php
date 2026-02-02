@@ -4,7 +4,7 @@
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h2>Manajemen Role</h2>
-        @can('tambah data user')
+        @can('tambah data role')
             <a href="{{ route('roles.create') }}" class="btn btn-dark">
                 <i class="ti ti-plus"></i> Tambah Role
             </a>
@@ -42,12 +42,12 @@
                                             <i class="ti ti-edit"></i>
                         </a>
                         <form action="{{ route('roles.destroy', $role->id) }}" method="POST" style="display:inline-block;" onsubmit="return confirmDelete(event)">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button class="btn btn-sm btn-dark" title="Hapus">
-                                                <i class="ti ti-trash"></i>
-                                            </button>
-                                        </form>
+                            @csrf
+                            @method('DELETE')
+                            <button class="btn btn-sm btn-dark" title="Hapus">
+                                <i class="ti ti-trash"></i>
+                            </button>
+                        </form>
                     </td>
                 </tr>
             @endforeach

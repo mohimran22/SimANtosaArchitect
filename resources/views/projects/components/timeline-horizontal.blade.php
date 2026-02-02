@@ -129,6 +129,7 @@
 .step-circle.completed + .step-label + .step-item::after {
     background: #2fb344;
 }
+
 </style>
 
 <script>

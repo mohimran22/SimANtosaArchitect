@@ -42,33 +42,41 @@
     </td>
 </tr>
 
+
 @php $noGroup++; @endphp
 @endforeach
 </tbody>
-        <tfoot>
-            <tr>
-                <th colspan="5" class="text-end">SUBTOTAL</th>
-                <th class="text-end">{{ number_format($rab->subtotal,0,',','.') }}</th>
-            </tr>
-            <tr>
-                <th colspan="5" class="text-end">DISCOUNT</th>
-                <th class="text-end">{{ number_format($rab->discount,0,',','.') }}</th>
-            </tr>
-            <tr>
-                <th colspan="5" class="text-end">SUBTOTAL AFTER DISCOUNT</th>
-                <th class="text-end">{{ number_format($rab->subtotal_after_discount,0,',','.') }}</th>
-            </tr>
-            <tr>
-                <th colspan="5" class="text-end">TAX ({{ $rab->tax_rate }}%)</th>
-                <th class="text-end">{{ number_format($rab->tax_total,0,',','.') }}</th>
-            </tr>
-            <tr>
-                <th colspan="5" class="text-end">SHIPPING</th>
-                <th class="text-end">{{ number_format($rab->shipping,0,',','.') }}</th>
-            </tr>
-            <tr>
-                <th colspan="5" class="text-end fw-bold">GRAND TOTAL</th>
-                <th class="text-end fw-bold">{{ number_format($rab->grand_total,0,',','.') }}</th>
-            </tr>
-        </tfoot>
+<tfoot>
+<tr>
+    <th colspan="5" align="right">SUBTOTAL</th>
+    <th align="right">{{ number_format($rab->subtotal,0,',','.') }}</th>
+</tr>
+<tr>
+    <th colspan="5" align="right">DISCOUNT</th>
+    <th align="right">{{ number_format($rab->discount,0,',','.') }}</th>
+</tr>
+<tr>
+    <th colspan="5" align="right">SUBTOTAL AFTER DISCOUNT</th>
+    <th align="right">{{ number_format($rab->subtotal_after_discount,0,',','.') }}</th>
+</tr>
+<tr>
+    <th colspan="5" align="right">TAX ({{ $rab->tax_rate }}%)</th>
+    <th align="right">{{ number_format($rab->tax_total,0,',','.') }}</th>
+</tr>
+<tr>
+    <th colspan="5" align="right">SHIPPING</th>
+    <th align="right">{{ number_format($rab->shipping,0,',','.') }}</th>
+</tr>
+<tr style="font-weight:bold;">
+    <th colspan="5" align="right">GRAND TOTAL</th>
+    <th align="right">{{ number_format($rab->grand_total,0,',','.') }}</th>
+</tr>
+<tr style="font-weight:bold;">
+    <th colspan="5" align="right">DIBULATKAN</th>
+    <th align="right">
+        {{ number_format(round($rab->grand_total,-5),0,',','.') }}
+    </th>
+</tr>
+</tfoot>
+
 </table>

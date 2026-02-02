@@ -163,6 +163,18 @@
             <div class="border p-3">{{ $offer->notes }}</div>
         </div>
         @endif
+        <div class="d-flex align-items-center gap-2">
+            @if($project->offer?->id)
+                @if($project->project_type == 2)
+                <a href="{{ route('projects.offers.rab.pdf', $project->offer->id) }}"
+                    class="btn btn-dark"
+                    target="_blank"
+                    title="Download PDF">
+                        <i class="ti ti-file-text"></i>Download PDF
+                </a>
+                @endif
+            @endif
+        </div>
     </div>
 </div>
 @endif
