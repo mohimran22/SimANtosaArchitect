@@ -21,7 +21,7 @@ class UserSeeder extends Seeder
                 'id' => Str::uuid(),
                 'fullname' => 'Super Admin',
                 'nickname' => 'Admin',
-                'gender' => 'L',
+                'gender' => 1,
                 'password' => Hash::make('password123'),
                 'phone' => '08123456789',
             ]
