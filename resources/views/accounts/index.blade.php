@@ -63,7 +63,7 @@
 @endsection
 
 @push('js')
-    <script>
+<script>
 $(document).ready(function () {
     let table = $('#accountsTable').DataTable({
         processing: true,
@@ -82,11 +82,6 @@ $(document).ready(function () {
                         last: "Akhir",
                     }
                     },
-                    initComplete: function() {
-                    // Tambah Tailwind ke elemen filter
-                    $('.dataTables_filter input').addClass('border-gray-300 rounded-lg px-4 py-2');
-                    $('.dataTables_length select').addClass('border-gray-300 rounded-lg px-2 py-1');
-                    }
     });
 
     // Saat dropdown role berubah
@@ -103,21 +98,25 @@ $(document).ready(function () {
                 roles: selectedRoles
             },
             success: function (res) {
-                toastr.success(res.message);
-                table.ajax.reload(null, false); // refresh data tanpa reload halaman
+                Swal.fire('Berhasil', res.message, 'success');
             },
             error: function (xhr) {
-                toastr.error(xhr.responseJSON?.message || 'Gagal mengubah role');
+                Swal.fire(
+                    'Gagal',
+                    xhr.responseJSON?.message || 'Gagal mengubah role',
+                    'error'
+                );
             }
         });
     });
 
     $('#accountsTable').on('draw.dt', function() {
-        $('.select2').select2({
-            width: '80%',
-            placeholder: "Pilih role",
-            allowClear: true
-        });
+$('.select2').select2({
+    width: '100%',
+    placeholder: "Pilih role",
+    allowClear: true
+});
+
     });
 });
 </script>
@@ -133,4 +132,29 @@ $(document).ready(function () {
         });
     </script>
     @endif
+@endpush
+@push('css')
+<style>
+#accountsTable {
+    table-layout: fixed;
+    width: 100%;
+}
+.select2-selection__rendered {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+</style>
+<style>
+
+#accountsTable th:nth-child(1),
+#accountsTable td:nth-child(1) {
+    width: 55%;
+}
+#accountsTable th:nth-child(2),
+#accountsTable td:nth-child(2) {
+    width: 45%;
+}
+</style>
 @endpush

@@ -474,10 +474,6 @@ Route::middleware(['auth'])->group(function () {
 //     route::resource('/documents', DocumentController::class);
 // });
 
-Route::middleware(['auth', 'permission:Lihat daftar rab'])->group(function () {
-    Route::post('/rab/update-role', [AccountController::class, 'updateRole'])->name('accounts.update-role');
-});
-
 Route::get('/api/cities/{province_id}', function ($province_id) {
     return \App\Models\City::where('province_id', $province_id)->select('id', 'name')->get();
 });

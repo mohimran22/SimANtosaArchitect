@@ -22,7 +22,7 @@
                     </li>
                 </ul> --}}
             </div>
-            <div class="col-12 col-lg-auto mt-lg-0">
+            <div class="col-12 col-lg-auto">
                 <ul class="list-inline list-inline-dots mb-0">
                     <li class="list-inline-item">
                         Copyright &copy; 2025 
