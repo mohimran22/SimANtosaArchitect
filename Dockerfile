@@ -50,8 +50,7 @@ RUN npm install && npm run build
 # ===============================
 RUN php artisan storage:link || true \
  && php artisan config:clear \
- && php artisan config:cache \
- && php artisan view:cache
+ && php artisan config:cache
 
 # ===============================
 # Permissions

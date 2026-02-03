@@ -5,11 +5,11 @@
     <div class="page-header d-print-none">
         <div class="container-xl">
             <div class="row g-2 align-items-center">
-                <div class="col">
+                {{-- <div class="col">
                     <h2 class="page-title">
                         Data Pengguna
                     </h2>
-                </div>
+                </div> --}}
                 <!-- Page title actions -->
                 <div class="col-12 col-md-auto ms-auto d-print-none">
                     <div class="btn-list">
@@ -41,7 +41,7 @@
                 <div class="col-12">
                     <div class="card">
                         <div class="card-header">
-                            <p class="text-center mb-4" style="font-size: 1.4rem; font-weight: 400; font-family: 'Figtree', sans-serif;">
+                            <p class="text-center mb-4" style="font-size: 1.4rem; font-weight: 400; font-family: 'Poppins', sans-serif;">
                                  Daftar Pengguna
                             </p>
                         </div>
@@ -50,8 +50,8 @@
                                 <thead>
                                     <tr>
                                         <th class="w-1">No.</th>
-                                        <th>Name</th>
-                                        <th>Panggilan</th>
+                                        <th>Nama Lengkap</th>
+                                        <th>Nama Panggilan</th>
                                         <th>Jenis Kelamin</th>
                                         <th>Tempat Lahir</th>
                                         <th>Tanggal Lahir</th>
@@ -66,7 +66,7 @@
                                         <th>Kelurahan</th>
                                         <th>Kode Pos</th>
                                         <th>Telepon</th>
-                                        <th clas="action">Aksi</th>
+                                        <th class="action">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -113,7 +113,20 @@
                     { data: 'phone', name: 'phone' },
                     { data: 'action', name: 'action', orderable: false, searchable: false },
                 ],
-    
+                    language: {
+                    search: "_INPUT_",
+                    searchPlaceholder: "Cari user...",
+                    lengthMenu: "Tampilkan data _MENU_",
+                    paginate: {
+                        first: "Awal",
+                        last: "Akhir",
+                    }
+                    },
+                    initComplete: function() {
+                    
+                    $('.dataTables_filter input').addClass('border-gray-300 rounded-lg px-4 py-2');
+                    $('.dataTables_length select').addClass('border-gray-300 rounded-lg px-2 py-1');
+                    }
             });
 
             // Delete user functionally

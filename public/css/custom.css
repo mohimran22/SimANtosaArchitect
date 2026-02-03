@@ -162,10 +162,18 @@ label {
 .product-image-wrapper:hover .product-image {
     transform: scale(1.03);
 }
+.dataTables_filter input {
+    border-color: #ced4da !important;
+}
 
-
-
-
+.dataTables_filter input:focus {
+    border-color: #666 !important;
+    box-shadow: none !important;
+}
+.dataTables_length select:focus {
+    border-color: #666 !important;
+    box-shadow: none !important;
+}
 
 #detail-rows {
     table-layout: fixed;   /* Supaya kolom paten, tidak mengecil */
@@ -259,7 +267,7 @@ body {
 }
 
 footer {
-  margin-left: 20px;
+  margin-left: 35px;
 }
 
 .avatar {

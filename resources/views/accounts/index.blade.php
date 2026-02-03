@@ -5,12 +5,12 @@
     <div class="page-header d-print-none">
         <div class="container-xl">
             <div class="row g-2 align-items-center">
-                <div class="col">
+                {{-- <div class="col">
             
                     <h2 class="page-title">
                         Akun
                     </h2>
-                </div>
+                </div> --}}
                 <!-- Page title actions -->
                 <div class="col-12 col-md-auto ms-auto d-print-none">
                     <div class="btn-list">
@@ -41,7 +41,7 @@
                 <div class="col-12">
                     <div class="card">
                         <div class="card-header">
-                            <p class="text-center mb-4">
+                            <p class="text-center mb-4" style="font-size: 1.4rem; font-weight: 400; font-family: 'Poppins', sans-serif;">
                                  Daftar Akun
                             </p>
                         </div>
@@ -72,7 +72,21 @@ $(document).ready(function () {
         columns: [
             { data: 'fullname', name: 'fullname' },
             { data: 'role_dropdown', name: 'role', orderable: false, searchable: false },
-        ]
+        ],
+        language: {
+                    search: "_INPUT_",
+                    searchPlaceholder: "Cari akun...",
+                    lengthMenu: "Tampilkan data _MENU_",
+                    paginate: {
+                        first: "Awal",
+                        last: "Akhir",
+                    }
+                    },
+                    initComplete: function() {
+                    // Tambah Tailwind ke elemen filter
+                    $('.dataTables_filter input').addClass('border-gray-300 rounded-lg px-4 py-2');
+                    $('.dataTables_length select').addClass('border-gray-300 rounded-lg px-2 py-1');
+                    }
     });
 
     // Saat dropdown role berubah
