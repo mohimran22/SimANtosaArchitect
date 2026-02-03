@@ -48,8 +48,7 @@ RUN npm install && npm run build
 # ===============================
 # Laravel Optimization
 # ===============================
-RUN php artisan key:generate || true \
- && php artisan storage:link || true \
+RUN php artisan storage:link || true \
  && php artisan config:clear \
  && php artisan config:cache \
  && php artisan view:cache
