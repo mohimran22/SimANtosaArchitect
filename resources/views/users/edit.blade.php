@@ -1,234 +1,234 @@
-{{-- Penting --}}
 @extends('tablar::page')
 
-@section('title', 'Edit Pengguna')
-
 @section('content')
-    <!-- Page header -->
-    <div class="page-header d-print-none">
-        <div class="container-xl">
-            <div class="row g-2 align-items-center">
-                <div class="col">
-                    <!-- Page pre-title -->
-                    <div class="page-pretitle">
-                        Overview
-                    </div>
-                    <h2 class="page-title">
-                        user
-                    </h2>
-                </div>
-                <!-- Page title actions -->
-                <div class="col-12 col-md-auto ms-auto d-print-none">
-                    <div class="btn-list">
-                  
-                        <a href=" {{ route("users.index") }} " class="btn btn-primary d-none d-sm-inline-block" >
-                            Kembali
-                        </a>
-                        
-                    </div>
-                </div>
+<div class="page-header d-print-none mb-4">
+    <div class="container-xl">
+        <div class="row align-items-center">
+            <div class="col d-flex align-items-center">
+                <a href="{{ route('users.index') }}" class="btn btn-dark d-flex align-items-center" style="margin-left: 30px;">
+                    <i class="ti ti-arrow-left"></i>
+                </a>
+                    <h2 class="page-title mb-0">Edit Data Pengguna</h2>
             </div>
         </div>
     </div>
+</div>
 
     <!-- Page body -->
     <div class="page-body">
         <div class="container-xl">
-            <div class="row row-deck row-cards">
-                <div class="col-12">
-                    <div class="card">
-                        <div class="card-header">
-                            <p class="text-center mb-4" style="font-size: 1.4rem; font-weight: 400; font-family: 'Poppins', sans-serif;">
-                                Edit Data Pengguna
-                            </p>
-                        </div>
-
-                        <div class="card-body">
-                            <form class="font-normal" action="{{ route('users.update', $user->id) }}" method="POST" enctype="multipart/form-data">
+            <div class="card shadow-sm border-0">
+                <div class="card-body px-5 py-4">
+                            <form action="{{ route('users.update', $user->id) }}" method="POST" enctype="multipart/form-data">
                                 @csrf
                                 @method('put')
 
-                                <div class="row mb-4">
-                                    <div class="col-md-6 mb-3">
-                                        <label class="required" for="fullname">Nama Lengkap:</label>
-                                        <input type="text" class="form-control @error('fullname') is-invalid @enderror" id="fullname" name="fullname" value="{{ old('fullname', $user->fullname) }}" required>
-                                        @error('fullname')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
+                                 @if ($errors->any())
+                                        <div class="alert alert-danger">
+                                            <ul class="mb-0">
+                                                @foreach ($errors->all() as $error)
+                                                    <li>{{ $error }}</li>
+                                                @endforeach
+                                            </ul>
+                                        </div>
+                                @endif
+                                <div class="text-center mb-5">
+                                    <div class="position-relative d-inline-block">
+                                        @if ($user->photo)
+                                            <img id="previewImage" src="{{ asset('storage/'.$user->photo) }}" alt="Profile" 
+                                                class="rounded-3 shadow-sm border" width="150" height="150"
+                                                style="object-fit: cover;">
+                                        @else
+                                            <div id="previewImage"
+                                                class="rounded-3 shadow-sm bg-light d-flex align-items-center justify-content-center"
+                                                style="width:150px; height:150px;">
+                                                <i class="ti ti-user" style="font-size: 64px; color:#aaa;"></i>
+                                            </div>
+                                        @endif
+                                        <label for="photo"
+                                            class="btn btn-sm btn-dark position-absolute bottom-0 end-0 translate-middle rounded-circle"
+                                            title="Ganti Foto">
+                                            <i class="ti ti-camera"></i>
+                                        </label>
                                     </div>
-
-                                    <div class="col-md-6 mb-3">
-                                            <label class="required">Nama Panggilan</label>
-                                            <input type="text" class="form-control @error('nickname') is-invalid @enderror" id="nickname" name="nickname" value="{{ old('nickname', $user->nickname) }}" required>
-                                            @error('nickname')
+                                    <input type="file" id="photo" name="photo" class="d-none" accept="image/*">
+                                </div>
+                                <div class="mb-3">
+                                    <small class="text-danger fw-semibold">
+                                        * : Wajib diisi
+                                    </small>
+                                </div>
+                                <div class="section-block mb-5">
+                                    <h3 class="fw-semibold mb-3 border-bottom pb-2">🧍 Informasi Pribadi</h3>
+                                    <div class="row g-4">
+                                        <div class="col-md-5">
+                                            <label class="form-label required" for="fullname">Nama Lengkap:</label>
+                                            <input type="text" class="form-control @error('fullname') is-invalid @enderror" name="fullname" value="{{ old('fullname', $user->fullname) }}" required>
+                                            @error('fullname')
                                                 <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror
                                         </div>
 
-                                        <div class="col-md-6 mb-3">
-                                            <label class="required">Jenis Kelamin</label>
+                                        <div class="col-md-5">
+                                                <label class="form-label required">Nama Panggilan</label>
+                                                <input type="text" class="form-control @error('nickname') is-invalid @enderror" id="nickname" name="nickname" value="{{ old('nickname', $user->nickname) }}" required>
+                                                @error('nickname')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                        </div>
+
+                                        <div class="col-md-2">
+                                            <label class="form-label required">Jenis Kelamin</label>
                                             <select name="gender" class="form-select" required>
-                                                <option value="">-- Pilih Jenis Kelamin --</option>
-                                                <option value="1" {{ $user->gender == 1 ? 'selected' : '' }}>Laki - Laki</option>
-                                                <option value="2" {{ $user->gender == 2 ? 'selected' : '' }}>Perempuan</option>
+                                                <option value="">-- Pilih --</option>
+                                                <option value="1" {{ old('gender', $user->gender) == '1' ? 'selected' : '' }}>Laki-laki</option>
+                                                <option value="2" {{ old('gender', $user->gender) == '2' ? 'selected' : '' }}>Perempuan</option>
                                             </select>
                                         </div>
 
-                                        <div class="col-md-6 mb-3">
-                                            <label class="required">Tempat Lahir</label>
-                                            <input type="text" class="form-control @error('birth_place') is-invalid @enderror" id="birth_place" name="birth_place" value="{{ old('birth_place', $user->birth_place) }}" required>
+                                        <div class="col-md-4">
+                                            <label class="form-label required">Tempat Lahir</label>
+                                            <input type="text" class="form-control @error('birth_place') is-invalid @enderror" name="birth_place" value="{{ old('birth_place', $user->birth_place) }}" required>
                                             @error('birth_place')
                                                 <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror
                                         </div>
                                     
-
-                                        <div class="col-md-6 mb-3">
-                                            <label class="required">Tanggal Lahir</label>
+                                        <div class="col-md-4">
+                                            <label class="form-label required">Tanggal Lahir</label>
                                             <input type="date" name="birth_date" class="form-control" required
                                                 value="{{ old('birth_date', $user->birth_date) }}"
                                                 pattern="\d{4}-\d{2}-\d{2}" placeholder="YYYY-MM-DD">
                                         </div>
 
-                                        <div class="col-md-6 mb-3">
-                                            <label class="required" for="religion_id">Agama</label>
-                                            <select name="religion_id" class="form-select" required>
+                                        <div class="col-md-4">
+                                            <label class="form-label required">Agama</label>
+                                            <select name="religion_id" class="form-select select2" required>
                                                 <option value="">-- Pilih Agama --</option>
                                                 @foreach($religions as $religion)
-                                                    <option value="{{ $religion->id }}" {{ old('religion_id', $user->religon_id) == $religion->id ? 'selected' : '' }}>
+                                                    <option value="{{ $religion->id }}" {{ old('religion_id', $user->religion_id) == $religion->id ? 'selected' : '' }}>
                                                         {{ $religion->name }}
                                                     </option>
                                                 @endforeach
                                             </select>
+                                            @error('religion_id')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
                                         </div>
 
-                                        <div class="col-md-6 mb-3">
-                                        <label class="required" for="email">Email: </label>
-                                        <input type="email" class="form-control @error('email') is-invalid @enderror" id="email" name="email" value="{{ old('email', $user->email) }}" required>
-                                        @error('email')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                        </div>
-
-                                        <div class="col-md-6 mb-3">
-                                            <label class="required">Nomor KTP</label>
-                                            <input type="number" class="form-control @error('identity_number') is-invalid @enderror" id="identity_number" name="identity_number" maxlength="16" value="{{ old('identity_number', $user->identity_number) }}" required>
+                                        <div class="col-md-4">
+                                            <label class="form-label required">Nomor KTP</label>
+                                            <input type="number" class="form-control @error('identity_number') is-invalid @enderror" name="identity_number" maxlength="16" value="{{ old('identity_number', $user->identity_number) }}" required>
                                             @error('identity_number')
                                                 <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror
                                         </div>
-
-                                        <div class="col-md-6 mb-3">
-                                            <label class="required">Alamat Lengkap</label>
-                                            <input type="text" class="form-control @error('address') is-invalid @enderror" id="address" name="address" value="{{ old('address', $user->address) }}" required>
-                                            @error('address')
+                                        <div class="col-md-4">
+                                            <label class="form-label">NPWP</label>
+                                            <input type="text" name="npwp" class="form-control @error('npwp') is-invalid @enderror" value="{{ old('npwp', $user->npwp) }}">
+                                            @error('npwp')
                                                 <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror
                                         </div>
-
-                                        <div class="col-md-6 mb-3">
-                                            <label class="required">Provinsi</label>
-                                            <select name="province_id" id="province" class="form-select select2" required>
-                                                <option value="">-- Pilih Provinsi --</option>
-                                                @foreach($provinces as $province)
-                                                    <option value="{{ $province->id }}"
-                                                        {{ $user->province_id == $province->id ? 'selected' : '' }}>
-                                                        {{ $province->name }}
-                                                    </option>
-                                                @endforeach
-                                            </select>
-                                        </div>
-
-                                        <div class="col-md-6 mb-3">
-                                            <label class="required">Kabupaten/Kota</label>
-                                            <select name="city_id" id="city" class="form-select select2" required>
-                                                <option value="">-- Pilih Kota --</option>
-                                                @foreach($cities as $city)
-                                                    <option value="{{ $city->id }}"
-                                                        {{ $user->city_id == $city->id ? 'selected' : '' }}>
-                                                        {{ $city->name }}
-                                                    </option>
-                                                @endforeach
-                                            </select>
-                                        </div>
-
-                                        <div class="col-md-6 mb-3">
-                                            <label class="required">Kecamatan</label>
-                                            <select name="district_id" id="district" class="form-select select2" required>
-                                                <option value="">-- Pilih Kecamatan --</option>
-                                                @foreach($districts as $district)
-                                                    <option value="{{ $district->id }}"
-                                                        {{ $user->district_id == $district->id ? 'selected' : '' }}>
-                                                        {{ $district->name }}
-                                                    </option>
-                                                @endforeach
-                                            </select>
-                                        </div>
-
-                                        <div class="col-md-6 mb-3">
-                                            <label class="required">Desa</label>
-                                            <select name="sub_district_id" id="sub_district" class="form-select select2" required>
-                                                <option value="">-- Pilih Desa --</option>
-                                                @foreach($subDistricts as $sub_district)
-                                                    <option value="{{ $sub_district->id }}"
-                                                        {{ $user->sub_district_id == $sub_district->id ? 'selected' : '' }}>
-                                                        {{ $sub_district->name }}
-                                                    </option>
-                                                @endforeach
-                                            </select>
-                                        </div>
-
-                                        <div class="col-md-6 mb-3">
-                                            <label class="required">Kode Pos</label>
-                                            <select name="postal_code_id" id="postal_code" class="form-select select2" required>
-                                                <option value="">-- Pilih Desa --</option>
-                                                @foreach($postalCodes as $postal_code)
-                                                    <option value="{{ $postal_code->id }}"
-                                                        {{ $user->postal_code_id == $postal_code->id ? 'selected' : '' }}>
-                                                        {{ $postal_code->postal_code }}
-                                                    </option>
-                                                @endforeach
-                                            </select>
-                                        </div>
-
-                                        <div class="col-md-6 mb-3">
-                                            <label class="required">Telepon</label>
-                                            <input type="number" class="form-control @error('phone') is-invalid @enderror" id="phone" name="phone" value="{{ old('phone', $user->phone) }}" required>
+                                    </div>
+                                </div>
+                                <div class="section-block mb-5">
+                                    <h3 class="fw-semibold mb-3 border-bottom pb-2">📞 Kontak & Alamat</h3>
+                                    <div class="row g-4">
+                                        <div class="col-md-4">
+                                            <label class="form-label required">Telepon</label>
+                                            <input type="number" class="form-control @error('phone') is-invalid @enderror" name="phone" value="{{ old('phone', $user->phone) }}" required>
                                             @error('phone')
                                                 <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror
                                         </div>
-
-                                        <div class="row mb-3 align-items-center">
+                                        <div class="col-md-4">
+                                            <label class="form-label required" for="email">Email</label>
+                                            <input type="email" class="form-control @error('email') is-invalid @enderror"name="email" value="{{ old('email', $user->email) }}" required>
+                                            @error('email')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label required" for="password">Kata sandi</label>
+                                            <input type="password" class="form-control @error('password') is-invalid @enderror" name="password" value="{{ old('password', $user->password) }}" placeholder="Password harus 8 karakter" required>
+                                            @error('password')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label required">Alamat Lengkap</label>
+                                            <textarea name="address" rows="2" class="form-control @error('address') is-invalid @enderror" required>{{ old('address', $user->address) }}</textarea>
+                                            @error('address')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                        <div class="row g-4 mt-2">
                                             <div class="col-md-6">
-                                                <label for="photo" class="form-label">Ganti Foto</label>
-                                                <input type="file" name="photo" class="form-control" accept="image/*">
-                                                @error('photo')
-                                                    <small class="text-danger">{{ $message }}</small>
-                                                @enderror
+                                                <label class="required">Provinsi</label>
+                                                    <select name="province_id" id="province" class="form-select select2" required>
+                                                        <option value="">-- Pilih Provinsi --</option>
+                                                        @foreach($provinces as $province)
+                                                            <option value="{{ $province->id }}"
+                                                                {{ $user->province_id == $province->id ? 'selected' : '' }}>
+                                                                {{ $province->name }}
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
                                             </div>
                                             <div class="col-md-6">
-                                                <label class="form-label">Foto Saat Ini:</label><br>
-                                                @if ($user->photo)
-                                                    <img src="{{ asset('storage/' . $user->photo) }}" class="rounded mb-2" width="150">
-                                                @else
-                                                    <p class="text-muted mb-0">Belum ada foto</p>
-                                                @endif
+                                                <label class="required">Kabupaten/Kota</label>
+                                                            <select name="city_id" id="city" class="form-select select2" required>
+                                                                <option value="">-- Pilih Kota --</option>
+                                                                @foreach($cities as $city)
+                                                                    <option value="{{ $city->id }}"
+                                                                        {{ $user->city_id == $city->id ? 'selected' : '' }}>
+                                                                        {{ $city->name }}
+                                                                    </option>
+                                                                @endforeach
+                                                            </select>
+                                            </div>
+                                            <div class="col-md-5">
+                                                <label class="required">Kecamatan</label>
+                                                            <select name="district_id" id="district" class="form-select select2" required>
+                                                                <option value="">-- Pilih Kecamatan --</option>
+                                                                @foreach($districts as $district)
+                                                                    <option value="{{ $district->id }}"
+                                                                        {{ $user->district_id == $district->id ? 'selected' : '' }}>
+                                                                        {{ $district->name }}
+                                                                    </option>
+                                                                @endforeach
+                                                            </select>
+                                            </div>
+                                            <div class="col-md-5">
+                                                <label class="required">Kelurahan</label>
+                                                            <select name="sub_district_id" id="sub_district" class="form-select select2" required>
+                                                                <option value="">-- Pilih kelurahan --</option>
+                                                                @foreach($subDistricts as $sub_district)
+                                                                    <option value="{{ $sub_district->id }}"
+                                                                        {{ $user->sub_district_id == $sub_district->id ? 'selected' : '' }}>
+                                                                        {{ $sub_district->name }}
+                                                                    </option>
+                                                                @endforeach
+                                                            </select>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <label class="required">Kode Pos</label>
+                                                            <select name="postal_code_id" id="postal_code" class="form-select select2" required>
+                                                                <option value="">-- Pilih Kode Pos --</option>
+                                                                @foreach($postalCodes as $postal_code)
+                                                                    <option value="{{ $postal_code->id }}"
+                                                                        {{ $user->postal_code_id == $postal_code->id ? 'selected' : '' }}>
+                                                                        {{ $postal_code->postal_code }}
+                                                                    </option>
+                                                                @endforeach
+                                                            </select>
                                             </div>
                                         </div>
-
-                                        
+                                    </div>
                                 </div>
 
-                                <div class="row mb-4">
-                                    <div class="col-md-6 mb-3">
-                                        <label class="required" for="password">Password:</label>
-                                        <input type="password" class="form-control @error('password') is-invalid @enderror" id="password" name="password" value="{{ old('password', $user->password) }}"
-                                         >
-                                        @error('password')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
+                                {{-- <div class="row mb-4">
 
                                     <div class="col-md-6 mb-3">
                                         <label class="required" for="role">Role:</label>
@@ -241,13 +241,17 @@
                                             @endforeach
                                         </select>
                                     </div>
-                                </div>
+                                </div> --}}
 
-                                <button type="submit" class="btn btn-primary mt-4">Submit</button>
+                            <div class="text-end mt-5">
+                                <button type="submit" class="btn btn-dark px-4">
+                                    <i class="ti ti-device-floppy me-1"></i> Simpan Data
+                                </button>
+                            </div>
                             </form>
 
-                        </div>
-                    </div>
+                        
+                    
                 </div>
             </div>
         </div>

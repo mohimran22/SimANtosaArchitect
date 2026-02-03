@@ -105,10 +105,11 @@ class UsersController extends Controller
 
      public function create() 
     {
+        $user = auth()->user();
         $religions = Religion::all();
         $provinces = Province::all();
         $roles = Role::all();
-        return view('users.create', compact('religions', 'provinces', 'roles'));
+        return view('users.create', compact('religions', 'provinces', 'roles', 'user'));
     }
 
         public function store(Request $request)
@@ -121,10 +122,11 @@ class UsersController extends Controller
         'birth_date' => 'required|date_format:Y-m-d',
         'email' => 'required|email|unique:users,email',
         'password' => 'required|min:8',
-        'role' => 'required|array',
-        'role.*' => 'string|exists:roles,name',
+        // 'role' => 'required|array',
+        // 'role.*' => 'string|exists:roles,name',
         'religion_id' => 'required|exists:religions,id',
-        'identity_number' => 'required|digits:16',
+        'identity_number' => 'required|string|max:16|unique:users,identity_number',
+        'npwp' => 'nullable|string|max:30',
         'address' => 'required',
         'province_id' => 'required|exists:provinces,id',
         'city_id' => 'required|exists:cities,id',
@@ -155,7 +157,7 @@ class UsersController extends Controller
         $user = User::create($validated);
 
         // Assign role
-        $user->syncRoles($validated['role']);
+        // $user->syncRoles($validated['role']);
 
         DB::commit();
 
@@ -207,11 +209,11 @@ class UsersController extends Controller
         'birth_place' => 'required',
         'birth_date' => 'required|date_format:Y-m-d',
         'email' => 'required|email|unique:users,email,' . $user->id, // <- tidak bentrok dgn email miliknya sendiri
-        'password' => 'nullable|min:6', // <- hanya isi jika ingin diubah
-        'role' => 'required|array',
-        'role.*' => 'string|exists:roles,name',
+        'password' => 'nullable|min:8', // <- hanya isi jika ingin diubah
+        // 'role' => 'required|array',
+        // 'role.*' => 'string|exists:roles,name',
         'religion_id' => 'required|exists:religions,id',
-        'identity_number' => 'required|digits:16|unique:users,identity_number,' . $user->id,
+        'identity_number' => 'required|string|max:16|unique:users,identity_number,' . $user->id,
         'address' => 'required',
         'province_id' => 'required|exists:provinces,id',
         'city_id' => 'required|exists:cities,id',
@@ -252,7 +254,7 @@ class UsersController extends Controller
         $user->update($validated);
 
         // Update role (hapus role lama dan tambahkan role baru)
-        $user->syncRoles([$validated['role']]);
+        // $user->syncRoles([$validated['role']]);
 
         DB::commit();
 

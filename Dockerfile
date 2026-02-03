@@ -24,6 +24,13 @@ WORKDIR /var/www
 # Copy project files
 COPY . .
 
+RUN php artisan config:clear \
+ && php artisan config:cache \
+ && php artisan route:cache \
+ && php artisan view:cache
+
+RUN php artisan storage:link || true
+
 # Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader
 
@@ -35,6 +42,4 @@ RUN chown -R www-data:www-data storage bootstrap/cache
 
 EXPOSE 8080
 
-CMD php artisan db:seed --class=UserSeeder --force \
- && php artisan serve --host=0.0.0.0 --port=${PORT:-8080}
-
+CMD php artisan serve --host=0.0.0.0 --port=${PORT:-8080}

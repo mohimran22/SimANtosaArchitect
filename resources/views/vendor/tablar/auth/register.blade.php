@@ -1,5 +1,5 @@
 @extends('tablar::auth.layout')
-@section('title', 'Register')
+@section('title', 'Antosa Architect')
 @section('content')
 <style>
     body {
