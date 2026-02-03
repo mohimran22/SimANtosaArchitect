@@ -162,18 +162,10 @@ label {
 .product-image-wrapper:hover .product-image {
     transform: scale(1.03);
 }
-.dataTables_filter input {
-    border-color: #ced4da !important;
-}
 
-.dataTables_filter input:focus {
-    border-color: #666 !important;
-    box-shadow: none !important;
-}
-.dataTables_length select:focus {
-    border-color: #666 !important;
-    box-shadow: none !important;
-}
+
+
+
 
 #detail-rows {
     table-layout: fixed;   /* Supaya kolom paten, tidak mengecil */
@@ -203,6 +195,7 @@ body {
   font-family: 'Poppins', sans-serif !important;
   font-weight: 400 !important;
   background-color: #f8f9fc;
+  background: #eef1f6 !important;
 }
 
 .sidebar-logo-wrapper,
@@ -233,8 +226,13 @@ body {
   flex-direction: column;
   padding-top: 15px;
   position: fixed;
-  border: none !important;
-  box-shadow: none !important;
+}
+
+.navbar-expand-md {
+  margin-left: 40px !important;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 4px 14px rgba(0,0,0,.05);
 }
 
 .nav-link {
@@ -242,11 +240,16 @@ body {
   color:#000 !important;
 }
 
-/* MAIN CONTENT */
+/* .page-body {
+  margin: 35px !important;
+  border-radius: 16px;
+  padding: 20px;
+} */
+
 .page,
 .page-title {
-  margin-left: 20px;
-  padding: 20px;
+  margin-left: 40px !important;
+  padding: 20px !important;
 } 
 
 .btn,
@@ -255,19 +258,8 @@ body {
   font-size: 14px !important;
 }
 
-
-.topbar.container-xl {
-  align-items: center;
-  gap: 8px;
-  font-weight: 600;
-  background: #fff;
-  display: flex;
-  justify-content: space-between;
-  margin-left: 20px;
-}
-
 footer {
-  margin-left: 35px;
+  margin-left: 16px !important;
 }
 
 .avatar {
@@ -290,7 +282,7 @@ footer {
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  margin: 0 30px;
+  margin: 0;
 }
 
 /* TABLE */

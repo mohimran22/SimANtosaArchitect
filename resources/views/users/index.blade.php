@@ -122,11 +122,6 @@
                         last: "Akhir",
                     }
                     },
-                    initComplete: function() {
-                    
-                    $('.dataTables_filter input').addClass('border-gray-300 rounded-lg px-4 py-2');
-                    $('.dataTables_length select').addClass('border-gray-300 rounded-lg px-2 py-1');
-                    }
             });
 
             // Delete user functionally
@@ -197,4 +192,17 @@
         });
     </script>
     @endif
+@endpush
+@push('css')
+<style>
+
+.dt-search .dataTables_filter input {
+    height: 42px !important;
+    min-width: 280px !important;
+    font-size: 14px !important;
+    padding: 8px 14px !important;
+    border-radius: 8px !important;
+}
+
+</style>
 @endpush

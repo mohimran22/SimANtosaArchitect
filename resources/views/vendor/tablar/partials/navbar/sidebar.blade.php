@@ -1,5 +1,3 @@
-<!-- Sidebar -->
-
 <aside class="{{$layoutData['cssClasses'] ?? 'navbar navbar-vertical navbar-expand-lg'}}"
        @if(config('tablar.layout_light_sidebar') !== null)
            data-bs-theme="{{ config('tablar.layout_light_sidebar') ? 'light' : 'dark' }}"
@@ -35,8 +33,6 @@
             {{-- <ul class="navbar-nav pt-lg-3">
                 @each('tablar::partials.navbar.dropdown-item',$tablar->menu('sidebar'), 'item')
             </ul> --}}
-            
-
         </div>
     </div>
 </aside>
