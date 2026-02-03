@@ -24,11 +24,6 @@ WORKDIR /var/www
 # Copy project files
 COPY . .
 
-RUN php artisan config:clear \
- && php artisan config:cache \
- && php artisan route:cache \
- && php artisan view:cache
-
 RUN php artisan storage:link || true
 
 # Install PHP dependencies
@@ -36,6 +31,11 @@ RUN composer install --no-dev --optimize-autoloader
 
 # Build frontend (kalau pakai Vite)
 RUN npm install && npm run build
+
+RUN php artisan config:clear \
+ && php artisan config:cache \
+ && php artisan route:cache \
+ && php artisan view:cache
 
 # Permission
 RUN chown -R www-data:www-data storage bootstrap/cache
