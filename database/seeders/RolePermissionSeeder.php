@@ -256,9 +256,6 @@ class RolePermissionSeeder extends Seeder
         }
     }
 
-
-
-        // Buat roles
         $roleGroups = [
             'Internal' => [
                 'Super-Admin',
