@@ -16,6 +16,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
  
 class UsersController extends Controller
@@ -56,6 +57,11 @@ class UsersController extends Controller
             ->addColumn('identity_number', fn($row) => $row->identity_number ?? '-')
             ->addColumn('npwp', fn($row) => $row->npwp ?? '-')
             ->addColumn('phone', fn($row) => $row->phone ?? '-')
+            ->editColumn('fullname', function ($row) {
+                    $url = route('users.show', $row->id);
+                    $name = Str::title($row->fullname ?? '-');
+                    return '<a href="'.$url.'">'.e($name).'</a>';
+                })
 
             // ->addColumn('action', function($user) {
             //     $editUrl = route('users.edit', $user->id);
@@ -68,17 +74,16 @@ class UsersController extends Controller
 
             ->addColumn('action', function ($user) {
                     $buttons = '';
-                    // {
-                    //     $buttons .= '<a href="' . route('users.show', $user->id) . '" class="btn btn-icon btn-sm btn-dark me-1" title="Lihat">
-                    //                     <i class="ti ti-eye"></i>
-                    //                 </a>';
-                    // }
                     {
                         $buttons .= '<a href="' . route('users.edit', $user->id) . '" class="btn btn-icon btn-sm btn-dark me-1" title="Ubah">
                                         <i class="ti ti-edit"></i>
                                     </a>';
                     }
-                    
+                    {
+                        $buttons .= '<a href="' . route('users.show', $user->id) . '" class="btn btn-icon btn-sm btn-dark me-1" title="Lihat">
+                                        <i class="ti ti-eye"></i>
+                                    </a>';
+                    }
                     {
                         $buttons .= '<button data-id="' . $user->id . '" class="btn btn-icon btn-sm btn-dark delete-user" title="Hapus">
                                         <i class="ti ti-trash"></i>
@@ -87,7 +92,7 @@ class UsersController extends Controller
                     return $buttons;
                 })
 
-            ->rawColumns(['action'])
+            ->rawColumns(['action', 'fullname'])
             ->make(true);
         }
           
@@ -179,13 +184,11 @@ class UsersController extends Controller
     }
 }
 
- public function show(User $user)
-    {
-        $user->load('user');
-        return view('users.show', [
-            'user' => $user,
-        ]);
-    }
+public function show(User $user)
+{
+    return view('users.show', compact('user'));
+}
+
 
     public function edit(User $user) 
     {

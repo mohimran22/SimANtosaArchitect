@@ -150,7 +150,7 @@ public function activeRole()
     public function getPhotoUrlAttribute()
 {
     if ($this->employee && $this->employee->photo) {
-        return asset('storage/profile_photos/' . $this->employee->photo);
+        return asset('storage/' . $this->employee->photo);
     }
 
     if ($this->licenseholder && $this->licenseholder->photo) {
