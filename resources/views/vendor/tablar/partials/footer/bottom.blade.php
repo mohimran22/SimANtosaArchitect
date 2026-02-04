@@ -25,7 +25,7 @@
             <div class="col-12 col-lg-auto">
                 <ul class="list-inline list-inline-dots mb-0">
                     <li class="list-inline-item">
-                        Copyright &copy; 2025 
+                        Copyright &copy; {{ date('Y') }} 
                         <a class="link-secondary">{{config('tablar.bottom_title', 'TabLar')}}
                         </a>.
                         {{-- All rights reserved. --}}
