@@ -27,18 +27,19 @@ class RolePermissionSeeder extends Seeder
         // Daftar permission
         $permissions = [
 
+            // USER
             'tambah data user',
             'lihat daftar user',
             'ubah data user',
             'hapus data user',
 
+            // ROLE
             'tambah data role',
             'lihat daftar role',
             'ubah data role',
             'hapus data role',
 
-            'kelola akun',
-
+            // KARYAWAN
             'tambah data karyawan',
             'lihat data karyawan',
             'lihat daftar karyawan',
@@ -46,6 +47,7 @@ class RolePermissionSeeder extends Seeder
             'hapus data karyawan',
             'riwayat penggajian karyawan',
 
+            // GUDANG
             'lihat daftar gudang',
             'tambah data gudang',
             'lihat data gudang',
@@ -53,6 +55,7 @@ class RolePermissionSeeder extends Seeder
             'hapus data gudang',
             'riwayat transaksi gudang',
 
+            // PRODUK
             'lihat daftar produk',
             'tambah data produk',
             'lihat data produk',
@@ -61,6 +64,7 @@ class RolePermissionSeeder extends Seeder
             'riwayat pembelian produk',
             'riwayat penjualan produk',
 
+            // CUSTOMER
             'lihat daftar customer',
             'tambah data customer',
             'lihat data customer',
@@ -68,6 +72,7 @@ class RolePermissionSeeder extends Seeder
             'hapus data customer',
             'riwayat transaksi customer',
 
+            // AFFILIATOR
             'lihat daftar affiliator',
             'tambah data affiliator',
             'lihat data affiliator',
@@ -75,6 +80,7 @@ class RolePermissionSeeder extends Seeder
             'hapus data affiliator',
             'riwayat performa affiliator',
 
+            // SUPPLIER
             'lihat daftar supplier',
             'tambah data supplier',
             'lihat data supplier',
@@ -82,6 +88,7 @@ class RolePermissionSeeder extends Seeder
             'hapus data supplier',
             'riwayat pembelian supplier',
 
+            // INVESTOR
             'lihat daftar investor',
             'tambah data investor',
             'lihat data investor',
@@ -89,6 +96,7 @@ class RolePermissionSeeder extends Seeder
             'hapus data investor',
             'saham investor',
 
+            // TUKANG
             'lihat daftar tukang',
             'tambah data tukang',
             'lihat data tukang',
@@ -96,6 +104,7 @@ class RolePermissionSeeder extends Seeder
             'hapus data tukang',
             'riwayat penggajian tukang',
 
+            // KONTRAKTOR
             'lihat daftar kontraktor',
             'tambah data kontraktor',
             'lihat data kontraktor',
@@ -103,66 +112,106 @@ class RolePermissionSeeder extends Seeder
             'hapus data kontraktor',
             'riwayat penggajian kontraktor',
 
+            // DOKUMEN
             'lihat daftar dokumen',
             'tambah dokumen',
             'lihat dokumen',
             'ubah dokumen',
             'hapus dokumen',
-            
+
+            // PEMBELIAN
             'lihat daftar pembelian produk',
             'tambah data pembelian produk',
             'lihat data pembelian produk',
             'ubah data pembelian produk',
             'hapus data pembelian produk',
             'persetujuan pembelian produk',
-            'riwayat pembelian produk',
 
+            // PENJUALAN
             'lihat daftar penjualan produk',
             'tambah data penjualan produk',
             'lihat data penjualan produk',
             'ubah data penjualan produk',
             'hapus data penjualan produk',
             'persetujuan penjualan produk',
-            'riwayat penjualan produk',
 
+            // PROYEK
             'lihat daftar proyek',
             'tambah data proyek',
             'lihat data proyek',
             'ubah data proyek',
             'hapus data proyek',
 
+            // RAB
             'tambah data rab',
             'lihat data rab',
             'ubah data rab',
             'hapus data rab',
 
-            'tambah akun-akuntansi',
-            'lihat akun-akuntansi',
-            'ubah akun-akuntansi',
-            'hapus akun-akuntansi',
+            // AKUNTANSI
+            'tambah akunakuntansi',
+            'lihat akunakuntansi',
+            'ubah akunakuntansi',
+            'hapus akunakuntansi',
 
             'tambah jurnal',
             'lihat jurnal',
             'ubah jurnal',
             'hapus jurnal',
 
+            // ABSENSI
             'lihat daftar absensi',
             'tambah data absensi',
             'lihat data absensi',
             'ubah data absensi',
             'hapus data absensi',
 
+            // PELATIHAN
             'lihat daftar pelatihan',
             'tambah data pelatihan',
             'lihat data pelatihan',
             'ubah data pelatihan',
             'hapus data pelatihan',
 
+            // PENILAIAN
             'lihat daftar penilaian kinerja',
             'tambah data penilaian kinerja',
             'lihat data penilaian kinerja',
             'ubah data penilaian kinerja',
             'hapus data penilaian kinerja',
+
+            // AKUN
+            'kelola akun',
+
+            // MENU
+            'tambah data menu',
+            'lihat daftar menu',
+            'ubah data menu',
+            'hapus data menu',
+
+            // ARSITEK
+            'tambah data arsitek',
+            'lihat daftar arsitek',
+            'lihat data arsitek',
+            'ubah data arsitek',
+            'hapus data arsitek',
+            'riwayat penggajian arsitek',
+
+            // MASTER
+            'tambah data kategori',
+            'lihat daftar kategori',
+            'ubah data kategori',
+            'hapus data kategori',
+
+            'tambah data merk',
+            'lihat daftar merk',
+            'ubah data merk',
+            'hapus data merk',
+
+            'tambah data tipe',
+            'lihat daftar tipe',
+            'ubah data tipe',
+            'hapus data tipe',
         ];
 
         foreach ($permissions as $permissionName) {
@@ -187,6 +236,11 @@ class RolePermissionSeeder extends Seeder
             elseif (str_contains($permissionName, 'absensi')) $module = 'Absensi';
             elseif (str_contains($permissionName, 'pelatihan')) $module = 'Pelatihan';
             elseif (str_contains($permissionName, 'kinerja')) $module = 'Kinerja';
+            elseif (str_contains($permissionName, 'menu')) $module = 'Menu';
+            elseif (str_contains($permissionName, 'kategori')) $module = 'Kategori';
+            elseif (str_contains($permissionName, 'merk')) $module = 'Merk';
+            elseif (str_contains($permissionName, 'tipe')) $module = 'Tipe';
+            elseif (str_contains($permissionName, 'akun')) $module = 'Manajemen Akun';
             else $module = 'Lainnya';
 
         $permission = Permission::firstOrCreate(
