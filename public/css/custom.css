@@ -296,10 +296,13 @@ body {
   padding: 20px;
 } */
 
-.page,
-.page-title {
+.page {
   margin-left: 40px !important;
   padding: 10px !important;
+} 
+
+.page-title {
+  margin: 0 18px !important;
 } 
 
 .btn,
