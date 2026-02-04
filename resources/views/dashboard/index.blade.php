@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="page-body">
-    <div class="container-xl mt-3">
+    <div class="container-xl">
         <div id="alertCarousel" class="position-relative mb-4">
             <div class="overflow-hidden rounded-4 shadow-sm bg-white position-relative">
                 <div class="alert-wrapper d-flex" style="width: max-content;">

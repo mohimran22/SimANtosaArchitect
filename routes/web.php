@@ -465,7 +465,7 @@ Route::middleware(['auth', 'permission:lihat daftar role'])->group(function () {
     Route::post('/roles/{role}/update-permissions', [RoleController::class, 'updatePermissions'])->name('roles.updatePermissions');
 });
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'permission:kelola akun'])->group(function () {
     Route::get('/accounts', [AccountController::class, 'index'])->name('accounts.index');
     Route::post('/accounts/update-role', [AccountController::class, 'updateRole'])->name('accounts.update-role');
 });
