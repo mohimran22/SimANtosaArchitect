@@ -6,11 +6,6 @@
         <div class="row justify-content-center">
             <div class="col-lg-8 col-md-10">
                 <div class="card border-0 shadow rounded-4 overflow-hidden">
-                    
-                    {{-- Foto Profil di Atas --}}
-                    
-
-
                     <div class="card-body px-4 pb-4">
                         <form action="{{ route('customer.update') }}" method="POST" enctype="multipart/form-data">
                             @csrf
@@ -242,12 +237,27 @@ $('.select2').select2({
 </script>
 
 <script>
-    document.getElementById('photo').addEventListener('change', function(event) {
-        const file = event.target.files[0];
+        document.getElementById('photo').addEventListener('change', function (event) {
+        const input = event.target;
+        const file = input.files[0];
+        const previewContainer = document.getElementById('previewImage');
+
         if (file) {
             const reader = new FileReader();
-            reader.onload = function(e) {
-                document.getElementById('previewImage').src = e.target.result;
+            reader.onload = function (e) {
+                // Jika sebelumnya preview berupa ikon <div>, ganti jadi <img>
+                if (previewContainer.tagName.toLowerCase() === 'div') {
+                    const img = document.createElement('img');
+                    img.id = 'previewImage';
+                    img.src = e.target.result;
+                    img.className = 'border rounded-3 shadow-sm';
+                    img.width = 150;
+                    img.height = 150;
+                    img.style.objectFit = 'cover';
+                    previewContainer.replaceWith(img);
+                } else {
+                    previewContainer.src = e.target.result;
+                }
             };
             reader.readAsDataURL(file);
         }

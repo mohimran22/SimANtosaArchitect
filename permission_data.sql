@@ -16,26 +16,6 @@ SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
-SET default_tablespace = '';
-
-SET default_table_access_method = heap;
-
---
--- Name: permissions; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.permissions (
-    id uuid NOT NULL,
-    name character varying(255) NOT NULL,
-    guard_name character varying(255) NOT NULL,
-    created_at timestamp(0) without time zone,
-    updated_at timestamp(0) without time zone,
-    modules character varying(255)
-);
-
-
-ALTER TABLE public.permissions OWNER TO postgres;
-
 --
 -- Data for Name: permissions; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -180,21 +160,6 @@ de3c57b7-903d-49c9-98e9-ea46b62d5fd3	lihat daftar tipe	web	2025-11-19 01:54:34	2
 
 
 --
--- Name: permissions permissions_name_guard_name_unique; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.permissions
-    ADD CONSTRAINT permissions_name_guard_name_unique UNIQUE (name, guard_name);
-
-
---
--- Name: permissions permissions_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.permissions
-    ADD CONSTRAINT permissions_pkey PRIMARY KEY (id);
-
-
---
 -- PostgreSQL database dump complete
 --
+

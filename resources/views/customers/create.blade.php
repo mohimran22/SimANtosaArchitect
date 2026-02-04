@@ -427,7 +427,7 @@
 
 
 
-    <script>
+<script>
         document.getElementById('photo').addEventListener('change', function (event) {
         const input = event.target;
         const file = input.files[0];
@@ -453,7 +453,7 @@
             reader.readAsDataURL(file);
         }
     });
-    </script>
+</script>
 
     
 
