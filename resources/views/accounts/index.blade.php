@@ -73,15 +73,27 @@ $(document).ready(function () {
             { data: 'fullname', name: 'fullname' },
             { data: 'role_dropdown', name: 'role', orderable: false, searchable: false },
         ],
-        language: {
-                    search: "_INPUT_",
+                language: {
+                    search: "",
                     searchPlaceholder: "Cari akun...",
-                    lengthMenu: "Tampilkan data _MENU_",
+                    lengthMenu: "Tampilkan _MENU_ data",
+                    info: "Menampilkan _START_ - _END_ dari _TOTAL_ data",
+                    infoEmpty: "Tidak ada data",
+                    infoFiltered: "(difilter dari _MAX_ total data)",
+                    zeroRecords: "Data tidak ditemukan",
                     paginate: {
                         first: "Awal",
                         last: "Akhir",
+                        next: "›",
+                        previous: "‹"
                     }
-                    },
+                },
+
+                initComplete: function () {
+                    const input = $('.dt-search input');
+                    input.removeClass('form-control-sm')
+                        .addClass('form-control');
+                }
     });
 
     // Saat dropdown role berubah

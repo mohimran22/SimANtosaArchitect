@@ -5,16 +5,6 @@
     <div class="page-header d-print-none">
         <div class="container-xl">
             <div class="row g-2 align-items-center">
-                {{-- <div class="col">
-                    <!-- Page pre-title -->
-                    <div class="page-pretitle">
-                        Overview
-                    </div>
-                    <h2 class="page-title">
-                        affiliator
-                    </h2>
-                </div> --}}
-                <!-- Page title actions -->
                 <div class="col-12 col-md-auto ms-auto d-print-none">
                     <div class="btn-list">
                  @can('tambah data affiliator')       
@@ -94,9 +84,29 @@
                     { data: 'saldo', name: 'saldo', orderable: false, searchable: false },
                     { data: 'action', name: 'action', orderable: false, searchable: false },  
                 ],
+                language: {
+                    search: "",
+                    searchPlaceholder: "Cari affiliator...",
+                    lengthMenu: "Tampilkan _MENU_ data",
+                    info: "Menampilkan _START_ - _END_ dari _TOTAL_ data",
+                    infoEmpty: "Tidak ada data",
+                    infoFiltered: "(difilter dari _MAX_ total data)",
+                    zeroRecords: "Data tidak ditemukan",
+                    paginate: {
+                        first: "Awal",
+                        last: "Akhir",
+                        next: "›",
+                        previous: "‹"
+                    }
+                },
+
+                initComplete: function () {
+                    const input = $('.dt-search input');
+                    input.removeClass('form-control-sm')
+                        .addClass('form-control');
+                }
             });
 
-            // Delete user functionally
             $('table').on('click', '.delete-affiliator', function () {
             const affiliatorId = $(this).data('id');
 

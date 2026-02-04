@@ -1,7 +1,7 @@
 @extends('tablar::page')
 
 @section('content')
-    <!-- Page header -->
+
     <div class="page-header d-print-none">
         <div class="container-xl">
             <div class="row g-2 align-items-center">
@@ -30,7 +30,6 @@
         </div>
     </div>
 
-    <!-- Page body -->
     <div class="page-body">
         <div class="container-xl">
             <div class="row row-deck row-cards">
@@ -89,6 +88,27 @@
                     // { data: 'product_catalog', name: 'product_catalog' },
                     { data: 'action', name: 'action', orderable: false, searchable: false },  
                 ],
+                language: {
+                    search: "",
+                    searchPlaceholder: "Cari supplier...",
+                    lengthMenu: "Tampilkan _MENU_ data",
+                    info: "Menampilkan _START_ - _END_ dari _TOTAL_ data",
+                    infoEmpty: "Tidak ada data",
+                    infoFiltered: "(difilter dari _MAX_ total data)",
+                    zeroRecords: "Data tidak ditemukan",
+                    paginate: {
+                        first: "Awal",
+                        last: "Akhir",
+                        next: "›",
+                        previous: "‹"
+                    }
+                },
+
+                initComplete: function () {
+                    const input = $('.dt-search input');
+                    input.removeClass('form-control-sm')
+                        .addClass('form-control');
+                }
             });
 
             // Delete user functionally

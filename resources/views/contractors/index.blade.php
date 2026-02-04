@@ -1,20 +1,10 @@
 @extends('tablar::page')
 
 @section('content')
-    <!-- Page header -->
+
     <div class="page-header d-print-none">
         <div class="container-xl">
             <div class="row g-2 align-items-center">
-                {{-- <div class="col">
-                    <!-- Page pre-title -->
-                    <div class="page-pretitle">
-                        Overview
-                    </div>
-                    <h2 class="page-title">
-                        contractor
-                    </h2>
-                </div> --}}
-                <!-- Page title actions -->
                 <div class="col-12 col-md-auto ms-auto d-print-none">
                     <div class="btn-list">
                  @can('tambah data kontraktor')       
@@ -39,7 +29,6 @@
         </div>
     </div>
 
-    <!-- Page body -->
     <div class="page-body">
         <div class="container-xl">
             <div class="row row-deck row-cards">
@@ -96,6 +85,27 @@
                     { data: 'contractor_address', name: 'contractor_address' },
                     { data: 'action', name: 'action', orderable: false, searchable: false },  
                 ],
+                language: {
+                    search: "",
+                    searchPlaceholder: "Cari kontraktor...",
+                    lengthMenu: "Tampilkan _MENU_ data",
+                    info: "Menampilkan _START_ - _END_ dari _TOTAL_ data",
+                    infoEmpty: "Tidak ada data",
+                    infoFiltered: "(difilter dari _MAX_ total data)",
+                    zeroRecords: "Data tidak ditemukan",
+                    paginate: {
+                        first: "Awal",
+                        last: "Akhir",
+                        next: "›",
+                        previous: "‹"
+                    }
+                },
+
+                initComplete: function () {
+                    const input = $('.dt-search input');
+                    input.removeClass('form-control-sm')
+                        .addClass('form-control');
+                }
             });
 
             // Delete user functionally

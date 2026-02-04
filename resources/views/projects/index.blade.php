@@ -106,6 +106,27 @@
                     // { data: 'project_status', name: 'project_status' },
                     { data: 'action', name: 'action', orderable: false, searchable: false }
                 ],
+                language: {
+                    search: "",
+                    searchPlaceholder: "Cari proyek...",
+                    lengthMenu: "Tampilkan _MENU_ data",
+                    info: "Menampilkan _START_ - _END_ dari _TOTAL_ data",
+                    infoEmpty: "Tidak ada data",
+                    infoFiltered: "(difilter dari _MAX_ total data)",
+                    zeroRecords: "Data tidak ditemukan",
+                    paginate: {
+                        first: "Awal",
+                        last: "Akhir",
+                        next: "›",
+                        previous: "‹"
+                    }
+                },
+
+                initComplete: function () {
+                    const input = $('.dt-search input');
+                    input.removeClass('form-control-sm')
+                        .addClass('form-control');
+                }
             });
 
             // Delete user functionally

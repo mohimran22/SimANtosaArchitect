@@ -34,9 +34,7 @@ class EmployeeController extends Controller
         }
 
         if ($request->ajax()) {
-            $employees = $query->get();
-
-        return DataTables::of($employees)
+        return DataTables::of($query)
                 ->addIndexColumn()
                 ->addColumn('fullname', function ($row) {
                     return $row->user->fullname ?? '-';
@@ -45,8 +43,9 @@ class EmployeeController extends Controller
                     return $row->user->email ?? '-';
                 })
                 ->addColumn('roles', function ($row) {
-                    return $row->user->roles->pluck('name')->implode(', ') ?: '-';
+                    return $row->user?->roles?->pluck('name')->implode(', ') ?: '-';
                 })
+
                 ->editColumn('fullname', function ($row) {
                     $url = route('employees.show', $row->id);
                     $name = Str::title($row->user->fullname ?? '-');

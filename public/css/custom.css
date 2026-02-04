@@ -38,6 +38,66 @@ table.dataTable .badge {
     color: #fff !important;
 }
 
+/* ===== Search Box ===== */
+.dt-wrapper .dt-search input {
+    height: 44px !important;
+    min-width: 300px !important;
+    padding: 8px 14px !important;
+    font-size: 14px !important;
+    border-radius: 10px !important;
+}
+
+/* ===== Length Select ===== */
+.dt-wrapper .dt-length select {
+    height: 44px !important;
+    padding: 6px 10px !important;
+    border-radius: 10px !important;
+    font-size: 16px !important;
+}
+
+/* ===== Header Table ===== */
+table.dataTable thead th {
+    font-weight: 600 !important;
+    font-size: 13px !important;
+}
+
+/* ===== Row Padding ===== */
+table.dataTable tbody td {
+    padding: 12px 14px !important;
+}
+
+/* ===== dt-paginate Hitam ===== */
+.dt-wrapper .dt-paginate .dt-page-item.active .dt-page-link {
+    background-color: #000 !important;
+    border-color: #000 !important;
+    color: #fff !important;
+}
+
+/* ===== dt-paginate Normal ===== */
+.dt-wrapper .dt-paginate .dt-page-link {
+    color: #000 !important;
+    border-radius: 8px !important;
+    margin: 0 3px;
+}
+
+/* ===== Hover dt-paginate ===== */
+.dt-wrapper .dt-paginate .dt-page-link:hover {
+    background-color: #222 !important;
+    color: #fff !important;
+}
+
+/* ===== Info Text ===== */
+.dt-info {
+    font-size: 16px;
+    margin-top: 10px;
+}
+
+/* ===== Filter + Length Alignment ===== */
+.dt-wrapper .dt-search,
+.dt-wrapper .dt-length {
+    margin-bottom: 12px;
+}
+
 button.bg-transparent {
     cursor: pointer;
 }

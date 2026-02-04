@@ -93,6 +93,7 @@
                 serverSide: true,
                 processing: true,
                 ajax: '{{ route("users.index") }}',
+
                 columns: [
                     { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
                     { data: 'fullname', name: 'fullname' },
@@ -113,15 +114,27 @@
                     { data: 'phone', name: 'phone' },
                     { data: 'action', name: 'action', orderable: false, searchable: false },
                 ],
-                    language: {
-                    search: "_INPUT_",
-                    searchPlaceholder: "Cari user...",
-                    lengthMenu: "Tampilkan data _MENU_",
+                language: {
+                    search: "",
+                    searchPlaceholder: "Cari pengguna...",
+                    lengthMenu: "Tampilkan _MENU_ data",
+                    info: "Menampilkan _START_ - _END_ dari _TOTAL_ data",
+                    infoEmpty: "Tidak ada data",
+                    infoFiltered: "(difilter dari _MAX_ total data)",
+                    zeroRecords: "Data tidak ditemukan",
                     paginate: {
                         first: "Awal",
                         last: "Akhir",
+                        next: "›",
+                        previous: "‹"
                     }
-                    },
+                },
+
+                initComplete: function () {
+                    const input = $('.dt-search input');
+                    input.removeClass('form-control-sm')
+                        .addClass('form-control');
+                }
             });
 
             // Delete user functionally
@@ -192,17 +205,4 @@
         });
     </script>
     @endif
-@endpush
-@push('css')
-<style>
-
-.dt-search .dataTables_filter input {
-    height: 42px !important;
-    min-width: 280px !important;
-    font-size: 14px !important;
-    padding: 8px 14px !important;
-    border-radius: 8px !important;
-}
-
-</style>
 @endpush

@@ -1,12 +1,10 @@
 @extends('tablar::page')
 
 @section('content')
-    <!-- Page header -->
+
     <div class="page-header d-print-none">
         <div class="container-xl">
             <div class="row g-2 align-items-center">
-            
-                <!-- Page title actions -->
                 <div class="col-12 col-md-auto ms-auto d-print-none">
                     <div class="btn-list">
                 @can('tambah data produk')
@@ -31,7 +29,6 @@
         </div>
     </div>
 
-    <!-- Page body -->
     <div class="page-body">
         <div class="container-xl">
             <div class="row row-deck row-cards">
@@ -59,7 +56,6 @@
                                         <th>Status</th>
                                         <th>Aksi</th>
                                     </tr>
-
                                 </thead>
                                 <tbody>
                                 </tbody>
@@ -92,7 +88,28 @@
                     { data: 'volume', name: 'volume' },
                     { data: 'status', name: 'status' },
                     { data: 'action', name: 'action', orderable: false, searchable: false },
-                ]    
+                ],
+                language: {
+                    search: "",
+                    searchPlaceholder: "Cari produk...",
+                    lengthMenu: "Tampilkan _MENU_ data",
+                    info: "Menampilkan _START_ - _END_ dari _TOTAL_ data",
+                    infoEmpty: "Tidak ada data",
+                    infoFiltered: "(difilter dari _MAX_ total data)",
+                    zeroRecords: "Data tidak ditemukan",
+                    paginate: {
+                        first: "Awal",
+                        last: "Akhir",
+                        next: "›",
+                        previous: "‹"
+                    }
+                },
+
+                initComplete: function () {
+                    const input = $('.dt-search input');
+                    input.removeClass('form-control-sm')
+                        .addClass('form-control');
+                }
             });
 
             // Delete user functionally
