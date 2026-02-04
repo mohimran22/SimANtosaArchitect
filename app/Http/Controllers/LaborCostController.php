@@ -8,25 +8,46 @@ use App\Services\RabRecalculator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
+use Yajra\DataTables\Facades\DataTables;
 
 class LaborCostController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
-    {
-        $search = $request->get('search');
+public function index(Request $request)
+{
+    if ($request->ajax()) {
 
-        $laborCosts = LaborCost::when($search, function ($query) use ($search) {
-                $query->where('description', 'ilike', "%$search%")
-                      ->orWhere('code', 'ilike', "%$search%");
+        $query = LaborCost::query()->orderBy('id','asc');
+
+        return DataTables::of($query)
+            ->addIndexColumn()
+
+            ->editColumn('base_unit_price', function ($row) {
+                return 'Rp ' . number_format($row->base_unit_price, 0, ',', '.');
             })
-            ->orderBy('id', 'asc')
-            ->paginate(32);
 
-        return view('labor_costs.index', compact('laborCosts', 'search'));
+            ->addColumn('action', function ($row) {
+
+                $edit = route('labor_costs.edit', $row->id);
+                $delete = route('labor_costs.destroy', $row->id);
+
+                return "
+                    <a href='{$edit}' class='btn btn-dark btn-sm'>Edit</a>
+                    <button class='btn btn-dark btn-sm btn-delete'
+                        data-url='{$delete}'>
+                        Delete
+                    </button>
+                ";
+            })
+
+            ->rawColumns(['action'])
+            ->make(true);
     }
+
+    return view('labor_costs.index');
+}
 
     /**
      * Show the form for creating a new resource.

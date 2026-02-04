@@ -43,7 +43,7 @@
                             <div class="alert alert-success">{{ session('success') }}</div>
                         @endif
                     <div class="table-responsive">
-                        <table class="table card-table table-vcenter text-nowrap">
+                        <table id="menuTable" class="table card-table table-vcenter text-nowrap">
                             <thead>
                                 <tr>
                                     <th>No.</th>
@@ -53,32 +53,10 @@
                                     <th>Order</th>
                                     <th>Active</th>
                                     <th>Permission</th>
-                                    <th>Actions</th>
+                                    <th>Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($menus as $menu)
-                                    <tr>
-                                        <td>{{ $loop->iteration }}</td>
-                                        <td>{{ $menu->text }}</td>
-                                        <td>{{ $menu->url }}</td>
-                                        <td>{{ $menu->parent?->text ?? '-' }}</td>
-                                        <td>{{ $menu->order }}</td>
-                                        
-                                        <td>
-                                            {!! $menu->is_active ? '<span class="badge bg-success">Yes</span>' : '<span class="badge bg-secondary">No</span>' !!}
-                                        </td>
-
-                                        <td>{{ $menu->permission_name }}</td>
-                                        <td>
-                                            <a href="{{ route('menus.edit', $menu) }}" class="btn btn-sm btn-warning">Edit</a>
-                                            <form action="{{ route('menus.destroy', $menu) }}" method="POST" style="display:inline-block">
-                                                @csrf @method('DELETE')
-                                                <button onclick="return confirm('Delete this menu?')" class="btn btn-sm btn-danger">Delete</button>
-                                            </form>
-                                        </td>
-                                    </tr>
-                                @endforeach
                             </tbody>
                         </table>
                     </div>
@@ -87,9 +65,50 @@
         </div>
     </div>
 </div>
-    
-    
-
-    {{ $menus->links() }}
 </div>
 @endsection
+@push('js')
+<script>
+$(function () {
+
+$('#menuTable').DataTable({
+    processing: true,
+    serverSide: true,
+    ajax: "{{ route('menus.index') }}",
+
+    columns: [
+        { data: 'DT_RowIndex', orderable:false, searchable:false },
+        { data: 'text' },
+        { data: 'url' },
+        { data: 'parent_name' },
+        { data: 'order' },
+        { data: 'active_badge', orderable:false, searchable:false },
+        { data: 'permission_name' },
+        { data: 'actions', orderable:false, searchable:false },
+    ],
+                language: {
+                    search: "",
+                    searchPlaceholder: "Cari menu...",
+                    lengthMenu: "Tampilkan _MENU_ data",
+                    info: "Menampilkan _START_ - _END_ dari _TOTAL_ data",
+                    infoEmpty: "Tidak ada data",
+                    infoFiltered: "(difilter dari _MAX_ total data)",
+                    zeroRecords: "Data tidak ditemukan",
+                    paginate: {
+                        first: "Awal",
+                        last: "Akhir",
+                        next: "›",
+                        previous: "‹"
+                    }
+                },
+
+                initComplete: function () {
+                    const input = $('.dt-search input');
+                    input.removeClass('form-control-sm')
+                        .addClass('form-control');
+                }
+});
+
+});
+</script>
+@endpush

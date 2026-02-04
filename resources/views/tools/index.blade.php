@@ -45,7 +45,7 @@
                             </p>
                         </div>
                         <div class="table-responsive">
-                            <table id="laborCostTable" class="table card-table table-vcenter text-nowrap">
+                            <table id="toolsTable" class="table card-table table-vcenter text-nowrap">
                                 <thead>
                                     <tr>
                                         <th>No</th>
@@ -57,7 +57,7 @@
                                         <th width="120">Action</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                {{-- <tbody>
                                     @foreach($tools as $key => $item)
                                     <tr>
                                         <td>{{ $loop->iteration }}</td>
@@ -80,7 +80,7 @@
                                         </td>
                                     </tr>
                                     @endforeach
-                                </tbody>
+                                </tbody> --}}
                             </table>
                         </div>
                         
@@ -100,17 +100,17 @@
 
         <div class="modal-content">
           <div class="modal-header bg-danger text-white">
-            <h5 class="modal-title">Confirm Delete</h5>
+            <h5 class="modal-title">Konfirmasi Hapus</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
           </div>
 
           <div class="modal-body">
-            <p>Are you sure you want to delete this data?</p>
+            <p>Anda yakin mau menghapus data ini?</p>
           </div>
 
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-            <button type="submit" class="btn btn-danger">Yes, Delete</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+            <button type="submit" class="btn btn-danger">Ya, Hapus</button>
           </div>
         </div>
     </form>
@@ -123,20 +123,51 @@
 @push('js')
 
 <script>
-    $(document).ready(function () {
-        $('#laborCostTable').DataTable({
-            "pageLength": 10,
-            "lengthMenu": [10, 25, 50, 100],
-            "ordering": true,
-            "searching": true,
-        });
+$(function () {
+$('#toolsTable').DataTable({
+    processing: true,
+    serverSide: true,
+    ajax: "{{ route('equipment_costs.index') }}",
+
+    columns: [
+        { data: 'DT_RowIndex', orderable:false, searchable:false },
+        { data: 'code' },
+        { data: 'description' },
+        { data: 'unit' },
+        { data: 'base_unit_price' },
+        { data: 'notes' },
+        { data: 'action', orderable:false, searchable:false },
+    ],
+                language: {
+                    search: "",
+                    searchPlaceholder: "Cari alat...",
+                    lengthMenu: "Tampilkan _MENU_ data",
+                    info: "Menampilkan _START_ - _END_ dari _TOTAL_ data",
+                    infoEmpty: "Tidak ada data",
+                    infoFiltered: "(difilter dari _MAX_ total data)",
+                    zeroRecords: "Data tidak ditemukan",
+                    paginate: {
+                        first: "Awal",
+                        last: "Akhir",
+                        next: "›",
+                        previous: "‹"
+                    }
+                },
+
+                initComplete: function () {
+                    const input = $('.dt-search input');
+                    input.removeClass('form-control-sm')
+                        .addClass('form-control');
+                }
+});
 
         // modal delete
-        $('.btn-delete').on('click', function() {
-            const url = $(this).data('url');
-            $('#formDelete').attr('action', url);
-            $('#modalDelete').modal('show');
-        });
+$(document).on('click', '.btn-delete', function() {
+    const url = $(this).data('url');
+    $('#formDelete').attr('action', url);
+    $('#modalDelete').modal('show');
+});
+
     });
 </script>
 @endpush

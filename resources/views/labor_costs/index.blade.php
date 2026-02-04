@@ -55,7 +55,7 @@
                                         <th width="120">Action</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                {{-- <tbody>
                                     @foreach($laborCosts as $key => $item)
                                     <tr>
                                         <td>{{ $loop->iteration }}</td>
@@ -78,7 +78,7 @@
                                         </td>
                                     </tr>
                                     @endforeach
-                                </tbody>
+                                </tbody> --}}
                             </table>
                         </div>
                         
@@ -88,53 +88,79 @@
         </div>
     </div>
 
+    <div class="modal fade" id="modalDelete" tabindex="-1">
+    <div class="modal-dialog">
+        <form method="POST" id="formDelete">
+            @csrf
+            @method('DELETE')
 
-<!-- Modal Delete -->
-<div class="modal fade" id="modalDelete" tabindex="-1">
-  <div class="modal-dialog">
-    <form method="POST" id="formDelete">
-        @csrf
-        @method('DELETE')
+            <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Konfirmasi Hapus</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
 
-        <div class="modal-content">
-          <div class="modal-header bg-danger text-white">
-            <h5 class="modal-title">Confirm Delete</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-          </div>
+            <div class="modal-body">
+                <p>Anda yakin mau menghapus data ini?</p>
+            </div>
 
-          <div class="modal-body">
-            <p>Are you sure you want to delete this data?</p>
-          </div>
-
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-            <button type="submit" class="btn btn-danger">Yes, Delete</button>
-          </div>
-        </div>
-    </form>
-  </div>
-</div>
-
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="submit" class="btn btn-danger">Ya, Hapus</button>
+            </div>
+            </div>
+        </form>
+    </div>
+    </div>
 @endsection
 
-
 @push('js')
-
 <script>
-    $(document).ready(function () {
-        $('#laborCostTable').DataTable({
-            "pageLength": 10,
-            "lengthMenu": [10, 25, 50, 100],
-            "ordering": true,
-            "searching": true,
-        });
+$(function () {
+$('#laborCostTable').DataTable({
+    processing: true,
+    serverSide: true,
+    ajax: "{{ route('labor_costs.index') }}",
+
+    columns: [
+        { data: 'DT_RowIndex', orderable:false, searchable:false },
+        { data: 'code' },
+        { data: 'description' },
+        { data: 'unit' },
+        { data: 'base_unit_price' },
+        { data: 'notes' },
+        { data: 'action', orderable:false, searchable:false },
+    ],
+                language: {
+                    search: "",
+                    searchPlaceholder: "Cari tukang...",
+                    lengthMenu: "Tampilkan _MENU_ data",
+                    info: "Menampilkan _START_ - _END_ dari _TOTAL_ data",
+                    infoEmpty: "Tidak ada data",
+                    infoFiltered: "(difilter dari _MAX_ total data)",
+                    zeroRecords: "Data tidak ditemukan",
+                    paginate: {
+                        first: "Awal",
+                        last: "Akhir",
+                        next: "›",
+                        previous: "‹"
+                    }
+                },
+
+                initComplete: function () {
+                    const input = $('.dt-search input');
+                    input.removeClass('form-control-sm')
+                        .addClass('form-control');
+                }
+});
 
         // modal delete
-        $('.btn-delete').on('click', function() {
-            const url = $(this).data('url');
-            $('#formDelete').attr('action', url);
-            $('#modalDelete').modal('show');
-        });
+$(document).on('click', '.btn-delete', function() {
+    const url = $(this).data('url');
+    $('#formDelete').attr('action', url);
+    $('#modalDelete').modal('show');
+});
+
     });
 </script>
 @endpush

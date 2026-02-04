@@ -66,21 +66,11 @@ table.dataTable tbody td {
     padding: 12px 14px !important;
 }
 
-/* Pagination normal */
-table.dataTables_wrapper .pagination .page-link {
+.page-link {
     color: #000 !important;
-    background-color: #fff;
-    border-color: #dee2e6;
 }
 
-/* Pagination hover */
-table.dataTables_wrapper .pagination .page-link:hover {
-    color: #000 !important;
-    background-color: #f1f1f1;
-}
-
-/* Pagination aktif */
-table.dataTables_wrapper .pagination .page-item.active .page-link {
+.page-item.active .page-link {
     background-color: #000 !important;
     border-color: #000 !important;
     color: #fff !important;

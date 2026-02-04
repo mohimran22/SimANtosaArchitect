@@ -6,17 +6,44 @@ use App\Models\Menu;
 use Illuminate\Http\Request;
 use App\Models\Role;
 use App\Models\Permission;
+use Yajra\DataTables\Facades\DataTables;
 
 class MenuController extends Controller
 {
-    public function index()
-    {
-        $menus = Menu::with(['parent'])
-            ->orderBy('order')
-            ->paginate(15);
+public function index(Request $request)
+{
+    if ($request->ajax()) {
+        $query = Menu::with('parent')->orderBy('order');
 
-        return view('menus.index', compact('menus'));
+        return DataTables::of($query)
+            ->addIndexColumn()
+
+            ->addColumn('parent_name', function ($row) {
+                return $row->parent?->text ?? '-';
+            })
+
+            ->addColumn('active_badge', function ($row) {
+                return $row->is_active
+                    ? '<span class="badge bg-success">Yes</span>'
+                    : '<span class="badge bg-secondary">No</span>';
+            })
+
+            ->addColumn('actions', function ($row) {
+                $edit = route('menus.edit', $row->id);
+                $delete = route('menus.destroy', $row->id);
+
+                return "
+                    <a href='{$edit}' class='btn btn-sm btn-warning'>Edit</a>
+                    <button data-id='{$row->id}' class='btn btn-sm btn-danger btn-delete'>Delete</button>
+                ";
+            })
+
+            ->rawColumns(['active_badge','actions'])
+            ->make(true);
     }
+
+    return view('menus.index');
+}
 
     public function create()
     {

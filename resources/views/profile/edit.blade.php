@@ -36,7 +36,7 @@
         <!-- Form Update Profil -->
         <div class="col-lg-6 mb-4">
             <div class="card shadow-sm border-0">
-                <div class="card-header bg-primary text-white">
+                <div class="card-header bg-dark text-white">
                     <h3 class="card-title mb-0">
                         <i class="ti ti-user me-2"></i> Informasi Profil
                     </h3>
@@ -165,7 +165,7 @@
                             @enderror
                         </div>
 
-                        <button type="submit" class="btn btn-primary text-white">Simpan</button>
+                        <button type="submit" class="btn btn-dark text-white">Simpan</button>
 
                         @if (session('status') === 'profile-updated')
                             <div class="alert alert-success mt-3">

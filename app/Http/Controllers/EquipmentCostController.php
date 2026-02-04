@@ -8,25 +8,47 @@ use App\Services\RabRecalculator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Yajra\DataTables\Facades\DataTables;
 
 class EquipmentCostController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
-    {
-        $search = $request->get('search');
+public function index(Request $request)
+{
+    if ($request->ajax()) {
 
-        $tools = EquipmentCost::when($search, function ($query) use ($search) {
-                $query->where('description', 'ilike', "%$search%")
-                      ->orWhere('code', 'ilike', "%$search%");
+        $query = EquipmentCost::query()->orderBy('id','asc');
+
+        return DataTables::of($query)
+            ->addIndexColumn()
+
+            ->editColumn('base_unit_price', function ($row) {
+                return 'Rp ' . number_format($row->base_unit_price, 0, ',', '.');
             })
-            ->orderBy('id', 'asc')
-            ->paginate(151);
 
-        return view('tools.index', compact('tools', 'search'));
+            ->addColumn('action', function ($row) {
+
+                $edit = route('equipment_costs.edit', $row->id);
+                $delete = route('equipment_costs.destroy', $row->id);
+
+                return "
+                    <a href='{$edit}' class='btn btn-dark btn-sm'>Edit</a>
+                    <button class='btn btn-dark btn-sm btn-delete'
+                        data-url='{$delete}'>
+                        Delete
+                    </button>
+                ";
+            })
+
+            ->rawColumns(['action'])
+            ->make(true);
     }
+
+    return view('tools.index');
+}
+
 
     /**
      * Show the form for creating a new resource.
@@ -52,7 +74,7 @@ class EquipmentCostController extends Controller
         EquipmentCost::create($request->all());
 
         return redirect()->route('equipment_costs.index')
-            ->with('success', 'Labor cost created successfully.');
+            ->with('success', 'Data Peralatan berhasil dibuat.');
     }
 
     /**
@@ -88,7 +110,7 @@ class EquipmentCostController extends Controller
         Cache::put('job_category_last_updated', now()->timestamp);
 
         return redirect()->route('equipment_costs.index')
-            ->with('success', 'Labor cost updated successfully.');
+            ->with('success', 'Data Peralatan berhasil diperbarui.');
     }
 
     /**
@@ -99,6 +121,6 @@ class EquipmentCostController extends Controller
         $equipment_cost->delete();
 
         return redirect()->route('equipment_costs.index')
-            ->with('success', 'Labor cost deleted successfully.');
+            ->with('success', 'Data Peralatan berhasil dihapus.');
     }
 }
