@@ -50,7 +50,7 @@
                                 <h3 class="fw-bold text-dark mb-3">Informasi Pribadi</h3>
                                 <div class="row g-3">
                                     <div class="col-md-6 mb-3">
-                                        <label for="fullname" class="form-label">Nama Lengkap</label>
+                                        <label for="fullname" class="form-label required">Nama Lengkap</label>
                                         <input type="text" name="fullname" id="fullname" class="form-control"
                                                value="{{ old('fullname', auth()->user()->fullname) }}" required>
                                     </div>
@@ -60,7 +60,7 @@
                                                value="{{ old('nickname', auth()->user()->nickname) }}">
                                     </div>
                                     <div class="col-md-6 mb-3">
-                                            <label class="required">Jenis Kelamin</label>
+                                            <label class="form-label required">Jenis Kelamin</label>
                                             <select name="gender" class="form-select" required>
                                                 <option value="">-- Pilih Jenis Kelamin --</option>
                                                 <option value="1" {{ $user->gender == 1 ? 'selected' : '' }}>Laki - Laki</option>
@@ -68,18 +68,18 @@
                                             </select>
                                     </div>
                                     <div class="col-md-6 mb-3">
-                                        <label for="birth_place" class="form-label">Tempat Lahir</label>
+                                        <label for="birth_place" class="form-label required">Tempat Lahir</label>
                                         <input type="text" name="birth_place" id="birth_place" class="form-control"
-                                               value="{{ old('birth_place', auth()->user()->birth_place) }}">
+                                               value="{{ old('birth_place', auth()->user()->birth_place) }}" required>
                                     </div>
                                     <div class="col-md-6 mb-3">
-                                        <label class="required">Tanggal Lahir</label>
+                                        <label class="form-label required">Tanggal Lahir</label>
                                             <input type="date" name="birth_date" class="form-control" required
                                                 value="{{ old('birth_date', auth()->user()->birth_date) }}"
                                                 pattern="\d{4}-\d{2}-\d{2}" placeholder="YYYY-MM-DD">
                                     </div>
                                     <div class="col-md-6 mb-3">
-                                            <label class="required" for="religion_id">Agama</label>
+                                            <label class="form-label required" for="religion_id">Agama</label>
                                             <select name="religion_id" class="form-select" required>
                                                 <option value="">-- Pilih Agama --</option>
                                                 @foreach($religions as $religion)
@@ -90,9 +90,9 @@
                                             </select>
                                     </div>
                                     <div class="col-md-6 mb-3">
-                                        <label for="identity_number" class="form-label">Nomor KTP</label>
-                                        <input type="number" name="identity_number" id="identity_number" class="form-control"
-                                               value="{{ old('identity_number', auth()->user()->identity_number) }}">
+                                        <label for="identity_number" class="form-label required">Nomor KTP</label>
+                                        <input type="text" name="identity_number" id="identity_number" class="form-control" maxlength="16" inputmode="numeric" pattern="\d{16}"
+                                               value="{{ old('identity_number', auth()->user()->identity_number) }}" required>
                                     </div>
                                     <div class="col-md-6 mb-3">
                                         <label for="npwp" class="form-label">NPWP</label>
@@ -125,7 +125,7 @@
 
                                 <div class="row g-3 mt-2">
                                     <div class="col-md-6 mb-3">
-                                        <label for="province" class="required">Provinsi</label>
+                                        <label for="province" class="form-label required">Provinsi</label>
                                         <select name="province_id" id="province" class="form-select select2" required>
                                                 <option value="">-- Pilih Provinsi --</option>
                                                 @foreach($provinces as $province)
@@ -137,7 +137,7 @@
                                             </select>
                                     </div>
                                     <div class="col-md-6 mb-3">
-                                        <label class="required">Kabupaten/Kota</label>
+                                        <label class="form-label required">Kabupaten/Kota</label>
                                             <select name="city_id" id="city" class="form-select select2" required>
                                                 <option value="">-- Pilih Kota --</option>
                                                 @foreach($cities as $city)
@@ -149,7 +149,7 @@
                                             </select>
                                     </div>
                                     <div class="col-md-6 mb-3">
-                                        <label class="required">Kecamatan</label>
+                                        <label class="form-label required">Kecamatan</label>
                                             <select name="district_id" id="district" class="form-select select2" required>
                                                 <option value="">-- Pilih Kecamatan --</option>
                                                 @foreach($districts as $district)
@@ -161,7 +161,7 @@
                                             </select>
                                     </div>
                                     <div class="col-md-6 mb-3">
-                                       <label class="required">Kelurahan</label>
+                                       <label class="form-label required">Kelurahan</label>
                                             <select name="sub_district_id" id="sub_district" class="form-select select2" required>
                                                 <option value="">-- Pilih Desa --</option>
                                                 @foreach($subDistricts as $sub_district)
@@ -173,7 +173,7 @@
                                             </select>
                                     </div>
                                     <div class="col-md-6 mb-3">
-                                        <label class="required">Kode Pos</label>
+                                        <label class="form-label required">Kode Pos</label>
                                             <select name="postal_code_id" id="postal_code" class="form-select select2" required>
                                                 <option value="">-- Pilih Desa --</option>
                                                 @foreach($postalCodes as $postal_code)

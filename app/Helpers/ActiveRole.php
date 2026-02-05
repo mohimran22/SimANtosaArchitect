@@ -6,10 +6,14 @@ use Illuminate\Support\Facades\Auth;
 
 class ActiveRole
 {
-    public static function role()
-    {
-        return Auth::user()->activeRole;
-    }
+public static function role()
+{
+    $user = Auth::user();
+
+    return $user->activeRole
+        ?? $user->roles()->first();
+}
+
 
     public static function name()
     {
@@ -17,12 +21,17 @@ class ActiveRole
     }
 
     public static function permissions()
-    {
-        $role = self::role();
-        if (!$role) return [];
+{
+    $user = Auth::user();
 
-        return $role->permissions->pluck('name')->toArray();
+    // fallback kalau activeRole belum ada
+    if (!$user->activeRole) {
+        return $user->getAllPermissions()->pluck('name')->toArray();
     }
+
+    return $user->activeRole->permissions->pluck('name')->toArray();
+}
+
 
     public static function hasPermission($permission)
     {

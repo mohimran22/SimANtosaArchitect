@@ -7,7 +7,9 @@ use App\Models\User;
 use Illuminate\Foundation\Auth\RegistersUsers;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
 
 class RegisterController extends Controller
 {
@@ -83,8 +85,20 @@ class RegisterController extends Controller
         // Assign role default
         $user->assignRole('Customer');
 
+        $user->active_role = $user->roles()->first()->id;
+        $user->save();
+
         return $user;
 
         
     }
+
+    protected function registered(Request $request, $user)
+{
+    // clear permission cache
+    app(PermissionRegistrar::class)->forgetCachedPermissions();
+
+    // refresh auth user
+    auth()->loginUsingId($user->id);
+}
 }

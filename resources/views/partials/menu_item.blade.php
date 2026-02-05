@@ -112,11 +112,12 @@
         use Spatie\Permission\Models\Permission;
 
         $user = auth()->user();
+        if (!$user) return;
         $isSuperAdmin = $user->hasRole('Super-Admin');
 
         $userPermissions = $isSuperAdmin
             ? Permission::pluck('name')->toArray()     
-            : ActiveRole::permissions();               
+            : (ActiveRole::permissions() ?? []);              
     @endphp
 
 

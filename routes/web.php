@@ -82,7 +82,7 @@ Route::middleware(['auth', 'permission:lihat daftar affiliator|lihat data affili
         Route::resource('/affiliators', AffiliatorController::class)->whereUuid('affiliator');
     });
 
-Route::middleware(['auth', 'permission:lihat daftar supplier|lihat data supplier','activerole:Mitra Supplier, Direktur' ])->group(function () {
+Route::middleware(['auth', 'permission:lihat daftar supplier|lihat data supplier','activerole:Mitra Supplier,Direktur' ])->group(function () {
     Route::get('/suppliers/generate-SupplierId', [SupplierController::class, 'generateSupplierIdAjax'])->name('suppliers.generateSupplierId');
     Route::get('/supplier/{supplier}/products-datatable', [SupplierController::class, 'datatableProducts'])
     ->name('supplier.products.datatable');
