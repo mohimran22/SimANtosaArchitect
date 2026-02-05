@@ -274,10 +274,7 @@ body {
   min-width: 204px;
   display: inline-block;
   background: #ffff;
-  margin-top: 10px;
-  margin-bottom: 20px;
-  margin-left: 20px;
-  margin-right: 20px;
+  margin: 10px 20px 20px 20px;
 }
 
 .sidebar-menu-wraper {
@@ -287,7 +284,7 @@ body {
   
 }
 
-.navbar.navbar-vertical.navbar-expand-lg {
+.navbar.navbar-vertical {
   color:#000 !important;
   display: flex !important;
   min-width: 16rem;
@@ -300,6 +297,7 @@ body {
 
 .navbar-expand-md {
   margin-left: 270px !important;
+  margin-right: 17px !important;
   border-radius: 12px;
   background: #fff;
   box-shadow: 0 4px 14px rgba(0,0,0,.05);
@@ -310,18 +308,12 @@ body {
   color:#000 !important;
 }
 
-/* .page-body {
-  margin: 35px !important;
-  border-radius: 16px;
-  padding: 20px;
-} */
-
 .page {
-  margin-left: 40px !important;
+  margin-left: 20px !important;
 } 
 
 .page-title {
-  margin: 0 18px !important;
+  margin-left: 20px !important;
 } 
 
 .btn,

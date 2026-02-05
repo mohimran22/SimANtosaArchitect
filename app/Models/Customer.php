@@ -72,13 +72,24 @@ public function scopeLoyalty($query, $level)
         return $this->user?->fullname;
     }
 
-    public static function generateNic()
-    {
-        $lastNumber = self::selectRaw("MAX(CAST(SUBSTRING(nic, 3) AS INTEGER)) as max_nic")->value('max_nic');
-        $newNumber = ($lastNumber ?? 0) + 1;
+public static function generateNic()
+{
+    $lastNumber = self::where('nic', 'like', 'C-%')
+        ->selectRaw("
+            MAX(
+                CAST(
+                    REGEXP_REPLACE(nic, '[^0-9]', '', 'g')
+                    AS INTEGER
+                )
+            ) as max_nic
+        ")
+        ->value('max_nic');
 
-        return 'C-' . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
-    }
+    $newNumber = ($lastNumber ?? 0) + 1;
+
+    return 'C-' . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
+}
+
 
     public static function getDefaultAttributes($user)
     {

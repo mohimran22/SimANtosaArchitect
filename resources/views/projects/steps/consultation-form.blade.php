@@ -172,7 +172,7 @@
         });
     });
 </script>
-<script>
+{{-- <script>
 document.addEventListener('DOMContentLoaded', function () {
 
     const tbody = document.getElementById('consultation-items-body');
@@ -219,6 +219,73 @@ document.addEventListener('DOMContentLoaded', function () {
 
             <td></td> <!-- ⛔ TANPA REMOVE -->
         `;
+        tbody.appendChild(row);
+    });
+});
+</script> --}}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const tbody = document.getElementById('consultation-items-body');
+    if (!tbody) return;
+
+    const projectType = tbody.dataset.projectType;
+
+    let templates = [];
+
+    if (projectType === '2') {
+        templates = [
+            'Desain Denah',
+            'Desain 3D',
+            'Desain DED'
+        ];
+    }
+
+    if (projectType === '3') {
+        templates = [
+            'Desain Denah',
+            'Desain 3D',
+            'Desain DED',
+            'Desain RAB'
+        ];
+    }
+
+    // kalau type 1 → tidak pakai template → biarkan default blade
+    if (templates.length === 0) return;
+
+    // kosongkan row lama
+    tbody.innerHTML = '';
+
+    templates.forEach((label, i) => {
+        const row = document.createElement('tr');
+        row.dataset.fixed = "1";
+
+        row.innerHTML = `
+            <td class="row-no text-center">${i + 1}</td>
+
+            <td>
+                <input type="hidden"
+                       name="items[${i}][description]"
+                       value="${label}">
+                <strong>${label}</strong>
+            </td>
+
+            <td>
+                <label class="me-3">
+                    <input type="radio"
+                           name="items[${i}][remark]"
+                           value="Ada"> Ada
+                </label>
+                <label>
+                    <input type="radio"
+                           name="items[${i}][remark]"
+                           value="Tidak"> Tidak
+                </label>
+            </td>
+
+            <td></td>
+        `;
+
         tbody.appendChild(row);
     });
 });

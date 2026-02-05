@@ -28,15 +28,26 @@ public function index(Request $request)
                     : '<span class="badge bg-secondary">No</span>';
             })
 
-            ->addColumn('actions', function ($row) {
-                $edit = route('menus.edit', $row->id);
-                $delete = route('menus.destroy', $row->id);
+                ->addColumn('actions', function ($menu) {
+                    $buttons = '';
+                    if (auth()->user()->can('ubah data menu')) {
+                        $buttons .= '<a href="' . route('menus.edit', $menu->id) . '" class="btn btn-icon btn-sm btn-dark me-1" title="Ubah">
+                                        <i class="ti ti-edit"></i>
+                                    </a>';
+                    }
+                    if (auth()->user()->can('lihat data menu')) {
+                        $buttons .= '<a href="' . route('menus.show', $menu->id) . '" class="btn btn-icon btn-sm btn-dark me-1" title="Lihat">
+                                        <i class="ti ti-eye"></i>
+                                    </a>';
 
-                return "
-                    <a href='{$edit}' class='btn btn-sm btn-warning'>Edit</a>
-                    <button data-id='{$row->id}' class='btn btn-sm btn-danger btn-delete'>Delete</button>
-                ";
-            })
+                    }
+                    if (auth()->user()->can('hapus data menu')) {
+                        $buttons .= '<button data-id="' . $menu->id . '" class="btn btn-icon btn-sm btn-dark delete-menu" title="Hapus">
+                                        <i class="ti ti-trash"></i>
+                                    </button>';
+                    }
+                    return $buttons;
+                })
 
             ->rawColumns(['active_badge','actions'])
             ->make(true);

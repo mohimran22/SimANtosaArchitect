@@ -39,7 +39,7 @@ class CustomersController extends Controller
         return DataTables::of($customers)
                 ->addIndexColumn()
                 ->addColumn('fullname', function ($row) {
-                    return $row->user->fullname ?? '-';
+                    return optional($row->user)->fullname ?? '-';
                 })
                 ->addColumn('email', function ($row) {
                     return $row->user->email ?? '-';

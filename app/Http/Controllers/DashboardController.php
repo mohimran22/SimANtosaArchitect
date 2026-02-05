@@ -18,7 +18,6 @@ class DashboardController extends Controller
     {
         $user = auth()->user();
 
-        // 🔍 Daftar field penting untuk customer
     $requiredCustomerFields = [
         'fullname',
         'gender',
@@ -77,7 +76,7 @@ class DashboardController extends Controller
             'gender' => 'required|in:1,2',
             'birth_place' => 'nullable|string|max:100',
             'birth_date' => 'required|date_format:Y-m-d',
-            'identity_number' => 'required|string|max:16',
+            'identity_number' => 'required|regex:/^[0-9]{16}$/|unique:users,identity_number' . $user->id,
             'religion_id' => 'required|exists:religions,id',
             'npwp' => 'nullable|string|max:30',
             'phone' => 'required|string|max:20',

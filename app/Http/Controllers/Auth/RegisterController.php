@@ -3,9 +3,12 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Customer;
 use App\Models\User;
 use Illuminate\Foundation\Auth\RegistersUsers;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
@@ -66,16 +69,7 @@ class RegisterController extends Controller
      */
     protected function create(array $data)
     {
-        // return User::create([
-        //     'fullname' => $data['fullname'],
-        //     'email' => $data['email'],
-        //     'password' => Hash::make($data['password']),
-        // ]);
-        // Ambil nama role default dari .env (misal: DEFAULT_ROLE=Customer)
-        // $defaultRole = env('DEFAULT_ROLE', 'Customer');
 
-        // // Pastikan role tersebut selalu ada (buat otomatis jika belum ada)
-        // $role = Role::firstOrCreate(['name' => $defaultRole]);
           $user = User::create([
             'fullname' => $data['fullname'],
             'email' => $data['email'],
@@ -84,6 +78,12 @@ class RegisterController extends Controller
 
         // Assign role default
         $user->assignRole('Customer');
+        DB::transaction(function () use ($user) {
+            Customer::create([
+                'user_id' => $user->id,
+                ...Customer::getDefaultAttributes($user)
+            ]);
+        });
 
         $user->active_role = $user->roles()->first()->id;
         $user->save();

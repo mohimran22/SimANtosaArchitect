@@ -216,7 +216,7 @@ public function show(User $user)
         // 'role' => 'required|array',
         // 'role.*' => 'string|exists:roles,name',
         'religion_id' => 'required|exists:religions,id',
-        'identity_number' => 'required|string|max:16|unique:users,identity_number,' . $user->id,
+        'identity_number' => 'required|regex:/^[0-9]{16}$/|unique:users,identity_number' . $user->id,
         'address' => 'required',
         'province_id' => 'required|exists:provinces,id',
         'city_id' => 'required|exists:cities,id',

@@ -14,7 +14,6 @@
             @if(auth()->user()->unreadNotifications->count())
                 <span id="notification-count" class="badge bg-red">{{ auth()->user()->unreadNotifications->count() }}</span>
             @endif
-
         </a>
         <div class="dropdown-menu dropdown-menu-arrow dropdown-menu-end dropdown-menu-card">
             <div class="card">
@@ -24,7 +23,7 @@
                 <div class="d-flex justify-content-between align-items-center px-3 py-2">
                     <strong>Notifikasi</strong>
                     @if(auth()->user()->unreadNotifications->count())
-                        <button id="mark-all-btn" onclick="markAllAsRead()" class="btn btn-sm btn-outline-primary">
+                        <button id="mark-all-btn" onclick="markAllAsRead()" class="btn btn-sm btn-outline-dark">
                             Tandai semua dibaca
                         </button>
                     @endif

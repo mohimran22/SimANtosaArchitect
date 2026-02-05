@@ -1,8 +1,9 @@
 @extends('tablar::page')
 
 @section('content')
+
 <div class="page-body">
-    <div class="container-xl">
+    <div class="container-xl dashboard-container">
         <div id="alertCarousel" class="position-relative mb-4">
             <div class="overflow-hidden rounded-4 shadow-sm bg-white position-relative">
                 <div class="alert-wrapper d-flex" style="width: max-content;">
@@ -42,7 +43,7 @@
             </div>
         </div>
 
-        <div class="py-5 text-center">
+        <div class="pt-3 pb-2 text-center">
             <h2 class="fw-bold mb-3">
                 Selamat Datang {{ auth()->user()->fullname ?? 'Admin Utama' }} di Sistem Antosa Architect
             </h2>
@@ -92,11 +93,9 @@ document.addEventListener('DOMContentLoaded', function () {
 }
 
 /* ✅ Tambah jarak dari sidebar kiri via container-xl bawaan Tablar */
-.container-xl {
-    max-width: 1320px;
-    margin-top: 20px;
-    margin-left: 20px;
-    margin-right: auto;
+.dashboard-container {
+    margin-top: 16px;
+    margin-left: 18px;
 }
 
 /* Tombol panah elegan */
