@@ -4,7 +4,7 @@
 <div class="container-xl">
 
     {{-- 🔹 Header --}}
-    <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="d-flex justify-content-between align-items-center mb-3 mt-4">
         <h2 class="page-title">Detail Pengguna</h2>
         <a href="{{ route('users.index') }}" class="btn btn-outline-secondary">
             <i class="ti ti-arrow-left"></i> Kembali

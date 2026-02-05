@@ -347,21 +347,25 @@ public function update(Request $request, Customer $customer)
             $validated['shipping_phone'] = $validated['phone'];
         }
 
+    $newPhotoPath = null;
+
     DB::transaction(function () use ($validated, $customer, $request) {
         $user = $customer->user;
 
-        // 🔹 Upload foto baru (hapus lama jika ada)
         if ($request->hasFile('photo')) {
-            if ($user->photo && Storage::disk('public')->exists('photos/' . $user->photo)) {
-                Storage::disk('public')->delete('photos/' . $user->photo);
+            $newPhotoPath = $request->file('photo')->storeAs(
+                'photos',
+                Str::uuid().'.'.$request->file('photo')->getClientOriginalExtension(),
+                'public'
+            );
+
+            if ($user->photo && Storage::disk('public')->exists($user->photo)) {
+                Storage::disk('public')->delete($user->photo);
             }
-            $file = $request->file('photo');
-            $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
-            $file->storeAs('photos', $filename, 'public');
-            $validated['photo'] = $filename;
+
+            $validated['photo'] = $newPhotoPath;
         }
 
-        // 🔹 Update user data
         $user->update([
             'fullname' => $validated['fullname'],
             'nickname' => $validated['nickname'],
@@ -398,11 +402,7 @@ public function update(Request $request, Customer $customer)
                 $user->assignRole('Customer');
             }
         }
-
         
-
-
-        // 🔹 Update data customer
         $customer->update([
             'nic' => $validated['nic'],
             'shipping_name' => $validated['shipping_name'],

@@ -223,7 +223,7 @@ public function show(User $user)
         'district_id' => 'required|exists:districts,id',
         'sub_district_id' => 'required|exists:sub_districts,id',
         'postal_code_id' => 'required|exists:postal_codes,id',
-        'phone' => 'required',
+        'phone' => 'required|regex:/^[0-9]+$/',
         'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
     ]);
 
@@ -262,7 +262,7 @@ public function show(User $user)
         DB::commit();
 
         return redirect()
-            ->route('users.index')
+            ->route('users.show', $user->id)
             ->with('success', 'Data pengguna berhasil diperbarui.');
 
     } catch (\Exception $e) {
