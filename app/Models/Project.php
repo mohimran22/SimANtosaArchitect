@@ -183,6 +183,14 @@ public function generateLevels()
                 ['level_order' => 5, 'level_name' => 'Invoice RAB'],
                 ['level_order' => 6, 'level_name' => 'Proses Pengerjaan RAB'],
             ],
+        3 => [
+                ['level_order' => 1, 'level_name' => 'Konsultasi'],
+                ['level_order' => 2, 'level_name' => 'Rencana Survei'],
+                ['level_order' => 3, 'level_name' => 'Survei'],
+                ['level_order' => 4, 'level_name' => 'Penawaran Pembuatan RAB'],
+                ['level_order' => 5, 'level_name' => 'Invoice RAB'],
+                ['level_order' => 6, 'level_name' => 'Proses Pengerjaan RAB'],
+            ],
         default => throw new \Exception('Jenis proyek tidak valid'),
     };
 

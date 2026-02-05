@@ -1,135 +1,139 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <title>Antosa Architect — Sistem Informasi</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8">
+<title>Antosa Architect</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <link rel="icon" href="{{ asset('logo.png') }}?v=3">
+<link rel="icon" href="{{ asset('favicon.ico') }}?v=3">
 
-    <!-- Bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 
-    <!-- Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body {
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+}
 
-    <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: #f5f7fb;
-        }
+/* HERO */
+.hero {
+    min-height: 100vh;
+    position: relative;
+    background: url('{{ asset("bg-gedung.jpeg") }}') center center / cover no-repeat;
+}
 
-        .hero {
-            min-height: 100vh;
-            background: linear-gradient(120deg, #1f2937, #111827);
-            color: white;
-        }
+/* overlay — lebih soft */
+.hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        to bottom,
+        rgba(0,0,0,0.55),
+        rgba(0,0,0,0.75)
+    );
+}
 
-        .hero-card {
-            border-radius: 20px;
-            border: none;
-        }
+/* CONTENT */
+.hero-content {
+    position: relative;
+    z-index: 2;
+    color: white;
+}
 
-        .logo {
-            width: 90px;
-            height: 90px;
-            object-fit: contain;
-        }
+/* LOGO */
+.brand-logo {
+    width: 110px;
+    margin-bottom: 18px;
+    opacity: 0.95;
+}
 
-        .badge-soft {
-            background: rgba(255,255,255,0.1);
-            padding: 8px 14px;
-            border-radius: 999px;
-            font-size: 14px;
-        }
+/* BUTTON */
+.btn-hero {
+    padding: 14px 42px;
+    font-size: 18px;
+    border-radius: 14px;
+    min-width: 210px;
+    letter-spacing: 0.4px;
+}
 
-        .btn-main {
-            border-radius: 10px;
-            padding: 12px;
-            font-weight: 600;
-        }
-    </style>
+/* hover lebih premium */
+.btn-light:hover {
+    transform: translateY(-2px);
+}
+
+.btn-outline-light:hover {
+    background: white;
+    color: black;
+}
+
+/* FOOTER */
+.footer-text {
+    position: absolute;
+    bottom: 36px;
+    width: 100%;
+    text-align: center;
+    color: #cfcfcf;
+    font-size: 14px;
+    z-index: 2;
+    letter-spacing: 0.5px;
+}
+
+/* MOBILE FIX */
+@media (max-width: 576px) {
+    .btn-hero {
+        min-width: 160px;
+        font-size: 16px;
+        padding: 12px 20px;
+    }
+
+    .brand-logo {
+        width: 80px;
+    }
+}
+</style>
 </head>
 
 <body>
 
-<div class="hero d-flex align-items-center">
-    <div class="container">
+<section class="hero d-flex align-items-center justify-content-center text-center">
 
-        <div class="row align-items-center">
+<div class="hero-content">
 
-            <!-- LEFT -->
-            <div class="col-lg-6 text-white mb-5 mb-lg-0">
+    <!-- LOGO -->
+    <img src="{{ asset('logo-putih.png') }}" class="brand-logo">
 
-                <div class="badge-soft mb-3">
-                    Sistem Informasi Internal
-                </div>
+    <!-- BUTTON -->
+    <div class="d-flex gap-4 justify-content-center">
 
-                <h1 class="fw-bold mb-3">
-                    Antosa Architect
-                </h1>
+        @if (Route::has('login'))
+            @auth
+                <a href="{{ url('/dashboard') }}" class="btn btn-light btn-hero fw-semibold">
+                    Masuk Dashboard
+                </a>
+            @else
+                <a href="{{ route('login') }}" class="btn btn-light btn-hero fw-semibold">
+                    Masuk
+                </a>
 
-                <h4 class="mb-4 text-light opacity-75">
-                    Manajemen Proyek, RAB, Peralatan, Supplier, dan Administrasi dalam satu platform terintegrasi.
-                </h4>
+                @if (Route::has('register'))
+                    <a href="{{ route('register') }}" class="btn btn-outline-light btn-hero fw-semibold">
+                        Daftar
+                    </a>
+                @endif
+            @endauth
+        @endif
 
-                <p class="text-light opacity-75 mb-4">
-                    Dirancang untuk efisiensi operasional dan kontrol data yang akurat bagi tim Antosa Architect.
-                </p>
-
-            </div>
-
-            <!-- RIGHT CARD -->
-            <div class="col-lg-5 offset-lg-1">
-                <div class="card hero-card shadow-lg">
-                    <div class="card-body p-5 text-center">
-
-                        <img src="{{ asset('logo.png') }}" class="logo mb-3">
-
-                        <h4 class="fw-semibold mb-2">
-                            Portal Sistem
-                        </h4>
-
-                        <p class="text-muted mb-4">
-                            Silakan masuk untuk mengakses dashboard sistem.
-                        </p>
-
-                        <div class="d-grid gap-3">
-
-                            @if (Route::has('login'))
-                                @auth
-                                    <a href="{{ url('/dashboard') }}" class="btn btn-dark btn-main">
-                                        Buka Dashboard
-                                    </a>
-                                @else
-                                    <a href="{{ route('login') }}" class="btn btn-dark btn-main">
-                                        Login Sistem
-                                    </a>
-
-                                    @if (Route::has('register'))
-                                        <a href="{{ route('register') }}" class="btn btn-outline-secondary btn-main">
-                                            Daftar Akun
-                                        </a>
-                                    @endif
-                                @endauth
-                            @endif
-
-                        </div>
-
-                        <hr class="my-4">
-
-                        <small class="text-muted">
-                            © {{ date('Y') }} Antosa Architect
-                        </small>
-
-                    </div>
-                </div>
-            </div>
-
-        </div>
     </div>
+
 </div>
+
+<div class="footer-text">
+    Sistem Informasi Management <b>Antosa Architect</b>
+</div>
+
+</section>
 
 </body>
 </html>
-

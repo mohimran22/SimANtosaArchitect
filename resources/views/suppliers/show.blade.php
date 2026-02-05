@@ -52,7 +52,7 @@
                     <div class="row align-items-center mb-4">
                         <div class="col-md-3 text-center">
                             @if ($user->photo)
-                            <img id="profilePreviewImage" src="{{ asset('storage/photos/'.$user->photo) }}" alt="Profile" 
+                            <img id="profilePreviewImage" src="{{ asset('storage/'.$user->photo) }}" alt="Profile" 
                                  class="rounded-3 shadow-sm border" width="150" height="150"
                                  style="object-fit: cover;">
                         @else

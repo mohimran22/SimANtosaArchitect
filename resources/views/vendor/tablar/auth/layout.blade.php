@@ -6,7 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="icon" href="{{ asset('logo.png') }}" type="image/png">
+    <link rel="icon" href="{{ asset('favicon.ico') }}?v=3">
 
     <title>@yield('title')</title>
 
@@ -20,6 +20,7 @@
 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/custom.css') }}?v={{ time() }}">
+    <link rel="stylesheet" href="{{ asset('fonts/tabler-icons.css') }}">
 
 </head>
 <body class=" border-top-wide border-primary d-flex flex-column">

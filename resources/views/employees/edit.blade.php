@@ -118,7 +118,7 @@
                                 
                                 <div class="col-md-4">
                                     <label class="form-label">Nomor KTP</label>
-                                    <input type="text" name="identity_number" class="form-control @error('identity_number') is-invalid @enderror" value="{{ old('identity_number', $user->identity_number) }}">
+                                    <input type="text" class="form-control @error('identity_number') is-invalid @enderror" name="identity_number" maxlength="16" inputmode="numeric" pattern="[0-9]*" value="{{ old('identity_number', $user->identity_number) }}">
                                     @error('identity_number')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -148,7 +148,7 @@
                             <div class="row g-4">
                                 <div class="col-md-6">
                                     <label class="form-label">Nomor Telepon</label>
-                                    <input type="text" name="phone" class="form-control @error('phone') is-invalid @enderror" value="{{ old('phone', $user->phone) }}">
+                                    <input type="text" class="form-control @error('phone') is-invalid @enderror" name="phone" inputmode="numeric" pattern="[0-9]*" value="{{ old('phone', $user->phone) }}" required>
                                     @error('phone')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -483,6 +483,34 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 });
 </script>
+
+    <script>
+        document.getElementById('photo').addEventListener('change', function (event) {
+        const input = event.target;
+        const file = input.files[0];
+        const previewContainer = document.getElementById('previewImage');
+
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                // Jika sebelumnya preview berupa ikon <div>, ganti jadi <img>
+                if (previewContainer.tagName.toLowerCase() === 'div') {
+                    const img = document.createElement('img');
+                    img.id = 'previewImage';
+                    img.src = e.target.result;
+                    img.className = 'border rounded-3 shadow-sm';
+                    img.width = 150;
+                    img.height = 150;
+                    img.style.objectFit = 'cover';
+                    previewContainer.replaceWith(img);
+                } else {
+                    previewContainer.src = e.target.result;
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+    </script>
                                     @endpush
 
                                     

@@ -118,7 +118,7 @@
 
                                         <div class="col-md-4">
                                             <label class="form-label required">Nomor KTP</label>
-                                            <input type="number" class="form-control @error('identity_number') is-invalid @enderror" name="identity_number" maxlength="16" value="{{ old('identity_number', $user->identity_number) }}" required>
+                                            <input type="text" class="form-control @error('identity_number') is-invalid @enderror" name="identity_number" maxlength="16" inputmode="numeric" pattern="[0-9]*" value="{{ old('identity_number', $user->identity_number) }}">
                                             @error('identity_number')
                                                 <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror
@@ -137,7 +137,7 @@
                                     <div class="row g-4">
                                         <div class="col-md-4">
                                             <label class="form-label required">Telepon</label>
-                                            <input type="number" class="form-control @error('phone') is-invalid @enderror" name="phone" value="{{ old('phone', $user->phone) }}" required>
+                                            <input type="text" class="form-control @error('phone') is-invalid @enderror" name="phone" inputmode="numeric" pattern="[0-9]*" value="{{ old('phone', $user->phone) }}" required>
                                             @error('phone')
                                                 <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror
@@ -150,12 +150,13 @@
                                             @enderror
                                         </div>
                                         <div class="col-md-4">
-                                            <label class="form-label required" for="password">Kata sandi</label>
-                                            <input type="password" class="form-control @error('password') is-invalid @enderror" name="password" value="{{ old('password', $user->password) }}" placeholder="Password harus 8 karakter" required>
+                                            <label class="form-label">Kata sandi</label>
+                                            <input type="password" name="password" class="form-control @error('password') is-invalid @enderror" placeholder="Kosongkan jika tidak ingin mengubah password">
                                             @error('password')
                                                 <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror
                                         </div>
+                                        
                                         <div class="col-12">
                                             <label class="form-label required">Alamat Lengkap</label>
                                             <textarea name="address" rows="2" class="form-control @error('address') is-invalid @enderror" required>{{ old('address', $user->address) }}</textarea>
@@ -249,9 +250,6 @@
                                 </button>
                             </div>
                             </form>
-
-                        
-                    
                 </div>
             </div>
         </div>
