@@ -20,19 +20,16 @@ body {
 .hero {
     min-height: 100vh;
     position: relative;
-    background: url('{{ asset("bg-gedung.jpeg") }}') center center / cover no-repeat;
-}
-
-/* overlay — lebih soft */
-.hero::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-        to bottom,
-        rgba(0,0,0,0.55),
-        rgba(0,0,0,0.75)
-    );
+    background:
+        linear-gradient(
+            to bottom,
+            rgba(0,0,0,0.65),
+            rgba(0,0,0,0.35)
+        ),
+        url('{{ asset("bg-gedung.jpeg") }}');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: right bottom;
 }
 
 /* CONTENT */
@@ -40,44 +37,65 @@ body {
     position: relative;
     z-index: 2;
     color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 64px;
+    transform: translateY(-40px);
 }
 
 /* LOGO */
 .brand-logo {
-    width: 110px;
-    margin-bottom: 18px;
+    width: 120px;
     opacity: 0.95;
 }
 
 /* BUTTON */
 .btn-hero {
-    padding: 14px 42px;
-    font-size: 18px;
-    border-radius: 14px;
-    min-width: 210px;
-    letter-spacing: 0.4px;
+    padding: 14px 48px;
+    font-size: 17px;
+    border-radius: 12px;
+    min-width: 220px;
+    letter-spacing: 0.6px;
+    transition: all 0.25s ease;
 }
+.btn-light {
+    background: #ffffff;
+    color: #000;
+    border: none;
+}
+
 
 /* hover lebih premium */
 .btn-light:hover {
     transform: translateY(-2px);
 }
 
+.btn-light:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(255,255,255,0.15);
+}
+
 .btn-outline-light:hover {
-    background: white;
-    color: black;
+    background: #fff;
+    color: #000;
+}
+
+.btn-outline-light {
+    border: 2px solid rgba(255,255,255,0.85);
+    color: #fff;
 }
 
 /* FOOTER */
 .footer-text {
     position: absolute;
-    bottom: 36px;
+    bottom: 28px;
     width: 100%;
     text-align: center;
-    color: #cfcfcf;
-    font-size: 14px;
-    z-index: 2;
-    letter-spacing: 0.5px;
+    color: rgba(255,255,255,0.7);
+    font-size: 13px;
+    letter-spacing: 0.4px;
+    transform: translateY(-20px);
 }
 
 /* MOBILE FIX */
@@ -89,7 +107,8 @@ body {
     }
 
     .brand-logo {
-        width: 80px;
+        width: 100px;
+        size: 40px;
     }
 }
 </style>
@@ -97,15 +116,18 @@ body {
 
 <body>
 
-<section class="hero d-flex align-items-center justify-content-center text-center">
+<section class="hero d-flex align-items-center justify-content-center text-center pt-5">
 
-<div class="hero-content">
+<div class="hero-content text-center">
 
     <!-- LOGO -->
     <img src="{{ asset('logo-putih.png') }}" class="brand-logo">
 
+
+
     <!-- BUTTON -->
-    <div class="d-flex gap-4 justify-content-center">
+
+    <div class="button-group d-flex gap-4 justify-content-center">
 
         @if (Route::has('login'))
             @auth
@@ -128,7 +150,6 @@ body {
     </div>
 
 </div>
-
 <div class="footer-text">
     Sistem Informasi Management <b>Antosa Architect</b>
 </div>

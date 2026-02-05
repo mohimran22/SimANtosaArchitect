@@ -24,7 +24,7 @@
                 <div class="d-flex justify-content-between align-items-center px-3 py-2">
                     <strong>Notifikasi</strong>
                     @if(auth()->user()->unreadNotifications->count())
-                        <button onclick="markAllAsRead()" class="btn btn-sm btn-outline-primary">
+                        <button id="mark-all-btn" onclick="markAllAsRead()" class="btn btn-sm btn-outline-primary">
                             Tandai semua dibaca
                         </button>
                     @endif
@@ -115,8 +115,7 @@ function markAllAsRead() {
 
             const badge = document.querySelector('#notification-count');
             if (badge) {
-                badge.textContent = '0';
-                badge.style.display = 'none';
+                badge.remove();
             }
 
             const container = document.querySelector('#notification-list');
@@ -127,6 +126,9 @@ function markAllAsRead() {
                     </div>
                 `;
             }
+            const btn = document.querySelector('#mark-all-btn');
+                if (btn) btn.remove();
+
         }
     });
 }

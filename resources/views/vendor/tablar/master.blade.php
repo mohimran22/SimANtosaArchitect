@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
     <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+    {{-- <link rel="icon" type="image/png" sizes="96x96" href="{{ asset('favicon-96x96.png') }}"> --}}
+    <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
 
     {{-- Custom Meta Tags --}}
     @yield('meta_tags')

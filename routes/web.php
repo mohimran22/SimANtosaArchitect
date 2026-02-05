@@ -82,7 +82,7 @@ Route::middleware(['auth', 'permission:lihat daftar affiliator|lihat data affili
         Route::resource('/affiliators', AffiliatorController::class)->whereUuid('affiliator');
     });
 
-Route::middleware(['auth', 'permission:lihat daftar supplier|lihat data supplier','activerole:Mitra Supplier' ])->group(function () {
+Route::middleware(['auth', 'permission:lihat daftar supplier|lihat data supplier','activerole:Mitra Supplier, Direktur' ])->group(function () {
     Route::get('/suppliers/generate-SupplierId', [SupplierController::class, 'generateSupplierIdAjax'])->name('suppliers.generateSupplierId');
     Route::get('/supplier/{supplier}/products-datatable', [SupplierController::class, 'datatableProducts'])
     ->name('supplier.products.datatable');
@@ -283,10 +283,16 @@ Route::post('/notifications/{id}/read', function ($id) {
 
     return response()->json(['success' => true]);
 })->middleware('auth');
+// Route::post('/notifications/read-all', function () {
+//     auth()->user()->unreadNotifications->markAsRead();
+//     return response()->json(['status' => 'ok']);
+// })->name('notifications.readAll');
 Route::post('/notifications/read-all', function () {
     auth()->user()->unreadNotifications->markAsRead();
+
     return response()->json(['status' => 'ok']);
-})->name('notifications.readAll');
+});
+
 
 Route::middleware(['auth'])->group(function () {
     Route::get('consultations/{consultation}/pdf', [\App\Http\Controllers\ConsultationController::class, 'pdf'])

@@ -176,13 +176,32 @@ label {
 
 /* Fokus sama seperti input bootstrap */
 .select2-container--default.select2-container--focus .select2-selection--single {
-    border-color: #86b7fe;
+    border-color: #000;
     outline: 0;
     box-shadow: 0 0 0 0.25rem rgba(13,110,253,.25);
 }
 
 .select2-container--open {
     z-index: 2060 !important;
+}
+
+/* item hover */
+.select2-results__option--highlighted {
+    background-color: #000 !important;
+    color: #fff !important;
+}
+
+/* item terpilih */
+.select2-results__option[aria-selected="true"] {
+    background-color: #111 !important;
+    color: #fff !important;
+}
+
+/* selected tag */
+.select2-selection__choice {
+    background-color: #000 !important;
+    color: #fff !important;
+    border: none !important;
 }
 
 
@@ -299,7 +318,6 @@ body {
 
 .page {
   margin-left: 40px !important;
-  padding: 10px !important;
 } 
 
 .page-title {
@@ -368,6 +386,7 @@ footer {
     padding: 2px 6px;
     font-size: 14px;
     width: 150px;
+    color: #000 !important;
 }
 
 .status {

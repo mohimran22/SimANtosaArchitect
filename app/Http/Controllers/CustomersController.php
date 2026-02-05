@@ -128,7 +128,7 @@ class CustomersController extends Controller
         'email' => 'required|email|unique:users,email',
         'birth_place' => 'nullable|string|max:100',
         'birth_date' => 'required|date_format:Y-m-d',
-        'identity_number' => 'required|string|max:16',
+        'identity_number' => 'required|regex:/^[0-9]{16}$/|unique:users,identity_number',
         'religion_id' => 'required|exists:religions,id',
         'npwp' => 'nullable|string|max:30',
         'phone' => 'required|string|max:20',
@@ -402,7 +402,7 @@ public function update(Request $request, Customer $customer)
                 $user->assignRole('Customer');
             }
         }
-        
+
         $customer->update([
             'nic' => $validated['nic'],
             'shipping_name' => $validated['shipping_name'],

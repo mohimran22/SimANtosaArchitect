@@ -122,7 +122,7 @@
                             
                             <div class="col-md-4">
                                 <label class="form-label required">Nomor KTP</label>
-                                <input type="number" name="identity_number" class="form-control @error('identity_number') is-invalid @enderror" value="{{ old('identity_number') }}" required>
+                                <input type="text" class="form-control @error('identity_number') is-invalid @enderror" name="identity_number" maxlength="16" inputmode="numeric" pattern="\d{16}" value="{{ old('identity_number') }}" required>
                                 @error('identity_number')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
