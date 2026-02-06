@@ -227,7 +227,7 @@
                         <div class="row g-4">
                             <div class="col-md-4">
                                 <label class="form-label" for="bank_id">Nama Bank</label>
-                                <select id="bank_id" name="bank_id" class="form-select">
+                                <select id="bank_id" name="bank_id" class="form-select select">
                                     <option value="">Pilih Bank</option>
                                 </select>
                             </div>

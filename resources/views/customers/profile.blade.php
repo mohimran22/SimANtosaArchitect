@@ -194,7 +194,7 @@
                                 <div class="row g-3">
                                     <div class="col-md-6 mb-3">
                                         <label class="form-label" for="bank_id">Nama Bank</label>
-                                            <select id="bank_id" name="bank_id" class="form-select">
+                                            <select id="bank_id" name="bank_id" class="form-select select2">
                                                 <option value="{{ old('bank_id', auth()->user()->bank_id) }}">Pilih Bank</option>
                                             </select>
                                     </div>

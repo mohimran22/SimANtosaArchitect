@@ -10,7 +10,9 @@ use App\Models\SubDistrict;
 use App\Models\PostalCode;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Storage;
+
 
 class DashboardController extends Controller
 {
@@ -76,7 +78,11 @@ class DashboardController extends Controller
             'gender' => 'required|in:1,2',
             'birth_place' => 'nullable|string|max:100',
             'birth_date' => 'required|date_format:Y-m-d',
-            'identity_number' => 'required|regex:/^[0-9]{16}$/|unique:users,identity_number' . $user->id,
+            'identity_number' => [
+                'required',
+                'regex:/^[0-9]{16}$/',
+                Rule::unique('users', 'identity_number')->ignore($user->id),
+            ],
             'religion_id' => 'required|exists:religions,id',
             'npwp' => 'nullable|string|max:30',
             'phone' => 'required|string|max:20',

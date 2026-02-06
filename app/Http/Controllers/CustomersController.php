@@ -329,7 +329,7 @@ public function update(Request $request, Customer $customer)
         'identity_number' => [
             'required',
             'regex:/^[0-9]{16}$/',
-            Rule::unique('users', 'identity_number')->ignore($employee->user_id),
+            Rule::unique('users', 'identity_number')->ignore($customer->user_id),
         ],
         'religion_id' => 'nullable|exists:religions,id',
         'npwp' => 'nullable|string|max:30',
