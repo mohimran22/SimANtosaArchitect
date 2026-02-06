@@ -11,6 +11,7 @@ use App\Models\PostalCode;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 
 
@@ -97,7 +98,7 @@ class DashboardController extends Controller
             'account_holder' => 'nullable|max:50',
             'photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
-        
+
         $newPhotoPath = null;
         // Upload photos jika ada
         if ($request->hasFile('photo')) {

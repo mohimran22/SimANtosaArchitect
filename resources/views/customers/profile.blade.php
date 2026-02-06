@@ -32,7 +32,7 @@
                                     @endif
 
                                     <label for="photo"
-                                        class="btn btn-sm btn-primary position-absolute bottom-0 end-0 translate-middle rounded-circle"
+                                        class="btn btn-sm btn-dark position-absolute bottom-0 end-0 translate-middle rounded-circle"
                                         title="Ganti Foto">
                                         <i class="ti ti-camera"></i>
                                     </label>

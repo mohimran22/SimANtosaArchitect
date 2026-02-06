@@ -411,7 +411,6 @@ public function generateNikAjax()
         );
     }
 
-    // 🔹 Update tabel employees
     $employee->update([
         'nik' => $validated['nik'],
         'marital_status' => $validated['marital_status'],
@@ -427,16 +426,14 @@ public function generateNikAjax()
     ]);
     });
 
-    return redirect()->route('employees.index')->with('success', 'Data karyawan berhasil diperbarui.');
+    return redirect()
+        ->route('employees.show', $employee->id)
+        ->with('success', 'Data karyawan berhasil diperbarui.');
 }
 
-
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Employee $employee)
     {
-            if ($employee) {
+        if ($employee) {
             $employee->delete();
             return response()->json(['status' => 'success', 'message' => 'Employee deleted successfully']);
         }

@@ -309,6 +309,10 @@ Route::middleware(['auth'])->group(function () {
     ->name('projects.rab.pdf');
     Route::get('/tasks/files/{file}', [\App\Http\Controllers\ProjectTaskController::class, 'viewFile'])
     ->name('tasks.files.view');
+    Route::post('/tasks/{task}/approve', [\App\Http\Controllers\ProjectTaskController::class, 'approve'])
+    ->name('tasks.approve');
+    Route::post('/tasks/{task}/reject', [\App\Http\Controllers\ProjectTaskController::class, 'reject'])
+    ->name('tasks.reject');
     Route::get(
     '/projects/{project}/invoice-final',
     [\App\Http\Controllers\InvoiceController::class, 'invoiceFinal']
@@ -317,7 +321,6 @@ Route::get(
     'projects/{project}/contract/pdf',
     [\App\Http\Controllers\ContractController::class, 'pdf']
 )->name('projects.contract.pdf');
-
 
 Route::get(
     'projects/{project}/invoice/pdf',
@@ -430,12 +433,6 @@ Route::post('/tasks/{task}/assign', [\App\Http\Controllers\ProjectTaskController
 
 Route::post('/tasks/{task}/upload', [\App\Http\Controllers\ProjectTaskController::class, 'uploadFile'])
     ->name('tasks.upload');
-
-Route::post('/tasks/{task}/approve', [\App\Http\Controllers\ProjectTaskController::class, 'approve'])
-    ->name('tasks.approve');
-
-Route::post('/tasks/{task}/reject', [\App\Http\Controllers\ProjectTaskController::class, 'reject'])
-    ->name('tasks.reject');
 
 Route::post('/tasks/{task}/complete', [\App\Http\Controllers\ProjectTaskController::class, 'complete'])
     ->name('tasks.complete');

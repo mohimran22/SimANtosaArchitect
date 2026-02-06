@@ -214,8 +214,10 @@
         @enderror
     </div>
 
-    <div class="text-end mt-4">
-        <button class="btn btn-dark">Simpan Form</button>
+    <div class="text-end mt-5">
+        <button type="submit" class="btn btn-dark px-4">
+            <i class="ti ti-device-floppy me-1"></i>Simpan Form Survei
+        </button>
     </div>
 </form>
 @endcan

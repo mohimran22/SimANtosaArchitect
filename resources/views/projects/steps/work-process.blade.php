@@ -609,6 +609,7 @@ function renderRevisionRow(task) {
         </td>
 
         <td class="task-document" data-task="${task.id}">
+            !$isReadOnly
             <button class="btn btn-sm btn-dark btn-upload"
                     data-task="${task.id}">
                 <i class="ti ti-upload"></i> Upload

@@ -280,7 +280,7 @@ label {
   max-height: calc(100vh - 100px); /* sesuaikan tinggi logo */
 }
 
-.navbar.navbar-vertical {
+.navbar.navbar-vertical.navbar-expand-lg {
   color:#000 !important;
   display: flex !important;
   min-width: 16rem;
