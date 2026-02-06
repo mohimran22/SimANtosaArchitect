@@ -161,13 +161,18 @@ class CustomersController extends Controller
 
     $validated['loyalty_level'] = strtolower($validated['loyalty_level']);
 
-    // 🔹 Upload foto (jika ada)
-    if ($request->hasFile('photo')) {
-        $file = $request->file('photo');
-        $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
-        $file->storeAs('photos', $filename, 'public');
-        $validated['photo'] = $filename;
-    }
+if ($request->hasFile('photo')) {
+    $filename = Str::uuid().'.'.$request->file('photo')->getClientOriginalExtension();
+
+    $path = $request->file('photo')->storeAs(
+        'photos',
+        $filename,
+        'public'
+    );
+
+    // simpan full relative path
+    $validated['photo'] = $path;   // → photos/uuid.jpg
+}
 
     // Jika alamat pengiriman sama dengan domisili user
         if ($request->has('same_address')) {
@@ -254,16 +259,34 @@ class CustomersController extends Controller
 }
 
 
-public function generateNicAjax()
+// public function generateNicAjax()
+// {
+//     $lastNumber = Customer::selectRaw("MAX(CAST(SUBSTRING(nic, 3) AS INTEGER)) as max_nic")->value('max_nic');
+//     $newNumber = ($lastNumber ?? 0) + 1;
+
+//     $newNic = 'C-' . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
+
+//     return response()->json([
+//         'nic' => $newNic
+//     ]);
+// }
+
+public static function generateNicAjax()
 {
-    $lastNumber = Customer::selectRaw("MAX(CAST(SUBSTRING(nic, 3) AS INTEGER)) as max_nic")->value('max_nic');
+    $lastNumber = self::where('nic', 'like', 'C-%')
+        ->selectRaw("
+            MAX(
+                CAST(
+                    REGEXP_REPLACE(nic, '[^0-9]', '', 'g')
+                    AS INTEGER
+                )
+            ) as max_nic
+        ")
+        ->value('max_nic');
+
     $newNumber = ($lastNumber ?? 0) + 1;
 
-    $newNic = 'C-' . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
-
-    return response()->json([
-        'nic' => $newNic
-    ]);
+    return 'C-' . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
 }
 
  public function show(Customer $customer)
@@ -303,7 +326,11 @@ public function update(Request $request, Customer $customer)
         'email' => 'required|email|unique:users,email,' . $customer->user_id,
         'birth_place' => 'nullable|string|max:100',
         'birth_date' => 'nullable|date_format:Y-m-d',
-        'identity_number' => 'nullable|string|max:16',
+        'identity_number' => [
+            'required',
+            'regex:/^[0-9]{16}$/',
+            Rule::unique('users', 'identity_number')->ignore($employee->user_id),
+        ],
         'religion_id' => 'nullable|exists:religions,id',
         'npwp' => 'nullable|string|max:30',
         'phone' => 'nullable|string|max:20',

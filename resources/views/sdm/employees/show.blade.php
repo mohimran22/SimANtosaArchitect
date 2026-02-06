@@ -189,7 +189,7 @@
                         <div class="col-md-4 mt-3">
                             <div class="text-muted small">Dokumen Kontrak</div>
                             @if ($employee->contract_letter_file)
-                                <a href="{{ asset('storage/contracts/' . $employee->contract_letter_file) }}"
+                                <a href="{{ asset('storage/' . $employee->contract_letter_file) }}"
                                    target="_blank" class="btn btn-sm btn-outline-primary mt-1">
                                    <i class="ti ti-file-text"></i> Lihat Dokumen
                                 </a>

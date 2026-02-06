@@ -119,9 +119,9 @@ class SupplierController extends Controller
         'email' => 'required|email|unique:users,email',
         'birth_place' => 'nullable|string|max:100',
         'birth_date' => 'required|date_format:Y-m-d',
-        'identity_number' => 'required|string|max:16',
+        'identity_number' => 'required|regex:/^[0-9]{16}$/|unique:users,identity_number',
         'religion_id' => 'required|exists:religions,id',
-        'npwp' => 'nullable|numeric|max:30',
+        'npwp' => 'nullable|string|max:30',
         'phone' => 'required|string|max:20',
         'address' => 'nullable|string|max:255',
         'user_province_id' => 'required|exists:provinces,id',
@@ -148,13 +148,6 @@ class SupplierController extends Controller
         'role.*' => 'string|exists:roles,name',
     ]);
 
-    if ($request->hasFile('photo')) {
-        $file = $request->file('photo');
-        $filename = Str::uuid().'.'.$file->getClientOriginalExtension();
-        $file->storeAs('photos', $filename, 'public');
-        $validated['photo'] = $filename;
-    }
-
     // Jika alamat pengiriman sama dengan domisili user
         if ($request->has('same_address')) {
             $validated['province_id'] = $validated['user_province_id'];
@@ -168,6 +161,17 @@ class SupplierController extends Controller
         }
 
     DB::transaction(function () use ($validated, $request) {
+        if ($request->hasFile('photo')) {
+            $filename = Str::uuid().'.'.$request->file('photo')->getClientOriginalExtension();
+
+            $path = $request->file('photo')->storeAs(
+                'photos',
+                $filename,
+                'public'
+            );
+
+            $validated['photo'] = $path;   // → photos/uuid.jpg
+        }
 
         // 🔹 Cek user atau buat baru
         if (!empty($validated['user_id'])) {
@@ -301,7 +305,11 @@ public function generateSupplierIdAjax()
         'email' => 'required|email|unique:users,email,' . $supplier->user_id,
         'birth_place' => 'nullable|string|max:100',
         'birth_date' => 'nullable|date_format:Y-m-d',
-        'identity_number' => 'nullable|string|max:16',
+        'identity_number' => [
+            'required',
+            'regex:/^[0-9]{16}$/',
+            Rule::unique('users', 'identity_number')->ignore($supplier->user_id),
+        ],
         'religion_id' => 'nullable|exists:religions,id',
         'npwp' => 'nullable|string|max:30',
         'phone' => 'nullable|string|max:20',

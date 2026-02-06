@@ -35,17 +35,12 @@
 
                     <div class="text-center mb-5">
                     <div class="position-relative d-inline-block">
-                        @if ($user->photo)
-                            <img id="previewImage" src="{{ asset('storage/photos/'.$user->photo) }}" alt="Profile" 
-                                 class="rounded-3 shadow-sm border" width="150" height="150"
-                                 style="object-fit: cover;">
-                        @else
                             <div id="previewImage"
                                  class="rounded-3 shadow-sm bg-light d-flex align-items-center justify-content-center"
                                  style="width:150px; height:150px;">
                                  <i class="ti ti-user" style="font-size: 64px; color:#aaa;"></i>
                             </div>
-                        @endif
+                        
                         <label for="photo"
                                class="btn btn-sm btn-dark position-absolute bottom-0 end-0 translate-middle rounded-circle"
                                title="Ganti Foto">

@@ -308,7 +308,7 @@
                                     <div class="col-md-6">
                                         <label>Surat Perjanjian Kerja Saat Ini:</label><br>
                                         @if ($employee->contract_letter_file)
-                                            <a href="{{ asset('storage/contracts/' . $employee->contract_letter_file) }}"
+                                            <a href="{{ asset('storage/' . $employee->contract_letter_file) }}"
                                             target="_blank"
                                             class="btn btn-sm btn-outline-primary">
                                             Lihat / Unduh PDF
@@ -328,7 +328,7 @@
                                     <div class="col-md-6">
                                         <label>Sertifikat Pelatihan Saat Ini:</label><br>
                                         @if ($employee->training_certificate)
-                                            <a href="{{ asset('storage/certificates/' . $employee->training_certificate) }}"
+                                            <a href="{{ asset('storage/' . $employee->training_certificate) }}"
                                             target="_blank"
                                             class="btn btn-sm btn-outline-primary">
                                             Lihat / Unduh PDF

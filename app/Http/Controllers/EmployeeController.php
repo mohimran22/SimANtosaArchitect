@@ -154,23 +154,21 @@ class EmployeeController extends Controller
         // --- file ---
         'contract_letter_file' => ['required', 'file', 'mimes:pdf', 'max:2048'],
         'training_certificate' => ['nullable', 'file', 'mimes:pdf', 'max:2048'],
-        'signature' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
     ]);
 
     // 🔹 Upload foto karyawan (kalau ada)
-    if ($request->hasFile('photo')) {
-        $file = $request->file('photo');
-        $filename = Str::uuid().'.'.$file->getClientOriginalExtension();
-        $file->storeAs('photos', $filename, 'public');
-        $validated['photo'] = $filename;
-    }
+if ($request->hasFile('photo')) {
+    $filename = Str::uuid().'.'.$request->file('photo')->getClientOriginalExtension();
 
-    if ($request->hasFile('signature')) {
-        $file = $request->file('signature');
-        $filename = Str::uuid().'.'.$file->getClientOriginalExtension();
-        $file->storeAs('photos', $filename, 'public');
-        $validated['signature'] = $filename;
-    }
+    $path = $request->file('photo')->storeAs(
+        'photos',
+        $filename,
+        'public'
+    );
+
+    // simpan full relative path
+    $validated['photo'] = $path;   // → photos/uuid.jpg
+}
 
     // 🔹 Upload dokumen lain
     if ($request->hasFile('contract_letter_file')) {
@@ -235,8 +233,8 @@ class EmployeeController extends Controller
             'id' => Str::uuid(),
             'user_id' => $user->id,
             'nik' =>  $validated['nik'],
-            'marital_status' => $validated['marital_status'],
-            'employment_status' => $validated['employment_status'],
+            'marital_status' => $validated['marital_status'] ?? null,
+            'employment_status' => $validated['employment_status'] ?? null,
             'start_date' => $validated['start_date'],
             'basic_salary' => $validated['basic_salary'],
             'allowance' => $validated['allowance'],
@@ -307,7 +305,11 @@ public function generateNikAjax()
         'address' => 'nullable|string',
         'province_id' => 'required|exists:provinces,id',
         'city_id' => 'required|exists:cities,id',
-        'identity_number' => 'required|regex:/^[0-9]{16}$/|unique:users,identity_number' . $employee->user_id,
+        'identity_number' => [
+            'required',
+            'regex:/^[0-9]{16}$/',
+            Rule::unique('users', 'identity_number')->ignore($employee->user_id),
+        ],
         'district_id' => 'required|exists:districts,id',
         'sub_district_id' => 'required|exists:sub_districts,id',
         'postal_code_id' => 'required|exists:postal_codes,id',
@@ -343,6 +345,7 @@ public function generateNikAjax()
         'fullname' => $validated['fullname'],
         'birth_place' => $validated['birth_place'] ?? null,
         'birth_date' => $validated['birth_date'] ?? null,
+        'identity_number' => $validated['identity_number'],
         'gender' => $validated['gender'] ?? null,
         'phone' => $validated['phone'] ?? null,
         'address' => $validated['address'] ?? null,
@@ -360,17 +363,19 @@ public function generateNikAjax()
     $user->syncRoles([$validated['role']]);
 
     // 🔹 Upload ulang file jika ada
-    if ($request->hasFile('photo')) {
-        // hapus foto lama jika ada
-        if ($user->photo && Storage::disk('public')->exists('photos/'.$user->photo)) {
-            Storage::disk('public')->delete('photos/'.$user->photo);
-        }
+        if ($request->hasFile('photo')) {
+            $newPhotoPath = $request->file('photo')->storeAs(
+                'photos',
+                Str::uuid().'.'.$request->file('photo')->getClientOriginalExtension(),
+                'public'
+            );
 
-        $file = $request->file('photo');
-        $filename = Str::uuid().'.'.$file->getClientOriginalExtension();
-        $file->storeAs('photos', $filename, 'public');
-        $validated['photo'] = $filename;
-    }
+            if ($user->photo && Storage::disk('public')->exists($user->photo)) {
+                Storage::disk('public')->delete($user->photo);
+            }
+
+            $validated['photo'] = $newPhotoPath;
+        }
 
     if ($request->hasFile('signature')) {
         // hapus foto lama jika ada

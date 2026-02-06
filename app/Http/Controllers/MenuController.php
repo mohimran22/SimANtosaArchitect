@@ -96,13 +96,16 @@ public function index(Request $request)
 }
 
 
-    public function edit(Menu $menu)
-    {
-        $parents = Menu::whereNull('parent_id')->where('id', '!=', $menu->id)->get();
-        $permissions = Permission::orderBy('name')->get();
+public function edit(Menu $menu)
+{
+    $parents = Menu::where('id', '!=', $menu->id)
+        ->orderBy('text')
+        ->get();
 
-        return view('menus.edit', compact('menu', 'parents', 'permissions'));
-    }
+    $permissions = Permission::orderBy('name')->get();
+
+    return view('menus.edit', compact('menu', 'parents', 'permissions'));
+}
 
     public function update(Request $request, $id)
 {
