@@ -44,7 +44,7 @@
                         <div class="col-md-4">
                             <label class="form-label fw-bold">Nama Group</label>
 
-                            <select name="nama_group"
+                            {{-- <select name="nama_group"
                                     class="form-select @error('nama_group') is-invalid @enderror"
                                     required>
 
@@ -56,7 +56,12 @@
                                         {{ $group }}
                                     </option>
                                 @endforeach
-                            </select>
+                            </select> --}}
+                                <input type="text"
+                                   name="nama_group"
+                                   class="form-control @error('nama_group') is-invalid @enderror"
+                                   value="{{ old('nama_group') }}"
+                                   required>
 
                             @error('nama_group')
                                 <div class="invalid-feedback">{{ $message }}</div>

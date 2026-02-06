@@ -170,20 +170,31 @@ if ($request->hasFile('photo')) {
     $validated['photo'] = $path;   // → photos/uuid.jpg
 }
 
-    // 🔹 Upload dokumen lain
-    if ($request->hasFile('contract_letter_file')) {
-        $file = $request->file('contract_letter_file');
-        $filename = Str::uuid().'_'.$file->getClientOriginalName();
-        $file->storeAs('contracts', $filename, 'public');
-        $validated['contract_letter_file'] = $filename;
-    }
+if ($request->hasFile('contract_letter_file')) {
+    $filename = Str::uuid().'.'.$request->file('contract_letter_file')->getClientOriginalExtension();
 
-    if ($request->hasFile('training_certificate')) {
-        $file = $request->file('training_certificate');
-        $filename = Str::uuid().'_'.$file->getClientOriginalName();
-        $file->storeAs('certificates', $filename, 'public');
-        $validated['training_certificate'] = $filename;
-    }
+    $path = $request->file('contract_letter_file')->storeAs(
+        'contracts',
+        $filename,
+        'public'
+    );
+
+    // simpan full relative path
+    $validated['contract_letter_file'] = $path;   // → photos/uuid.jpg
+}
+
+if ($request->hasFile('training_certificate')) {
+    $filename = Str::uuid().'.'.$request->file('training_certificate')->getClientOriginalExtension();
+
+    $path = $request->file('training_certificate')->storeAs(
+        'certificates',
+        $filename,
+        'public'
+    );
+
+    // simpan full relative path
+    $validated['training_certificate'] = $path;   // → photos/uuid.jpg
+}
 
     DB::transaction(function () use ($validated, $request) {
 
@@ -334,10 +345,10 @@ public function generateNikAjax()
         // --- file ---
         'contract_letter_file' => ['nullable', 'file', 'mimes:pdf', 'max:2048'],
         'training_certificate' => ['nullable', 'file', 'mimes:pdf', 'max:2048'],
-        'signature' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
     ]);
 
-    // 🔹 Ambil user terkait employee
+    DB::transaction(function () use ($request, $validated, $employee) {
+
     $user = $employee->user;
 
     // 🔹 Update data user
@@ -360,55 +371,44 @@ public function generateNikAjax()
     ]);
 
     // 🔹 Update role user (hapus role lama → assign role baru)
-    $user->syncRoles([$validated['role']]);
-
-    // 🔹 Upload ulang file jika ada
-        if ($request->hasFile('photo')) {
-            $newPhotoPath = $request->file('photo')->storeAs(
-                'photos',
-                Str::uuid().'.'.$request->file('photo')->getClientOriginalExtension(),
-                'public'
-            );
-
-            if ($user->photo && Storage::disk('public')->exists($user->photo)) {
-                Storage::disk('public')->delete($user->photo);
-            }
-
-            $validated['photo'] = $newPhotoPath;
+    $user->syncRoles($validated['role']);
+    
+    if ($request->hasFile('photo')) {
+        if ($user->photo) {
+            Storage::disk('public')->delete($user->photo);
         }
 
-    if ($request->hasFile('signature')) {
-        // hapus foto lama jika ada
-        if ($user->signature && Storage::disk('public')->exists('photos/'.$user->signature)) {
-            Storage::disk('public')->delete('photos/'.$user->signature);
-        }
+        $path = $request->file('photo')->storeAs(
+            'photos',
+            Str::uuid().'.'.$request->file('photo')->getClientOriginalExtension(),
+            'public'
+        );
 
-        $file = $request->file('signature');
-        $filename = Str::uuid().'.'.$file->getClientOriginalExtension();
-        $file->storeAs('photos', $filename, 'public');
-        $validated['signature'] = $filename;
+        $user->update(['photo' => $path]);
     }
 
     if ($request->hasFile('contract_letter_file')) {
-        if ($employee->contract_letter_file && Storage::disk('public')->exists('contracts/'.$employee->contract_letter_file)) {
-            Storage::disk('public')->delete('contracts/'.$employee->contract_letter_file);
+        if ($employee->contract_letter_file) {
+            Storage::disk('public')->delete($employee->contract_letter_file);
         }
 
-        $file = $request->file('contract_letter_file');
-        $filename = Str::uuid().'_'.$file->getClientOriginalName();
-        $file->storeAs('contracts', $filename, 'public');
-        $validated['contract_letter_file'] = $filename;
+        $validated['contract_letter_file'] = $request->file('contract_letter_file')->storeAs(
+            'contracts',
+            Str::uuid().'.'.$request->file('contract_letter_file')->getClientOriginalExtension(),
+            'public'
+        );
     }
 
     if ($request->hasFile('training_certificate')) {
-        if ($employee->training_certificate && Storage::disk('public')->exists('certificates/'.$employee->training_certificate)) {
-            Storage::disk('public')->delete('certificates/'.$employee->training_certificate);
+        if ($employee->training_certificate) {
+            Storage::disk('public')->delete($employee->training_certificate);
         }
 
-        $file = $request->file('training_certificate');
-        $filename = Str::uuid().'_'.$file->getClientOriginalName();
-        $file->storeAs('certificates', $filename, 'public');
-        $validated['training_certificate'] = $filename;
+        $validated['training_certificate'] = $request->file('training_certificate')->storeAs(
+            'certificates',
+            Str::uuid().'.'.$request->file('training_certificate')->getClientOriginalExtension(),
+            'public'
+        );
     }
 
     // 🔹 Update tabel employees
@@ -424,8 +424,8 @@ public function generateNikAjax()
         'thr' => $validated['thr'],
         'contract_letter_file' => $validated['contract_letter_file'] ?? $employee->contract_letter_file,
         'training_certificate' => $validated['training_certificate'] ?? $employee->training_certificate,
-        'signature' => $validated['signature'] ?? $employee->signature,
     ]);
+    });
 
     return redirect()->route('employees.index')->with('success', 'Data karyawan berhasil diperbarui.');
 }

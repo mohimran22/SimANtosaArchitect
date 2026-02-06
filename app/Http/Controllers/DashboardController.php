@@ -97,13 +97,21 @@ class DashboardController extends Controller
             'account_holder' => 'nullable|max:50',
             'photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
-
+        
+        $newPhotoPath = null;
         // Upload photos jika ada
         if ($request->hasFile('photo')) {
-            if ($user->photo) {
+            $newPhotoPath = $request->file('photo')->storeAs(
+                'photos',
+                Str::uuid().'.'.$request->file('photo')->getClientOriginalExtension(),
+                'public'
+            );
+
+            if ($user->photo && Storage::disk('public')->exists($user->photo)) {
                 Storage::disk('public')->delete($user->photo);
             }
-            $validated['photo'] = $request->file('photo')->store('profile_photos', 'public');
+
+            $validated['photo'] = $newPhotoPath;
         }
 
         // 🔁 Update data user

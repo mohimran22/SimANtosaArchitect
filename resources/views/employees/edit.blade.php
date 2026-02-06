@@ -37,7 +37,7 @@
                     <div class="text-center mb-5">
                         <div class="position-relative d-inline-block">
                             @if ($user->photo)
-                                <img id="previewImage" src="{{ asset('storage/photos/'.$user->photo) }}" alt="Profile" 
+                                <img id="previewImage" src="{{ asset('storage/'.$user->photo) }}" alt="Profile" 
                                     class="rounded-3 shadow-sm border" width="150" height="150"
                                     style="object-fit: cover;">
                             @else
