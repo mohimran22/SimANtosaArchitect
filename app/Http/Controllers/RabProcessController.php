@@ -208,10 +208,17 @@ public function update(Request $request, Project $project, RabProcess $rab)
         // ================= INSERT ITEM BARU =================
         foreach ($request->items as $item) {
 
-            $base = $item['volume'] * $item['price'];
-            $profitValue = $base * ($item['profit'] / 100);
-            $overheadValue = $base * ($item['overhead'] / 100);
-            $total = $base + $profitValue + $overheadValue;
+            // $base = $item['volume'] * $item['price'];
+            // $profitValue = $base * ($item['profit'] / 100);
+            // $overheadValue = $base * ($item['overhead'] / 100);
+            // $total = $base + $profitValue + $overheadValue;
+            $expected = $item['volume'] * $item['price'];
+            // $expected += $expected * ($item['profit']/100);
+            // $expected += $expected * ($item['overhead']/100);
+
+            if (abs($expected - $item['total']) > 1) {
+                abort(422, 'Total item tidak valid');
+            }
 
             $rab->items()->create([
                 'job_category_id' => $item['job_category_id'],

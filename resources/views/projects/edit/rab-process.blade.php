@@ -81,12 +81,12 @@
         
         <div class="col-md-2">
             <label class="form-label">Profit</label>
-            <input type="text" class="form-control" id="rab_profit_display_edit" value="{{ old('profit', $rab->profit) }}">
+            <input type="text" class="form-control" id="rab_profit_display_edit" value="{{ old('profit', $rab->profit) }}" readonly>
             <input type="hidden" name="profit" id="rab_profit_edit">
         </div>
         <div class="col-md-2">
             <label class="form-label">Overhead</label>
-            <input type="text" class="form-control" id="rab_overhead_display_edit" value="{{ old('overhead', $rab->overhead) }}">
+            <input type="text" class="form-control" id="rab_overhead_display_edit" value="{{ old('overhead', $rab->overhead) }}" readonly>
             <input type="hidden" name="overhead" id="rab_overhead_edit">
         </div>
     </div>
@@ -184,8 +184,11 @@
     window.existingRabMeta = {
         discount: {{ $rab->discount }},
         tax_rate: {{ $rab->tax_rate }},
-        shipping: {{ $rab->shipping }}
+        shipping: {{ $rab->shipping }},
+        profit: {{ $rab->profit }},
+        overhead: {{ $rab->overhead }}
     };
+    window.marginLocked = {{ $rab->is_locked_margin ? 'true' : 'false' }};
     </script>
     <script>
         $(document).ready(function() {
@@ -232,12 +235,11 @@
 
                     currentRabJob = job;
 
-                    let harga = parseFloat(job.harga ?? job.price ?? 0);
-                    let finalHarga = applyGlobalMarginToUnit(harga);
+                    let baseHarga = parseFloat(job.harga ?? job.price ?? 0);
 
                     document.getElementById('rab_satuan').value = job.satuan;
-                    document.getElementById('rab_priceMeter').value = finalHarga;
-                    document.getElementById('rab_priceMeterFormatted').value = formatRp(finalHarga);
+                    document.getElementById('rab_priceMeter').value = baseHarga;
+                    document.getElementById('rab_priceMeterFormatted').value = formatRp(baseHarga);
 
                     document.querySelector('input[name="volume"]').value = '';
                     document.getElementById('rab_totalPriceFormatted').value = '';
@@ -414,8 +416,8 @@ document.getElementById('rab_add_volume')
         function loadExistingRab() {
 
             if (!window.existingRabItems || window.existingRabItems.length === 0) return;
-            globalProfit = parseFloat(window.existingRabItems[0].profit) || 0;
-            globalOverhead = parseFloat(window.existingRabItems[0].overhead) || 0;
+            globalProfit = parseFloat(window.existingRabMeta.profit) || 0;
+            globalOverhead = parseFloat(window.existingRabMeta.overhead) || 0;
 
             rabItems = {}; // reset
 
@@ -585,8 +587,14 @@ document.getElementById('rab_add_volume')
                 return;
             }
 
-            globalProfit = parseFloat(profitInput.value) || 0;
-            globalOverhead = parseFloat(overheadInput.value) || 0;
+            profitInput.value = globalProfit;
+            overheadInput.value = globalOverhead;
+
+            if (window.marginLocked) {
+                profitInput.readOnly = true;
+                overheadInput.readOnly = true; 
+            return;           
+            }
 
             document.getElementById('rab_profit_edit').value = globalProfit;
             document.getElementById('rab_overhead_edit').value = globalOverhead;

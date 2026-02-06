@@ -405,12 +405,12 @@
                                     title="Edit Data">
                                     <i class="ti ti-edit"></i>
                                 </button>
-                                    <a href="{{ route('projects.rab.pdf', $project->id) }}"
+                                    {{-- <a href="{{ route('projects.rab.pdf', $project->id) }}"
                                         class="btn btn-sm btn-dark"
                                         target="_blank"
                                         title="Download PDF">
                                             <i class="ti ti-download"></i>
-                                    </a>
+                                    </a> --}}
                             </div>
                             @endcan
                             @endif

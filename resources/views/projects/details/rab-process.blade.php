@@ -175,6 +175,18 @@
                 <div class="border p-3">{{ $rab->notes }}</div>
             </div>
         @endif
+        <div class="d-flex align-items-center gap-2">
+            @if($project->rab?->id)
+                
+            <a href="{{ route('projects.rab.pdf', $project->id) }}"
+                class="btn btn-dark"
+                target="_blank"
+                title="Download PDF">
+                    <i class="ti ti-download"></i>Download PDF
+            </a>
+                
+            @endif
+        </div>
         @if(!$ReadOnly)
             <div class="card mt-3">
                 <div class="card-body text-muted small">
