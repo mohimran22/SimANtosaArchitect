@@ -265,15 +265,24 @@ if ($request->hasFile('training_certificate')) {
         );
 }
 
-public function generateNikAjax()
+public static function generateNikAjax()
 {
-    $lastNumber = Employee::selectRaw("MAX(CAST(SUBSTRING(nik, 3) AS INTEGER)) as max_nik")->value('max_nik');
-    $newNumber = ($lastNumber ?? 0) + 1;
+    $lastNumber = Employee::where('nik', 'like', 'E-%')
+        ->selectRaw("
+            MAX(
+                CAST(
+                    REGEXP_REPLACE(nik, '[^0-9]', '', 'g')
+                    AS INTEGER
+                )
+            ) as max_nik
+        ")
+        ->value('max_nik');
 
-    $newNik = 'E-' . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
+    $newNumber = ($lastNumber ?? 0) + 1;
+    $nik = 'E-' . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
 
     return response()->json([
-        'nik' => $newNik
+        'nik' => $nik
     ]);
 }
 

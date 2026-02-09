@@ -35,15 +35,15 @@
 
     <div class="row mb-3">
         <div class="col-md-4">
-            <label>Nama Customer</label>
+            <label class="form-label">Nama Customer</label>
             <input type="text" name="contact_name" value="{{ old('contact_name', $rab->contact_name) }}" class="form-control">
         </div>
         <div class="col-md-4">
-            <label>Lokasi Pekerjaan</label>
+            <label class="form-label">Lokasi Pekerjaan</label>
             <input type="text" name="job_location" value="{{ old('job_location', $rab->job_location) }}" class="form-control">
         </div>
         <div class="col-md-4">
-            <label>Durasi Pekerjaan</label>
+            <label class="form-label required">Durasi Pekerjaan</label>
             <input type="text" name="job_duration" class="form-control" value="{{ old('job_duration', $rab->job_duration) }}" placeholder="175 Hari Kerja">
         </div>
     </div>
@@ -81,12 +81,12 @@
         
         <div class="col-md-2">
             <label class="form-label">Profit</label>
-            <input type="text" class="form-control" id="rab_profit_display_edit" value="{{ old('profit', $rab->profit) }}" readonly>
+            <input type="text" class="form-control" id="rab_profit_display_edit" value="{{ old('profit', $rab->profit) }}">
             <input type="hidden" name="profit" id="rab_profit_edit">
         </div>
         <div class="col-md-2">
             <label class="form-label">Overhead</label>
-            <input type="text" class="form-control" id="rab_overhead_display_edit" value="{{ old('overhead', $rab->overhead) }}" readonly>
+            <input type="text" class="form-control" id="rab_overhead_display_edit" value="{{ old('overhead', $rab->overhead) }}">
             <input type="hidden" name="overhead" id="rab_overhead_edit">
         </div>
     </div>
@@ -286,7 +286,7 @@ document.getElementById('rab_add_volume')
     const volume = parseFloat(this.value) || 0;
     if (volume <= 0) return;
 
-    const basePrice = parseFloat(currentRabJob.harga ?? currentRabJob.price ?? 0);
+    const basePrice = parseFloat(job.base_price ?? job.harga ?? 0);
 
     const total = calculateItemTotal(
         volume,
@@ -390,6 +390,7 @@ document.getElementById('rab_add_volume')
                             <input type="hidden" name="items[${rowIndex}][job_name]" value="${item.nama}">
                             <input type="hidden" name="items[${rowIndex}][satuan]" value="${item.satuan}">
                             <input type="hidden" name="items[${rowIndex}][volume]" value="${item.volume}">
+                            <input type="hidden" name="items[${rowIndex}][base_price]" value="${item.base_price}">
                             <input type="hidden" name="items[${rowIndex}][price]" value="${item.harga}">
                             <input type="hidden" name="items[${rowIndex}][profit]" value="${item.profit}">
                             <input type="hidden" name="items[${rowIndex}][overhead]" value="${item.overhead}">
@@ -428,7 +429,7 @@ document.getElementById('rab_add_volume')
                     nama: item.job_name,
                     satuan: item.satuan,
                     volume: parseFloat(item.volume),
-                    base_price: parseFloat(item.base_price ?? item.price),
+                    base_price: parseFloat(item.base_price),
                     harga: parseFloat(item.price), // harga final lama
 
                     profit: parseFloat(item.profit),
@@ -547,8 +548,8 @@ document.getElementById('rab_add_volume')
 
                 let finalTotal = baseTotal + profitValue + overheadValue;
 
-                item.total = finalTotal;
-                item.harga = finalTotal / item.volume;
+                item.total = Math.round(finalTotal);
+                item.harga = Math.round(finalTotal / item.volume);
             });
 
             renderRabTable();
@@ -600,12 +601,18 @@ document.getElementById('rab_add_volume')
             document.getElementById('rab_overhead_edit').value = globalOverhead;
 
             profitInput.oninput = () => {
-                globalProfit = parseFloat(profitInput.value) || 0;
+                let newProfit = parseFloat(profitInput.value) || 0;
+                if (newProfit === globalProfit) return;
+
+                globalProfit = newProfit;
                 applyProfitOverheadToAll();
             };
 
             overheadInput.oninput = () => {
-                globalOverhead = parseFloat(overheadInput.value) || 0;
+                let newOverhead = parseFloat(profitOverhead.value) || 0;
+                if (newOverhead === globalOverhead) return;
+
+                globalOverhead =  newOverhead;
                 applyProfitOverheadToAll();
             };
 

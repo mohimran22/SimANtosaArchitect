@@ -14,6 +14,7 @@ class RabProcessItem extends Model
     'job_name',
     'satuan',
     'volume',
+    'base_price',
     'price',
     'total'
 ];

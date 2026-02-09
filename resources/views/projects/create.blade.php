@@ -207,6 +207,9 @@
                             @elseif($project->project_type == 2)
                                 <h3 class="mb-3 fw-bold">4. Form Penawaran Pembuatan RAB</h3>
                                 @include('projects.steps.rab-form')
+                            @elseif($project->project_type == 3)
+                                <h3 class="mb-3 fw-bold">4. Form Penawaran Pembuatan RAB</h3>
+                                @include('projects.steps.rab-form')
                             @endif
                         </div>
                     </div>

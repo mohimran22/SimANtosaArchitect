@@ -17,11 +17,11 @@
 
     <div class="row mb-3">
         <div class="col-md-4">
-            <label>Nama Customer</label>
+            <label class="form-label">Nama Customer</label>
             <input type="text" name="contact_name" value="{{ old('contact_name', $project->customer->user->fullname ?? '') }}" class="form-control">
         </div>
         <div class="col-md-4">
-            <label>Lokasi Pekerjaan</label>
+            <label class="form-label">Lokasi Pekerjaan</label>
             <input type="text" name="job_location" value="{{ old('job_location', $project->city->name ?? '-') }}" class="form-control">
         </div>
         <div class="col-md-4">
@@ -321,6 +321,7 @@ function renderRabTable() {
                     <input type="hidden" name="items[${rowIndex}][job_name]" value="${item.nama}">
                     <input type="hidden" name="items[${rowIndex}][satuan]" value="${item.satuan}">
                     <input type="hidden" name="items[${rowIndex}][volume]" value="${item.volume}">
+                    <input type="hidden" name="items[${rowIndex}][base_price]" value="${item.base_price}">
                     <input type="hidden" name="items[${rowIndex}][price]" value="${item.harga}">
                     <input type="hidden" name="items[${rowIndex}][total]" value="${item.total}">
                 </tr>

@@ -29,6 +29,7 @@ public function store(Request $request)
         'items.*.job_name' => 'required|string',
         'items.*.satuan' => 'required|string',
         'items.*.volume' => 'required|numeric|min:0.01',
+        'items.*.base_price' => 'required|numeric|min:0',
         'items.*.price' => 'required|numeric|min:0',
         'items.*.total' => 'required|numeric|min:0',
 
@@ -88,6 +89,7 @@ public function store(Request $request)
                 'rab_process_id' => $rab->id,
                 'job_category_id' => $item['job_category_id'],
                 'job_name' => $item['job_name'],
+                'base_price' => $item['base_price'],
                 'satuan' => $item['satuan'],
                 'volume' => $item['volume'],
                 'price' => $item['price'],   // ✅ SUDAH FINAL
@@ -157,6 +159,7 @@ public function update(Request $request, Project $project, RabProcess $rab)
         'items.*.job_name' => 'required|string',
         'items.*.satuan' => 'required|string',
         'items.*.volume' => 'required|numeric|min:0.01',
+        'items.*.base_price' => 'required|numeric|min:0',
         'items.*.price' => 'required|numeric|min:0',
         'items.*.profit' => 'required|numeric|max:100',
         'items.*.overhead' => 'required|numeric|max:100',
@@ -227,7 +230,8 @@ public function update(Request $request, Project $project, RabProcess $rab)
                 'volume' => $item['volume'],
                 'profit' => $item['profit'],
                 'overhead' => $item['overhead'],
-                'price' => $item['price'],   // FINAL dari JS
+                'base_price' => $item['base_price'],
+                'price' => $item['price'],
                 'total' => $item['total'],
             ]);
         }

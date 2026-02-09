@@ -273,7 +273,7 @@ if ($request->hasFile('photo')) {
 
 public static function generateNicAjax()
 {
-    $lastNumber = self::where('nic', 'like', 'C-%')
+    $lastNumber = Customer::where('nic', 'like', 'C-%')
         ->selectRaw("
             MAX(
                 CAST(
@@ -285,8 +285,11 @@ public static function generateNicAjax()
         ->value('max_nic');
 
     $newNumber = ($lastNumber ?? 0) + 1;
+    $nic = 'C-' . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
 
-    return 'C-' . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
+    return response()->json([
+        'nic' => $nic
+    ]);
 }
 
  public function show(Customer $customer)
