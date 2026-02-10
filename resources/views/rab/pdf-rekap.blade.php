@@ -5,7 +5,7 @@
 <table width="100%" style="margin-bottom:20px;">
 <tr>
     <td width="20%">PEKERJAAN</td>
-    <td>: {{ $rab->contact_name }}</td>
+    <td>: {{ $rab->project->project_name ?? '-' }}</td>
 </tr>
 <tr>
     <td>LOKASI</td>

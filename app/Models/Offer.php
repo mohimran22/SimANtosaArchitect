@@ -23,6 +23,7 @@ class Offer extends Model
         'project_id',
         'design_package_id',
         'rab_package_id',
+        'rab_process_id',
         'offer_number',
         'offer_type',
         'offer_date',
@@ -63,6 +64,11 @@ class Offer extends Model
     {
         return $this->belongsTo(RabPackage::class, 'rab_package_id');
     }
+
+    public function rab()
+{
+    return $this->belongsTo(RabProcess::class, 'rab_process_id');
+}
 
     public function groupedItems()
 {

@@ -15,6 +15,7 @@ use App\Models\Project;
 use App\Models\ProjectLevel;
 use App\Models\ProjectTask;
 use App\Models\JobCategory;
+use App\Models\RabProcess;
 use App\Models\User;
 use App\Services\ProjectNotifier;
 use Illuminate\Http\Request;
@@ -217,7 +218,7 @@ if (
         $canEdit = auth()->user()->can('lihat daftar proyek'); 
 
         return view('projects.create', array_merge(
-            $this->formData(),
+            $this->formData($project),
             compact('project', 'timelineSteps', 'activeStep', 'surveyInvoice',
         'surveyApproved',
         'isFreeSurvey', 'surveyWaiting', 'surveyRejected', 'invoiceDp', 'invoiceRab', 'canEdit')
@@ -324,6 +325,7 @@ if (
         'planning',
         'survey.items',
         'offer.items',
+        'offer.rab.items.category',
         'rab.items.category',
         ])->findOrFail($projectId);
     }
@@ -338,6 +340,7 @@ if (
         'planning',
         'survey.items',
         'offer.items',
+        'offer.rab.items.category',
         'rab.items.category'
     ]);
 
@@ -407,7 +410,7 @@ public function update(Request $request, Project $project)
         return response()->json(['status' => 'failed', 'message' => 'Unable to delete']);
     }
 
-    private function formData($merge = [])
+    private function formData($project = null, $merge = [])
     {
         return array_merge([
             'employees'     => \App\Models\Employee::with('user:id,fullname')->get(['id','user_id']),
@@ -417,6 +420,9 @@ public function update(Request $request, Project $project)
             'designPackages' => \App\Models\DesignPackage::orderBy('name')->orderBy('price_meter')->get(),
             'rabPackages' => \App\Models\RabPackage::orderBy('name')->orderBy('price_meter')->get(),
             'jobCategories' => JobCategory::orderBy('kode_urut')->orderBy('nama_pekerjaan')->get(),
+            'rabProcesses' => RabProcess::whereHas('project', function ($q) use ($project) {
+                    $q->where('customer_id', $project?->customer_id);
+                })->get(),
             'projectStatus' => [
                 1 => 'Proses',
                 2 => 'Revisi',

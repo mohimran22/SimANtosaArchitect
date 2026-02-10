@@ -11,8 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('projects', function (Blueprint $table) {
-            $table->string('project_status')->nullable()->change();
+        Schema::table('offers', function (Blueprint $table) {
+            $table->decimal('volume')->nullable()->change();
+            $table->decimal('price_meter')->nullable()->change();
+            $table->string('satuan')->nullable()->change();
         });
     }
 

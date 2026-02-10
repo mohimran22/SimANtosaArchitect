@@ -208,8 +208,8 @@
                                 <h3 class="mb-3 fw-bold">4. Form Penawaran Pembuatan RAB</h3>
                                 @include('projects.steps.rab-form')
                             @elseif($project->project_type == 3)
-                                <h3 class="mb-3 fw-bold">4. Form Penawaran Pembuatan RAB</h3>
-                                @include('projects.steps.rab-form')
+                                <h3 class="mb-3 fw-bold">4. Penawaran Jasa Build</h3>
+                                @include('projects.steps.build-form')
                             @endif
                         </div>
                     </div>
@@ -220,7 +220,13 @@
 
                             <div class="d-flex justify-content-between align-items-center mb-4">
                                 <h3 class="mb-3 fw-bold">
-                                    {{ $project->project_type == 1 ? '4. Penawaran Jasa Desain' : '4. Penawaran Jasa RAB' }}
+                                    @if($project->project_type == 1)
+                                        4. Penawaran Jasa Desain
+                                    @elseif($project->project_type == 2)
+                                        4. Penawaran Jasa RAB
+                                    @elseif($project->project_type == 3)
+                                        4. Penawaran Jasa Build
+                                    @endif
                                 </h3>
                                 @can('ubah data proyek')
                                 <div class="btn-group">
@@ -238,16 +244,20 @@
                                 <div id="offer-view">
                                     @if($project->project_type == 1)
                                         @include('projects.details.offer')
-                                    @else
+                                    @elseif($project->project_type == 2)
                                         @include('projects.details.raboffer')
+                                    @elseif($project->project_type == 3)
+                                        @include('projects.details.buildoffer')
                                     @endif
                                 </div>
                             
                                 <div id="offer-edit" style="display:none;">
                                     @if($project->project_type == 1)
                                         @include('projects.edit.offer-form')
-                                    @else
+                                    @elseif($project->project_type == 2)
                                         @include('projects.edit.raboffer-form')
+                                    @elseif($project->project_type == 3)
+                                        @include('projects.edit.buildoffer-form')
                                     @endif
                                 </div>
                             @endif

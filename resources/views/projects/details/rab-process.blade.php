@@ -175,7 +175,7 @@
                 <div class="border p-3">{{ $rab->notes }}</div>
             </div>
         @endif
-        <div class="d-flex align-items-center gap-2">
+        <div class="d-flex align-items-center gap-2 mt-4">
             @if($project->rab?->id)
                 
             <a href="{{ route('projects.rab.pdf', $project->id) }}"

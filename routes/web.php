@@ -305,6 +305,8 @@ Route::middleware(['auth'])->group(function () {
     ->name('projects.offers.desain.pdf');
     Route::get('/projects/offer/{offer}/pdf', [\App\Http\Controllers\OfferRABController::class, 'printPdf'])
     ->name('projects.offers.rab.pdf');
+    Route::get('/projects/{project}/build/pdf', [\App\Http\Controllers\OfferBuildController::class, 'printPdf'])
+    ->name('projects.offers.build.pdf');
     Route::get('/projects/{project}/rab/pdf', [\App\Http\Controllers\RabProcessController::class, 'exportPdf'])
     ->name('projects.rab.pdf');
     Route::get('/tasks/files/{file}', [\App\Http\Controllers\ProjectTaskController::class, 'viewFile'])
@@ -427,6 +429,22 @@ Route::put('/projects/{project}/rab/{rab}', [\App\Http\Controllers\RabProcessCon
 
 Route::post('/projects/rab/{rab}/refresh-from-master', [\App\Http\Controllers\RabProcessController::class, 'refreshFromMaster'])
     ->name('rab.refreshFromMaster');
+
+Route::get('/rab-process/{id}/items',
+    [\App\Http\Controllers\RabProcessController::class, 'items'])
+    ->name('rab.process.items.json');
+
+Route::post('projects/offerbuild', [\App\Http\Controllers\OfferBuildController::class, 'store'])
+    ->name('projects.offerbuild.store');
+    
+Route::put('offer/{offer}', [\App\Http\Controllers\OfferBuildController::class, 'update'])
+    ->name('offer.update');
+
+Route::post('/offer/{offer}/approve', [\App\Http\Controllers\OfferBuildController::class, 'approve'])
+    ->name('offer.approve');
+
+Route::post('/offer/{offer}/reject', [\App\Http\Controllers\OfferBuildController::class, 'reject'])
+    ->name('offer.reject');
 
 Route::post('/tasks/{task}/assign', [\App\Http\Controllers\ProjectTaskController::class, 'assign'])
     ->name('tasks.assign');

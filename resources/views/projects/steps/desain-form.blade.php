@@ -49,7 +49,7 @@
     <div class="row mb-4 mt-4">
         <div class="col-md-4">
             <label class="form-label">Pilih Paket Desain</label>
-            <select name="design_package_id" class="form-select" id="designPackageSelect" required>
+            <select name="design_package_id" class="form-select select2" id="designPackageSelect" required>
                 <option value="">-- Pilih Paket --</option>
                 @foreach($designPackages as $package)
                     <option value="{{ $package->id }}">{{ $package->name }}</option>

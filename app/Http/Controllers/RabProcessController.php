@@ -325,4 +325,44 @@ protected function notifyProjectEvent(Project $project, string $event)
     }
 }
 
+    public function getPackage($id)
+    {
+        $package = RabProcess::with('items')->findOrFail($id);
+        return response()->json($package);
+    }
+
+public function items($id)
+{
+    $rab = RabProcess::with('items.category')->findOrFail($id);
+
+    $grouped = $rab->items
+        ->groupBy('job_category_id')
+        ->map(function ($rows) {
+            return [
+                'category' => [
+                    'id'   => $rows->first()->category->id,
+                    'code' => $rows->first()->category->kode_urut,
+                    'name' => $rows->first()->category->nama_pekerjaan,
+                ],
+                'items' => $rows->values(),
+                'subtotal' => $rows->sum('total')
+            ];
+        })
+        ->values();
+
+        return response()->json([
+            'header' => [
+                'tax_rate' => $rab->tax_rate,
+                'discount' => $rab->discount,
+                'shipping' => $rab->shipping,
+                'subtotal' => $rab->subtotal,
+                'subtotal_after_discount' => $rab->subtotal_after_discount,
+                'tax_total' => $rab->tax_total,
+                'grand_total' => $rab->grand_total,
+                'notes' => $rab->notes,
+            ],
+            'groups' => $grouped
+        ]);
+}
+
 }

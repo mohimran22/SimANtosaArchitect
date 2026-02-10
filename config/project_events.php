@@ -107,6 +107,14 @@ return [
         ],
     ],
 
+    'offerbuild_created' => [
+        'title' => 'Penawaran Jasa Build',
+        'message' => [
+            'created_self' => 'Form penawaran Build berhasil disimpan',
+            'customer'     => 'Form penawarn Build berhasil disimpan dan sekarang masuk ke tahap kontrak',
+        ],
+    ],
+
     'invoice_created' => [
         'title' => 'Invoice',
         'message' => [

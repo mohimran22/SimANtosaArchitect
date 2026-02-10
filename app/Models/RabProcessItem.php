@@ -23,4 +23,9 @@ public function category()
     return $this->belongsTo(JobCategory::class, 'job_category_id');
 }
 
+public function rab()
+{
+    return $this->belongsTo(RabProcess::class);
+}
+
 }
