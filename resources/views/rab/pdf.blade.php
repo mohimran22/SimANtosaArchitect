@@ -78,6 +78,8 @@
 
     {{-- ================= HALAMAN 2 ================= --}}
     @include('rab.pdf-detail')
+    </body>
+</html>
 {{-- <h3 style="text-align:center">RINCIAN ANGGARAN BIAYA</h3>
 
 <table style="margin-bottom:10px">
@@ -170,6 +172,3 @@
             </tr>
         </tfoot>
     </table> --}}
-
-</body>
-</html>

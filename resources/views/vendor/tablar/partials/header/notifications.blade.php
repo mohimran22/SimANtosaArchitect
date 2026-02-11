@@ -77,8 +77,10 @@ function markAsRead(notificationId, el) {
         if (item) item.remove();
 
         const badge = document.querySelector('#notification-count');
+
+        let count = 0;
         if (badge) {
-            let count = parseInt(badge.textContent || 0);
+            count = parseInt(badge.textContent || 0);
             count = Math.max(count - 1, 0);
 
             if (count === 0) {
@@ -86,6 +88,12 @@ function markAsRead(notificationId, el) {
             } else {
                 badge.textContent = count;
             }
+        }
+
+        // ✅ kalau sudah habis → hapus tombol mark all
+        if (count === 0) {
+            const btn = document.querySelector('#mark-all-btn');
+            if (btn) btn.remove();
         }
 
         const container = document.querySelector('#notification-list');

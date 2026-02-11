@@ -265,29 +265,51 @@
                     </div>    
                 @endif
             </div>
-            @if($activeStep >= 6 && $project->project_type == 1 && $project->offer)
+            @if($activeStep >= 6 && $project->offer && in_array($project->project_type, [1, 3]))
             <div id="kontrak" class="step-section">
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body px-5 py-4">
-                        <h3 class="mb-3 fw-bold">5. Draft Kontrak Pelaksanaan Pekerjaan</h3>
-
+                        <h3 class="mb-3 fw-bold">
+                            5. Draft Kontrak Pelaksanaan Pekerjaan
+                        </h3>
                         <div class="d-flex gap-2">
-                            <a href="{{ route('projects.contract.pdf', $project->id) }}"
-                            class="btn btn-dark"
-                            target="_blank">
-                                <i class="ti ti-download"></i>
-                                {{ $project->offer?->approved_at ? 'Download Kontrak' : 'Download Draft Kontrak' }}
-                            </a>
+
+                            @if($project->project_type == 1)
+                                <a href="{{ route('projects.contract.pdf', $project->id) }}"
+                                class="btn btn-dark"
+                                target="_blank">
+                                    <i class="ti ti-download"></i>
+                                    {{ $project->offer?->approved_at ? 'Download Kontrak Desain' : 'Download Draft Kontrak Desain' }}
+                                </a>
+
+                            @elseif($project->project_type == 3)
+                                <a href="{{ route('projects.contract.buildpdf', $project->id) }}"
+                                class="btn btn-dark"
+                                target="_blank">
+                                    <i class="ti ti-download"></i>
+                                    {{ $project->offer?->approved_at ? 'Download Kontrak Build' : 'Download Draft Kontrak Build' }}
+                                </a>
+                            @endif
 
                             @if(!$project->offer?->approved_at)
-                                <form action="{{ route('projects.contract.approve', $project->id) }}"
-                                    method="POST"
-                                    class="approve-form">
-                                    @csrf
-                                    <button type="submit" class="btn btn-dark">
-                                        <i class="ti ti-check"></i> Approve Kontrak
-                                    </button>
-                                </form>
+                                    @if($project->project_type == 1)
+                                        <form action="{{ route('projects.contract.approve', $project->id) }}"
+                                            method="POST"
+                                            class="approve-form">
+                                            @csrf
+                                            <button type="submit" class="btn btn-dark">
+                                                <i class="ti ti-check"></i> Approve Kontrak
+                                            </button>
+                                        </form>
+                                    @elseif($project->project_type == 3)
+                                        <form action="{{ route('projects.contract.build.approve', $project->id) }}"
+                                            method="POST">
+                                            @csrf
+                                            <button type="submit" class="btn btn-dark">
+                                                <i class="ti ti-check"></i> Approve Kontrak Build
+                                            </button>
+                                        </form>
+                                    @endif
                             @else
                                 <span class="text-muted fst-italic d-flex align-items-center gap-1">
                                     <i class="ti ti-check"></i>
@@ -303,76 +325,61 @@
                 ($project?->project_type == 1 && $activeStep >= 7 && $project->offer->approved_at)
                 ||
                 ($project?->project_type == 2 && $activeStep >= 6)
+                ||
+                ($project?->project_type == 3 && $activeStep >= 7 && $project->offer->approved_at)
             )
             <div id="invoice" class="step-section">
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body px-5 py-4">
-                        <h3 class="mb-3 fw-bold">
-                            {{ $project->project_type == 1
-                                ? '6. Invoice Pembayaran Desain (DP)'
-                                : '5. Invoice Jasa Pembuatan RAB'
-                            }}
-                        </h3>
+                    <h3 class="mb-3 fw-bold">
+                        @if($project->project_type == 1)
+                            6. Invoice Pembayaran Desain (DP)
+                        @elseif($project->project_type == 2)
+                            5. Invoice Jasa Pembuatan RAB
+                        @elseif($project->project_type == 3)
+                            6. Invoice Pembayaran Tahap 1
+                        @endif
+                    </h3>
                         @php
-                            $invoice = $project->project_type == 1
-                                ? $invoiceDp
-                                : $invoiceRab;
+                            $termin = $project->build_progress < 30 ? 1 :
+                                    ($project->build_progress < 60 ? 2 :
+                                    ($project->build_progress < 90 ? 3 : 4));
                         @endphp
-
                         <div class="d-flex gap-2">
-                            <a href="{{ $project->project_type == 1
-                                    ? route('projects.invoice.pdf', $project->id)
-                                    : route('projects.invoice.rab', $project->id)
-                                }}"
+
+                            {{-- DESIGN --}}
+                            @if($project->project_type == 1)
+                                <a href="{{ route('projects.invoice.pdf', $project->id) }}"
                                 class="btn btn-dark"
                                 target="_blank">
-                                <i class="ti ti-download"></i>
-                                Download Invoice
-                            </a>
-                            @if(
-                                ($project->project_type == 1 && $invoice?->invoice_dp_downloaded_at)
-                                ||
-                                ($project->project_type == 2 && $invoice?->downloaded_at)
-                            )
-                                <span class="text-muted fst-italic d-flex align-items-center gap-1">
-                                    <i class="ti ti-check"></i> Sudah didownload
-                                </span>
-                            @endif
-                            @if(
-                                $project->project_type == 1 &&
-                                $invoice?->invoice_dp_downloaded_at &&
-                                !$invoice?->invoice_dp_approved_at
-                            )
-                            <form action="{{ route('projects.invoice.approve', $project->id) }}"
-                                method="POST"
-                                class="approve-form"
-                                data-title="Lanjut ke Tahap Berikutnya?"
-                                data-text="Invoice DP akan disetujui dan proses berlanjut.">
-                                @csrf
-                                <button type="submit" class="btn btn-dark">
-                                    <i class="ti ti-check"></i> Lanjut ke Tahap Berikutnya?
-                                </button>
-                            </form>
+                                    <i class="ti ti-download"></i>
+                                    Download Invoice
+                                </a>
                             @endif
 
-                            @if(
-                                $project->project_type == 2 &&
-                                $invoice?->downloaded_at &&
-                                !$invoice?->approved_at
-                            )
-                            <form action="{{ route('projects.invoice.rab.approve', $project->id) }}"
-                                method="POST"
-                                class="approve-form"
-                                data-title="Approve Invoice RAB?"
-                                data-text="Invoice RAB akan disetujui dan proses pengerjaan dimulai.">
-                                @csrf
-                                <button type="submit" class="btn btn-dark">
-                                    <i class="ti ti-check"></i> Lanjut ke tahap berikutnya
-                                </button>
-                            </form>
+                            {{-- RAB --}}
+                            @if($project->project_type == 2)
+                                <a href="{{ route('projects.invoice.rab', $project->id) }}"
+                                class="btn btn-dark"
+                                target="_blank">
+                                    <i class="ti ti-download"></i>
+                                    Download Invoice
+                                </a>
+                            @endif
+
+                            {{-- BUILD (TERMIN) --}}
+                            @if($project->project_type == 3)
+                                <a href="{{ route('projects.invoice.build', [
+                                    'project' => $project->id,
+                                    'termin'  => $termin
+                                ]) }}"
+                                class="btn btn-dark"
+                                target="_blank">
+                                    <i class="ti ti-download"></i>
+                                    Download Invoice Tahap {{ $termin }}
+                                </a>
                             @endif
                         </div>
-
                     </div>
                 </div>
             </div>
@@ -959,8 +966,6 @@ document.addEventListener('click', function (e) {
     });
 });
 </script>
-
-
 <script>
 document.addEventListener("DOMContentLoaded", () => {
 
@@ -1054,39 +1059,49 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
 
 <script>
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener('DOMContentLoaded', function () {
 
-    document.querySelectorAll('.btn-toggle-offer').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const viewId = btn.dataset.view;
-            const editId = btn.dataset.edit;
+    function showEdit(viewId, editId) {
+        const viewEl = document.getElementById(viewId);
+        const editEl = document.getElementById(editId);
 
-            const view = document.getElementById(viewId);
-            const edit = document.getElementById(editId);
+        if (!viewEl || !editEl) return;
 
-            if (!view || !edit) return;
+        viewEl.style.display = 'none';
+        editEl.style.display = 'block';
+    }
 
-            view.style.display = 'none';
-            edit.style.display = 'block';
+    function showView(viewId, editId) {
+        const viewEl = document.getElementById(viewId);
+        const editEl = document.getElementById(editId);
+
+        if (!viewEl || !editEl) return;
+
+        editEl.style.display = 'none';
+        viewEl.style.display = 'block';
+    }
+
+    // === BUTTON EDIT ===
+    document.querySelectorAll('.btn-toggle-offer').forEach(button => {
+        button.addEventListener('click', function () {
+            showEdit(
+                this.dataset.view || 'offer-view',
+                this.dataset.edit || 'offer-edit'
+            );
         });
     });
-    document.querySelectorAll('.btn-cancel-offer').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const viewId = btn.dataset.view;
-            const editId = btn.dataset.edit;
 
-            const view = document.getElementById(viewId);
-            const edit = document.getElementById(editId);
-
-            if (!view || !edit) return;
-
-            edit.style.display = 'none';
-            view.style.display = 'block';
-        });
+    // === BUTTON CANCEL ===
+    document.addEventListener('click', function (e) {
+        if (e.target.closest('.btn-cancel')) {
+            e.preventDefault();
+            showView('offer-view', 'offer-edit');
+        }
     });
 
 });
 </script>
+
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
@@ -1167,4 +1182,5 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 </script>
+
 @endpush

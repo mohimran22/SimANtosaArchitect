@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class ContractCounter extends Model
 {
-        protected $fillable = [
+    protected $fillable = [
         'year',
         'last_number',
     ];

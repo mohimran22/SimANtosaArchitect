@@ -32,6 +32,7 @@ use App\Http\Controllers\DesignPackageController;
 use App\Http\Controllers\RabPackageController;
 use App\Http\Controllers\RabController;
 use App\Http\Controllers\JobCategoryController;
+use App\Http\Controllers\InvoiceBuildController;
 
 
 Route::get('/', function () {
@@ -325,6 +326,11 @@ Route::get(
 )->name('projects.contract.pdf');
 
 Route::get(
+    'projects/{project}/contract/buildpdf',
+    [\App\Http\Controllers\ContractBuildController::class, 'buildpdf']
+)->name('projects.contract.buildpdf');
+
+Route::get(
     'projects/{project}/invoice/pdf',
     [\App\Http\Controllers\InvoiceController::class, 'invoiceDp']
 )->name('projects.invoice.pdf');
@@ -333,11 +339,14 @@ Route::get(
     'projects/{project}/invoice/invoice-rab',
     [\App\Http\Controllers\InvoiceController::class, 'invoiceRab']
 )->name('projects.invoice.rab');
-
 Route::post(
     '/projects/{project}/contract/approve',
     [\App\Http\Controllers\ContractController::class, 'approve']
 )->name('projects.contract.approve');
+Route::post(
+    '/projects/{project}/contract/approvebuild',
+    [\App\Http\Controllers\ContractBuildController::class, 'approve']
+)->name('projects.contract.build.approve');
 
 Route::post(
     '/projects/{project}/invoice/approve',
@@ -480,6 +489,24 @@ Route::middleware(['auth', 'permission:lihat daftar user'])->group(function () {
     route::resource('/users', UsersController::class);
 });
 });
+
+Route::prefix('projects/{project}')
+    ->middleware(['auth'])
+    ->group(function () {
+
+        // Download invoice build per termin
+        Route::get(
+            '/invoice/build/termin/{termin}',
+            [InvoiceBuildController::class, 'invoiceBuild']
+        )->name('projects.invoice.build');
+
+        // Approve invoice build
+        Route::post(
+            '/invoice/build/{invoice}/approve',
+            [InvoiceBuildController::class, 'approve']
+        )->name('projects.invoice.build.approve');
+    });
+
 
 Route::middleware(['auth', 'permission:lihat daftar role'])->group(function () {
     Route::resource('/roles', RoleController::class);

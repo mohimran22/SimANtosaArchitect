@@ -11,36 +11,43 @@ use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 
-class ContractController extends Controller
+class ContractBuildController extends Controller
 {
-    public function pdf(Project $project)
+        public function buildpdf(Project $project)
     {
-        $offer = $project->offer;
 
+        $offer = $project->offer;
         abort_if(!$offer, 404, 'Penawaran belum tersedia');
         
         Carbon::setLocale('id');
 
         $tanggal = Carbon::parse($offer->offer_date ?? now());
-        $items = $offer->package
+        $jobDuration = (int) ($offer->rab->job_duration ?? 0);
+        $items = $offer->rab
             ->items
-            ->where('is_optional', false)
-            ->groupBy('category');
-
+            ->load('category') // pastikan eager load
+            ->groupBy(function ($item) {
+                $cat = $item->category;
+                return $cat
+                    ? "{$cat->kode_group} {$cat->nama_group}"
+                    : 'Pekerjaan Lain-lain';
+            });
         $data = [
             'project'  => $project,
             'offer'    => $offer,
             'customer' => optional($project->customer->user)->fullname,
-            'designItems' => $items,
+            'offerItems' => $items,
             'hari'              => $tanggal->translatedFormat('l'),
             'tanggal'           => $tanggal->day,
             'tanggal_terbilang' => terbilang($tanggal->day),
+            'job_duration'          => $jobDuration,
+            'job_duration_text'     => terbilang($jobDuration),
             'bulan'             => $tanggal->translatedFormat('F'),
             'tahun'             => $tanggal->year,
             'tahun_terbilang'   => terbilang($tanggal->year),
         ];
 
-        $pdf = Pdf::loadView('contract.pdf', $data)
+        $pdf = Pdf::loadView('contract.buildpdf', $data)
             ->setPaper('A4', 'portrait');
 
         return $pdf->stream('Draft-Kontrak-' . $project->project_name . '.pdf');
@@ -117,33 +124,6 @@ class ContractController extends Controller
             ->with('success', 'Kontrak disetujui. Tahap Invoice DP dimulai.');
     }
 
-// protected function generateContractNumber()
-// {
-//     $tahunFull = date('Y');   // 2026
-//     $tahun = date('y');       // 26
-//     $bulan = date('n');       // 1-12
-//     $romawiBulan = \App\Helpers\GeneralHelper::bulanRomawi($bulan);
-
-//     // Ambil nomor terakhir di tahun ini
-//     $last = \App\Models\Offer::whereYear('contract_date', $tahunFull)
-//         ->whereNotNull('contract_number')
-//         ->lockForUpdate() 
-//         ->orderByDesc('id')
-//         ->first();
-
-//     if ($last) {
-//         // SPK/DSN/26/I/001 → ambil 001
-//         $explode = explode('/', $last->contract_number);
-//         $lastNumber = (int) end($explode) + 1;
-//     } else {
-//         $lastNumber = 1;
-//     }
-
-//     // Format 3 digit: 1 → 001
-//     $nomorUrut = str_pad($lastNumber, 3, '0', STR_PAD_LEFT);
-
-//     return "SPK/DSN/$tahun/$romawiBulan/$nomorUrut";
-// }
 protected function generateContractNumber(): string
 {
     return DB::transaction(function () {
@@ -172,7 +152,10 @@ protected function generateContractNumber(): string
 
         $nomorUrut = str_pad($next, 3, '0', STR_PAD_LEFT);
 
-        return "SPK/DSN/$yearShort/$bulanRomawi/$nomorUrut";
+        return "SPK/BLD/$yearShort/$bulanRomawi/$nomorUrut";
     });
 }
 }
+
+
+

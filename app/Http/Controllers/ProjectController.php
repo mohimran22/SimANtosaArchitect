@@ -6,6 +6,7 @@ use App\Http\Requests\ProjectRequest;
 use App\Models\Employee;
 use App\Models\Customer;
 use App\Models\Invoice;
+use App\Models\InvoiceBuild;
 use App\Models\Province;
 use App\Models\City;
 use App\Models\District;
@@ -186,6 +187,9 @@ if (
         $invoiceRab = Invoice::where('project_id', $project?->id)
             ->where('invoice_type', Invoice::TYPE_RAB)
             ->first();
+        $invoiceBuild = InvoiceBuild::where('project_id', $project?->id)
+            ->where('invoice_type', InvoiceBuild::TYPE_DP)
+            ->first();
 
         if (
             $project &&
@@ -221,7 +225,7 @@ if (
             $this->formData($project),
             compact('project', 'timelineSteps', 'activeStep', 'surveyInvoice',
         'surveyApproved',
-        'isFreeSurvey', 'surveyWaiting', 'surveyRejected', 'invoiceDp', 'invoiceRab', 'canEdit')
+        'isFreeSurvey', 'surveyWaiting', 'surveyRejected', 'invoiceDp', 'invoiceRab', 'invoiceBuild', 'canEdit')
         ));
     }
 

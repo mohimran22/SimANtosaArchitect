@@ -28,4 +28,9 @@ public function rab()
     return $this->belongsTo(RabProcess::class);
 }
 
+public function getNamaPekerjaanAttribute()
+{
+    return $this->job_name;
+}
+
 }

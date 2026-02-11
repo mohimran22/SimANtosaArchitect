@@ -234,7 +234,13 @@ public function update(Request $request, $id)
 
 public function printPdf(Project $project)
 {
-    $rab = $project->rab;
+    $project->load([
+        'offer.rab.items.category'
+    ]);
+    
+    $offer = $project->offer;
+    $rab   = $offer?->rab;
+
     if (!$rab) abort(404);
 
     $grouped = [];
@@ -254,13 +260,17 @@ public function printPdf(Project $project)
         }
 
         $grouped[$kode]['items'][] = $item;
-        $grouped[$kode]['subtotal'] += $item->total;
+        $grouped[$kode]['subtotal'] += $item->total ?? 0;
     }
 
-    $pdf = Pdf::loadView('rab.pdf', compact('rab', 'project', 'grouped'))
+    $safeName = str_replace(['/', '\\'], '-', $offer->offer_number);
+
+    $filename = 'Penawaran-'.$safeName.'.pdf';
+
+    $pdf = Pdf::loadView('offer.buildpdf', compact('offer', 'rab', 'project', 'grouped'))
         ->setPaper('A4', 'portrait');
 
-    return $pdf->stream('RAB-'.$project->name.'.pdf');
+    return $pdf->stream($filename);
 }
 // private function generateOfferNumber()
 // {

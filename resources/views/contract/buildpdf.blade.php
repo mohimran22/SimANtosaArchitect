@@ -159,7 +159,7 @@ body {
 </table>
 
 <p >
-Dalam hal ini bertindak sebagai Pemilik Rumah dan Pemberi Tugas,
+Dalam hal ini bertindak sebagai Pemilik Rumah dan Pemberi Tugas, 
 selanjutnya disebut sebagai <strong>Pihak Pertama</strong>.
 </p>
 
@@ -172,20 +172,21 @@ selanjutnya disebut sebagai <strong>Pihak Pertama</strong>.
 </table>
 
 <p >
-Dalam hal ini bertindak sebagai Pelaksana Pekerjaan Desain Rumah Hunian,
-selanjutnya disebut sebagai <strong>Pihak Kedua</strong>.
+Dalam hal ini bertindak sebagai Pelaksana Pekerjaan Desain Rumah Hunian milik {{ $offer->project->customer->display_name_with_title }} di {{ strtoupper($offer->project->city?->name ?? '-') }}
+ dan selanjutnya disebut sebagai <strong>Pihak Kedua</strong>.
 </p>
 
 <p >
-Kedua belah pihak telah sepakat untuk mengadakan ikatan Kontrak Pelaksanaan Pekerjaan
+Kedua belah pihak telah sepakat untuk mengadakan ikatan Kontrak PELAKSANAAN PEKERJAAN
 <strong>{{ strtoupper($offer->project->project_name ?? '-') }}</strong> yang terletak di
-{{ $offer->project->project_location ?? '.............' }}.
+{{ $offer->project->project_location ?? '.............' }}
+{{ $offer->project->subDistrict->name }}, {{ $offer->project->district->name }}, {{ $offer->project->city->name }}, {{ $offer->project->province->name }}.
 </p>
 
 <p>
 <strong>Pihak Pertama</strong> bersedia membayar seluruh biaya pelaksanaan pekerjaan, 
 sedangkan <strong>Pihak Kedua</strong> bersedia untuk melaksanakan pekerjaan {{ strtoupper($offer->project->project_name ?? '-') }} 
-tersebut sesuai dengan data dan kebutuhan yang telah disepakati kedua belah pihak. 
+tersebut sesuai dengan  gambar dan perencanaan teknik yang telah disepakati kedua belah pihak. 
 Dengan ketentuan yang disebutkan dalam pasal-pasal sebagai berikut :
 </p>
 <!-- PASAL 1 -->
@@ -197,10 +198,9 @@ Dengan ketentuan yang disebutkan dalam pasal-pasal sebagai berikut :
 <p >
 Tujuan kontrak ini adalah sebagai ikatan kesepakatan kedua belah pihak yang tertuang dalam dokumen kontrak,
 sebagai dasar dalam Pelaksanaan Pekerjaan {{ strtoupper($offer->project->project_name) }} 
-<strong>{{ strtoupper($offer->project->customer->display_name_with_title) }}</strong>
-yang berlokasi di
+yang terletak di
 <strong>{{ $offer->project->project_location }}</strong>
-{{ $offer->project->city->name }}, {{ $offer->project->province->name }}.
+{{ $offer->project->subDistrict->name }}, {{ $offer->project->district->name }}, {{ $offer->project->city->name }}, {{ $offer->project->province->name }}.
 </p>
 
 
@@ -217,32 +217,42 @@ adalah sebagai berikut:
 
 <ol>
     <li >
-        Pihak Pertama dalam kedudukannya seperti tersebut di atas memberi tugas
-        kepada Pihak Kedua dan selanjutnya Pihak Kedua menerima tugas tersebut
-        untuk melaksanakan pekerjaan-pekerjaan tersebut di bawah ini:
+        Pekerjaan Perencanaan dan Pelaksanaan {{ strtoupper($offer->project->project_name) }}.
     </li>
 
     <li >
-        Rincian Tugas Perencanaan Desain Arsitektur adalah sebagai berikut:
+        Perencanaan berupa desain, gambar, spesifikasi dan RAB yang dilaksanakan sesuai dengan
+        permintaan Pihak Pertama.
+    </li>
+    <li >
+        Perencanaan berupa desain, gambar, spesifikasi dan RAB yang dilaksanakan sesuai dengan
+        permintaan Pihak Pertama.
+    </li>
+    <li >
+        Pelaksanaan Pembangunan Homestay harus sesuai dengan : desain, gambar, spesifikasi serta
+        jangka waktu pelaksanaan yang telah disepakati oleh kedua belah pihak.
+    </li>
+
+    <li >
+        Adapun Rincian Anggaran Biaya yang dilaksanakan adalah sebagai berikut:
     </li>
 </ol>
 
-{{-- RINCIAN DINAMIS DARI DESIGN PACKAGE --}}
 <ol type="a" style="margin-left: 30px;">
-
-@foreach($designItems as $category => $items)
+@foreach($offerItems as $categoryName => $items)
     <li>
-        <strong>{{ $category }}</strong>
-        <ol style="margin-top:6px; margin-left:20px;" type="1">
+        <strong>{{ $categoryName }}</strong>
+        <ol type="1" style="margin-top:6px; margin-left:20px;">
             @foreach($items as $item)
-                <li>{{ $item->item_name }}</li>
+                <li>
+                    {{ $item->job_name }}
+                    {{-- ({{ number_format($item->volume, 2) }} {{ $item->satuan }}) --}}
+                </li>
             @endforeach
         </ol>
     </li>
 @endforeach
-
 </ol>
-
 
 <!-- PASAL 3 -->
 <p class="section-title text-center">
@@ -254,9 +264,12 @@ adalah sebagai berikut:
 
 <ol>
     <li><strong>Pihak Pertama</strong> menggunakan sistem penunjukan langsung dengan menyediakan anggaran biaya yang diperlukan.</li>
-    <li><strong>Pihak Pertama</strong> menyetujui hasil Surat Penawaran Jasa Desain yang telah dibuat oleh <strong>Pihak Kedua</strong>.</li>
-    <li><strong>Pihak Kedua</strong> dalam melaksanakan Pekerjaan Desain wajib memenuhi ketentuan berupa Analisa lahan, kebutuhan ruang <strong>Pihak Pertama</strong>, 
-    referensi desain yang diinginkan oleh <strong>Pihak Pertama</strong> dan spesifikasi bahan material yang telah disepakati bersama.</li>
+    <li><strong>Pihak Pertama</strong> menyetujui hasil Rincian Anggaran Biaya (RAB) yang telah dibuat oleh <strong>Pihak Kedua</strong>.</li>
+    <li><strong>Pihak Kedua</strong> dalam melaksanakan Pekerjaan {{ strtoupper($offer->project->project_name ?? '-') }} wajib memenuhi
+            ketentuan berupa desain gambar dan spesifikasi yang telah ditentukan, serta menyesuaikan
+            dengan kondisi dan situasi dilokasi.</li>
+    <li>Apabila terjadi kecelakaan kerja atau sakit pada para pekerja didalam lingkup Pekerjaan {{ strtoupper($offer->project->project_name ?? '-') }}, 
+        biaya yang ditimbulkan sepenuhnya menjadi tanggung jawab <strong>Pihak Kedua</strong>.</li>
 </ol>
 </p>
 
@@ -280,7 +293,7 @@ sesuai desain gambar dan spesifikasi yang telah ditetapkan.
 <p><strong>RAB tidak termasuk : </strong></p>
 
 <ol>
-    <li>Pajak – pajak yang di timbulkan atas pelaksanaan desain rumah termasuk, pajak pribadi, pajak membangun sendiri dan lain-lain.</li>
+    <li>Pajak – pajak yang di timbulkan atas pelaksanaan {{ strtoupper($offer->project->project_name) }} termasuk pajak pelaksanaan, pajak pribadi, pajak membangun sendiri dan lain-lain.</li>
     <li>Persetujuan Bangunan Gedung  ( PBG ) mulai dari, lurah / kepala desa, camat dan pihak ciptakarya {{ $offer->project->city->name }}.</li>
 </ol>
 
@@ -291,30 +304,42 @@ sesuai desain gambar dan spesifikasi yang telah ditetapkan.
 </p>
 
 <p>
-Pembayaran atas pekerjaan desain dilakukan dengan sistem bertahap yaitu:
+Pembayaran atas pekerjaan pembangunan dilakukan dengan sistem bertahap yaitu:
 </p>
 
 <p class="indent">
-<strong>Tahap I</strong> : Pembayaran Uang Muka sebesar
-<strong>70%</strong> x <strong>Rp {{ number_format($offer->grand_total, 0, ',', '.') }}</strong>
-= <strong>Rp {{ number_format($offer->grand_total * 0.7, 0, ',', '.') }}</strong>
-( {{ ucwords(terbilang($offer->grand_total * 0.7)) }} Rupiah )
-yang dibayarkan pada saat pekerjaan akan dimulai
-(setelah kontrak ditandatangani).
-</p>
-
-<p class="indent">
-<strong>Tahap II</strong> : Pembayaran Pelunasan sebesar
-<strong>30%</strong> x <strong>Rp {{ number_format($offer->grand_total, 0, ',', '.') }}</strong>
+Tahap I : Pembayaran Uang Muka = 30% x <strong>Rp {{ number_format($offer->grand_total, 0, ',', '.') }}</strong>
 = <strong>Rp {{ number_format($offer->grand_total * 0.3, 0, ',', '.') }}</strong>
 ( {{ ucwords(terbilang($offer->grand_total * 0.3)) }} Rupiah )
-yang dibayarkan setelah pekerjaan desain telah selesai
-<strong>100%</strong>.
+Setelah kontrak di tanda tangani, progress pekerjaan mulai
+berjalan.
 </p>
 
 <p class="indent">
-Pelunasan dibayarkan pada saat file digital dan hardcopy desain
-telah diterima oleh <strong>Pihak Pertama</strong>.
+Tahap II : Pembayaran 30% x <strong>Rp {{ number_format($offer->grand_total, 0, ',', '.') }}</strong>
+= <strong>Rp {{ number_format($offer->grand_total * 0.3, 0, ',', '.') }}</strong>
+( {{ ucwords(terbilang($offer->grand_total * 0.3)) }} Rupiah )
+Ketika progress pekerjaan telah mencapai 60 %
+</p>
+
+<p class="indent">
+Tahap III : Pembayaran 30% x <strong>Rp {{ number_format($offer->grand_total, 0, ',', '.') }}</strong>
+= <strong>Rp {{ number_format($offer->grand_total * 0.3, 0, ',', '.') }}</strong>
+( {{ ucwords(terbilang($offer->grand_total * 0.3)) }} Rupiah )
+Ketika progress pekerjaan telah mencapai 90 %
+</p>
+
+<p class="indent">
+Tahap IV : Pembayaran 10% x <strong>Rp {{ number_format($offer->grand_total, 0, ',', '.') }}</strong>
+= <strong>Rp {{ number_format($offer->grand_total * 0.1, 0, ',', '.') }}</strong>
+( {{ ucwords(terbilang($offer->grand_total * 0.1)) }} Rupiah )
+Ketika progress pekerjaan telah mencapai 100 %
+</p>
+
+<p class="indent">
+Pelunasan dibayarkan pada saat Berita Acara Serah Terima Pekerjaan ditandatangani
+kedua belah pihak dan <strong>Pihak Pertama</strong> menyatakan bisa menerima dengan baik
+Pekerjaan {{ strtoupper($offer->project->project_name) }} tersebut.
 </p>
 
 <p>
@@ -332,7 +357,7 @@ telah diterima oleh <strong>Pihak Pertama</strong>.
     </tr>
     <tr>
         <td>No. Rekening</td>
-        <td>: 024 157 5429</td>
+        <td>: 0241575429</td>
     </tr>
 </table>
 
@@ -344,109 +369,66 @@ telah diterima oleh <strong>Pihak Pertama</strong>.
 </p>
 
 <p>
-Jangka waktu pelaksanaan pekerjaan desain rumah hunian {{ strtoupper($offer->project->customer->display_name_with_title) }} estimasi maksimal adalah 60( enam puluh ) hari kerja, 
-terhitung sejak disepakati awal mulai pekerjaan yaitu pada tanggal {{ \Carbon\Carbon::parse($project->start_date ?? now())->translatedFormat('d F Y') }} dan estimasi selesai pada 
-tanggal {{ \Carbon\Carbon::parse($project->end_date ?? now())->translatedFormat('d F Y') }}.
+Jangka waktu pelaksanaan pekerjaan {{ strtoupper($offer->project->project_name) }}
+estimasi maksimal adalah <strong>{{ $job_duration }}</strong> hari kerja
+( {{ ucwords($job_duration_text) }} hari ),
+terhitung sejak disepakati awal mulai pekerjaan yaitu pada tanggal
+{{ \Carbon\Carbon::parse($project->start_date ?? now())->translatedFormat('d F Y') }}
+dan estimasi selesai pada
+{{ \Carbon\Carbon::parse($project->end_date ?? now())->translatedFormat('d F Y') }}.
 </p>
+
 <p>
-Apabila terjadi keterlambatan pengerjaan dari waktu yang telah ditentukan, maka <strong>Pihak Kedua</strong> wajib membayar denda kepada <strong>Pihak Pertama</strong> sebesar 0,5 per mil dari nilai kontrak untuk setiap hari 
-keterlambatan atau Rp. 12.500 ( dua belas ribu lima ratus rupiah ) perhari. Maksimum 0,1% atau Rp. 250.000 ( dua ratus lima puluh ribu rupiah ).
+Apabila terjadi keterlambatan pengerjaan dari waktu yang telah ditentukan, maka <strong>Pihak Kedua</strong> wajib membayar denda kepada <strong>Pihak Pertama</strong> sebesar 0,05 per mil dari nilai kontrak untuk setiap hari 
+keterlambatan atau Rp. 1.000.000 ( satu juta rupiah ) perhari. Maksimum 0,2% atau Rp. 4.000.000 ( empat juta rupiah ).
 </p>
 <p>
 Sedangkan apabila terjadi keterlambatan pembayaran <strong>Pihak Pertama</strong> terhadap termin atau tahapan pembayaran yang diajukan oleh <strong>Pihak Kedua</strong>, 
-maka <strong>Pihak Pertama</strong> wajib membayar denda pada <strong>Pihak Kedua</strong> sebesar 0.5% dari besarnya jumlah termin yang diajukan untuk setiap hari keterlambatan, 
-terhitung 3 ( tiga ) hari sejak tanggal tanda terima pengajuan berkas termin. Maksimum 1% dari jumlah termin yang diajukan.
+maka <strong>Pihak Pertama</strong> wajib membayar denda pada <strong>Pihak Kedua</strong> sebesar 0.05% dari besarnya jumlah termin yang diajukan untuk setiap hari keterlambatan, 
+terhitung 3 ( Tiga ) hari sejak tanggal tanda terima pengajuan berkas termin. Maksimum 0,2% dari jumlah termin yang diajukan.
 </p>
 
 <!-- PASAL 7 – REVISI -->
 <p class="section-title text-center">
     Pasal 7<br>
-    Revisi
+    Perubahan
 </p>
 
-<ol>
-    <li>
-        <strong>Jumlah Revisi</strong>
-        <ul>
-            <li><strong>Pihak Pertama</strong> mendapatkan 3 (tiga) kali revisi mayor untuk desain
-                (denah, tampak, dan visualisasi 3D).</li>
-            <li>Revisi mayor adalah perubahan yang mempengaruhi layout, luasan ruang, struktur utama, fasad utama.
-            </li>
-            <li>Revisi minor unlimited selama masih dalam tahap draft desain (belum final).</li>
-        </ul>
-    </li>
+<p>
+Apabila pada waktu pengerjaan pelaksanaan konstruksi terdapat perubahan-perubahan terhadap
+luasan, posisi dan bentuk serta penambahan material bangunan diluar dari perjanjian yang telah
+disepakati oleh kedua belah pihak, maka <strong>Pihak Pertama</strong> wajib membayar setiap perubahan
+pembongkaran dan pemasangan kembali yang besarnya disesuaikan dengan kondisi dan situasi yang
+ada, serta harus dilakukan negosiasi terlebih dahulu oleh kedua belah pihak.
+</p>
+<p>
+Sebaliknya apabila terjadi perubahan pengurangan volume bangunan atau pengurangan material
+maka, dapat dilakukan addendum kontrak atau dikompensasi pekerjaan lain yang disepakati oleh
+kedua belah pihak.
+</p>
 
-    <li>
-        Batasan Revisi
-        <ul>
-            <li>Revisi tidak mengubah brief awal secara total, misalnya:
-                <ul>
-                    <li>Mengganti jumlah lantai setelah desain jadi.</li>
-                    <li>Mengubah konsep desain secara drastis (misalnya dari minimalis menjadi klasik).</li>
-                </ul>
-            </li>
-            <li>Jika <strong>Pihak Pertama</strong> meminta perubahan besar yang keluar dari kesepakatan awal,
-                maka:
-                <ul>
-                    <li>Dihitung sebagai desain baru,</li>
-                    <li>Ada biaya tambahan sesuai kesepakatan.</li>
-                </ul>
-            </li>
-        </ul>
-    </li>
-
-    <li>
-        Waktu Revisi
-        <ul>
-            <li>Lama proses revisi : 2 – 5 hari kerja tergantung Tingkat kompleksitas..</li>
-            <li>Perubahan besar yang merubah modeling memerlukan waktu lebih lama.</li>
-        </ul>
-    </li>
-
-    <li>
-        Mekanisme Revisi
-        <ul>
-            <li><strong>Pihak Pertama</strong> menyampaikan revisi secara tertulis (WA).</li>
-            <li><strong>Pihak Kedua</strong> akan mengonfirmasi revisi yang disetujui beserta estimasi waktu pengerjaan.</li>
-            <li>Revisi dikerjakan sesuai antrian pekerjaan dan diserahkan dalam bentuk gambar update softcopy.</li>
-        </ul>
-    </li>
-
-    <li>
-        Revisi setelah Gambar Kerja / Detail Engineering Design
-        <ul>
-            <li>Revisi setelah gambar kerja selesai hanya dapat dilakukan untuk
-                kesalahan teknis yang berasal dari <strong>Pihak Kedua</strong>.</li>
-            <li>Apabila perubahan berasal dari <strong>Pihak Pertama</strong> saat gambar kerja sudah jadi,
-                maka akan dikenakan biaya tambahan revisi gambar kerja sesuai item yang diubah.</li>
-        </ul>
-    </li>
-
-    <li>
-        Revisi saat Proyek Pembangunan Berjalan
-        <ul>
-            <li>Desain yang telah disetujui menjadi acuan pelaksanaan pembangunan.</li>
-            <li>Perubahan di lapangan atas permintaan <strong>Pihak Pertama</strong> dapat mengakibatkan:
-                <ul>
-                    <li>Penambahan biaya pekerjaan gambar revisi,</li>
-                    <li>Penyesuaian jadwal pengerjaan.</li>
-                </ul>
-            </li>
-        </ul>
-    </li>
-
-    <li>
-        Ketentuan Komunikasi
-        <ul>
-            <li>Semua revisi harus didiskusikan di grup proyek ( optional ).</li>
-            <li><strong>Pihak Pertama</strong> wajib memberikan feedback dalam waktu maksimal 3 hari agar proses tidak tertunda.</li>
-        </ul>
-    </li>
-</ol>
-
-<!-- PASAL 8 – LAIN-LAIN -->
 <p class="section-title text-center">
     Pasal 8<br>
+    Masa Pemeliharaan
+</p>
+
+<p >
+    <ol>
+        <li>Masa pemeliharaan berlaku selama 90 ( sembilan puluh ) hari, setelah selesai pekerjaan/serah
+            terima hasil pekerjaan yang diikuti dengan penandatanganan berita acara penyerahan bangunan.</li>
+        <li>Apabila dalam masa pemeliharaan tersebut terdapat kerusakan yang disebabkan bukan dari
+            pekerjaan <strong>Pihak Kedua</strong>, maka <strong>Pihak Pertama</strong> tidak berhak menuntut <strong>Pihak Kedua</strong> untuk
+            mengerjakannya.</li>
+    </ol>
+</p>
+<p class="indent">
+Namun, <strong>Pihak Kedua</strong> dapat memperbaiki kerusakan tersebut sesuai dengan formulir perubahan
+dengan biaya yang ditanggung oleh <strong>Pihak Pertama</strong> sebesar Rp. 50.000/m2 ( tidak termasuk
+biaya material yang diganti/rusak).
+</p>
+<!-- PASAL 8 – LAIN-LAIN -->
+<p class="section-title text-center">
+    Pasal 9<br>
     Lain - Lain
 </p>
 

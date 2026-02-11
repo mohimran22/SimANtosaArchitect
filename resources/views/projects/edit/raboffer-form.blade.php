@@ -217,7 +217,9 @@
 
             <div class="mt-4">
                 <button class="btn btn-dark">Update Penawaran</button>
-                <button type="button" id="btn-cancel-offer" class="btn btn-dark">Batal</button>
+                <button type="button" class="btn btn-secondary btn-cancel">
+                    <i class="ti ti-x"></i> Batal
+                </button>
             </div>
         </form>
     </div>

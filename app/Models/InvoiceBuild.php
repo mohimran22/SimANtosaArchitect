@@ -5,24 +5,11 @@ namespace App\Models;
 use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 
-class Invoice extends Model
+class InvoiceBuild extends Model
 {
     use HasUuid;
 
-    const TYPE_SURVEY = 'survey';
     const TYPE_DP = 'dp';
-    const TYPE_FINAL = 'final';
-    const TYPE_RAB = 'rab';
-    const TYPE_BUILD = 'build';
-
-    const STATUS_DRAFT = 'draft';
-    const STATUS_WAITING = 'waiting_approval';
-    const STATUS_APPROVED = 'approved';
-    const STATUS_REJECTED = 'rejected';
-    const STATUS_PAID = 'paid';
-
-    protected $keyType = 'string';
-    public $incrementing = false;
 
     protected $casts = [
         'invoice_date' => 'date',
@@ -43,20 +30,19 @@ class Invoice extends Model
         'rejected_at',
         'rejected_by',
         'reject_note',
-        'invoice_dp_downloaded_at',
-        'invoice_dp_approved_at',
         'downloaded_at',
         'approve_by_name',
-        'approved_ip'
+        'approved_ip',
+        'termin',
+        'progress_start',
+        'progress_end',
+        'payment_percentage',
+        'paid_at',
+        'note'
     ];
 
-    public function project()
+        public function project()
     {
         return $this->belongsTo(Project::class);
-    }
-
-        public function planning()
-    {
-        return $this->hasOne(Planning::class);
     }
 }

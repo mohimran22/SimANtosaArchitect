@@ -133,7 +133,7 @@ p { margin: 10px 0; }
         <!-- KANAN -->
         <td width="40%" style="vertical-align: top; text-align: right;">
             <strong>
-                {{ $offer->project->city->name ?? 'Jember' }},
+                {{ $offer->project->city?->name ?? 'Jember' }},
                 {{ \Carbon\Carbon::parse($offer->offer_date)->translatedFormat('d F Y') }}
             </strong>
         </td>
@@ -161,57 +161,83 @@ berikut kami sampaikan penawaran harga untuk pelaksanaan pekerjaan:
 <p><strong>Berikut rincian harga yang kami tawarkan:</strong></p>
 
 <!-- ================= TABEL RINCIAN ================= -->
-<table>
-<thead>
+<table width="100%" cellspacing="0" cellpadding="6" border="1">
+<thead style="background:#eee; font-weight:bold; text-align:center;">
 <tr>
-<th>NO</th>
-<th>URAIAN PEKERJAAN</th>
-<th>VOLUME</th>
-<th>SATUAN</th>
-<th>HARGA SATUAN</th>
-<th>TOTAL</th>
+    <th width="4%">NO</th>
+    <th>URAIAN PEKERJAAN</th>
+    <th width="6%">SAT</th>
+    <th width="8%">VOL</th>
+    <th width="15%">HARGA SATUAN</th>
+    <th width="17%">JUMLAH HARGA</th>
 </tr>
 </thead>
 
 <tbody>
-<tr>
-<td class="bold">A</td>
-<td class="bold">{{ $rab->nama }}</td>
-<td>{{ $offer->volume }}</td>
-<td>{{ $offer->satuan }}</td>
-<td class="text-right">{{ number_format($offer->price_meter,0,',','.') }}</td>
-<td class="text-right">{{ number_format($offer->total_price,0,',','.') }}</td>
+@php $noGroup = 'A'; @endphp
+
+@foreach($grouped as $group)
+<tr style="font-weight:bold; background:#f5f5f5;">
+    <td align="center">{{ $noGroup }}</td>
+    <td colspan="5">{{ strtoupper($group['nama']) }}</td>
 </tr>
 
-@php $row = 1; @endphp
-@foreach($offer->groupedItems() as $category => $items)
-
-<tr class="no-break" style="background:#eee;">
-<td class="bold">{{ $row++ }}</td>
-<td class="bold">{{ $category }}</td>
-<td></td><td></td><td></td><td></td>
-</tr>
-
-@foreach($items as $item)
+@php $no = 1; @endphp
+@foreach($group['items'] as $item)
 <tr>
-<td></td>
-<td>- {{ $item->item_name }}</td>
-<td>{{ $item->volume }}</td>
-<td>{{ $item->satuan }}</td>
-<td></td>
-<td></td>
+    <td align="center">{{ $no++ }}</td>
+    <td>{{ $item->job_name }}</td>
+    <td align="center">{{ $item->satuan }}</td>
+    <td align="right">{{ number_format($item->volume,2,',','.') }}</td>
+    <td align="right">Rp {{ number_format($item->price,0,',','.') }}</td>
+    <td align="right">Rp {{ number_format($item->total,0,',','.') }}</td>
 </tr>
 @endforeach
 
+<tr style="font-weight:bold;">
+    <td colspan="5" align="right">Jumlah {{ $group['nama'] }}</td>
+    <td align="right">
+        Rp {{ number_format($group['subtotal'],0,',','.') }}
+    </td>
+</tr>
+
+
+@php $noGroup++; @endphp
 @endforeach
 </tbody>
-
 <tfoot>
 <tr>
-<th colspan="5" class="text-right">GRAND TOTAL</th>
-<th class="text-right bold">{{ number_format($offer->grand_total,0,',','.') }}</th>
+    <th colspan="5" align="right">SUBTOTAL</th>
+    <th align="right">{{ number_format($rab->subtotal,0,',','.') }}</th>
+</tr>
+<tr>
+    <th colspan="5" align="right">DISCOUNT</th>
+    <th align="right">{{ number_format($rab->discount,0,',','.') }}</th>
+</tr>
+<tr>
+    <th colspan="5" align="right">SUBTOTAL AFTER DISCOUNT</th>
+    <th align="right">{{ number_format($rab->subtotal_after_discount,0,',','.') }}</th>
+</tr>
+<tr>
+    <th colspan="5" align="right">TAX ({{ $rab->tax_rate }}%)</th>
+    <th align="right">{{ number_format($rab->tax_total,0,',','.') }}</th>
+</tr>
+<tr>
+    <th colspan="5" align="right">SHIPPING</th>
+    <th align="right">{{ number_format($rab->shipping,0,',','.') }}</th>
+</tr>
+<tr style="font-weight:bold;">
+    <th colspan="5" align="right">GRAND TOTAL</th>
+    <th align="right">{{ number_format($rab->grand_total,0,',','.') }}</th>
+</tr>
+<tr style="font-weight:bold;">
+    <th colspan="5" align="right">DIBULATKAN</th>
+    <th align="right">
+        {{ number_format(round($rab->grand_total,-5),0,',','.') }}
+    </th>
 </tr>
 </tfoot>
+
 </table>
 
 <p><strong>TERBILANG :</strong> {{ strtoupper(terbilang($offer->grand_total)) }} RUPIAH</p>

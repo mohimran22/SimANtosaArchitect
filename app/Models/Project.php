@@ -104,6 +104,11 @@ class Project extends Model
         return $this->hasMany(Invoice::class);
     }
 
+        public function invoicebuilds()
+    {
+        return $this->hasMany(InvoiceBuild::class);
+    }
+
     public function tasks()
 {
     return $this->hasMany(ProjectTask::class);
@@ -188,10 +193,12 @@ public function generateLevels()
                 ['level_order' => 2, 'level_name' => 'Rencana Survei'],
                 ['level_order' => 3, 'level_name' => 'Survei'],
                 ['level_order' => 4, 'level_name' => 'Penawaran Jasa Build'],
-                ['level_order' => 5, 'level_name' => 'Kontrak Kerja & Pembayaran Tahap 1'],
-                ['level_order' => 6, 'level_name' => 'Pelaksanaan & Pembayaran Tahap 2'],
-                ['level_order' => 7, 'level_name' => 'Pelaksanaan & Pembayaran Tahap 3'],
-                ['level_order' => 8, 'level_name' => 'Pelaksanaan & Pembayaran Tahap 4'],
+                ['level_order' => 5, 'level_name' => 'Kontrak Kerja'],
+                ['level_order' => 6, 'level_name' => 'Invoice Tahap 1'],
+                ['level_order' => 7, 'level_name' => 'Pelaksanaan'],
+                ['level_order' => 8, 'level_name' => 'Pelaksanaan & Pembayaran Tahap 2'],
+                ['level_order' => 9, 'level_name' => 'Pelaksanaan & Pembayaran Tahap 3'],
+                ['level_order' => 10, 'level_name' => 'Pelaksanaan & Pembayaran Tahap 4'],
             ],
         default => throw new \Exception('Jenis proyek tidak valid'),
     };
