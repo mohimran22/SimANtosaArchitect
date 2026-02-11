@@ -163,4 +163,12 @@ return [
     ],
 ],
 
+'invoice_build_created' => [
+    'title' => 'Invoice Pembangunan Tahap :termin Dibuat',
+    'message' => [
+        'Super-Admin' => 'Invoice pembangunan tahap :termin (:progress_start%–:progress_end%) senilai :amount telah dibuat.',
+        'customer'    => 'Invoice pembayaran pembangunan tahap :termin senilai :amount telah tersedia. Silakan lakukan pembayaran.',
+    ],
+],
+
 ];

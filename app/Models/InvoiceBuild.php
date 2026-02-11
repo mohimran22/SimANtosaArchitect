@@ -9,7 +9,7 @@ class InvoiceBuild extends Model
 {
     use HasUuid;
 
-    const TYPE_DP = 'dp';
+    const TYPE_BUILD = 'build';
 
     protected $casts = [
         'invoice_date' => 'date',

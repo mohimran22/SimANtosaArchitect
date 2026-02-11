@@ -7,37 +7,25 @@ use Illuminate\Support\Facades\DB;
 
 class InvoiceBuildNumberGenerator
 {
-    public static function generate(string $type): string
+    public static function generate(int $termin): string
     {
-        return DB::transaction(function () use ($type) {
+        return DB::transaction(function () use ($termin) {
 
             $now = now();
             $tahunFull = $now->format('Y');
             $tahun = $now->format('y');
             $bulanRomawi = \App\Helpers\GeneralHelper::bulanRomawi($now->month);
 
-            switch ($type) {
-                case InvoiceBuild::TYPE_DP:
-                    $prefix = "INV/BLD/A/$tahun/$bulanRomawi";
-                    break;
+            $terminCode = match ($termin) {
+                1 => 'A',
+                2 => 'B',
+                3 => 'C',
+                4 => 'D',
+                default => throw new \Exception('Termin tidak valid'),
+            };
 
-                case InvoiceBuild::TYPE_DP:
-                    $prefix = "INV/BLD/B/$tahun/$bulanRomawi";
-                    break;
+            $prefix = "INV/BLD/{$terminCode}/{$tahun}/{$bulanRomawi}";
 
-                case InvoiceBuild::TYPE_FINAL:
-                    $prefix = "INV/BLD/C/$tahun/$bulanRomawi";
-                    break;
-
-                case InvoiceBuild::TYPE_DP:
-                    $prefix = "INV/BLD/D/$tahun/$bulanRomawi";
-                    break;
-
-                default:
-                    throw new \Exception("Tipe invoice tidak dikenal");
-            }
-
-            // 🔒 LOCK COUNTER PER PREFIX + TAHUN
             $counter = DB::table('invoice_counters')
                 ->where('prefix', $prefix)
                 ->where('year', $tahunFull)
@@ -65,9 +53,8 @@ class InvoiceBuildNumberGenerator
                     ]);
             }
 
-            $nomorUrut = str_pad($next, 3, '0', STR_PAD_LEFT);
-
-            return $prefix . '/' . $nomorUrut;
+            return $prefix . '/' . str_pad($next, 3, '0', STR_PAD_LEFT);
         }, 5);
     }
 }
+

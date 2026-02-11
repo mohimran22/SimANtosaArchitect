@@ -27,13 +27,22 @@ public static function notifyUsers(iterable $users, array $payload, ?string $exc
     }
 }
 
-    public static function makePayload($project, array $data): array
-    {
-        return array_merge([
-            'project_id'   => $project->id,
-            'project_name' => $project->project_name,
-            'project_type' => $project->project_type,
-            'created_at'   => now(),
-        ], $data);
+public static function makePayload($project, array $data): array
+{
+    return array_merge([
+        'project_id'   => $project->id,
+        'project_name' => $project->project_name,
+        'project_type' => $project->project_type,
+        'created_at'   => now(),
+    ], $data);
+}
+public static function parseMessage(string $template, array $data): string
+{
+    foreach ($data as $key => $value) {
+        $template = str_replace(':' . $key, $value, $template);
     }
+
+    return $template;
+}
+
 }

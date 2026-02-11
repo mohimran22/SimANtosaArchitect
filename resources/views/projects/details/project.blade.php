@@ -32,9 +32,14 @@
                 <input type="text" class="form-control" value="{{ $type[$project->project_type] }}" readonly>
             </div>
 
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <label class="fw-semibold">Tanggal Mulai Proyek</label>
                 <input type="text" class="form-control" value="{{ $project->start_date }}" readonly>
+            </div>
+
+            <div class="col-md-3">
+                <label class="fw-semibold">Tanggal Akhir Proyek(Estimasi)</label>
+                <input type="text" class="form-control" value="{{ $project->end_date }}" readonly>
             </div>
 
             {{-- <div class="col-md-2">

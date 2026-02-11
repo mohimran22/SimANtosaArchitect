@@ -100,7 +100,7 @@
                     </tr>
                 </thead>
 
-                <tbody id="offerItemsBody">
+                <tbody id="designItemsBody">
                 </tbody>
 
                 <tfoot>
@@ -184,18 +184,15 @@ document.addEventListener('DOMContentLoaded', function () {
     const totalPriceInput = document.getElementById('totalPrice');
     const totalPriceFormatted = document.getElementById('totalPriceFormatted');
 
-    const tableBody = document.getElementById('offerItemsBody');
+    const tableBody = document.getElementById('designItemsBody');
 
     const discountInput = document.getElementById('discount');
     const taxRateInput = document.getElementById('tax_rate');
     const shippingInput = document.getElementById('shipping');
 
+    $('#designPackageSelect').on('select2:select', function (e) {
 
-
-
-    packageSelect.addEventListener('change', function () {
-
-        let packageId = this.value;
+        let packageId = e.target.value;
 
         if (!packageId) {
             priceMeterInput.value = "";

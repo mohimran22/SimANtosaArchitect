@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>Invoice DP</title>
+<title>Invoice Pembangunan Tahap {{ $invoice->termin }}</title>
 
 <style>
 @page {
@@ -148,10 +148,15 @@ p {
 
 <tbody>
 <tr>
-    <td>
-        Pembayaran I Proyek {{ $project->project_name }}
-    </td>
-    <td class="text-center">30%</td>
+   
+        <td>
+            Pembayaran Tahap {{ $invoice->termin }}
+            Proyek {{ $project->project_name }}
+            (Progress {{ $invoice->progress_start }}% – {{ $invoice->progress_end }}%)
+        </td>
+
+    
+    <td class="text-center">{{ $invoice->payment_percentage }}%</td>
     <td class="text-right">{{ number_format($offer->grand_total,0,',','.') }}</td>
     <td class="text-right">{{ number_format($invoice->amount,0,',','.') }}</td>
 </tr>
@@ -168,7 +173,8 @@ p {
     @endif
 
     <tr>
-        <th colspan="3" class="text-right bold">TOTAL DP (30%)</th>
+        <th colspan="3" class="text-right bold">TOTAL PEMBAYARAN TAHAP {{ $invoice->termin }}
+        ({{ $invoice->payment_percentage }}%)</th>
         <th class="text-right bold">
             {{ number_format($invoice->amount,0,',','.') }}
         </th>
@@ -183,17 +189,29 @@ p {
 </p>
 
 @php
-    $remaining = $offer->grand_total - $invoice->amount;
+    $paidUntilNow = $project->invoicebuilds()
+        ->where('termin', '<=', $invoice->termin)
+        ->sum('amount');
+    $remaining = $offer->grand_total - $paidUntilNow;
 @endphp
+
 
 <p class="bold">Keterangan :</p>
 <ul>
+@if($remaining > 0)
     <li>
-        Sisa pembayaran sebesar 30%
-        senilai Rp {{ number_format($remaining, 0, ',', '.') }} ({{ terbilang($remaining) }} rupiah) 
+        Sisa pembayaran sebesar
+        Rp {{ number_format($remaining, 0, ',', '.') }}
+        ({{ terbilang($remaining) }} rupiah)
         akan ditagihkan pada pembayaran berikutnya.
     </li>
+@else
+    <li>
+        Pembayaran ini merupakan pelunasan akhir proyek.
+    </li>
+@endif
 </ul>
+
 <div style="
     page-break-inside: avoid;
     page-break-before: avoid;

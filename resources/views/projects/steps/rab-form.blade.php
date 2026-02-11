@@ -100,7 +100,7 @@
                     </tr>
                 </thead>
 
-                <tbody id="offerItemsBody">
+                <tbody id="rabItemsBody">
                 </tbody>
 
                 <tfoot>
@@ -168,6 +168,7 @@
 document.addEventListener('DOMContentLoaded', function () {
 
     const packageSelect = document.getElementById('rabPackageSelect');
+    if (!packageSelect) return;
     const priceMeterInput = document.getElementById('priceMeter');
     const priceMeterFormatted = document.getElementById('priceMeterFormatted');
     const volumeInput = document.querySelector('input[name="volume"]');
@@ -175,8 +176,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const totalPriceInput = document.getElementById('totalPrice');
     const totalPriceFormatted = document.getElementById('totalPriceFormatted');
 
-    const tableBody = document.getElementById('offerItemsBody');
-
+    const tableBody = document.getElementById('rabItemsBody');
+    if (!tableBody) return;
     const discountInput = document.getElementById('discount');
     const taxRateInput = document.getElementById('tax_rate');
     const shippingInput = document.getElementById('shipping');
@@ -186,9 +187,9 @@ document.addEventListener('DOMContentLoaded', function () {
         return "Rp " + num.toLocaleString('id-ID');
     }
 
-    packageSelect.addEventListener('change', function () {
+    $('#rabPackageSelect').on('select2:select', function (e) {
 
-        let packageId = this.value;
+        let packageId = e.target.value;
 
         if (!packageId) {
             priceMeterInput.value = "";

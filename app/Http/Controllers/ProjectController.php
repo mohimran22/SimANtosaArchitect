@@ -181,6 +181,7 @@ if (
 
         $surveyWaiting  = $surveyInvoice && $surveyInvoice->status === 'waiting_approval';
         $surveyRejected = $surveyInvoice && $surveyInvoice->status === 'rejected';
+
         $invoiceDp = Invoice::where('project_id', $project?->id)
             ->where('invoice_type', Invoice::TYPE_DP)
             ->first();
@@ -188,7 +189,7 @@ if (
             ->where('invoice_type', Invoice::TYPE_RAB)
             ->first();
         $invoiceBuild = InvoiceBuild::where('project_id', $project?->id)
-            ->where('invoice_type', InvoiceBuild::TYPE_DP)
+            ->where('invoice_type', InvoiceBuild::TYPE_BUILD)
             ->first();
 
         if (

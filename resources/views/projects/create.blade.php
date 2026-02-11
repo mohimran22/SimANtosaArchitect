@@ -198,7 +198,7 @@
                 @endif
             </div>
             <div id="offer" class="step-section">
-                @if($activeStep == 5)
+                @if($activeStep >= 5)
                     <div class="card shadow-sm border-0 mb-4">
                         <div class="card-body px-5 py-4">
                             @if($project->project_type == 1)
@@ -344,10 +344,14 @@
                             $termin = $project->build_progress < 30 ? 1 :
                                     ($project->build_progress < 60 ? 2 :
                                     ($project->build_progress < 90 ? 3 : 4));
+                            $invoice = $project->invoicebuilds()
+                            ->where('termin', $termin)
+                            ->whereNotNull('downloaded_at')
+                            ->whereNull('approved_at')
+                            ->first();
                         @endphp
                         <div class="d-flex gap-2">
 
-                            {{-- DESIGN --}}
                             @if($project->project_type == 1)
                                 <a href="{{ route('projects.invoice.pdf', $project->id) }}"
                                 class="btn btn-dark"
@@ -357,7 +361,6 @@
                                 </a>
                             @endif
 
-                            {{-- RAB --}}
                             @if($project->project_type == 2)
                                 <a href="{{ route('projects.invoice.rab', $project->id) }}"
                                 class="btn btn-dark"
@@ -367,7 +370,6 @@
                                 </a>
                             @endif
 
-                            {{-- BUILD (TERMIN) --}}
                             @if($project->project_type == 3)
                                 <a href="{{ route('projects.invoice.build', [
                                     'project' => $project->id,
@@ -378,6 +380,37 @@
                                     <i class="ti ti-download"></i>
                                     Download Invoice Tahap {{ $termin }}
                                 </a>
+                            @endif
+                            @if(
+                                $invoiceDp?->invoice_dp_downloaded_at &&
+                                !$invoiceDp?->invoice_dp_approved_at
+                            )
+                                <form action="{{ route('projects.invoice.approve', $project->id) }}"
+                                    method="POST"
+                                    onsubmit="return confirm('Lanjut ke tahap pengerjaan?')">
+                                    @csrf
+                                    <button class="btn btn-dark">
+                                        <i class="ti ti-arrow-right"></i> Lanjut ke tahap berikutnya
+                                    </button>
+                                </form>
+                            @endif
+                            @if($invoiceRab && $invoiceRab->downloaded_at && !$invoiceRab->approved_at)
+                                <form action="{{ route('projects.invoice.rab.approve', $project->id) }}" method="POST">
+                                    @csrf
+                                    <button class="btn btn-dark">
+                                        <i class="ti ti-arrow-right"></i>
+                                        Lanjut ke Tahap Berikutnya
+                                    </button>
+                                </form>
+                            @endif
+                            @if($invoice && $termin < 4)
+                            <form action="{{ route('projects.invoice.build.approve', [$project->id, $invoice->id]) }}" method="POST">
+                                @csrf
+                                <button class="btn btn-dark">
+                                    <i class="ti ti-arrow-right"></i>
+                                    Lanjut ke Tahap Berikutnya
+                                </button>
+                            </form>
                             @endif
                         </div>
                     </div>

@@ -91,7 +91,7 @@
                     </tr>
                 </thead>
 
-                <tbody id="offerItemsBody">
+                <tbody id="buildItemsBody">
                 </tbody>
 
                 <tfoot>
@@ -174,7 +174,7 @@ function loadRabItems() {
 
     $.get(`/rab-process/${rabId}/items`, function(res) {
 
-        const tbody = $('#offerItemsBody');
+        const tbody = $('#buildItemsBody');
         tbody.empty();
 
         let no = 1;

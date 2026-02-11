@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Project;
 use App\Models\InvoiceBuild;
+use App\Models\ProjectLevel;
+use App\Services\ProjectNotifier;
 use App\Services\InvoiceBuildNumberGenerator;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
@@ -43,8 +45,8 @@ class InvoiceBuildController extends Controller
             if (!$invoice) {
                 $invoice = InvoiceBuild::create([
                     'project_id'          => $project->id,
-                    'invoice_type'        => InvoiceBuild::TYPE_DP,
-                    'invoice_number'      => InvoiceBuildNumberGenerator::generate(InvoiceBuild::TYPE_DP),
+                    'invoice_type'        => InvoiceBuild::TYPE_BUILD,
+                    'invoice_number'      => InvoiceBuildNumberGenerator::generate($termin),
                     'invoice_date'        => now(),
                     'termin'              => $termin,
                     'progress_start'      => $conf['start'],
@@ -53,6 +55,7 @@ class InvoiceBuildController extends Controller
                     'amount'              => $project->offer->grand_total * ($conf['percent'] / 100),
                     'status'              => 'waiting',
                 ]);
+
             }
 
             if (!$invoice->downloaded_at) {
@@ -97,14 +100,65 @@ class InvoiceBuildController extends Controller
                 'approved_ip' => request()->ip(),
             ]);
 
-            /**
-             * 🔥 Logic step / level project
-             * Contoh:
-             * termin 1 → level 7 selesai
-             * termin 2 → level 8 selesai
-             * dst (sesuaikan struktur level kamu)
-             */
+            ProjectLevel::where([
+                'project_id'  => $project->id,
+                'level_order' => 6,
+            ])->update([
+                'is_completed' => true,
+            ]);
+
+            ProjectLevel::where([
+                'project_id'  => $project->id,
+                'level_order' => 7,
+            ])->update([
+                'is_started' => true,
+            ]);
         });
+
+        $event = 'invoice_build_created';
+        $cfg   = config("project_events.$event");
+
+        $payloadExtra = [
+            'termin'          => $invoice->termin,
+            'amount'          => number_format($invoice->amount, 0, ',', '.'),
+            'progress_start'  => $invoice->progress_start,
+            'progress_end'    => $invoice->progress_end,
+        ];
+
+        if (!$cfg) {
+            throw new \Exception("Config project_events.$event not found");
+        }
+
+        ProjectNotifier::notifyUsers(
+            [$project->createdBy ?? auth()->user()],
+            ProjectNotifier::makePayload($project, [
+                'type'    => $event,
+                'role'    => 'Super-Admin',
+                'title'   => ProjectNotifier::parseMessage($cfg['title'], $payloadExtra),
+                'message' => ProjectNotifier::parseMessage(
+                    $cfg['message']['Super-Admin'],
+                    $payloadExtra
+                ),
+                'url'     => route('projects.create', ['project_id' => $project->id]),
+            ])
+        );
+
+        if ($project->customer?->user) {
+            ProjectNotifier::notifyUsers(
+                [$project->customer->user],
+                ProjectNotifier::makePayload($project, [
+                    'type'    => $event,
+                    'role'    => 'Customer',
+                    'title'   => ProjectNotifier::parseMessage($cfg['title'], $payloadExtra),
+                    'message' => ProjectNotifier::parseMessage(
+                        $cfg['message']['customer'],
+                        $payloadExtra
+                    ),
+                    'url'     => route('projects.create', ['project_id' => $project->id]),
+                ])
+            );
+        }
+
 
         return redirect()
             ->route('projects.create', ['project_id' => $project->id])
