@@ -507,6 +507,20 @@ Route::prefix('projects/{project}')
         )->name('projects.invoice.build.approve');
     });
 
+Route::prefix('build')->group(function(){
+
+Route::get('{project}/daily/create', [BuildDailyController::class,'create'])
+    ->name('build.daily.create');
+
+Route::post('{project}/daily', [BuildDailyController::class,'store']);
+
+Route::get('{project}/weekly/create', [BuildWeeklyController::class,'create'])
+    ->name('build.weekly.create');
+
+Route::post('{project}/weekly', [BuildWeeklyController::class,'store']);
+
+});
+
 
 Route::middleware(['auth', 'permission:lihat daftar role'])->group(function () {
     Route::resource('/roles', RoleController::class);

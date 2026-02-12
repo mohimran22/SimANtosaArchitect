@@ -124,6 +124,26 @@ class Project extends Model
     return $this->hasOne(FinalProject::class);
 }
 
+public function buildItems()
+{
+    return $this->hasMany(BuildProcessItem::class);
+}
+
+public function dailyReports()
+{
+    return $this->hasMany(BuildDailyReport::class);
+}
+
+public function weeklyReports()
+{
+    return $this->hasMany(BuildWeeklyReport::class);
+}
+
+public function progressSnapshots()
+{
+    return $this->hasMany(BuildProgressSnapshot::class);
+}
+
     public function getCurrentLevelAttribute()
     {
         return $this->levels()
@@ -205,5 +225,35 @@ public function generateLevels()
 
     $this->levels()->createMany($levels);
 }
+public function getKurvaSData()
+{
+    $weeks = (int) ceil($this->job_duration / 7);
 
+    $items = $this->buildItems()
+        ->with('weeklyProgresses.report')
+        ->get();
+
+    $data = [];
+
+    for ($w=1;$w<=$weeks;$w++) {
+
+        $total = 0;
+
+        foreach ($items as $item) {
+
+            $sum = $item->weeklyProgress
+                ->filter(fn($p) => $p->report->week_no <= $w)
+                ->sum('progress_percent');
+
+            $total += $sum * ($item->bobot_percent / 100);
+        }
+
+        $data[] = [
+            'week'=>$w,
+            'progress'=>round($total,2)
+        ];
+    }
+
+    return $data;
+}
 }

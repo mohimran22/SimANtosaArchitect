@@ -451,9 +451,8 @@ function updateVolume(jobId, newVolume) {
     let item = rabItems[jobId];
     item.volume = newVolume;
 
-    applyProfitOverheadToAll(); // 🔥 WAJIB
+    applyProfitOverheadToAll();
 }
-
 
 function removeItem(itemId) {
 

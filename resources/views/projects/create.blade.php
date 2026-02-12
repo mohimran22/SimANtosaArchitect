@@ -198,7 +198,7 @@
                 @endif
             </div>
             <div id="offer" class="step-section">
-                @if($activeStep >= 5)
+                @if($activeStep == 5)
                     <div class="card shadow-sm border-0 mb-4">
                         <div class="card-body px-5 py-4">
                             @if($project->project_type == 1)
@@ -422,6 +422,8 @@
                 ($project?->project_type == 1 && $activeStep >= 8 && $project->offer->approved_at)
                 ||
                 ($project?->project_type == 2 && $activeStep == 7)
+                ||
+                ($project?->project_type == 3 && $activeStep >= 8 && $project->offer->approved_at)
             )
             <div id="work" class="step-section">
                 <div class="card shadow-sm border-0 mb-4">
@@ -432,6 +434,9 @@
                         @elseif($project->project_type == 2)
                             <h3 class="mb-3 fw-bold">6. Form Pembuatan RAB</h3>
                             @include('projects.steps.rab-process')
+                        @elseif($project->project_type == 3)
+                            <h3 class="mb-3 fw-bold">6. Form Pembuatan RAB</h3>
+                            @include('projects.steps.build-process')
                         @endif
                     </div>
                 </div>

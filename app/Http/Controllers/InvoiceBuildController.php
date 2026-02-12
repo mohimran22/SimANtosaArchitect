@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Project;
 use App\Models\InvoiceBuild;
 use App\Models\ProjectLevel;
+use App\Models\BuildProcessItem;
+use App\Models\BuildProcessProgress;
 use App\Services\ProjectNotifier;
 use App\Services\InvoiceBuildNumberGenerator;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -13,9 +15,7 @@ use DB;
 
 class InvoiceBuildController extends Controller
 {
-    /**
-     * Generate & Download Invoice Build per Termin
-     */
+
     public function invoiceBuild(Project $project, int $termin)
     {
         abort_if($project->project_type != 3, 403);
@@ -78,12 +78,10 @@ class InvoiceBuildController extends Controller
         );
     }
 
-    /**
-     * Approve Invoice Build
-     */
     public function approve(Project $project, InvoiceBuild $invoice)
     {
         abort_if($project->project_type != 3, 403);
+        abort_if($invoice->project_id !== $project->id, 404);
 
         abort_if(
             $project->customer->user_id !== auth()->id()
@@ -91,27 +89,53 @@ class InvoiceBuildController extends Controller
             403
         );
 
+        if (!$invoice->downloaded_at) {
+            return back()->with('error','Invoice belum didownload.');
+        }
+
+        if ($invoice->approved_at) {
+            return back()->with('info','Invoice sudah disetujui.');
+        }
+
         DB::transaction(function () use ($invoice, $project) {
 
             $invoice->update([
-                'status'      => 'approved',
+                'status' => 'approved',
                 'approved_at' => now(),
                 'approve_by_name' => auth()->user()->fullname ?? 'Customer',
                 'approved_ip' => request()->ip(),
             ]);
 
-            ProjectLevel::where([
-                'project_id'  => $project->id,
-                'level_order' => 6,
-            ])->update([
-                'is_completed' => true,
-            ]);
+            if ($project->buildItems()->count() == 0) {
+
+                $project->load('offer.rab.items');
+
+                foreach ($project->offer->rab->items as $item) {
+                    BuildProcessItem::create([
+                        'project_id' => $project->id,
+                        'rab_item_id' => $item->id,
+                        'category' => $item->category,
+                        'base_price' => $item->base_price,
+                        'uraian' => $item->job_name,
+                        'volume' => $item->volume,
+                        'satuan' => $item->satuan ?? null,
+                        'bobot_percent' => 0,
+                    ]);
+                }
+            }
 
             ProjectLevel::where([
-                'project_id'  => $project->id,
+                'project_id' => $project->id,
+                'level_order' => 6,
+            ])->update(['is_completed' => true]);
+
+            ProjectLevel::where([
+                'project_id' => $project->id,
                 'level_order' => 7,
-            ])->update([
-                'is_started' => true,
+            ])->update(['is_started' => true]);
+
+            $project->update([
+                'active_step' => 7
             ]);
         });
 
