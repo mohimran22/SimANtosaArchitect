@@ -31,7 +31,7 @@
             <div class="col-md-2">
                 <label class="form-label required">Jenis Proyek</label>
                 <select name="project_type" 
-                        class="form-select @error('project_type') is-invalid @enderror" 
+                        class="form-select select2 @error('project_type') is-invalid @enderror" 
                         required>
                     <option value="">-- Pilih --</option>
                     <option value="1" {{ old('project_type') == '1' ? 'selected' : '' }}>Desain</option>

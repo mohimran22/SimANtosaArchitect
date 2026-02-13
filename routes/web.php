@@ -34,6 +34,7 @@ use App\Http\Controllers\RabController;
 use App\Http\Controllers\JobCategoryController;
 use App\Http\Controllers\InvoiceBuildController;
 use App\Http\Controllers\BuildProcessItemController;
+use App\Http\Controllers\BuildWeeklyController;
 
 
 Route::get('/', function () {
@@ -524,6 +525,10 @@ Route::middleware(['auth'])
     ->post('/build-items/update-bobot',
         [BuildProcessItemController::class, 'updateBobot']
     )->name('build-items.update-bobot');
+
+Route::post('/build-weekly/update',
+    [BuildWeeklyController::class,'update']
+)->name('build-weekly.update');
 
 Route::middleware(['auth', 'permission:lihat daftar role'])->group(function () {
     Route::resource('/roles', RoleController::class);

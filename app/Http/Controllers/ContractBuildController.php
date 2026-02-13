@@ -61,9 +61,21 @@ class ContractBuildController extends Controller
             403
         );
 
-        DB::transaction(function () use ($project) {
-            $offer = $project->offer;
+        $offer = $project->offer;
+            if (!$offer) {
+                return back()->with('error','Offer belum dibuat.');
+            }
 
+            // if (!$offer->downloaded_at) {
+            //     return back()->with('error','Kontrak belum didownload.');
+            // }
+
+            if ($offer->approved_at) {
+                return back()->with('info','Kontrak sudah disetujui.');
+            }
+
+        DB::transaction(function () use ($project, $offer) {
+            
             if (!$offer->contract_number) {
                 $offer->update([
                     'contract_number' => $this->generateContractNumber(),

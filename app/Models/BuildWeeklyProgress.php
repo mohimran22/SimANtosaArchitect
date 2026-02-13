@@ -7,7 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 class BuildWeeklyProgress extends Model
 {
     protected $fillable = [
-        'weekly_report_id',
+        'week_no',
+        'volume',
+        'bobot_percent',
         'build_process_item_id',
         'progress_percent',
     ];

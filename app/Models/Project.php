@@ -231,7 +231,7 @@ public function getKurvaSData()
     $weeks = count($this->week_labels);
 
     $items = $this->buildItems()
-        ->with('weeklyProgresses.report')
+        ->with('weeklyProgresses')
         ->get();
 
     $data = [];
@@ -243,7 +243,7 @@ public function getKurvaSData()
         foreach ($items as $item) {
 
             $sum = $item->weeklyProgresses
-                ->filter(fn($p) => $p->report->week_no <= $w)
+                ->filter(fn($p) => $p->week_no <= $w)
                 ->sum('progress_percent');
 
             $total += $sum * ($item->bobot_percent / 100);

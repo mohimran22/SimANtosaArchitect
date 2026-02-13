@@ -29,17 +29,24 @@ public function index(Request $request)
             })
 
             ->addColumn('action', function ($row) {
+                $buttons = '';
+                    if (auth()->user()->can('ubah data menu')) {
+                        $buttons .= '<a href="' . route('equipment_costs.edit', $row->id) . '" class="btn btn-icon btn-sm btn-dark me-1" title="Ubah">
+                                        <i class="ti ti-edit"></i>
+                                    </a>';
+                    }
+                    // if (auth()->user()->can('lihat data menu')) {
+                    //     $buttons .= '<a href="' . route('menus.show', $menu->id) . '" class="btn btn-icon btn-sm btn-dark me-1" title="Lihat">
+                    //                     <i class="ti ti-eye"></i>
+                    //                 </a>';
 
-                $edit = route('equipment_costs.edit', $row->id);
-                $delete = route('equipment_costs.destroy', $row->id);
-
-                return "
-                    <a href='{$edit}' class='btn btn-dark btn-sm'>Edit</a>
-                    <button class='btn btn-dark btn-sm btn-delete'
-                        data-url='{$delete}'>
-                        Delete
-                    </button>
-                ";
+                    // }
+                    if (auth()->user()->can('hapus data menu')) {
+                        $buttons .= '<button data-id="' . $row->id . '" class="btn btn-icon btn-sm btn-dark btn-delete" title="Hapus">
+                                        <i class="ti ti-trash"></i>
+                                    </button>';
+                    }
+                    return $buttons;
             })
 
             ->rawColumns(['action'])
