@@ -19,6 +19,6 @@
 
 @section('tablar_js')
     @stack('js')
-    @yield('js')
+    {{-- @yield('js') --}}
 @stop
 

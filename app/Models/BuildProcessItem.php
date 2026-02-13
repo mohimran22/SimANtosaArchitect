@@ -11,10 +11,11 @@ class BuildProcessItem extends Model
         'rab_item_id',
         'uraian',
         'volume',
+        'job_category_id',
         'satuan',
         'bobot_percent',
-        'plan_week_start',
-        'plan_week_end',
+        'price',
+        'total'
     ];
 
     protected $casts = [
@@ -27,6 +28,10 @@ class BuildProcessItem extends Model
         return $this->belongsTo(Project::class);
     }
 
+    public function jobCategory()
+{
+    return $this->belongsTo(JobCategory::class,'job_category_id');
+}
     public function weeklyProgresses()
     {
         return $this->hasMany(BuildWeeklyProgress::class);

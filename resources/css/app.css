@@ -1,17 +1,6 @@
-/* @import './layout/sidebar.css';
-@import './layout/header.css';
-@import './layout/content.css';
-
-@import './components/card.css'; */
+@import "./custom.css";
 @import "bootstrap/dist/css/bootstrap.min.css";
 @import '@tabler/core/dist/css/tabler.min.css';
-
-/* === PLUGINS === */
-@import "flatpickr/dist/flatpickr.min.css";
-@import "datatables.net-bs5/css/dataTables.bootstrap5.min.css";
-@import "datatables.net-fixedcolumns-bs5/css/fixedColumns.bootstrap5.css";
-@import "select2/dist/css/select2.min.css";
-@import "./custom.css";
 
 /* @tailwind base;
 @tailwind components;

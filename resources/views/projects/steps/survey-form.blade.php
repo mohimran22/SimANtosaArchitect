@@ -231,7 +231,7 @@
         });
     });
 </script>
-
+@endpush
 {{-- <script>
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -289,4 +289,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script> --}}
 
 
-@endpush
+

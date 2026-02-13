@@ -24,11 +24,11 @@ $rab   = $offer?->rab;
 @can('lihat data proyek')
 @if($offer)
 <div class="card shadow-sm border-0 mb-4">
-    <div class="card-header fw-bold">Detail Penawaran</div>
+    {{-- <div class="card-header fw-bold">Detail Penawaran</div> --}}
 
     <div class="card-body">
 
-        <h4 class="fw-bold mb-4">Detail Penawaran Jasa Desain</h4>
+        <h4 class="fw-bold mb-4">Detail Penawaran Jasa Build</h4>
 
         <div class="row g-4">
 
@@ -147,7 +147,7 @@ $rab   = $offer?->rab;
                 <tr>
                     <th colspan="5" class="text-end">SUBTOTAL AFTER DISCOUNT</th>
                     <th>
-                        Rp {{ number_format($rab->total_price - $rab->discount, 0, ',', '.') }}
+                        Rp {{ number_format($rab->subtotal_after_discount, 0, ',', '.') }}
                     </th>
                 </tr>
 

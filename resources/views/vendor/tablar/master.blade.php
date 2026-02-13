@@ -8,43 +8,31 @@
     {{-- <link rel="icon" type="image/png" sizes="96x96" href="{{ asset('favicon-96x96.png') }}"> --}}
     <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
 
-    {{-- Custom Meta Tags --}}
     @yield('meta_tags')
-    {{-- Title --}}
+
     <title>
         @yield('title_prefix', config('tablar.title_prefix', ''))
         @yield('title', config('tablar.title', 'Tablar'))
         @yield('title_postfix', config('tablar.title_postfix', ''))
     </title>
 
-    <!-- CSS/JS files -->
-    @if(config('tablar','vite'))
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
-    @endif
-    <!-- SweetAlert2 CDN -->
-    
-
-
-    {{-- Livewire Styles --}}
     @if(config('tablar.livewire'))
         @livewireStyles
     @endif
 
-    {{-- Custom Stylesheets (post Tablar) --}}
     @yield('tablar_css')
-
-    {{-- <link rel="stylesheet" href="https://cdn.datatables.net/v/bs5/dt-2.3.2/fc-5.0.4/fh-4.0.3/datatables.min.css"/>
+        
+    <link rel="stylesheet" href="https://cdn.datatables.net/v/bs5/dt-2.3.2/fc-5.0.4/fh-4.0.3/datatables.min.css"/>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link rel="stylesheet" href="{{ asset('fonts/tabler-icons.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" /> --}}
-    {{-- <link rel="stylesheet" href="{{ asset('css/custom.css') }}?v={{ time() }}"> --}}
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
 @yield('body')
 @include('tablar::extra.modal')
 
-{{-- Livewire Script --}}
 @if(config('tablar.livewire'))
     @livewireScripts
 @endif

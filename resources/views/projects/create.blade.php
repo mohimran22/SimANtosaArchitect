@@ -435,7 +435,7 @@
                             <h3 class="mb-3 fw-bold">6. Form Pembuatan RAB</h3>
                             @include('projects.steps.rab-process')
                         @elseif($project->project_type == 3)
-                            <h3 class="mb-3 fw-bold">6. Form Pembuatan RAB</h3>
+                            <h3 class="mb-3 fw-bold">7. Form Kemajuan Pekerjaan</h3>
                             @include('projects.steps.build-process')
                         @endif
                     </div>

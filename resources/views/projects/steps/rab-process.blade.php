@@ -154,12 +154,12 @@ let currentBasePrice = 0; // harga asli dari DB
 </script>
 
 <script>
-    $(document).ready(function() {
-        $('.select2').select2({
-            placeholder: "-- Pilih --",
-            width: '100%'
-        });
-    });
+    // $(document).ready(function() {
+    //     $('.select2').select2({
+    //         placeholder: "-- Pilih --",
+    //         width: '100%'
+    //     });
+    // });
 
 function formatRp(num) {
     return new Intl.NumberFormat('id-ID', {

@@ -332,6 +332,8 @@ if (
         'offer.items',
         'offer.rab.items.category',
         'rab.items.category',
+        'buildItems.jobCategory',
+        'buildItems.weeklyProgresses'
         ])->findOrFail($projectId);
     }
 
@@ -346,7 +348,9 @@ if (
         'survey.items',
         'offer.items',
         'offer.rab.items.category',
-        'rab.items.category'
+        'rab.items.category',
+        'buildItems.jobCategory',
+        'buildItems.weeklyProgresses'
     ]);
 
     $activeStep = $this->computeActiveStep($project);

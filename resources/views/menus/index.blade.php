@@ -69,7 +69,7 @@
 @endsection
 @push('js')
 <script>
-$(function () {
+document.addEventListener('DOMContentLoaded', function () {
 
 $('#menuTable').DataTable({
     processing: true,

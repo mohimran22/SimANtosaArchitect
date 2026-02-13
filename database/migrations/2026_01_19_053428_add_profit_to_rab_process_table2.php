@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('rab_process', function (Blueprint $table) {
-            $table->decimal('base_subtotal', 15, 2)->default(0);
+        Schema::table('build_process_items', function (Blueprint $table) {
+            $table->decimal('total', 15, 2)->default(0);
         });
     }
 

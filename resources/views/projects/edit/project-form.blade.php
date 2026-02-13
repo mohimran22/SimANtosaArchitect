@@ -83,14 +83,6 @@
 </div>
 
 @push('js')
-                                        <script>
-                                            $(document).ready(function() {
-                                                $('.select2').select2({
-                                                    placeholder: "-- Pilih --",
-                                                    width: '100%'
-                                                });
-                                            });
-                                        </script>
 <script>
 $(document).ready(function () {
     @if(isset($project))

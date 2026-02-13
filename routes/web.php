@@ -33,6 +33,7 @@ use App\Http\Controllers\RabPackageController;
 use App\Http\Controllers\RabController;
 use App\Http\Controllers\JobCategoryController;
 use App\Http\Controllers\InvoiceBuildController;
+use App\Http\Controllers\BuildProcessItemController;
 
 
 Route::get('/', function () {
@@ -518,9 +519,11 @@ Route::get('{project}/weekly/create', [BuildWeeklyController::class,'create'])
     ->name('build.weekly.create');
 
 Route::post('{project}/weekly', [BuildWeeklyController::class,'store']);
-
 });
-
+Route::middleware(['auth'])
+    ->post('/build-items/update-bobot',
+        [BuildProcessItemController::class, 'updateBobot']
+    )->name('build-items.update-bobot');
 
 Route::middleware(['auth', 'permission:lihat daftar role'])->group(function () {
     Route::resource('/roles', RoleController::class);

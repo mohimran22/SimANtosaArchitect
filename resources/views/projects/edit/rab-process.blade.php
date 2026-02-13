@@ -191,12 +191,12 @@
     window.marginLocked = {{ $rab->is_locked_margin ? 'true' : 'false' }};
     </script>
     <script>
-        $(document).ready(function() {
-            $('.select2').select2({
-                placeholder: "-- Pilih --",
-                width: '100%'
-            });
-        });
+        // $(document).ready(function() {
+        //     $('.select2').select2({
+        //         placeholder: "-- Pilih --",
+        //         width: '100%'
+        //     });
+        // });
 
         function formatRp(num) {
             return new Intl.NumberFormat('id-ID', {
