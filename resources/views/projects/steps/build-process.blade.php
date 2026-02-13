@@ -5,20 +5,29 @@ $groups = $project->buildItems
     ->groupBy(fn($i) => $i->jobCategory?->nama_group ?? 'Tanpa Group');
 
 $no = 1;
-@endphp
-@php
-
+$weekCount = count($project->week_labels);
+$totalCols = 6 + ($weekCount * 3);
 @endphp
 
 <div class="card shadow-sm border-0 mb-4">
-    <div class="card-body px-5 py-4">
-
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h3 class="fw-bold m-0">Tahap Pelaksanaan Proyek</h3>
-
+    <div class="card-header fw-bold">
+        Tahap Pelaksanaan Proyek
+    </div>
+    <div class="card-body">
+        
+            <table width="100%" style="margin-bottom:20px; margin-left:20px;">
+            <tr>
+                <td width="20%">PEKERJAAN</td>
+                <td>: {{ $project->project_name ?? '-' }}</td>
+            </tr>
+            <tr>
+                <td>LOKASI</td>
+                <td>: {{ $project->city->name ?? '-' }}</td>
+            </tr>
+            </table>
+        
+        {{-- <div class="d-flex justify-content-between align-items-center mb-4">
             <div class="d-flex gap-2">
-
-                {{-- @can('input laporan harian') --}}
                 @can('tambah data rab')
                 <a href="{{ route('build.daily.create', $project->id) }}"
                    class="btn btn-sm btn-dark">
@@ -27,27 +36,50 @@ $no = 1;
                 </a>
                 @endcan
             </div>
-        </div>
+        </div> --}}
         {{-- <button id="saveBobotBtn" class="btn btn-success btn-sm">
             Simpan Bobot
         </button> --}}
+
         <div class="table-responsive">
             <table class="table table-bordered align-middle">
-                <thead class="table-light">
-                    <tr>
-                        <th width="50">No</th>
-                        <th>Uraian Pekerjaan</th>
-                        <th width="120">Satuan</th>
-                        <th width="100">Vol</th>
-                        <th width="120">Jumlah Harga</th>
-                        <th width="160">Bobot (0%)</th>
-                    </tr>
-                </thead>
+            <thead class="table-light">
+                <tr>
+                    <th rowspan="2" class="align-middle text-center">No</th>
+                    <th rowspan="2" class="align-middle">Uraian Pekerjaan</th>
+
+                    <th colspan="3" class="text-center">TERKONTRAK</th>
+
+                    <th rowspan="2" class="align-middle">Bobot (%)</th>
+
+                    @foreach($project->week_labels as $w)
+                        <th colspan="3" class="text-center">
+                            M{{ $w['week_no'] }}
+                        </th>
+                    @endforeach
+                </tr>
+
+                <tr>
+                    {{-- Sub TERKONTRAK --}}
+                    <th>Satuan</th>
+                    <th>Vol</th>
+                    <th>Jumlah Harga</th>
+
+                    {{-- Sub Mingguan (HARUS LOOP) --}}
+                    @foreach($project->week_labels as $w)
+                        <th>Vol</th>
+                        <th>Progres (%)</th>
+                        <th>Bobot (%)</th>
+                    @endforeach
+                </tr>
+            </thead>
                 <tbody>
                     @foreach($groups as $namaGroup => $itemsGroup)
 
                         <tr style="background:#cbd5e1;font-weight:700">
-                            <td colspan="6">{{ $namaGroup }}</td>
+                            <td colspan="{{ $totalCols }}">
+                                {{ $namaGroup }}
+                            </td>
                         </tr>
 
                         @php
@@ -74,11 +106,22 @@ $no = 1;
                                     <td>{{ number_format($item->total,0,',','.') }}</td>
                                     <td width="120">
                                         <input type="number"
-                                            step="0.01"
+                                            step="0.001"
                                             class="form-control bobot-input"
                                             data-id="{{ $item->id }}"
-                                            value="{{ $item->bobot_percent }}">
+                                            value="{{ $item->bobot_percent }}"
+                                            @if($project->bobot_locked) disabled @endif>
                                     </td>
+                                        @foreach($project->week_labels as $w)
+                                            @php
+                                                $prog = $item->weeklyProgresses
+                                                    ->firstWhere('week_no', $w['week_no']);
+                                            @endphp
+
+                                            <td>{{ $prog->volume ?? 0 }}</td>
+                                            <td>{{ $prog->progress_percent ?? 0 }}</td>
+                                            <td>{{ $prog->bobot_percent ?? 0 }}</td>
+                                        @endforeach
                                 </tr>
                             @endforeach
 
@@ -90,13 +133,16 @@ $no = 1;
                     <th colspan="4" class="text-end">TOTAL</th>
                     <th id="totalHarga">{{ number_format($project->buildItems->sum('total'),0,',','.') }}</th>
                     <th id="totalBobot">0</th>
+                    @for($i=0; $i<($weekCount*3); $i++)
+                        <th></th>
+                    @endfor
                 </tr>
                 </tfoot>
             </table>
         </div>
     </div>
 </div>
-{{-- <div class="card shadow-sm border-0">
+<div class="card shadow-sm border-0">
     <div class="card-body px-5 py-4">
 
         <h4 class="fw-bold mb-3">Kurva S Progress Proyek</h4>
@@ -104,7 +150,7 @@ $no = 1;
         <canvas id="kurvaSChart" height="120"></canvas>
 
     </div>
-</div> --}}
+</div>
 
 @push('js')
 
@@ -167,7 +213,7 @@ function autosaveBobot() {
 
     if (Math.round(total*100)/100 !== 100) {
         document.getElementById('totalBobot').classList.add('text-danger');
-        return; // ❌ JANGAN SIMPAN
+        return; 
     }
 
     document.getElementById('totalBobot').classList.remove('text-danger');
@@ -178,52 +224,37 @@ function autosaveBobot() {
             "Content-Type":"application/json",
             "X-CSRF-TOKEN": document.querySelector('meta[name=csrf-token]').content
         },
-        body: JSON.stringify({items})
+        body: JSON.stringify({
+            project_id: "{{ $project->id }}",
+            items
+        })
     })
     .then(r=>r.json())
     .then(res=>{
-        if(!res.ok){
-            alert(res.message);
+        if(res.locked){
+            document.querySelectorAll('.bobot-input')
+                .forEach(el=>el.disabled = true);
+
+            alert('Bobot sudah 100% dan dikunci');
         }
     });
 }
 
-document.querySelectorAll('.bobot-input').forEach(el=>{
-    el.addEventListener('input', ()=>{
-        calcTotal();
+document.addEventListener('DOMContentLoaded', function() {
 
-        clearTimeout(saveTimer);
-        saveTimer = setTimeout(autosaveBobot, 800); // debounce
-    });
-});
-
-// init total
-calcTotal();
-</script>
-{{-- <script>
-document.getElementById('saveBobotBtn').onclick = function(){
-
-    let items = [];
-
-    document.querySelectorAll('.bobot-input').forEach(el => {
-        items.push({
-            id: el.dataset.id,
-            bobot: el.value
+    document.querySelectorAll('.bobot-input').forEach(el=>{
+        el.addEventListener('input', ()=>{
+            console.log("INPUT CHANGED");
+            calcTotal();
+            clearTimeout(saveTimer);
+            saveTimer = setTimeout(autosaveBobot, 800);
         });
     });
 
-    fetch("{{ route('build-items.update-bobot') }}", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "X-CSRF-TOKEN": "{{ csrf_token() }}"
-        },
-        body: JSON.stringify({items})
-    })
-    .then(r=>r.json())
-    .then(()=>{
-        alert('Bobot tersimpan');
-    });
-};
-</script> --}}
+    calcTotal();
+});
+
+// init total
+// calcTotal();
+</script>
 @endpush

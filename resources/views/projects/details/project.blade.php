@@ -34,12 +34,12 @@
 
             <div class="col-md-3">
                 <label class="fw-semibold">Tanggal Mulai Proyek</label>
-                <input type="text" class="form-control" value="{{ $project->start_date }}" readonly>
+                <input type="text" class="form-control" value="{{ \Carbon\Carbon::parse($project->start_date)->format('d/m/Y') }}" readonly>
             </div>
 
             <div class="col-md-3">
                 <label class="fw-semibold">Tanggal Akhir Proyek(Estimasi)</label>
-                <input type="text" class="form-control" value="{{ $project->end_date }}" readonly>
+                <input type="text" class="form-control" value="{{ \Carbon\Carbon::parse($project->end_date)->format('d/m/Y') }}" readonly>
             </div>
 
             {{-- <div class="col-md-2">

@@ -29,7 +29,7 @@ class ContractBuildController extends Controller
             ->groupBy(function ($item) {
                 $cat = $item->category;
                 return $cat
-                    ? "{$cat->kode_group} {$cat->nama_group}"
+                    ? "{$cat->nama_group}"
                     : 'Pekerjaan Lain-lain';
             });
         $data = [

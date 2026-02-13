@@ -28,7 +28,7 @@ $rab   = $offer?->rab;
 
     <div class="card-body">
 
-        <h4 class="fw-bold mb-4">Detail Penawaran Jasa Build</h4>
+        <h2 class="fw-bold mb-4">{{ $offer->project->project_name }}</h2>
 
         <div class="row g-4">
 

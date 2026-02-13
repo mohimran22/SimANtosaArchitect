@@ -221,12 +221,13 @@ if (
             : collect([]);
 
         $canEdit = auth()->user()->can('lihat daftar proyek'); 
+        $weeks = $project->rab->job_duration ?? 0;
 
         return view('projects.create', array_merge(
             $this->formData($project),
             compact('project', 'timelineSteps', 'activeStep', 'surveyInvoice',
         'surveyApproved',
-        'isFreeSurvey', 'surveyWaiting', 'surveyRejected', 'invoiceDp', 'invoiceRab', 'invoiceBuild', 'canEdit')
+        'isFreeSurvey', 'surveyWaiting', 'surveyRejected', 'invoiceDp', 'invoiceRab', 'invoiceBuild', 'canEdit', 'weeks')
         ));
     }
 

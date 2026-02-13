@@ -32,6 +32,7 @@ class Project extends Model
         'end_date',
         'start_date',
         'project_status',
+        'bobot_locked'
     ];
 
     public function province()
@@ -227,7 +228,7 @@ public function generateLevels()
 }
 public function getKurvaSData()
 {
-    $weeks = (int) ceil($this->job_duration / 7);
+    $weeks = count($this->week_labels);
 
     $items = $this->buildItems()
         ->with('weeklyProgresses.report')
@@ -235,13 +236,13 @@ public function getKurvaSData()
 
     $data = [];
 
-    for ($w=1;$w<=$weeks;$w++) {
+    for ($w=1; $w <= $weeks; $w++) {
 
         $total = 0;
 
         foreach ($items as $item) {
 
-            $sum = $item->weeklyProgress
+            $sum = $item->weeklyProgresses
                 ->filter(fn($p) => $p->report->week_no <= $w)
                 ->sum('progress_percent');
 
@@ -249,11 +250,34 @@ public function getKurvaSData()
         }
 
         $data[] = [
-            'week'=>$w,
-            'progress'=>round($total,2)
+            'week' => $w,
+            'progress' => round($total, 2)
         ];
     }
 
     return $data;
+}
+public function getWeekLabelsAttribute()
+{
+    if (!$this->start_date || !$this->end_date) return [];
+
+    $start = \Carbon\Carbon::parse($this->start_date);
+    $end   = \Carbon\Carbon::parse($this->end_date);
+
+    $labels = [];
+    $w = 1;
+
+    while ($start <= $end) {
+        $labels[] = [
+            'week_no'=>$w,
+            'start'=>$start->format('d M'),
+            'end'=>$start->copy()->addDays(6)->min($end)->format('d M'),
+        ];
+
+        $start->addWeek();
+        $w++;
+    }
+
+    return $labels;
 }
 }
