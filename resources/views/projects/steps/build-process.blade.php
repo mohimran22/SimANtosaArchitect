@@ -7,6 +7,8 @@ $groups = $project->buildItems
 $no = 1;
 $weekCount = count($project->week_labels);
 $totalCols = 6 + ($weekCount * 3);
+$plans = $project->weeklyPlans
+    ->keyBy('week_no');
 @endphp
 
 <div class="card shadow-sm border-0 mb-4">
@@ -54,34 +56,34 @@ $totalCols = 6 + ($weekCount * 3);
                             <col style="width:100px;">   
                         @endforeach
                     </colgroup>
-            <thead class="table-light">
-                <tr>
-                    <th rowspan="2" class="align-middle text-center">No</th>
-                    <th rowspan="2" class="align-middle">Uraian Pekerjaan</th>
+                <thead class="table-light">
+                    <tr>
+                        <th rowspan="2" class="align-middle text-center">No</th>
+                        <th rowspan="2" class="align-middle">Uraian Pekerjaan</th>
 
-                    <th colspan="3" class="text-center">TERKONTRAK</th>
+                        <th colspan="3" class="text-center">TERKONTRAK</th>
 
-                    <th rowspan="2" class="align-middle">Bobot (%)</th>
+                        <th rowspan="2" class="align-middle">Bobot (%)</th>
 
-                    @foreach($project->week_labels as $w)
-                        <th colspan="3" class="text-center">
-                            M{{ $w['week_no'] }}
-                        </th>
-                    @endforeach
-                </tr>
+                        @foreach($project->week_labels as $w)
+                            <th colspan="3" class="text-center">
+                                M{{ $w['week_no'] }}
+                            </th>
+                        @endforeach
+                    </tr>
 
-                <tr>
-                    <th class="align-middle">Satuan</th>
-                    <th class="align-middle text-center">Vol</th>
-                    <th class="align-middle">Jumlah Harga</th>
-
-                    @foreach($project->week_labels as $w)
+                    <tr>
+                        <th class="align-middle">Satuan</th>
                         <th class="align-middle text-center">Vol</th>
-                        <th class="text-center">Progres<br>(%)</th>
-                        <th class="text-center">Bobot<br>(%)</th>
-                    @endforeach
-                </tr>
-            </thead>
+                        <th class="align-middle">Jumlah Harga</th>
+
+                        @foreach($project->week_labels as $w)
+                            <th class="align-middle text-center">Vol</th>
+                            <th class="text-center">Progres<br>(%)</th>
+                            <th class="text-center">Bobot<br>(%)</th>
+                        @endforeach
+                    </tr>
+                </thead>
                 <tbody>
                     @foreach($groups as $namaGroup => $itemsGroup)
                         @php
@@ -107,10 +109,19 @@ $totalCols = 6 + ($weekCount * 3);
                             </tr> --}}
 
                             @foreach($itemsSub as $item)
-                                <tr
-                                    data-item-vol="{{ $item->volume }}"
-                                    data-item-bobot="{{ $item->bobot_percent }}"
-                                >
+                            @php
+                                $volKontrak = $item->volume;
+
+                                $volTerpakai = $item->weeklyProgresses->sum('volume');
+
+                                $isFull = $volTerpakai >= $volKontrak;
+                            @endphp
+                                    <tr
+                                        data-item-id="{{ $item->id }}"
+                                        data-item-vol="{{ $item->volume }}"
+                                        data-item-bobot="{{ $item->bobot_percent }}"
+                                        data-full="{{ $isFull ? 1 : 0 }}"
+                                    >
                                     <td>{{ $no++ }}</td>
                                     <td>
                                         {{ $item->uraian }}
@@ -137,7 +148,9 @@ $totalCols = 6 + ($weekCount * 3);
                                                     class="form-control week-vol"
                                                     data-item="{{ $item->id }}"
                                                     data-week="{{ $w['week_no'] }}"
-                                                    value="{{ $prog->volume ?? 0 }}">
+                                                    data-last="{{ $prog->volume ?? 0 }}"
+                                                    value="{{ $prog->volume ?? '' }}"
+                                                    {{ $isFull ? 'disabled' : '' }}>
                                             </td>
                                             <td class="week-progress"
                                                 data-week="{{ $w['week_no'] }}"
@@ -156,8 +169,27 @@ $totalCols = 6 + ($weekCount * 3);
                     @endforeach
                 </tbody>
                 <tfoot>
+                <tr class="table-info">
+                    <th colspan="5" class="text-end">
+                        Total Pekerjaan Kumulatif (%)
+                    </th>
+
+                    <th></th>
+
+                    @foreach($project->week_labels as $w)
+                        <th></th>
+                        <th></th>
+                        <th>
+                            <input type="number"
+                                step="0.001"
+                                class="form-control plan-bobot"
+                                data-week="{{ $w['week_no'] }}"
+                                value="{{ $plans[$w['week_no']]->bobot_percent ?? 0 }}">
+                        </th>
+                    @endforeach
+                </tr>
                 <tr class="table-warning">
-                    <th colspan="4" class="text-end">Realisai Pekerjaan</th>
+                    <th colspan="4" class="text-end">Realisai kumulatif kemajuan Pekerjaan</th>
 
                     <th id="totalHarga">
                         {{ number_format($project->buildItems->sum('total'),0,',','.') }}
@@ -166,8 +198,8 @@ $totalCols = 6 + ($weekCount * 3);
                     <th id="totalBobotKontrak">0</th>
 
                     @foreach($project->week_labels as $w)
-                        <th id="sum-vol-{{ $w['week_no'] }}">0</th>
-                        <th id="sum-prog-{{ $w['week_no'] }}">0</th>
+                        <th></th>
+                        <th></th>
                         <th id="sum-bobot-{{ $w['week_no'] }}">0</th>
                     @endforeach
                 </tr>
@@ -178,11 +210,8 @@ $totalCols = 6 + ($weekCount * 3);
 </div>
 <div class="card shadow-sm border-0">
     <div class="card-body px-5 py-4">
-
         <h4 class="fw-bold mb-3">Kurva S Progress Proyek</h4>
-
         <canvas id="kurvaSChart" height="120"></canvas>
-
     </div>
 </div>
 
@@ -190,7 +219,16 @@ $totalCols = 6 + ($weekCount * 3);
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-
+document.querySelectorAll('.plan-bobot')
+.forEach(el => {
+    el.addEventListener('input', e => {
+        autosavePlan(
+            el.dataset.week,
+            parseFloat(el.value) || 0
+        );
+        updateKurvaPlanRealtime();
+    });
+});
     const ctx = document.getElementById('kurvaSChart');
     if(!ctx || typeof Chart === 'undefined') {
         console.error('Chart.js belum load');
@@ -198,15 +236,24 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const dataAwal = @json($project->getKurvaSData());
+    const dataPlan = @json($project->getKurvaRencanaData());
 
     window.kurvaChart = new Chart(ctx, {
         type: 'line',
         data: {
             labels: dataAwal.map(d=>'Minggu '+d.week),
-            datasets:[{
-                label:'Progress (%)',
+            datasets:[
+            {
+                label:'Realisasi (%)',
                 data:dataAwal.map(d=>d.progress),
                 tension:0.3
+            },
+            {
+                label:'Rencana (%)',
+                // data:getPlanKumulatif(),
+                data:dataAwal.map(d=>d.progress),
+                tension:0.3,
+                // borderDash:[5,5]
             }]
         },
         options:{
@@ -214,9 +261,41 @@ document.addEventListener('DOMContentLoaded', () => {
             scales:{ y:{ beginAtZero:true, max:100 }}
         }
     });
-
+    updateKurvaPlanRealtime();
 });
 
+function getPlanKumulatif() {
+
+    let weekCount = {{ $weekCount }};
+    let jalan = 0;
+    let data = [];
+
+    for (let w=1; w<=weekCount; w++) {
+
+        const el = document.querySelector(
+            `.plan-bobot[data-week="${w}"]`
+        );
+
+        const val = el ? (parseFloat(el.value) || 0) : 0;
+
+        jalan += val;
+        data.push(jalan);
+    }
+
+    return data;
+}
+
+
+function updateKurvaPlanRealtime() {
+
+    if(!window.kurvaChart) return;
+
+    window.kurvaChart.data.datasets[1].data =
+        getPlanKumulatif();
+
+    window.kurvaChart.update();
+    validatePlanTotal();
+}
 function rebuildKurvaFromTable() {
 
     let weekCount = {{ $weekCount }};
@@ -229,7 +308,7 @@ function rebuildKurvaFromTable() {
 
         document.querySelectorAll(`.week-bobot[data-week="${w}"]`)
         .forEach(el => {
-            sumBobot += parseFloat(el.innerText || 0);
+            sumBobot += parseFloat(el.innerText) || 0;
         });
 
         jalan += sumBobot;
@@ -240,11 +319,44 @@ function rebuildKurvaFromTable() {
 }
 
 function updateKurvaChartRealtime() {
+
     if(!window.kurvaChart) return;
-    const dataBaru = rebuildKurvaFromTable();
-    window.kurvaChart.data.datasets[0].data = dataBaru;
+
+    window.kurvaChart.data.datasets[0].data =
+        rebuildKurvaFromTable();
+
     window.kurvaChart.update();
 }
+function validatePlanTotal() {
+
+    let t = 0;
+
+    document.querySelectorAll('.plan-bobot')
+    .forEach(el => t += parseFloat(el.value||0));
+    if (Math.abs(t - 100) > 0.01) {
+        console.warn("Total rencana ≠ 100%");
+    }
+}
+function autosavePlan(week, val)
+{
+    fetch("{{ route('build-weekly-plan.update') }}", {
+        method: "POST",
+        headers: {
+            "Content-Type":"application/json",
+            "X-CSRF-TOKEN":
+                document.querySelector('meta[name=csrf-token]').content
+        },
+        body: JSON.stringify({
+            project_id: "{{ $project->id }}",
+            week_no: week,
+            bobot: val
+        })
+    })
+    .then(r=>{
+        if(!r.ok) console.warn("Plan autosave failed");
+    });
+}
+validatePlanTotal();
 </script>
 <script>
 let saveTimer = null;
@@ -328,8 +440,6 @@ document.addEventListener('DOMContentLoaded', function() {
     calcTotal();
 });
 
-// init total
-// calcTotal();
 </script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -391,24 +501,68 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     hitungFooter();
-    function autosaveWeek(item, week)
-{
-    const vol = parseFloat(document.querySelector(
-        `.week-vol[data-item="${item}"][data-week="${week}"]`
-    ).value || 0);
+let autosaveTimer = {};
 
-    fetch("{{ route('build-weekly.update') }}", {
-        method: "POST",
-        headers: {
-            "Content-Type":"application/json",
-            "X-CSRF-TOKEN": document.querySelector('meta[name=csrf-token]').content
-        },
-        body: JSON.stringify({
-            item_id: item,
-            week_no: week,
-            volume: vol
+function autosaveWeek(item, week)
+{
+    const key = item + '-' + week;
+
+    clearTimeout(autosaveTimer[key]);
+
+    autosaveTimer[key] = setTimeout(() => {
+
+        const input = document.querySelector(
+            `.week-vol[data-item="${item}"][data-week="${week}"]`
+        );
+
+        const oldVal = input.dataset.last || 0;
+        const vol = parseFloat(input.value) || 0;
+
+        fetch("{{ route('build-weekly.update') }}", {
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json",
+                "X-CSRF-TOKEN": document.querySelector('meta[name=csrf-token]').content
+            },
+            body: JSON.stringify({
+                item_id: item,
+                week_no: week,
+                volume: vol
+            })
         })
-    });
+        .then(async r => {
+
+            const data = await r.json();
+
+            if (!r.ok) {
+                input.value = oldVal; // rollback
+                showToast(data.error || 'Volume melebihi kontrak');
+                throw new Error("422");
+            }
+            recalcWeek(item, week, 
+                input.closest('tr').dataset.itemVol,
+                input.closest('tr').dataset.itemBobot
+            );
+
+            hitungFooter();
+            updateKurvaChartRealtime();
+
+            return data;
+        })
+        .then(res => {
+
+            input.dataset.last = vol;
+
+            if (res.full) {
+                lockItemRow(item);
+            }
+
+        })
+        .catch(e => {
+            console.log("autosave rejected:", e.message);
+        });
+
+    }, 400);
 }
 
 function hitungFooter() {
@@ -417,32 +571,27 @@ function hitungFooter() {
 
     for (let w=1; w<=weekCount; w++) {
 
-        let sumVol = 0;
-        let sumProg = 0;
         let sumBobot = 0;
 
-        // total volume minggu
-        document.querySelectorAll(`.week-vol[data-week="${w}"]`)
-        .forEach(el => {
-            sumVol += parseFloat(el.value || 0);
-        });
-
-        // total progress minggu
-        document.querySelectorAll(`.week-progress[data-week="${w}"]`)
-        .forEach(el => {
-            sumProg += parseFloat(el.innerText || 0);
-        });
-
-        // total bobot minggu
         document.querySelectorAll(`.week-bobot[data-week="${w}"]`)
-        .forEach(el => {
-            sumBobot += parseFloat(el.innerText || 0);
-        });
+            .forEach(el => {
+                sumBobot += parseFloat(el.innerText || 0);
+            });
 
-        document.getElementById(`sum-vol-${w}`).innerText = sumVol.toFixed(2);
-        document.getElementById(`sum-prog-${w}`).innerText = sumProg.toFixed(2);
-        document.getElementById(`sum-bobot-${w}`).innerText = sumBobot.toFixed(2);
+        const bobotCell = document.getElementById(`sum-bobot-${w}`);
+        if (bobotCell) {
+            bobotCell.innerText = sumBobot.toFixed(2);
+        }
     }
+}
+function lockItemRow(itemId)
+{
+    document.querySelectorAll(
+        `.week-vol[data-item="${itemId}"]`
+    ).forEach(el => {
+        el.disabled = true;
+        el.classList.add('bg-light');
+    });
 }
 hitungFooter();
 updateKurvaChartRealtime();

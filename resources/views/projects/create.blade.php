@@ -941,14 +941,17 @@ document.addEventListener('click', function(e) {
     if (type === 'image') url = `/survey-images/${id}`;
     if (type === 'documentation') url = `/survey-documentations/${id}`;
 
-    fetch(url, {
-        method: 'DELETE',
-        headers: {
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        }
-    }).then(() => {
-        btn.closest('.position-relative, .list-group-item').remove();
-    });
+fetch(url, {
+    method: 'DELETE',
+    headers: {
+        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+    }
+})
+.then(res => {
+    if (!res.ok) throw new Error('Gagal hapus');
+    btn.closest('.position-relative, .list-group-item').remove();
+})
+.catch(err => alert('Delete gagal'));
 });
 </script>
 

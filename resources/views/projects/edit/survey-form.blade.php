@@ -81,65 +81,77 @@
             <div class="section-block mt-4">
                 <div class="row g-4">
                     <div class="col-md-6 mb-4">
-                        <h5 class="fw-bold mt-4">Foto Hasil Survei</h5>
-                        @foreach($survey->images as $img)
-                            <div class="position-relative">
-                                <img src="{{ asset('storage/'.$img->file_path) }}"
-                                    class="rounded border"
-                                    style="width:120px;height:120px;object-fit:cover">
+                        <label class="fw-bold required">Foto Hasil Survei / Denah</label>
+                        <div class="text-muted mb-2">Sketsa, denah, kondisi lapangan</div>
 
-                                <button type="button"
-                                    class="btn btn-sm btn-danger position-absolute top-0 end-0 btn-delete"
-                                    data-id="{{ $img->id }}"
-                                    data-type="image">
-                                    ×
-                                </button>
+                        {{-- EXISTING FILES (hanya muncul di edit) --}}
+                        @isset($survey)
+                            <div class="d-flex flex-wrap gap-3 mb-3">
+                                @foreach($survey->images as $img)
+                                    <div class="position-relative">
+                                        <img src="{{ asset('storage/'.$img->file_path) }}"
+                                            class="rounded border"
+                                            style="width:120px;height:120px;object-fit:cover">
+
+                                        <button type="button"
+                                            class="btn btn-sm btn-danger position-absolute top-0 end-0 btn-delete"
+                                            data-id="{{ $img->id }}"
+                                            data-type="image">×</button>
+                                    </div>
+                                @endforeach
                             </div>
-                        @endforeach
+                        @endisset
 
+                        {{-- INPUT UPLOAD --}}
                         <input type="file"
                             name="result_images[]"
                             class="form-control image-input"
+                            data-preview="preview-result-images"
+                            accept="image/*"
                             multiple>
+
+                        <div id="preview-result-images"
+                            class="mt-3 d-flex flex-wrap gap-3"></div>
                     </div>
                     <div class="col-md-6 mb-4">
-                        <h5 class="fw-bold">Dokumen Denah Existing</h5>
+                        <label class="fw-bold">Dokumen Denah Existing (PDF)</label>
 
-                        @if($survey->documents->count())
+                        @isset($survey)
+                            @if($survey->documents->count())
                             <ul class="list-group mb-3">
                                 @foreach($survey->documents as $doc)
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        <div class="d-flex gap-2">
-                                            <a href="{{ asset('storage/'.$doc->file_path) }}"
-                                            target="_blank"
-                                            class="btn btn-sm btn-outline-dark">
-                                                Lihat File
-                                            </a>
-                                            <button type="button"
-                                                class="btn btn-sm btn-danger btn-delete"
-                                                data-id="{{ $doc->id }}"
-                                                data-type="document">
-                                                Hapus
-                                            </button>
-                                        </div>
-                                    </li>
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <a href="{{ asset('storage/'.$doc->file_path) }}"
+                                    target="_blank"
+                                    class="btn btn-sm btn-outline-dark">
+                                    Lihat File
+                                    </a>
+
+                                    <button type="button"
+                                        class="btn btn-sm btn-danger btn-delete"
+                                        data-id="{{ $doc->id }}"
+                                        data-type="document">
+                                        Hapus
+                                    </button>
+                                </li>
                                 @endforeach
                             </ul>
-                        @else
-                        <em class="text-muted">Belum ada dokumen.</em>
-                        @endif
+                            @endif
+                        @endisset
 
                         <input type="file"
                             name="documents[]"
-                            class="form-control"
+                            class="form-control pdf-input"
+                            data-preview="preview-documents"
                             accept="application/pdf"
                             multiple>
+
+                        <div id="preview-documents"
+                            class="mt-3 d-flex flex-column gap-2"></div>
                     </div>
                 </div>
             </div>
 
-
-            {{-- ITEM URAIAN --}}
             <div class="mb-3 mt-3">
                 <label class="form-label">Uraian</label>
 
@@ -177,9 +189,11 @@
             </div>
 
             <div class="mt-4">
-                <h5 class="fw-bold mt-4">Foto Dokumentasi</h5>
+                <label class="fw-bold">Foto Dokumentasi</label>
+
+                @isset($survey)
                 <div class="d-flex flex-wrap gap-3 mb-3">
-                @foreach($survey->documentations as $doc)
+                    @foreach($survey->documentations as $doc)
                     <div class="position-relative">
                         <img src="{{ asset('storage/'.$doc->file_path) }}"
                             class="rounded border"
@@ -192,13 +206,19 @@
                             ×
                         </button>
                     </div>
-                @endforeach
+                    @endforeach
                 </div>
+                @endisset
 
                 <input type="file"
                     name="documentation[]"
                     class="form-control image-input"
+                    data-preview="preview-documentation"
+                    accept="image/*"
                     multiple>
+
+                <div id="preview-documentation"
+                    class="mt-3 d-flex flex-wrap gap-3"></div>
             </div>
             {{-- TTD --}}
             <div class="row mt-3">

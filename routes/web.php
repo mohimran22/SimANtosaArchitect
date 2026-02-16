@@ -35,6 +35,7 @@ use App\Http\Controllers\JobCategoryController;
 use App\Http\Controllers\InvoiceBuildController;
 use App\Http\Controllers\BuildProcessItemController;
 use App\Http\Controllers\BuildWeeklyController;
+use App\Http\Controllers\BuildWeeklyPlanController;
 
 
 Route::get('/', function () {
@@ -409,6 +410,10 @@ Route::post('projects/surveys', [\App\Http\Controllers\SurveyController::class, 
 Route::put('surveys/{survey}', [\App\Http\Controllers\SurveyController::class, 'update'])
     ->name('surveys.update');
 
+Route::delete('/survey-images/{id}', [\App\Http\Controllers\SurveyImageController::class, 'destroy']);
+Route::delete('/survey-documents/{id}', [\App\Http\Controllers\SurveyDocumentController::class, 'destroy']);
+Route::delete('/survey-documentations/{id}', [\App\Http\Controllers\SurveyDocumentationController::class, 'destroy']);
+
 Route::post('projects/offers', [\App\Http\Controllers\OfferController::class, 'store'])
     ->name('projects.offers.store');
     
@@ -509,18 +514,6 @@ Route::prefix('projects/{project}')
         )->name('projects.invoice.build.approve');
     });
 
-Route::prefix('build')->group(function(){
-
-Route::get('{project}/daily/create', [BuildDailyController::class,'create'])
-    ->name('build.daily.create');
-
-Route::post('{project}/daily', [BuildDailyController::class,'store']);
-
-Route::get('{project}/weekly/create', [BuildWeeklyController::class,'create'])
-    ->name('build.weekly.create');
-
-Route::post('{project}/weekly', [BuildWeeklyController::class,'store']);
-});
 Route::middleware(['auth'])
     ->post('/build-items/update-bobot',
         [BuildProcessItemController::class, 'updateBobot']
@@ -529,6 +522,10 @@ Route::middleware(['auth'])
 Route::post('/build-weekly/update',
     [BuildWeeklyController::class,'update']
 )->name('build-weekly.update');
+
+Route::post('/build-weekly-plan/update', 
+    [BuildWeeklyPlanController::class,'update']
+)->name('build-weekly-plan.update');
 
 Route::middleware(['auth', 'permission:lihat daftar role'])->group(function () {
     Route::resource('/roles', RoleController::class);

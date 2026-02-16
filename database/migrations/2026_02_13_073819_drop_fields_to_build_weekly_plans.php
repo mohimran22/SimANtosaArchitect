@@ -11,8 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('build_weekly_progress', function (Blueprint $table) {
-            $table->dropColumn('weekly_report_id');
+        Schema::table('build_weekly_plans', function (Blueprint $table) {
+            $table->dropColumn('start_date');
+            $table->dropColumn('end_date');
+            $table->decimal('bobot_percent', 5, 2);
         });
     }
 
@@ -21,7 +23,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('build_weekly_progress', function (Blueprint $table) {
+        Schema::table('build_weekly_plans', function (Blueprint $table) {
             //
         });
     }

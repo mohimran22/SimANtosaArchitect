@@ -135,9 +135,9 @@ public function dailyReports()
     return $this->hasMany(BuildDailyReport::class);
 }
 
-public function weeklyReports()
+public function weeklyPlans()
 {
-    return $this->hasMany(BuildWeeklyReport::class);
+    return $this->hasMany(BuildWeeklyPlan::class);
 }
 
 public function progressSnapshots()
@@ -252,6 +252,25 @@ public function getKurvaSData()
         $data[] = [
             'week' => $w,
             'progress' => round($total, 2)
+        ];
+    }
+
+    return $data;
+}
+public function getKurvaRencanaData()
+{
+    $weeks = count($this->week_labels);
+    $plans = $this->weeklyPlans->keyBy('week_no');
+
+    $jalan = 0;
+    $data = [];
+
+    for ($w=1; $w<=$weeks; $w++) {
+        $jalan += $plans[$w]->bobot_percent ?? 0;
+
+        $data[] = [
+            'week'=>$w,
+            'progress'=>round($jalan,2)
         ];
     }
 

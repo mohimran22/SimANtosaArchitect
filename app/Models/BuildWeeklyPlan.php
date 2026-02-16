@@ -4,20 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class BuildWeeklyReport extends Model
+class BuildWeeklyPlan extends Model
 {
     protected $fillable = [
         'project_id',
         'week_no',
-        'start_date',
-        'end_date',
-        'catatan',
-        'created_by',
-    ];
-
-    protected $casts = [
-        'start_date' => 'date',
-        'end_date' => 'date',
+        'bobot_percent'
     ];
 
     // ======================
