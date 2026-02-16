@@ -29,9 +29,12 @@
 <tbody>
 @php $no = 'A'; $grand = 0; @endphp
 @foreach($grouped as $group)
+                @php
+                    $cleanName = preg_replace('/^HARGA SATUAN\s*/i', '', $group['nama']);
+                @endphp
 <tr>
     <td align="center" style="font-weight:bold;">{{ $no }}</td>
-    <td style="font-weight:bold;">{{ strtoupper($group['nama']) }}</td>
+    <td style="font-weight:bold;">{{ strtoupper($cleanName) }}</td>
     <td align="right">
         Rp {{ number_format($group['subtotal'],0,',','.') }}
     </td>

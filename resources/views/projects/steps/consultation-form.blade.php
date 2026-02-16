@@ -143,7 +143,7 @@
 
         <div class="md-6 mb-4">
             <label class="fw-bold">Foto Dokumentasi</label>
-            <div class="text-muted mb-2">Foto dokumentasi saat kegiatan survei</div>
+            <div class="text-muted mb-2">Foto dokumentasi saat kegiatan konsultasi</div>
             <input type="file"
                 name="documentation[]"
                 class="form-control image-input"

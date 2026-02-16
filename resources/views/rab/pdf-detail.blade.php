@@ -18,9 +18,12 @@
 @php $noGroup = 'A'; @endphp
 
 @foreach($grouped as $group)
+                @php
+                    $cleanName = preg_replace('/^HARGA SATUAN\s*/i', '', $group['nama']);
+                @endphp
 <tr style="font-weight:bold; background:#f5f5f5;">
     <td align="center">{{ $noGroup }}</td>
-    <td colspan="5">{{ strtoupper($group['nama']) }}</td>
+    <td colspan="5">{{ strtoupper($cleanName) }}</td>
 </tr>
 
 @php $no = 1; @endphp
@@ -36,7 +39,7 @@
 @endforeach
 
 <tr style="font-weight:bold;">
-    <td colspan="5" align="right">Jumlah {{ $group['nama'] }}</td>
+    <td colspan="5" align="right">Jumlah {{ $cleanName }}</td>
     <td align="right">
         Rp {{ number_format($group['subtotal'],0,',','.') }}
     </td>
