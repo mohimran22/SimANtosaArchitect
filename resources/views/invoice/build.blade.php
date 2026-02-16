@@ -185,7 +185,7 @@ p {
 <br>
 
 <p><strong>Terbilang :</strong><br>
-{{ terbilang($invoice->amount) }} Rupiah
+{{ ucwords(terbilang($invoice->amount)) }} Rupiah
 </p>
 
 @php

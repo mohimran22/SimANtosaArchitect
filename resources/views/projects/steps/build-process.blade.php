@@ -84,10 +84,12 @@ $totalCols = 6 + ($weekCount * 3);
             </thead>
                 <tbody>
                     @foreach($groups as $namaGroup => $itemsGroup)
-
+                        @php
+                            $cleanName = preg_replace('/^HARGA SATUAN\s*/i', '', $namaGroup);
+                        @endphp
                         <tr style="background:#cbd5e1;font-weight:700">
                             <td colspan="{{ $totalCols }}">
-                                {{ $namaGroup }}
+                                {{ $cleanName }}
                             </td>
                         </tr>
 
@@ -445,7 +447,5 @@ function hitungFooter() {
 hitungFooter();
 updateKurvaChartRealtime();
     });
-
-
 </script>
 @endpush

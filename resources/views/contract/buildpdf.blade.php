@@ -240,8 +240,11 @@ adalah sebagai berikut:
 
 <ol type="a" style="margin-left: 30px;">
 @foreach($offerItems as $categoryName => $items)
+                @php
+                    $cleanName = preg_replace('/^HARGA SATUAN\s*/i', '', $categoryName);
+                @endphp
     <li>
-        <strong>{{ $categoryName }}</strong>
+        <strong>{{ $cleanName }}</strong>
         <ol type="1" style="margin-top:6px; margin-left:20px;">
             @foreach($items as $item)
                 <li>

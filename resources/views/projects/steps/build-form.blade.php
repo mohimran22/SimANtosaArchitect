@@ -118,7 +118,7 @@
                         <th colspan="5" class="text-end">TAX RATE (%)</th>
                         <th>
                             <input type="number" class="form-control"
-                                name="tax_rate" id="tax_rate">
+                                name="tax_rate" id="tax_rate" readonly>
                         </th>
                     </tr>
 
@@ -143,12 +143,12 @@
             </table>
         </div>
 
-        @if(optional($rab)->notes)
+        {{-- @if(optional($rab)->notes)
             <div class="mt-4">
                 <h5 class="fw-bold">Keterangan</h5>
                 <div class="border p-3">{{ $rab->notes }}</div>
             </div>
-        @endif
+        @endif --}}
 
     <div class="text-end mt-4">
         <button class="btn btn-dark">Simpan Penawaran</button>

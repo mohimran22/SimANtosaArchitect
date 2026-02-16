@@ -155,7 +155,7 @@ p {
 {{-- TERBILANG --}}
 <p style="margin-bottom:4px;">
     <strong>Terbilang :</strong><br>
-    {{ terbilang($invoice->amount) }} Rupiah
+    {{ ucwords(trim(terbilang($invoice->amount))) }} Rupiah
 </p>
 
 {{-- CATATAN --}}
