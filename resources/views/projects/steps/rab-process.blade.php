@@ -154,12 +154,6 @@ let currentBasePrice = 0; // harga asli dari DB
 </script>
 
 <script>
-    // $(document).ready(function() {
-    //     $('.select2').select2({
-    //         placeholder: "-- Pilih --",
-    //         width: '100%'
-    //     });
-    // });
 
 function formatRp(num) {
     return new Intl.NumberFormat('id-ID', {
@@ -174,6 +168,15 @@ function cleanNumber(val) {
     return parseFloat(
         val.toString().replace(/[^0-9.-]+/g, '')
     ) || 0;
+}
+
+function numberToLetters(num) {
+    let letters = '';
+    while (num >= 0) {
+        letters = String.fromCharCode((num % 26) + 65) + letters;
+        num = Math.floor(num / 26) - 1;
+    }
+    return letters;
 }
 
 let currentRabJob = null;
@@ -279,15 +282,17 @@ function renderRabTable() {
     });
 
     // 🔹 RENDER
-    Object.keys(grouped).forEach(groupCode => {
+    Object.keys(grouped).forEach((groupCode, index) => {
 
         const group = grouped[groupCode];
+        const cleanGroupName = group.name.replace(/^HARGA SATUAN\s*/i, '');
+        const groupLabel = numberToLetters(index);
 
         // HEADER GROUP
         tbody.insertAdjacentHTML('beforeend', `
             <tr class="table-secondary fw-bold">
-                <td>${groupCode}</td>
-                <td colspan="7">${group.name}</td>
+                <td>${groupLabel}</td>
+                <td colspan="7">${cleanGroupName}</td>
             </tr>
         `);
 
@@ -334,7 +339,7 @@ function renderRabTable() {
         // 🔹 SUBTOTAL PER GROUP
         tbody.insertAdjacentHTML('beforeend', `
             <tr class="fw-bold">
-                <td colspan="5" class="text-end">Subtotal ${group.name}</td>
+                <td colspan="5" class="text-end">Subtotal ${cleanGroupName}</td>
                 <td class="text-end">${formatRp(group.subtotal)}</td>
             </tr>
         `);

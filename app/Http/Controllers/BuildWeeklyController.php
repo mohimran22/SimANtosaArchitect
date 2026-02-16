@@ -13,8 +13,10 @@ public function update(Request $r)
 {
     $item = BuildProcessItem::findOrFail($r->item_id);
 
+    $vol = floatval($r->volume ?? 0);
+
     $progress = $item->volume > 0
-        ? ($r->volume / $item->volume) * 100
+        ? ($vol / $item->volume) * 100
         : 0;
 
     $bobot = $progress * $item->bobot_percent / 100;
@@ -25,7 +27,7 @@ public function update(Request $r)
             'week_no'=>$r->week_no
         ],
         [
-            'volume'=>$r->volume,
+            'volume'=>$vol,              
             'progress_percent'=>$progress,
             'bobot_percent'=>$bobot
         ]
@@ -34,4 +36,3 @@ public function update(Request $r)
     return response()->json(['ok'=>true]);
 }
 }
-

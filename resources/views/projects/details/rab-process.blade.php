@@ -76,6 +76,16 @@
 
 
         <h5 class="fw-bold mt-5 mb-3">Rincian Pekerjaan</h5>
+            @php
+                    function numberToLetters($num) {
+                        $letters = '';
+                        while ($num >= 0) {
+                            $letters = chr(($num % 26) + 65) . $letters;
+                            $num = floor($num / 26) - 1;
+                        }
+                        return $letters;
+                    }
+            @endphp 
 
         <table class="table table-bordered align-middle">
             <thead>
@@ -91,10 +101,12 @@
 
             <tbody>
             @foreach($grouped as $group)
-                {{-- HEADER GROUP --}}
+                @php
+                    $cleanName = preg_replace('/^HARGA SATUAN\s*/i', '', $group['nama']);
+                @endphp
                 <tr class="table-secondary fw-bold">
-                    <td>{{ $group['kode'] }}</td>
-                    <td colspan="5">{{ $group['nama'] }}</td>
+                    <td>{{ numberToLetters($loop->index) }}</td>
+                    <td colspan="5">{{ $cleanName }}</td>
                     
                 </tr>
 
@@ -114,7 +126,7 @@
                 {{-- SUBTOTAL PER GROUP --}}
                 <tr class="fw-bold">
                     <td colspan="5" class="text-end">
-                        Subtotal {{ $group['nama'] }}
+                        Subtotal {{ $cleanName }}
                     </td>
                     <td class="text-end">
                         Rp {{ number_format($group['subtotal'],0,',','.') }}

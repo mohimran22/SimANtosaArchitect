@@ -37,26 +37,21 @@ $totalCols = 6 + ($weekCount * 3);
                 @endcan
             </div>
         </div> --}}
-        {{-- <button id="saveBobotBtn" class="btn btn-success btn-sm">
-            Simpan Bobot
-        </button> --}}
 
         <div class="table-responsive">
             <table class="table table-bordered align-middle" style="table-layout: fixed;">
                     <colgroup>
-                        <col style="width:60px;">   {{-- No --}}
-                        <col style="width:250px;">  {{-- Uraian --}}
-                        
-                        <col style="width:80px;">   {{-- Satuan --}}
-                        <col style="width:80px;">   {{-- Vol --}}
-                        <col style="width:140px;">  {{-- Jumlah Harga --}}
-                        
-                        <col style="width:120px;">  {{-- Bobot --}}
+                        <col style="width:60px;">   
+                        <col style="width:250px;">  
+                        <col style="width:80px;">   
+                        <col style="width:80px;">   
+                        <col style="width:140px;">  
+                        <col style="width:120px;">  
                         
                         @foreach($project->week_labels as $w)
-                            <col style="width:100px;">   {{-- Vol --}}
-                            <col style="width:100px;">   {{-- Progress --}}
-                            <col style="width:100px;">   {{-- Bobot --}}
+                            <col style="width:100px;"> 
+                            <col style="width:100px;">   
+                            <col style="width:100px;">   
                         @endforeach
                     </colgroup>
             <thead class="table-light">
@@ -160,7 +155,7 @@ $totalCols = 6 + ($weekCount * 3);
                 </tbody>
                 <tfoot>
                 <tr class="table-warning">
-                    <th colspan="4" class="text-end">TOTAL</th>
+                    <th colspan="4" class="text-end">Realisai Pekerjaan</th>
 
                     <th id="totalHarga">
                         {{ number_format($project->buildItems->sum('total'),0,',','.') }}
@@ -192,27 +187,32 @@ $totalCols = 6 + ($weekCount * 3);
 @push('js')
 
 <script>
-const dataAwal = @json($project->getKurvaSData());
+document.addEventListener('DOMContentLoaded', () => {
 
-window.kurvaChart = new Chart(document.getElementById('kurvaSChart'), {
-    type: 'line',
-    data: {
-        labels: dataAwal.map(d => 'Minggu ' + d.week),
-        datasets: [{
-            label: 'Progress (%)',
-            data: dataAwal.map(d => d.progress),
-            tension: 0.3
-        }]
-    },
-    options: {
-        animation: false,
-        scales: {
-            y: {
-                beginAtZero: true,
-                max: 100
-            }
-        }
+    const ctx = document.getElementById('kurvaSChart');
+    if(!ctx || typeof Chart === 'undefined') {
+        console.error('Chart.js belum load');
+        return;
     }
+
+    const dataAwal = @json($project->getKurvaSData());
+
+    window.kurvaChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: dataAwal.map(d=>'Minggu '+d.week),
+            datasets:[{
+                label:'Progress (%)',
+                data:dataAwal.map(d=>d.progress),
+                tension:0.3
+            }]
+        },
+        options:{
+            animation:false,
+            scales:{ y:{ beginAtZero:true, max:100 }}
+        }
+    });
+
 });
 
 function rebuildKurvaFromTable() {
@@ -238,9 +238,8 @@ function rebuildKurvaFromTable() {
 }
 
 function updateKurvaChartRealtime() {
-
+    if(!window.kurvaChart) return;
     const dataBaru = rebuildKurvaFromTable();
-
     window.kurvaChart.data.datasets[0].data = dataBaru;
     window.kurvaChart.update();
 }
@@ -297,14 +296,19 @@ function autosaveBobot() {
             items
         })
     })
-    .then(r=>r.json())
+    .then(r=>{
+        if(!r.ok) throw new Error('HTTP '+r.status);
+        return r.json();
+    })
     .then(res=>{
         if(res.locked){
             document.querySelectorAll('.bobot-input')
                 .forEach(el=>el.disabled = true);
-
             alert('Bobot sudah 100% dan dikunci');
         }
+    })
+    .catch(err=>{
+        console.error("autosaveBobot gagal:", err);
     });
 }
 
@@ -387,9 +391,9 @@ document.addEventListener('DOMContentLoaded', function() {
     hitungFooter();
     function autosaveWeek(item, week)
 {
-    const vol = document.querySelector(
+    const vol = parseFloat(document.querySelector(
         `.week-vol[data-item="${item}"][data-week="${week}"]`
-    ).value;
+    ).value || 0);
 
     fetch("{{ route('build-weekly.update') }}", {
         method: "POST",
@@ -438,6 +442,8 @@ function hitungFooter() {
         document.getElementById(`sum-bobot-${w}`).innerText = sumBobot.toFixed(2);
     }
 }
+hitungFooter();
+updateKurvaChartRealtime();
     });
 
 
