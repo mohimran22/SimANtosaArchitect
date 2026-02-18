@@ -6,7 +6,16 @@ $groups = $project->buildItems
 
 $no = 1;
 $weekCount = count($project->week_labels);
-$totalCols = 6 + ($weekCount * 3);
+$colsFixed   = 6;
+$colsNormal  = 3;
+$colsJustek  = 3;
+$colsPerWeek = $colsNormal + $colsJustek; // = 6
+$colsTotal   = 3;
+
+$weekCount = count($project->week_labels);
+
+$totalCols = $colsFixed + ($weekCount * $colsPerWeek) + $colsTotal;
+
 $plans = $project->weeklyPlans
     ->keyBy('week_no');
 @endphp
@@ -41,6 +50,7 @@ $plans = $project->weeklyPlans
         </div> --}}
 
         <div class="table-responsive">
+
             <table class="table table-bordered align-middle" style="table-layout: fixed;">
                     <colgroup>
                         <col style="width:60px;">   
@@ -54,47 +64,69 @@ $plans = $project->weeklyPlans
                             <col style="width:100px;"> 
                             <col style="width:100px;">   
                             <col style="width:100px;">   
+                            <col class="just-col" data-week="{{ $w['week_no'] }}" style="width:90px;">
+                            <col class="just-col" data-week="{{ $w['week_no'] }}" style="width:90px;">
+                            <col class="just-col" data-week="{{ $w['week_no'] }}" style="width:110px;">
                         @endforeach
+                        <col style="width:140px;">
+                        <col style="width:140px;">
+                        <col style="width:140px;">
                     </colgroup>
                 <thead class="table-light">
                     <tr>
                         <th rowspan="2" class="align-middle text-center">No</th>
                         <th rowspan="2" class="align-middle">Uraian Pekerjaan</th>
 
-                        <th colspan="3" class="text-center">TERKONTRAK</th>
-
-                        <th rowspan="2" class="align-middle">Bobot (%)</th>
+                        <th colspan="4" class="text-center">TERKONTRAK</th>
 
                         @foreach($project->week_labels as $w)
                             <th colspan="3" class="text-center">
                                 M{{ $w['week_no'] }}
-                                    <button type="button"
-                                        class="btn btn-sm btn-outline-primary ms-1 btn-just-toggle"
-                                        data-week="{{ $w['week_no'] }}">
-                                        +
-                                    </button>
+                                <button type="button"
+                                    class="btn btn-sm btn-outline-dark ms-1 btn-just-toggle"
+                                    data-week="{{ $w['week_no'] }}">
+                                    +
+                                </button>
+                            </th>
+
+                            <th colspan="3"
+                                class="text-center bg-warning-subtle just-head"
+                                data-week="{{ $w['week_no'] }}">
+                                Justek Volume M{{ $w['week_no'] }}
                             </th>
                         @endforeach
+
+                        <th colspan="3" class="text-center">Total</th>
                     </tr>
 
                     <tr>
                         <th class="align-middle">Satuan</th>
                         <th class="align-middle text-center">Vol</th>
                         <th class="align-middle">Jumlah Harga</th>
+                        <th class="align-middle text-center">Bobot (%)</th>
 
                         @foreach($project->week_labels as $w)
                             <th class="align-middle text-center">Vol</th>
                             <th class="text-center">Progres<br>(%)</th>
                             <th class="text-center">Bobot<br>(%)</th>
+
+                            <th class="just-col" data-week="{{ $w['week_no'] }}">Kurang</th>
+                            <th class="just-col" data-week="{{ $w['week_no'] }}">Tambah</th>
+                            <th class="just-col" data-week="{{ $w['week_no'] }}">Pek.Baru</th>
                         @endforeach
+
+                        <th class="text-center">Vol<br>Pelaksanaan</th>
+                        <th class="text-center">Nilai<br>Kontrak</th>
+                        <th class="text-center">Nilai<br>Pelaksanaan</th>
                     </tr>
                 </thead>
+
                 <tbody>
                     @foreach($groups as $namaGroup => $itemsGroup)
                         @php
                             $cleanName = preg_replace('/^HARGA SATUAN\s*/i', '', $namaGroup);
                         @endphp
-                        <tr style="background:#cbd5e1;font-weight:700">
+                        <tr style="background:#c4c4c4;font-weight:700">
                             <td colspan="{{ $totalCols }}">
                                 {{ $cleanName }}
                             </td>
@@ -107,11 +139,6 @@ $plans = $project->weeklyPlans
                         @endphp
 
                         @foreach($sub as $namaPekerjaan => $itemsSub)
-
-                            {{-- <tr style="background:#e5e7eb;font-weight:600">
-                                <td></td>
-                                <td colspan="5">{{ $namaPekerjaan }}</td>
-                            </tr> --}}
                             @foreach($itemsSub as $item)
                             @php
                                 $volKontrak = $item->volume;
@@ -163,38 +190,31 @@ $plans = $project->weeklyPlans
                                                 data-week="{{ $w['week_no'] }}"
                                                 id="bobot-{{ $item->id }}-{{ $w['week_no'] }}">
                                             </td>
-                                        @endforeach
-                                </tr>
-                                <tr class="just-row d-none" data-week-row="{{ $item->id }}">
-                                    <td colspan="6"></td>
-
-                                    @foreach($project->week_labels as $w)
-                                        <td colspan="3">
-                                            <div class="row g-1">
-                                                <div class="col">
-                                                    <input class="form-control form-control-sm just-kurang"
+                                            <td class="just-col" data-week="{{ $w['week_no'] }}">
+                                                <input class="form-control just-kurang"
                                                         placeholder="Kurang"
                                                         data-item="{{ $item->id }}"
-                                                        data-week="{{ $w['week_no'] }}">
-                                                </div>
-                                                <div class="col">
-                                                    <input class="form-control form-control-sm just-tambah"
+                                                        data-week="{{ $w['week_no'] }}"></td>
+                                            <td class="just-col" data-week="{{ $w['week_no'] }}">
+                                                <input class="form-control just-tambah"
                                                         placeholder="Tambah"
                                                         data-item="{{ $item->id }}"
-                                                        data-week="{{ $w['week_no'] }}">
-                                                </div>
-                                                <div class="col">
-                                                    <input class="form-control form-control-sm just-baru"
+                                                        data-week="{{ $w['week_no'] }}"></td>
+                                            <td class="just-col" data-week="{{ $w['week_no'] }}">
+                                                <input class="form-control just-baru"
                                                         placeholder="Pek.Baru"
                                                         data-item="{{ $item->id }}"
-                                                        data-week="{{ $w['week_no'] }}">
-                                                </div>
-                                            </div>
+                                                        data-week="{{ $w['week_no'] }}"></td>
+                                        @endforeach
+                                        <td class="total-pelaksanaan"
+                                            data-item="{{ $item->id }}"
+                                            data-vol-kontrak="{{ $item->volume }}">
+                                            {{ number_format($item->volume, 3) }}
                                         </td>
-                                    @endforeach
+                                        <td>{{ number_format($item->total,0,',','.') }}</td>
+                                        <td class="nilai-pelaksanaan">0</td>
                                 </tr>
                             @endforeach
-
                         @endforeach
                     @endforeach
                 </tbody>
@@ -205,6 +225,7 @@ $plans = $project->weeklyPlans
                         </th>
                         <th>{{ number_format($project->buildItems->sum('total'),0,',','.') }}</th>
                         <th class="totalBobotKontrak">0</th>
+
                         @foreach($project->week_labels as $w)
                             <th></th>
                             <th></th>
@@ -215,19 +236,33 @@ $plans = $project->weeklyPlans
                                     data-week="{{ $w['week_no'] }}"
                                     value="{{ $plans[$w['week_no']]->bobot_percent ?? 0 }}">
                             </th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
                         @endforeach
+                        <th></th>
+                        <th></th>
+                        <th id="grand-total-pelaksanaan">0</th>
                     </tr>
+
                     <tr class="table-warning">
-                        <th colspan="4" class="text-end">Realisai kumulatif kemajuan Pekerjaan</th>
-                        <th>
-                            {{ number_format($project->buildItems->sum('total'),0,',','.') }}
+                        <th colspan="4" class="text-end">
+                            Realisasi kumulatif kemajuan Pekerjaan
                         </th>
+                        <th>{{ number_format($project->buildItems->sum('total'),0,',','.') }}</th>
                         <th class="totalBobotKontrak">0</th>
+
                         @foreach($project->week_labels as $w)
                             <th></th>
                             <th></th>
                             <th id="sum-bobot-{{ $w['week_no'] }}">0</th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
                         @endforeach
+                        <th></th>
+                        <th></th>
+                        <th id="grand-total-pelaksanaan">0</th>
                     </tr>
                 </tfoot>
             </table>
@@ -475,6 +510,37 @@ document.addEventListener('DOMContentLoaded', function() {
 
 </script>
 <script>
+document.addEventListener('click', function(e) {
+
+    const btn = e.target.closest('.btn-just-toggle');
+    if (!btn) return;
+
+    const week = btn.dataset.week;
+
+    const targets = document.querySelectorAll(
+        `.just-col[data-week="${week}"],
+         .just-head[data-week="${week}"]`
+    );
+
+    const cols = document.querySelectorAll(
+        `col.just-col[data-week="${week}"]`
+    );
+
+    const isHidden = targets[0].classList.contains('just-hidden');
+
+    targets.forEach(el => el.classList.toggle('just-hidden', !isHidden));
+    cols.forEach(el => el.classList.toggle('just-hidden', !isHidden));
+
+    btn.textContent = isHidden ? '−' : '+';
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.just-col, .just-head, col.just-col')
+        .forEach(el => el.classList.add('just-hidden'));
+});
+</script>
+<script>
     document.addEventListener('DOMContentLoaded', function() {
     function recalcWeek(itemId, weekNo, itemVol, itemBobot)
     {
@@ -534,19 +600,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     hitungFooter();
-    document.addEventListener('click', e => {
 
-    const btn = e.target.closest('.btn-just-toggle');
-    if (!btn) return;
-
-    const week = btn.dataset.week;
-
-    document.querySelectorAll('.just-row')
-        .forEach(row => {
-            row.classList.toggle('d-none');
-        });
-
-});
 let autosaveTimer = {};
 
 function autosaveWeek(item, week)
@@ -642,5 +696,108 @@ function lockItemRow(itemId)
 hitungFooter();
 updateKurvaChartRealtime();
     });
+function hitungTotalPelaksanaan() {
+    let grandTotalVolume = 0;
+    let grandTotalHarga = 0;
+
+    document.querySelectorAll('tr[data-item-id]').forEach(row => {
+        const volKontrak = parseFloat(row.dataset.itemVol) || 0;
+
+        const hargaKontrakText = row.children[4].innerText
+            .replace(/\./g, '')
+            .replace(',', '.');
+
+        const hargaKontrak = parseFloat(hargaKontrakText) || 0;
+
+        let totalTambah = 0;
+        let totalKurang = 0;
+        let totalBaru = 0;
+
+        row.querySelectorAll('.just-tambah').forEach(i => {
+            totalTambah += parseFloat(i.value) || 0;
+        });
+
+        row.querySelectorAll('.just-kurang').forEach(i => {
+            totalKurang += parseFloat(i.value) || 0;
+        });
+
+        row.querySelectorAll('.just-baru').forEach(i => {
+            totalBaru += parseFloat(i.value) || 0;
+        });
+
+        const volPelaksanaan =
+            volKontrak + totalTambah - totalKurang + totalBaru;
+
+        let hargaPelaksanaan = 0;
+        if (volKontrak > 0) {
+            hargaPelaksanaan =
+                (volPelaksanaan / volKontrak) * hargaKontrak;
+        }
+
+        // isi kolom total
+const cells = row.querySelectorAll('td');
+
+const colVolPelaksanaan   = cells[cells.length - 3];
+const colNilaiKontrak     = cells[cells.length - 2]; // biarkan
+const colNilaiPelaksanaan = cells[cells.length - 1]; // update di sini
+
+colVolPelaksanaan.textContent = volPelaksanaan.toFixed(3);
+
+colNilaiPelaksanaan.textContent =
+    Math.round(hargaPelaksanaan).toLocaleString('id-ID');
+
+        grandTotalVolume += volPelaksanaan;
+        grandTotalHarga += hargaPelaksanaan;
+    });
+
+    const grandVol = document.getElementById('grand-total-pelaksanaan');
+    if (grandVol) {
+        grandVol.textContent = grandTotalVolume.toFixed(3);
+    }
+}
+
+document.addEventListener('input', e => {
+    if (
+        e.target.classList.contains('just-kurang') ||
+        e.target.classList.contains('just-tambah') ||
+        e.target.classList.contains('just-baru')
+    ) {
+        hitungTotalPelaksanaan();
+    }
+});
+
+document.addEventListener('DOMContentLoaded', hitungTotalPelaksanaan);
+
+
+document.addEventListener('input', e => {
+    if (
+        e.target.classList.contains('just-kurang') ||
+        e.target.classList.contains('just-tambah') ||
+        e.target.classList.contains('just-baru')
+    ) {
+        hitungTotalPelaksanaan();
+    }
+});
+
+document.addEventListener('input', e => {
+    if (
+        e.target.classList.contains('just-kurang') ||
+        e.target.classList.contains('just-tambah') ||
+        e.target.classList.contains('just-baru')
+    ) {
+        hitungTotalPelaksanaan();
+    }
+});
 </script>
+
+@endpush
+@push('css')
+<style>
+.just-hidden {
+    visibility: collapse !important;
+}
+col.just-hidden {
+    visibility: collapse;
+}
+</style>
 @endpush

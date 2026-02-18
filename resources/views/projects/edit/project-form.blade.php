@@ -15,6 +15,33 @@
                     <input type="text" name="project_name" class="form-control"
                         value="{{ $project->project_name }}">
                 </div>
+                <div class="col-md-2">
+                    <label class="form-label required">Jenis Proyek</label>
+                    <select name="project_type" 
+                            class="form-select select2 @error('project_type') is-invalid @enderror" 
+                            required>
+                        <option value="">-- Pilih --</option>
+                        <option value="1" {{ old('project_type', $project->project_type) == '1' ? 'selected' : '' }}>Desain</option>
+                        <option value="2" {{ old('project_type', $project->project_type) == '2' ? 'selected' : '' }}>RAB</option>
+                        <option value="3" {{ old('project_type', $project->project_type) == '3' ? 'selected' : '' }}>Build</option>
+                    </select>
+                    @error('project_type')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label required">Tanggal Mulai Proyek</label>
+                                <input type="date" name="start_date" class="form-control" required
+                                    value="{{ old('start_date', $project->start_date) }}"
+                                    pattern="\d{4}-\d{2}-\d{2}" placeholder="YYYY-MM-DD">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Tanggal Akhir Proyek (Estimasi)</label>
+                                <input type="date" name="end_date" class="form-control"
+                                    value="{{ old('end_date', $project->end_date) }}"
+                                    pattern="\d{4}-\d{2}-\d{2}" placeholder="YYYY-MM-DD">
+                </div>
 
                 <div class="col-md-4">
                     <label class="fw-semibold">Customer</label>

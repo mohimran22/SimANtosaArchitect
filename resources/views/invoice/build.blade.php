@@ -195,7 +195,6 @@ p {
     $remaining = $offer->grand_total - $paidUntilNow;
 @endphp
 
-
 <p class="bold">Keterangan :</p>
 <ul>
 @if($remaining > 0)
