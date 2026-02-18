@@ -26,6 +26,7 @@ COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 EXPOSE 8080
 
 COPY docker/entrypoint.sh /entrypoint.sh
+COPY docker/php.ini /usr/local/etc/php/conf.d/uploads.ini
 RUN chmod +x /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]

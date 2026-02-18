@@ -167,9 +167,6 @@ class SurveyController extends Controller
         'notes' => 'nullable|string',
     ]);
 
-    // ===========================
-    // UPDATE DATA SURVEY
-    // ===========================
     $survey->update([
         'survey_date'   => $request->survey_date,
         'survey_time'   => $request->survey_time,

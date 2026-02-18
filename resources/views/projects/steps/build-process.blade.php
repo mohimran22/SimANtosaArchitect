@@ -68,6 +68,11 @@ $plans = $project->weeklyPlans
                         @foreach($project->week_labels as $w)
                             <th colspan="3" class="text-center">
                                 M{{ $w['week_no'] }}
+                                    <button type="button"
+                                        class="btn btn-sm btn-outline-primary ms-1 btn-just-toggle"
+                                        data-week="{{ $w['week_no'] }}">
+                                        +
+                                    </button>
                             </th>
                         @endforeach
                     </tr>
@@ -107,7 +112,6 @@ $plans = $project->weeklyPlans
                                 <td></td>
                                 <td colspan="5">{{ $namaPekerjaan }}</td>
                             </tr> --}}
-
                             @foreach($itemsSub as $item)
                             @php
                                 $volKontrak = $item->volume;
@@ -116,12 +120,11 @@ $plans = $project->weeklyPlans
 
                                 $isFull = $volTerpakai >= $volKontrak;
                             @endphp
-                                    <tr
-                                        data-item-id="{{ $item->id }}"
-                                        data-item-vol="{{ $item->volume }}"
-                                        data-item-bobot="{{ $item->bobot_percent }}"
-                                        data-full="{{ $isFull ? 1 : 0 }}"
-                                    >
+                                <tr
+                                    data-item-id="{{ $item->id }}"
+                                    data-item-vol="{{ $item->volume }}"
+                                    data-item-bobot="{{ $item->bobot_percent }}"
+                                    data-full="{{ $isFull ? 1 : 0 }}">                              
                                     <td>{{ $no++ }}</td>
                                     <td>
                                         {{ $item->uraian }}
@@ -156,12 +159,39 @@ $plans = $project->weeklyPlans
                                                 data-week="{{ $w['week_no'] }}"
                                                 id="prog-{{ $item->id }}-{{ $w['week_no'] }}">
                                             </td>
-
                                             <td class="week-bobot"
                                                 data-week="{{ $w['week_no'] }}"
                                                 id="bobot-{{ $item->id }}-{{ $w['week_no'] }}">
                                             </td>
                                         @endforeach
+                                </tr>
+                                <tr class="just-row d-none" data-week-row="{{ $item->id }}">
+                                    <td colspan="6"></td>
+
+                                    @foreach($project->week_labels as $w)
+                                        <td colspan="3">
+                                            <div class="row g-1">
+                                                <div class="col">
+                                                    <input class="form-control form-control-sm just-kurang"
+                                                        placeholder="Kurang"
+                                                        data-item="{{ $item->id }}"
+                                                        data-week="{{ $w['week_no'] }}">
+                                                </div>
+                                                <div class="col">
+                                                    <input class="form-control form-control-sm just-tambah"
+                                                        placeholder="Tambah"
+                                                        data-item="{{ $item->id }}"
+                                                        data-week="{{ $w['week_no'] }}">
+                                                </div>
+                                                <div class="col">
+                                                    <input class="form-control form-control-sm just-baru"
+                                                        placeholder="Pek.Baru"
+                                                        data-item="{{ $item->id }}"
+                                                        data-week="{{ $w['week_no'] }}">
+                                                </div>
+                                            </div>
+                                        </td>
+                                    @endforeach
                                 </tr>
                             @endforeach
 
@@ -169,40 +199,36 @@ $plans = $project->weeklyPlans
                     @endforeach
                 </tbody>
                 <tfoot>
-                <tr class="table-info">
-                    <th colspan="5" class="text-end">
-                        Total Pekerjaan Kumulatif (%)
-                    </th>
-
-                    <th></th>
-
-                    @foreach($project->week_labels as $w)
-                        <th></th>
-                        <th></th>
-                        <th>
-                            <input type="number"
-                                step="0.001"
-                                class="form-control plan-bobot"
-                                data-week="{{ $w['week_no'] }}"
-                                value="{{ $plans[$w['week_no']]->bobot_percent ?? 0 }}">
+                    <tr class="table-info">
+                        <th colspan="4" class="text-end">
+                            Total Pekerjaan Kumulatif (%)
                         </th>
-                    @endforeach
-                </tr>
-                <tr class="table-warning">
-                    <th colspan="4" class="text-end">Realisai kumulatif kemajuan Pekerjaan</th>
-
-                    <th id="totalHarga">
-                        {{ number_format($project->buildItems->sum('total'),0,',','.') }}
-                    </th>
-
-                    <th id="totalBobotKontrak">0</th>
-
-                    @foreach($project->week_labels as $w)
-                        <th></th>
-                        <th></th>
-                        <th id="sum-bobot-{{ $w['week_no'] }}">0</th>
-                    @endforeach
-                </tr>
+                        <th>{{ number_format($project->buildItems->sum('total'),0,',','.') }}</th>
+                        <th class="totalBobotKontrak">0</th>
+                        @foreach($project->week_labels as $w)
+                            <th></th>
+                            <th></th>
+                            <th>
+                                <input type="number"
+                                    step="0.001"
+                                    class="form-control plan-bobot"
+                                    data-week="{{ $w['week_no'] }}"
+                                    value="{{ $plans[$w['week_no']]->bobot_percent ?? 0 }}">
+                            </th>
+                        @endforeach
+                    </tr>
+                    <tr class="table-warning">
+                        <th colspan="4" class="text-end">Realisai kumulatif kemajuan Pekerjaan</th>
+                        <th>
+                            {{ number_format($project->buildItems->sum('total'),0,',','.') }}
+                        </th>
+                        <th class="totalBobotKontrak">0</th>
+                        @foreach($project->week_labels as $w)
+                            <th></th>
+                            <th></th>
+                            <th id="sum-bobot-{{ $w['week_no'] }}">0</th>
+                        @endforeach
+                    </tr>
                 </tfoot>
             </table>
         </div>
@@ -222,9 +248,11 @@ document.addEventListener('DOMContentLoaded', () => {
 document.querySelectorAll('.plan-bobot')
 .forEach(el => {
     el.addEventListener('input', e => {
+        const target = e.target;
+
         autosavePlan(
-            el.dataset.week,
-            parseFloat(el.value) || 0
+            target.dataset.week,
+            parseFloat(target.value) || 0
         );
         updateKurvaPlanRealtime();
     });
@@ -251,7 +279,7 @@ document.querySelectorAll('.plan-bobot')
             {
                 label:'Rencana (%)',
                 // data:getPlanKumulatif(),
-                data:dataAwal.map(d=>d.progress),
+                data:dataPlan.map(d=>d.progress),
                 tension:0.3,
                 // borderDash:[5,5]
             }]
@@ -375,7 +403,10 @@ function collectBobot() {
 }
 
 function updateTotalDisplay(total) {
-    document.getElementById('totalBobotKontrak').innerText = total.toFixed(2);
+    document.querySelectorAll('.totalBobotKontrak')
+        .forEach(el => {
+            el.innerText = total.toFixed(2);
+        });
 }
 
 function calcTotal() {
@@ -392,12 +423,14 @@ function autosaveBobot() {
     const items = collectBobot();
     const total = calcTotal();
 
-    if (Math.round(total*100)/100 !== 100) {
-        document.getElementById('totalBobotKontrak').classList.add('text-danger');
-        return; 
+    if (Math.abs(total - 100) > 0.01) {
+        document.querySelectorAll('.totalBobotKontrak')
+            .forEach(el => el.classList.add('text-danger'));
+        return; // stop autosave
+    } else {
+        document.querySelectorAll('.totalBobotKontrak')
+            .forEach(el => el.classList.remove('text-danger'));
     }
-
-    document.getElementById('totalBobotKontrak').classList.remove('text-danger');
 
     fetch("{{ route('build-items.update-bobot') }}", {
         method: "POST",
@@ -501,6 +534,19 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     hitungFooter();
+    document.addEventListener('click', e => {
+
+    const btn = e.target.closest('.btn-just-toggle');
+    if (!btn) return;
+
+    const week = btn.dataset.week;
+
+    document.querySelectorAll('.just-row')
+        .forEach(row => {
+            row.classList.toggle('d-none');
+        });
+
+});
 let autosaveTimer = {};
 
 function autosaveWeek(item, week)
