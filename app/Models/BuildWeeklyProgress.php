@@ -12,6 +12,9 @@ class BuildWeeklyProgress extends Model
         'bobot_percent',
         'build_process_item_id',
         'progress_percent',
+        'just_kurang',
+        'just_tambah',
+        'just_baru'
     ];
 
     protected $casts = [

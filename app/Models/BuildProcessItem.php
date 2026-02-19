@@ -15,7 +15,8 @@ class BuildProcessItem extends Model
         'satuan',
         'bobot_percent',
         'price',
-        'total'
+        'total',
+        'is_additional'
     ];
 
     protected $casts = [
