@@ -16,7 +16,9 @@ class BuildProcessItem extends Model
         'bobot_percent',
         'price',
         'total',
-        'is_additional'
+        'is_tambahan',
+        'parent_id',
+        'sumber'
     ];
 
     protected $casts = [
@@ -42,4 +44,14 @@ class BuildProcessItem extends Model
     {
         return $this->weeklyProgresses()->sum('progress_percent');
     }
+    public function parent()
+{
+    return $this->belongsTo(BuildProcessItem::class, 'parent_id');
 }
+
+public function tambahan()
+{
+    return $this->hasMany(BuildProcessItem::class, 'parent_id');
+}
+}
+

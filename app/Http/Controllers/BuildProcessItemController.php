@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Project;
 use App\Models\BuildProcessItem;
+use App\Models\JobCategory;
 use DB;
 
 class BuildProcessItemController extends Controller
@@ -49,5 +50,47 @@ public function updateBobot(Request $request)
         'ok'=>true,
         'locked'=>true
     ]);
+}
+public function storeTambahan(Request $request)
+{
+    $request->validate([
+        'project_id' => 'required|exists:projects,id',
+        'parent_item_id' => 'required|exists:build_process_items,id',
+        'job_category_id' => 'required|exists:job_categories,id',
+    ]);
+
+    return DB::transaction(function () use ($request) {
+
+        $job = JobCategory::findOrFail($request->job_category_id);
+
+        $parent = BuildProcessItem::findOrFail($request->parent_item_id);
+
+        $item = BuildProcessItem::create([
+            'project_id' => $request->project_id,
+            'job_category_id' => $job->id,
+            'uraian' => $job->nama_pekerjaan,
+            'satuan' => $job->satuan ?? '-',
+            'volume' => 0,
+            'price' => $job->grand_total ?? 0,
+            'bobot_percent' => 0,
+
+            'is_tambahan' => true,
+            'parent_id' => $parent->id,
+            'sumber' => 'manual'
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Pekerjaan tambahan berhasil ditambahkan',
+                'data' => [
+                    'id' => $tambahan->id,
+                    'uraian' => $tambahan->uraian,
+                    'satuan' => $tambahan->satuan,
+                    'volume' => $tambahan->volume,
+                    'price' => $tambahan->price,
+                    'parent_id' => $tambahan->parent_id,
+                ]
+        ]);
+    });
 }
 }

@@ -10,7 +10,7 @@
     $colsNormal  = 3;
     $colsJustek  = 3;
     $colsPerWeek = $colsNormal + $colsJustek; // = 6
-    $colsTotal   = 3;
+    $colsTotal   = 4;
 
     $weekCount = count($project->week_labels);
 
@@ -71,6 +71,7 @@
                         <col style="width:140px;">
                         <col style="width:140px;">
                         <col style="width:140px;">
+                        <col style="width:140px;">
                     </colgroup>
                 <thead class="table-light">
                     <tr>
@@ -96,7 +97,7 @@
                             </th>
                         @endforeach
 
-                        <th colspan="3" class="text-center">Perubahan Volume</th>
+                        <th colspan="4" class="text-center">Perubahan Volume</th>
                     </tr>
 
                     <tr>
@@ -114,7 +115,7 @@
                             <th class="just-col" data-week="{{ $w['week_no'] }}">Tambah</th>
                             <th class="just-col" data-week="{{ $w['week_no'] }}">Pek.Baru</th>
                         @endforeach
-
+                        <th class="text-center">Total<br>Justek</th>
                         <th class="text-center">Total<br>Vol</th>
                         <th class="text-center">Harga<br>Satuan</th>
                         <th class="text-center">Harga<br>Total</th>
@@ -139,7 +140,7 @@
                         @endphp
 
                         @foreach($sub as $namaPekerjaan => $itemsSub)
-                            @foreach($itemsSub as $item)
+                            @foreach($itemsSub->whereNull('parent_id') as $item)
                             @php
                                 $volKontrak = $item->volume;
 
@@ -205,22 +206,28 @@
                                             </td>
                                             <td class="just-col" data-week="{{ $w['week_no'] }}">
                                                 <input class="form-control just-kurang"
-                                                        placeholder="Kurang"
+                                                        
                                                         data-item="{{ $item->id }}"
                                                         data-week="{{ $w['week_no'] }}"
                                                         value="{{ $prog->just_kurang ?? 0 }}">
                                             </td>
                                             <td class="just-col" data-week="{{ $w['week_no'] }}">
                                                 <input class="form-control just-tambah"
-                                                        placeholder="Tambah"
+                                                        
                                                         data-item="{{ $item->id }}"
                                                         data-week="{{ $w['week_no'] }}" value="{{ $prog->just_tambah ?? 0 }}"></td>
                                             <td class="just-col" data-week="{{ $w['week_no'] }}">
                                                 <input class="form-control just-baru"
-                                                        placeholder="Pek.Baru"
-                                                        data-item="{{ $item->id }}"
-                                                        data-week="{{ $w['week_no'] }}" value="{{ $prog->just_baru ?? 0 }}" readonly></td>
+                                                    data-item="{{ $item->id }}"
+                                                    data-week="{{ $w['week_no'] }}"
+                                                    value="{{ $prog->just_baru ?? 0 }}"
+                                                    {{ $item->tambahan->count() ? '' : 'readonly' }}>
+                                            </td>
                                         @endforeach
+                                        <td class="total-justek"
+                                            data-item="{{ $item->id }}">
+                                            0
+                                        </td>
                                         <td class="total-pelaksanaan"
                                             data-item="{{ $item->id }}"
                                             data-vol-kontrak="{{ $item->volume }}">
@@ -236,7 +243,7 @@
 
                                             <div class="row">
 
-                                                <div class="col-md-4">
+                                                <div class="col-auto" style="width: 300px;">
                                                     <label>Pekerjaan Tambahan</label>
                                                     <select class="form-select select2 job-tambahan"
                                                             data-item="{{ $item->id }}">
@@ -250,7 +257,13 @@
                                                             </option>
                                                         @endforeach
                                                     </select>
+                                                    <button type="button"
+                                                            class="btn btn-sm btn-dark btn-simpan-tambahan"
+                                                            data-item="{{ $item->id }}">
+                                                        Tambahkan ke Kontrak
+                                                    </button>
                                                 </div>
+
 
                                                 {{-- <div class="col-md-2">
                                                     <label>Satuan</label>
@@ -282,8 +295,23 @@
                                         </div>
                                     </td>
                                 </tr>
+                                @foreach($item->tambahan as $sub)
+                                    <tr class="table-warning">
+                                        <td></td>
+                                        <td>
+                                            ↳ {{ $sub->uraian }}
+                                            <span class="badge bg-warning text-dark">Tambahan</span>
+                                        </td>
+                                        <td>{{ $sub->satuan }}</td>
+                                        <td>{{ $sub->volume }}</td>
+                                        <td>Rp {{ number_format($sub->price,0,',','.') }}</td>
+                                        <td colspan="{{ $totalCols - 5 }}"></td>
+                                    </tr>
+                                @endforeach
                             @endforeach
                         @endforeach
+
+
                     @endforeach
                 </tbody>
                 <tfoot>
@@ -308,9 +336,10 @@
                             <th></th>
                             <th></th>
                         @endforeach
+                        <th id="grand-total-justek">0</th>
                         <th id="grand-total-pelaksanaan">0</th>
                         <th></th>
-                        <th></th>
+                        <th id="grand-total-pelaksanaan-nilai">0</th>
                     </tr>
 
                     <tr class="table-info">
@@ -329,6 +358,7 @@
                             <th></th>
                         @endforeach
                         <th></th>
+                        <th id="grand-total-pelaksanaan">0</th>
                         <th></th>
                         <th id="grand-total-pelaksanaan-nilai">0</th>
                     </tr>
@@ -767,6 +797,7 @@
         function hitungTotalPelaksanaan() {
             let grandTotalVolume = 0;
             let grandTotalHarga = 0;
+            let grandTotalJustek = 0;
 
             document.querySelectorAll('tr[data-item-id]').forEach(row => {
                 const volKontrak = parseFloat(row.dataset.itemVol) || 0;
@@ -800,15 +831,21 @@
                 }
 
                 const cells = row.querySelectorAll('td');
+                const colTotalJustek      = row.querySelector('.total-justek');
+                const colVolPelaksanaan   = row.querySelector('.total-pelaksanaan');
+                const colNilaiKontrak      = row.querySelector('.harga-kontrak');
+                const colNilaiPelaksanaan = row.querySelector('.nilai-pelaksanaan');
+                let totalJustek = 0;
+                row.querySelectorAll('.just-baru, .just-tambah, .just-kurang').forEach(input => {
+                    totalJustek += parseFloat(input.value || 0);
+                });
 
-                const colVolPelaksanaan   = cells[cells.length - 3];
-                const colNilaiKontrak     = cells[cells.length - 2];
-                const colNilaiPelaksanaan = cells[cells.length - 1];
-
+                colTotalJustek.textContent = totalJustek.toFixed(3);
+                    grandTotalJustek += totalJustek;
                 colVolPelaksanaan.textContent = volPelaksanaan.toFixed(3);
 
                 colNilaiPelaksanaan.textContent =
-                    Math.round(hargaPelaksanaan).toLocaleString('id-ID');
+                   'Rp' + Math.round(hargaPelaksanaan).toLocaleString('id-ID');
 
                         grandTotalVolume += volPelaksanaan;
                         grandTotalHarga += hargaPelaksanaan;
@@ -823,6 +860,10 @@
                 grandNilai.textContent =
                 'Rp' + Math.round(grandTotalHarga)
                     .toLocaleString('id-ID');
+            }
+            const footerJustek = document.getElementById('grand-total-justek');
+            if (footerJustek) {
+                footerJustek.textContent = grandTotalJustek.toFixed(3);
             }
         }
         function autosaveJustek(item, week) {
@@ -890,46 +931,101 @@
                 );
 
                 rowTambahan.classList.toggle('d-none');
+                if (!rowTambahan.classList.contains('d-none')) {
                     $(rowTambahan).find('.select2').select2({
                         width: '100%',
                         placeholder: '-- Pilih Pekerjaan --'
                     });
+                }
             });
-            document.addEventListener('change', function(e) {
+            $(document).on('click', '.btn-simpan-tambahan', function (e) {
+    e.preventDefault();      // ⛔ cegah submit form
+    e.stopPropagation();     // ⛔ cegah event naik ke form
 
-                if (!e.target.classList.contains('job-tambahan')) return;
+    const parentId = this.dataset.item;
 
-                const select = e.target;
-                const row = select.closest('.row-tambahan');
-                const itemId = select.dataset.item;
+    const select = document.querySelector(
+        `.job-tambahan[data-item="${parentId}"]`
+    );
 
-                const option = select.options[select.selectedIndex];
+    const jobId = select.value;
+    if (!jobId) {
+        alert('Pilih pekerjaan tambahan dulu');
+        return;
+    }
 
-                // if (!select.value) {
-                //     row.querySelector('.unit-tambahan').value = '';
-                //     row.querySelector('.harga-satuan-tambahan').value = '';
-                //     row.querySelector('.jumlah-harga-tambahan').value = '';
+    fetch("{{ route('build-items.store-tambahan') }}", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-TOKEN": document.querySelector('meta[name=csrf-token]').content
+        },
+        body: JSON.stringify({
+            project_id: "{{ $project->id }}",
+            parent_item_id: parentId,
+            job_category_id: jobId
+        })
+    })
+    .then(r => r.json())
+.then(res => {
+    if (!res.success) return;
 
-                //     document.querySelectorAll(
-                //         `.just-baru[data-item="${itemId}"]`
-                //     ).forEach(input => input.readOnly = true);
+    const data = res.data;
+    const parentId = data.parent_id;
 
-                //     return;
-                // }
+    // aktifkan input Pek.Baru
+    document.querySelectorAll(
+        `.just-baru[data-item="${parentId}"]`
+    ).forEach(input => input.readOnly = false);
 
-                // const satuan = option.dataset.satuan;
-                // const price = parseFloat(option.dataset.price || 0);
+    // cari row parent
+    const parentRow = document.querySelector(
+        `tr[data-item-id="${parentId}"]`
+    );
 
-                // row.querySelector('.unit-tambahan').value = satuan;
-                // row.querySelector('.harga-satuan-tambahan').value =
-                //     'Rp ' + price.toLocaleString('id-ID');
+    // format rupiah
+    const rupiah = new Intl.NumberFormat('id-ID');
 
-                // Aktifkan Pek.Baru
-                document.querySelectorAll(
-                    `.just-baru[data-item="${itemId}"]`
-                ).forEach(input => input.readOnly = false);
+    // buat row tambahan
+    const newRow = document.createElement('tr');
+    newRow.className = 'table-warning';
+    newRow.innerHTML = `
+        <td></td>
+        <td>
+            ↳ ${data.uraian}
+            <span class="badge bg-warning text-dark">Tambahan</span>
+        </td>
+        <td>${data.satuan}</td>
+        <td>${data.volume}</td>
+        <td>Rp ${rupiah.format(data.price)}</td>
+        <td colspan="{{ $totalCols - 5 }}"></td>
+    `;
 
-            });
+    // insert setelah parent atau setelah tambahan terakhir
+    let insertAfter = parentRow;
+
+    while (
+        insertAfter.nextElementSibling &&
+        insertAfter.nextElementSibling.classList.contains('table-warning')
+    ) {
+        insertAfter = insertAfter.nextElementSibling;
+    }
+
+    insertAfter.after(newRow);
+    document.querySelector(
+        `.row-tambahan[data-item="${parentId}"]`
+    ).classList.add('d-none');
+
+    const select = document.querySelector(
+        `.job-tambahan[data-item="${parentId}"]`
+    );
+    $(select).val(null).trigger('change');
+});
+
+
+    return false; // double safety
+});
+
         });
     </script>
 @endpush

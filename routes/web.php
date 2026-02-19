@@ -518,6 +518,9 @@ Route::middleware(['auth'])
     ->post('/build-items/update-bobot',
         [BuildProcessItemController::class, 'updateBobot']
     )->name('build-items.update-bobot');
+Route::post('/build-items/tambahan', 
+    [BuildProcessItemController::class, 'storeTambahan']
+)->name('build-items.store-tambahan');
 
 Route::post('/build-weekly/update',
     [BuildWeeklyController::class,'update']
