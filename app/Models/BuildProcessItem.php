@@ -35,10 +35,10 @@ class BuildProcessItem extends Model
 {
     return $this->belongsTo(JobCategory::class,'job_category_id');
 }
-    public function weeklyProgresses()
-    {
-        return $this->hasMany(BuildWeeklyProgress::class);
-    }
+public function weeklyProgresses()
+{
+    return $this->hasMany(BuildWeeklyProgress::class, 'build_process_item_id');
+}
 
     public function getTotalProgressAttribute()
     {

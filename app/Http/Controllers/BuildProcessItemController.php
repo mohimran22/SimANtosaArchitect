@@ -62,10 +62,20 @@ public function storeTambahan(Request $request)
     return DB::transaction(function () use ($request) {
 
         $job = JobCategory::findOrFail($request->job_category_id);
-
         $parent = BuildProcessItem::findOrFail($request->parent_item_id);
 
-        $item = BuildProcessItem::create([
+        $exists = BuildProcessItem::where('parent_id', $parent->id)
+            ->where('job_category_id', $job->id)
+            ->exists();
+
+        if ($exists) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Pekerjaan tambahan sudah ada'
+            ], 422);
+        }
+
+        $tambahan = BuildProcessItem::create([
             'project_id' => $request->project_id,
             'job_category_id' => $job->id,
             'uraian' => $job->nama_pekerjaan,
@@ -73,7 +83,6 @@ public function storeTambahan(Request $request)
             'volume' => 0,
             'price' => $job->grand_total ?? 0,
             'bobot_percent' => 0,
-
             'is_tambahan' => true,
             'parent_id' => $parent->id,
             'sumber' => 'manual'
@@ -82,14 +91,14 @@ public function storeTambahan(Request $request)
         return response()->json([
             'success' => true,
             'message' => 'Pekerjaan tambahan berhasil ditambahkan',
-                'data' => [
-                    'id' => $tambahan->id,
-                    'uraian' => $tambahan->uraian,
-                    'satuan' => $tambahan->satuan,
-                    'volume' => $tambahan->volume,
-                    'price' => $tambahan->price,
-                    'parent_id' => $tambahan->parent_id,
-                ]
+            'data' => [
+                'id' => $tambahan->id,
+                'uraian' => $tambahan->uraian,
+                'satuan' => $tambahan->satuan,
+                'volume' => $tambahan->volume,
+                'price' => $tambahan->price,
+                'parent_id' => $tambahan->parent_id,
+            ]
         ]);
     });
 }

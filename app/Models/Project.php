@@ -289,8 +289,8 @@ public function getWeekLabelsAttribute()
     while ($start <= $end) {
         $labels[] = [
             'week_no'=>$w,
-            'start'=>$start->format('d M'),
-            'end'=>$start->copy()->addDays(6)->min($end)->format('d M'),
+            'start'=>$start->format('d M Y'),
+            'end'=>$start->copy()->addDays(6)->min($end)->format('d M Y'),
         ];
 
         $start->addWeek();

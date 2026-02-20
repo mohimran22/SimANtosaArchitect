@@ -48,9 +48,14 @@
                 @endcan
             </div>
         </div> --}}
+        <div class="row mb-3">
+            <div class="col-md-3">
+                <label>Filter Tanggal</label>
+                <input type="date" id="filter-date" class="form-control">
+            </div>
+        </div>
 
         <div class="table-responsive">
-
             <table class="table table-bordered align-middle" style="table-layout: fixed;">
                     <colgroup>
                         <col style="width:60px;">   
@@ -76,13 +81,16 @@
                 <thead class="table-light">
                     <tr>
                         <th rowspan="2" class="align-middle text-center">No</th>
-                        <th rowspan="2" class="align-middle">Uraian Pekerjaan</th>
+                        <th rowspan="2" class="align-middle text-center">Uraian Pekerjaan</th>
 
-                        <th colspan="4" class="text-center">TERKONTRAK</th>
+                        <th colspan="4" class="align-middle text-center">TERKONTRAK</th>
 
                         @foreach($project->week_labels as $w)
                             <th colspan="3" class="text-center">
-                                M{{ $w['week_no'] }}
+                                    <div>M{{ $w['week_no'] }}</div>
+                                    <small class="text-muted">
+                                        {{ $w['start'] }} - {{ $w['end'] }}
+                                    </small>
                                 <button type="button"
                                     class="btn btn-sm btn-outline-dark ms-1 btn-just-toggle"
                                     data-week="{{ $w['week_no'] }}">
@@ -93,11 +101,14 @@
                             <th colspan="3"
                                 class="text-center bg-warning-subtle just-head"
                                 data-week="{{ $w['week_no'] }}">
-                                Justek Volume M{{ $w['week_no'] }}
+                                <div>Justek Volume M{{ $w['week_no'] }}</div>
+                                <small class="text-muted">
+                                        {{ $w['start'] }} - {{ $w['end'] }}
+                                </small>
                             </th>
                         @endforeach
 
-                        <th colspan="4" class="text-center">Perubahan Volume</th>
+                        <th colspan="4" class="align-middle text-center">Perubahan Volume</th>
                     </tr>
 
                     <tr>
@@ -251,8 +262,6 @@
 
                                                         @foreach($jobCategories as $job)
                                                             <option value="{{ $job->id }}">
-                                                                    {{-- data-satuan="{{ $job->satuan }}"
-                                                                    data-price="{{ $job->grand_total }}"> --}}
                                                                 {{ $job->nama_pekerjaan }}
                                                             </option>
                                                         @endforeach
@@ -263,40 +272,15 @@
                                                         Tambahkan ke Kontrak
                                                     </button>
                                                 </div>
-
-
-                                                {{-- <div class="col-md-2">
-                                                    <label>Satuan</label>
-                                                    <input type="text"
-                                                        class="form-control unit-tambahan"
-                                                        readonly>
-                                                </div>
-
-                                                <div class="col-md-2">
-                                                    <label>Volume</label>
-                                                    <input type="number"
-                                                        class="form-control vol-tambahan">
-                                                </div>
-
-                                                <div class="col-md-2">
-                                                    <label>Harga Satuan</label>
-                                                    <input type="text"
-                                                        class="form-control harga-satuan-tambahan"
-                                                        readonly>
-                                                </div>
-
-                                                <div class="col-md-2">
-                                                    <label>Jumlah Harga</label>
-                                                    <input type="text"
-                                                        class="form-control jumlah-harga-tambahan"
-                                                        readonly>
-                                                </div> --}}
                                             </div>
                                         </div>
                                     </td>
                                 </tr>
                                 @foreach($item->tambahan as $sub)
-                                    <tr class="table-warning">
+                                    <tr class="table-warning"
+                                        data-item-id="{{ $sub->id }}"
+                                        data-item-vol="{{ $sub->volume }}"
+                                        data-item-bobot="{{ $sub->bobot_percent ?? 0 }}">
                                         <td></td>
                                         <td>
                                             ↳ {{ $sub->uraian }}
@@ -304,8 +288,69 @@
                                         </td>
                                         <td>{{ $sub->satuan }}</td>
                                         <td>{{ $sub->volume }}</td>
-                                        <td>Rp {{ number_format($sub->price,0,',','.') }}</td>
-                                        <td colspan="{{ $totalCols - 5 }}"></td>
+                                        <td class="harga-kontrak" data-price="{{ $sub->price }}">
+                                            Rp {{ number_format($sub->price,0,',','.') }}
+                                        </td>
+                                        <td></td>
+                                    @foreach($project->week_labels as $w)    
+                                        @php
+                                            $prog = $sub->weeklyProgresses->firstWhere('week_no', $w['week_no']);
+                                        @endphp
+
+                                        <td>
+                                            <input type="number"
+                                                step="0.01"
+                                                class="form-control week-vol"
+                                                data-item="{{ $sub->id }}"
+                                                data-week="{{ $w['week_no'] }}"
+                                                data-last="{{ $prog->volume ?? 0 }}"
+                                                value="{{ $prog->volume ?? '' }}">
+                                        </td>
+
+                                        <td class="week-progress"
+                                            data-week="{{ $w['week_no'] }}"
+                                            id="prog-{{ $sub->id }}-{{ $w['week_no'] }}">
+                                        </td>
+
+                                        <td class="week-bobot"
+                                            data-week="{{ $w['week_no'] }}"
+                                            id="bobot-{{ $sub->id }}-{{ $w['week_no'] }}">
+                                        </td>
+
+                                        <td class="just-col" data-week="{{ $w['week_no'] }}">
+                                            <input class="form-control just-kurang"
+                                                data-item="{{ $sub->id }}"
+                                                data-week="{{ $w['week_no'] }}"
+                                                value="{{ $prog->just_kurang ?? 0 }}">
+                                        </td>
+
+                                        <td class="just-col" data-week="{{ $w['week_no'] }}">
+                                            <input class="form-control just-tambah"
+                                                data-item="{{ $sub->id }}"
+                                                data-week="{{ $w['week_no'] }}"
+                                                value="{{ $prog->just_tambah ?? 0 }}">
+                                        </td>
+
+                                        <td class="just-col" data-week="{{ $w['week_no'] }}">
+                                            <input class="form-control just-baru"
+                                                data-item="{{ $sub->id }}"
+                                                data-week="{{ $w['week_no'] }}"
+                                                value="{{ $prog->just_baru ?? 0 }}">
+                                        </td>
+                                    @endforeach
+                                            <td class="total-justek" data-item="{{ $sub->id }}">0</td>
+                                            <td class="total-pelaksanaan"
+                                                data-item="{{ $sub->id }}"
+                                                data-vol-kontrak="{{ $sub->volume }}">
+                                                {{ $sub->volume }}
+                                            </td>
+
+                                            <td class="harga-kontrak" data-price="{{ $sub->price }}">
+                                                Rp {{ number_format($sub->price, 0, ',', '.') }}
+                                            </td>
+
+                                            <td class="nilai-pelaksanaan">0</td>
+                                        {{-- <td colspan="{{ $totalCols - 5 }}"></td> --}}
                                     </tr>
                                 @endforeach
                             @endforeach
@@ -665,23 +710,22 @@
                     .innerText = bobot.toFixed(3);
             }
 
-            document.querySelectorAll('.week-vol').forEach(el => {
+            document.addEventListener('input', function(e) {
 
-                el.addEventListener('input', e => {
+                if (!e.target.classList.contains('week-vol')) return;
 
-                    const tr = e.target.closest('tr');
+                const tr = e.target.closest('tr');
 
-                    const item = e.target.dataset.item;
-                    const week = e.target.dataset.week;
+                const item = e.target.dataset.item;
+                const week = e.target.dataset.week;
 
-                    const itemVol = tr.dataset.itemVol || 0;
-                    const itemBobot = tr.dataset.itemBobot || 0;
+                const itemVol = tr.dataset.itemVol || 0;
+                const itemBobot = tr.dataset.itemBobot || 0;
 
-                    recalcWeek(item, week, itemVol, itemBobot);
-                    autosaveWeek(item, week);
-                    hitungFooter();
-                    updateKurvaChartRealtime();
-                });
+                recalcWeek(item, week, itemVol, itemBobot);
+                autosaveWeek(item, week);
+                hitungFooter();
+                updateKurvaChartRealtime();
             });
 
             document.querySelectorAll('.week-vol').forEach(el => {
@@ -732,7 +776,7 @@
                         const data = await r.json();
 
                         if (!r.ok) {
-                            input.value = oldVal; // rollback
+                            input.value = oldVal;
                             showToast(data.error || 'Volume melebihi kontrak');
                             throw new Error("422");
                         }
@@ -790,7 +834,13 @@
                     el.classList.add('bg-light');
                 });
             }
-
+            function showToast(msg) {
+                if (typeof toastr !== 'undefined') {
+                    toastr.error(msg);
+                } else {
+                    alert(msg);
+                }
+            }
             hitungFooter();
             updateKurvaChartRealtime();
         });
@@ -919,6 +969,9 @@
 
     </script>
     <script>
+        const WEEK_LABELS = @json($project->week_labels);
+    </script>
+    <script>
         document.addEventListener('DOMContentLoaded', function () {
 
             document.addEventListener('click', function(e) {
@@ -938,104 +991,181 @@
                     });
                 }
             });
+            function buildWeekColumns(itemId) {
+                let cols = '';
+
+                WEEK_LABELS.forEach(w => {
+                    cols +=
+                    `
+                    <td></td>
+                        <td>
+                            <input type="number"
+                                step="0.01"
+                                class="form-control week-vol"
+                                data-item="${itemId}"
+                                data-week="${w.week_no}"
+                                value="">
+                        </td>
+
+                        <td class="week-progress"
+                            data-week="${w.week_no}"
+                            id="prog-${itemId}-${w.week_no}">
+                        </td>
+
+                        <td class="week-bobot"
+                            data-week="${w.week_no}"
+                            id="bobot-${itemId}-${w.week_no}">
+                        </td>
+
+                        <td class="just-col" data-week="${w.week_no}">
+                            <input class="form-control just-kurang"
+                                data-item="${itemId}"
+                                data-week="${w.week_no}"
+                                value="0">
+                        </td>
+
+                        <td class="just-col" data-week="${w.week_no}">
+                            <input class="form-control just-tambah"
+                                data-item="${itemId}"
+                                data-week="${w.week_no}"
+                                value="0">
+                        </td>
+
+                        <td class="just-col" data-week="${w.week_no}">
+                            <input class="form-control just-baru"
+                                data-item="${itemId}"
+                                data-week="${w.week_no}"
+                                value="0">
+                        </td>
+                    `;
+                });
+
+                return cols;
+            }
             $(document).on('click', '.btn-simpan-tambahan', function (e) {
-    e.preventDefault();      // ⛔ cegah submit form
-    e.stopPropagation();     // ⛔ cegah event naik ke form
+                e.preventDefault();
+                e.stopPropagation();
 
-    const parentId = this.dataset.item;
+                const parentId = this.dataset.item;
 
-    const select = document.querySelector(
-        `.job-tambahan[data-item="${parentId}"]`
-    );
+                const select = document.querySelector(
+                    `.job-tambahan[data-item="${parentId}"]`
+                );
 
-    const jobId = select.value;
-    if (!jobId) {
-        alert('Pilih pekerjaan tambahan dulu');
-        return;
-    }
+                const jobId = select.value;
+                if (!jobId) {
+                    alert('Pilih pekerjaan tambahan dulu');
+                    return;
+                }
 
-    fetch("{{ route('build-items.store-tambahan') }}", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "X-CSRF-TOKEN": document.querySelector('meta[name=csrf-token]').content
-        },
-        body: JSON.stringify({
-            project_id: "{{ $project->id }}",
-            parent_item_id: parentId,
-            job_category_id: jobId
-        })
-    })
-    .then(r => r.json())
-.then(res => {
-    if (!res.success) return;
+                fetch("{{ route('build-items.store-tambahan') }}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRF-TOKEN": document.querySelector('meta[name=csrf-token]').content
+                    },
+                    body: JSON.stringify({
+                        project_id: "{{ $project->id }}",
+                        parent_item_id: parentId,
+                        job_category_id: jobId
+                    })
+                })
+                .then(r => r.json())
+                .then(res => {
+                    if (!res.success) return;
 
-    const data = res.data;
-    const parentId = data.parent_id;
+                    const data = res.data;
+                    const parentId = data.parent_id;
 
-    // aktifkan input Pek.Baru
-    document.querySelectorAll(
-        `.just-baru[data-item="${parentId}"]`
-    ).forEach(input => input.readOnly = false);
+                    // aktifkan Pek.Baru parent
+                    document.querySelectorAll(
+                        `.just-baru[data-item="${parentId}"]`
+                    ).forEach(input => input.readOnly = false);
 
-    // cari row parent
-    const parentRow = document.querySelector(
-        `tr[data-item-id="${parentId}"]`
-    );
+                    const parentRow = document.querySelector(
+                        `tr[data-item-id="${parentId}"]`
+                    );
 
-    // format rupiah
-    const rupiah = new Intl.NumberFormat('id-ID');
+                    if (!parentRow) {
+                        console.error('Parent row tidak ditemukan');
+                        return;
+                    }
 
-    // buat row tambahan
-    const newRow = document.createElement('tr');
-    newRow.className = 'table-warning';
-    newRow.innerHTML = `
-        <td></td>
-        <td>
-            ↳ ${data.uraian}
-            <span class="badge bg-warning text-dark">Tambahan</span>
-        </td>
-        <td>${data.satuan}</td>
-        <td>${data.volume}</td>
-        <td>Rp ${rupiah.format(data.price)}</td>
-        <td colspan="{{ $totalCols - 5 }}"></td>
-    `;
+                    const rupiah = new Intl.NumberFormat('id-ID');
 
-    // insert setelah parent atau setelah tambahan terakhir
-    let insertAfter = parentRow;
+                    const newRow = document.createElement('tr');
+                    newRow.className = 'table-warning';
+                    newRow.dataset.itemId = data.id;
+                    newRow.dataset.itemVol = data.volume;
+                    newRow.dataset.itemBobot = data.bobot_percent ?? 0;
+                    const weekCols = buildWeekColumns(data.id);
 
-    while (
-        insertAfter.nextElementSibling &&
-        insertAfter.nextElementSibling.classList.contains('table-warning')
-    ) {
-        insertAfter = insertAfter.nextElementSibling;
-    }
+                    newRow.innerHTML = `
+                        <td></td>
+                        <td>
+                            ↳ ${data.uraian}
+                            <span class="badge bg-warning text-dark">Tambahan</span>
+                        </td>
+                        <td>${data.satuan}</td>
+                        <td>${data.volume}</td>
+                        <td class="harga-kontrak" data-price="${data.price}">
+                            Rp ${rupiah.format(data.price)}
+                        </td>
+                        ${weekCols}
+                        <td class="total-justek" data-item="${data.id}">0</td>
+                        <td class="total-pelaksanaan"
+                            data-item="${data.id}"
+                            data-vol-kontrak="${data.volume}">
+                            ${data.volume}
+                        </td>
+                        <td class="harga-kontrak" data-price="${data.price}">
+                            Rp ${rupiah.format(data.price)}
+                        </td>
+                        <td class="nilai-pelaksanaan">0</td>
+                    `;
 
-    insertAfter.after(newRow);
-    document.querySelector(
-        `.row-tambahan[data-item="${parentId}"]`
-    ).classList.add('d-none');
+                    let insertAfter = parentRow;
 
-    const select = document.querySelector(
-        `.job-tambahan[data-item="${parentId}"]`
-    );
-    $(select).val(null).trigger('change');
-});
+                    while (
+                        insertAfter.nextElementSibling &&
+                        insertAfter.nextElementSibling.classList.contains('table-warning')
+                    ) {
+                        insertAfter = insertAfter.nextElementSibling;
+                    }
 
+                    insertAfter.after(newRow);
 
-    return false; // double safety
-});
+                    document.querySelector(
+                        `.row-tambahan[data-item="${parentId}"]`
+                    ).classList.add('d-none');
+
+                    $(select).val(null).trigger('change');
+                });
+
+                return false;
+            });
 
         });
     </script>
-@endpush
-@push('css')
-    <style>
-    .just-hidden {
-        visibility: collapse !important;
-    }
-    col.just-hidden {
-        visibility: collapse;
-    }
-    </style>
+    <script>
+        const weekMap = @json($project->week_labels);
+
+        document.getElementById('filter-date').addEventListener('change', function() {
+            let selected = new Date(this.value);
+
+            let foundWeek = null;
+
+            weekMap.forEach(w => {
+                let start = new Date(w.start + " 2026"); // sesuaikan tahun
+                let end   = new Date(w.end + " 2026");
+
+                if (selected >= start && selected <= end) {
+                    foundWeek = w.week_no;
+                }
+            });
+
+            document.getElementById('filter-week').value = foundWeek;
+            document.getElementById('filter-week').dispatchEvent(new Event('change'));
+        });
+    </script>
 @endpush

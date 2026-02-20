@@ -484,3 +484,35 @@ footer {
     line-height: 1.3;
     text-align: center;
 }
+
+.just-hidden {
+    visibility: collapse !important;
+}
+col.just-hidden {
+    visibility: collapse;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+    position: relative;
+}
+
+/* .progress-table {
+    border-collapse: separate;
+    border-spacing: 0;
+} */
+
+/* Header sticky */
+.progress-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background: #c4c4c4;
+}
+
+/* Freeze columns */
+.freeze-col {
+    position: sticky;
+    background: #fff;
+    z-index: 6;
+}

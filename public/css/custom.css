@@ -261,7 +261,7 @@ label {
 }
 
 #detail-rows {
-    table-layout: fixed;   /* Supaya kolom paten, tidak mengecil */
+    table-layout: fixed;
     width: 100%;
 }
 
