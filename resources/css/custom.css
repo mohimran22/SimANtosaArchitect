@@ -350,7 +350,6 @@ footer {
 
 .table {
   width: 100%;
-  border-collapse: collapse;
   margin: 10px 10px;
 }
 
@@ -492,27 +491,24 @@ col.just-hidden {
     visibility: collapse;
 }
 
-.table-wrapper {
+.table-responsive {
     overflow-x: auto;
     position: relative;
 }
 
-/* .progress-table {
-    border-collapse: separate;
+.progress-table {
+    border-collapse: separate !important;
     border-spacing: 0;
-} */
+}
 
-/* Header sticky */
+.progress-table td,
+.progress-table th {
+    background-clip: padding-box;
+}
+
 .progress-table thead th {
     position: sticky;
     top: 0;
-    z-index: 5;
-    background: #c4c4c4;
-}
-
-/* Freeze columns */
-.freeze-col {
-    position: sticky;
-    background: #fff;
-    z-index: 6;
+    z-index: 30;
+    background: #f8f9fa;
 }

@@ -56,7 +56,7 @@
         </div>
 
         <div class="table-responsive">
-            <table class="table table-bordered align-middle" style="table-layout: fixed;">
+            <table class="table table-bordered progress-table">
                     <colgroup>
                         <col style="width:60px;">   
                         <col style="width:250px;">  
@@ -132,7 +132,6 @@
                         <th class="text-center">Harga<br>Total</th>
                     </tr>
                 </thead>
-
                 <tbody>
                     @foreach($groups as $namaGroup => $itemsGroup)
                         @php
@@ -249,7 +248,7 @@
                                 </tr>
                                 <tr class="row-tambahan d-none"
                                     data-item="{{ $item->id }}">
-                                    <td colspan="100%">
+                                    <td colspan="{{ $totalCols }}">
                                         <div class="p-3 bg-light rounded">
 
                                             <div class="row">
@@ -355,8 +354,6 @@
                                 @endforeach
                             @endforeach
                         @endforeach
-
-
                     @endforeach
                 </tbody>
                 <tfoot>
@@ -870,14 +867,15 @@
                 row.querySelectorAll('.just-baru').forEach(i => {
                     totalBaru += parseFloat(i.value) || 0;
                 });
-
-                const volPelaksanaan =
-                    volKontrak + totalTambah - totalKurang + totalBaru;
+                const totalJustek = totalTambah - totalKurang + totalBaru;
+                const volPelaksanaan = volKontrak + totalJustek;
 
                 let hargaPelaksanaan = 0;
                 if (volKontrak > 0) {
                     hargaPelaksanaan =
                         (volPelaksanaan / volKontrak) * hargaKontrak;
+                } else {
+                    hargaPelaksanaan = totalJustek * hargaKontrak;
                 }
 
                 const cells = row.querySelectorAll('td');
@@ -885,10 +883,6 @@
                 const colVolPelaksanaan   = row.querySelector('.total-pelaksanaan');
                 const colNilaiKontrak      = row.querySelector('.harga-kontrak');
                 const colNilaiPelaksanaan = row.querySelector('.nilai-pelaksanaan');
-                let totalJustek = 0;
-                row.querySelectorAll('.just-baru, .just-tambah, .just-kurang').forEach(input => {
-                    totalJustek += parseFloat(input.value || 0);
-                });
 
                 colTotalJustek.textContent = totalJustek.toFixed(3);
                     grandTotalJustek += totalJustek;
@@ -997,7 +991,6 @@
                 WEEK_LABELS.forEach(w => {
                     cols +=
                     `
-                    <td></td>
                         <td>
                             <input type="number"
                                 step="0.01"
@@ -1111,6 +1104,7 @@
                         <td class="harga-kontrak" data-price="${data.price}">
                             Rp ${rupiah.format(data.price)}
                         </td>
+                        <td></td>
                         ${weekCols}
                         <td class="total-justek" data-item="${data.id}">0</td>
                         <td class="total-pelaksanaan"
@@ -1134,6 +1128,7 @@
                     }
 
                     insertAfter.after(newRow);
+                    setupJustekAccess();
 
                     document.querySelector(
                         `.row-tambahan[data-item="${parentId}"]`
@@ -1144,7 +1139,60 @@
 
                 return false;
             });
+            function setupJustekAccess() {
+                document.querySelectorAll('tr[data-item-id]').forEach(row => {
 
+                    const isTambahan = row.classList.contains('table-warning');
+
+                    const inputKurang = row.querySelectorAll('.just-kurang');
+                    const inputTambah = row.querySelectorAll('.just-tambah');
+                    const inputBaru   = row.querySelectorAll('.just-baru');
+                    const weekInputs  = row.querySelectorAll('.week-vol');
+                    if (isTambahan) {
+                        inputKurang.forEach(i => {
+                            i.value = 0;
+                            i.disabled = true;
+                            i.classList.add('bg-light');
+                        });
+                        inputTambah.forEach(i => {
+                            i.value = 0;
+                            i.disabled = true;
+                            i.classList.add('bg-light');
+                        });
+                        weekInputs.forEach(i => {
+                            i.value = 0;
+                            i.disabled = true;
+                            i.classList.add('bg-light');
+                        });
+                        inputBaru.forEach(i => {
+                            i.disabled = false;
+                            i.classList.remove('bg-light');
+                        });
+
+                    } else {
+                        inputBaru.forEach(i => {
+                            i.value = 0;
+                            i.disabled = true;
+                            i.classList.add('bg-light');
+                        });
+
+                        inputKurang.forEach(i => {
+                            i.disabled = false;
+                            i.classList.remove('bg-light');
+                        });
+
+                        inputTambah.forEach(i => {
+                            i.disabled = false;
+                            i.classList.remove('bg-light');
+                        });
+                        weekInputs.forEach(i => {
+                            i.disabled = false;
+                            i.classList.remove('bg-light');
+                        });
+                    }
+                });
+            }
+            setupJustekAccess();
         });
     </script>
     <script>
@@ -1168,4 +1216,79 @@
             document.getElementById('filter-week').dispatchEvent(new Event('change'));
         });
     </script>
+    <script>
+function applyAutoFreeze() {
+
+    const table = document.querySelector(".progress-table");
+    if (!table) return;
+
+    const colgroup = table.querySelector("colgroup");
+    if (!colgroup) return;
+
+    const cols = colgroup.querySelectorAll("col");
+
+    const firstHeaderRow = table.querySelector("thead tr");
+    if (!firstHeaderRow) return;
+
+    let freezeCount = 0;
+    let beforeCount = 0;
+
+    const firstRowCells = firstHeaderRow.children;
+
+    // Cari TERKONTRAK
+    for (let i = 0; i < firstRowCells.length; i++) {
+
+        const cell = firstRowCells[i];
+        const text = cell.textContent.trim().toUpperCase();
+        const colspan = parseInt(cell.getAttribute("colspan") || 1);
+
+        if (text.includes("TERKONTRAK")) {
+            freezeCount = beforeCount + colspan;
+            break;
+        }
+
+        beforeCount += colspan;
+    }
+
+    if (freezeCount === 0) return;
+
+    let leftOffset = 0;
+
+    for (let i = 1; i <= freezeCount; i++) {
+
+        const width = cols[i - 1].offsetWidth;
+
+        const cells = table.querySelectorAll(
+            `thead th:nth-child(${i}),
+             tbody td:nth-child(${i}),
+             tfoot th:nth-child(${i}),
+             tfoot td:nth-child(${i})`
+        );
+
+        cells.forEach(cell => {
+            cell.style.position = "sticky";
+            cell.style.left = leftOffset + "px";
+            cell.style.background = "#fff";
+            cell.style.zIndex = 15;
+        });
+
+        leftOffset += width;
+    }
+
+    // Shadow di kolom terakhir freeze
+    const lastCells = table.querySelectorAll(
+        `thead th:nth-child(${freezeCount}),
+         tbody td:nth-child(${freezeCount}),
+         tfoot th:nth-child(${freezeCount}),
+         tfoot td:nth-child(${freezeCount})`
+    );
+
+    lastCells.forEach(cell => {
+        cell.style.boxShadow = "3px 0 6px rgba(0,0,0,0.1)";
+    });
+}
+
+document.addEventListener("DOMContentLoaded", applyAutoFreeze);
+window.addEventListener("resize", applyAutoFreeze);
+</script>
 @endpush
