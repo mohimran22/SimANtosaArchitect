@@ -50,6 +50,18 @@
         </div> --}}
         <div class="row mb-3">
             <div class="col-md-3">
+                <label>Filter Minggu</label>
+                <select id="filter-week" class="form-select select2">
+                    <option value="">Semua</option>
+                    @foreach($project->week_labels as $w)
+                        <option value="{{ $w['week_no'] }}">
+                            M{{ $w['week_no'] }} ({{ $w['label'] }})
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="col-md-3">
                 <label>Filter Tanggal</label>
                 <input type="date" id="filter-date" class="form-control">
             </div>
@@ -59,19 +71,18 @@
             <table class="table table-bordered progress-table">
                     <colgroup>
                         <col style="width:60px;">   
-                        <col style="width:250px;">  
+                        <col style="width:420px;">  
                         <col style="width:80px;">   
                         <col style="width:80px;">   
                         <col style="width:140px;">  
                         <col style="width:120px;">  
-                        
                         @foreach($project->week_labels as $w)
-                            <col style="width:100px;"> 
-                            <col style="width:100px;">   
-                            <col style="width:100px;">   
-                            <col class="just-col" data-week="{{ $w['week_no'] }}" style="width:90px;">
-                            <col class="just-col" data-week="{{ $w['week_no'] }}" style="width:90px;">
-                            <col class="just-col" data-week="{{ $w['week_no'] }}" style="width:110px;">
+                            <col class="week-col" data-week="{{ $w['week_no'] }}" style="width:130px;">
+                            <col class="week-col" data-week="{{ $w['week_no'] }}" style="width:110px;">
+                            <col class="week-col" data-week="{{ $w['week_no'] }}" style="width:110px;">
+                            <col class="week-col just-col" data-week="{{ $w['week_no'] }}" style="width:110px;">
+                            <col class="week-col just-col" data-week="{{ $w['week_no'] }}" style="width:110px;">
+                            <col class="week-col just-col" data-week="{{ $w['week_no'] }}" style="width:120px;">
                         @endforeach
                         <col style="width:140px;">
                         <col style="width:140px;">
@@ -86,7 +97,7 @@
                         <th colspan="4" class="align-middle text-center">TERKONTRAK</th>
 
                         @foreach($project->week_labels as $w)
-                            <th colspan="3" class="text-center">
+                            <th colspan="3" class="text-center week-head" data-week="{{ $w['week_no'] }}">
                                     <div>M{{ $w['week_no'] }}</div>
                                     <small class="text-muted">
                                         {{ $w['start'] }} - {{ $w['end'] }}
@@ -117,6 +128,7 @@
                         <th class="align-middle">Jumlah Harga</th>
                         <th class="align-middle text-center">Bobot (%)</th>
 
+
                         @foreach($project->week_labels as $w)
                             <th class="align-middle text-center">Vol</th>
                             <th class="text-center">Progres<br>(%)</th>
@@ -137,10 +149,9 @@
                         @php
                             $cleanName = preg_replace('/^HARGA SATUAN\s*/i', '', $namaGroup);
                         @endphp
-                        <tr style="background:#c4c4c4;font-weight:700">
-                            <td colspan="{{ $totalCols }}">
-                                {{ $cleanName }}
-                            </td>
+                        <tr class="row-category"> 
+                            <td colspan="6"> {{ $cleanName }} </td> 
+                            <td colspan="{{ $totalCols - 6 }}"></td> 
                         </tr>
 
                         @php
@@ -196,7 +207,7 @@
                                                 $prog = $item->weeklyProgresses
                                                     ->firstWhere('week_no', $w['week_no']);
                                             @endphp
-                                            <td>
+                                            <td class="week-col">
                                                 <input type="number"
                                                     step="0.01"
                                                     class="form-control week-vol"
@@ -206,11 +217,11 @@
                                                     value="{{ $prog->volume ?? '' }}"
                                                     {{ $isFull ? 'disabled' : '' }}>
                                             </td>
-                                            <td class="week-progress"
+                                            <td class="week-progress week-col"
                                                 data-week="{{ $w['week_no'] }}"
                                                 id="prog-{{ $item->id }}-{{ $w['week_no'] }}">
                                             </td>
-                                            <td class="week-bobot"
+                                            <td class="week-bobot week-col"
                                                 data-week="{{ $w['week_no'] }}"
                                                 id="bobot-{{ $item->id }}-{{ $w['week_no'] }}">
                                             </td>
@@ -248,15 +259,18 @@
                                 </tr>
                                 <tr class="row-tambahan d-none"
                                     data-item="{{ $item->id }}">
+
                                     <td colspan="{{ $totalCols }}">
                                         <div class="p-3 bg-light rounded">
 
                                             <div class="row">
 
-                                                <div class="col-auto" style="width: 300px;">
+                                                <div class="col-auto" style="width:300px;">
                                                     <label>Pekerjaan Tambahan</label>
+
                                                     <select class="form-select select2 job-tambahan"
                                                             data-item="{{ $item->id }}">
+
                                                         <option value="">-- Pilih Pekerjaan --</option>
 
                                                         @foreach($jobCategories as $job)
@@ -264,16 +278,22 @@
                                                                 {{ $job->nama_pekerjaan }}
                                                             </option>
                                                         @endforeach
+
                                                     </select>
+
                                                     <button type="button"
                                                             class="btn btn-sm btn-dark btn-simpan-tambahan"
                                                             data-item="{{ $item->id }}">
                                                         Tambahkan ke Kontrak
                                                     </button>
+
                                                 </div>
+
                                             </div>
+
                                         </div>
                                     </td>
+
                                 </tr>
                                 @foreach($item->tambahan as $sub)
                                     <tr class="table-warning"
@@ -296,7 +316,7 @@
                                             $prog = $sub->weeklyProgresses->firstWhere('week_no', $w['week_no']);
                                         @endphp
 
-                                        <td>
+                                        <td class="week-col">
                                             <input type="number"
                                                 step="0.01"
                                                 class="form-control week-vol"
@@ -306,12 +326,12 @@
                                                 value="{{ $prog->volume ?? '' }}">
                                         </td>
 
-                                        <td class="week-progress"
+                                        <td class="week-progress week-col"
                                             data-week="{{ $w['week_no'] }}"
                                             id="prog-{{ $sub->id }}-{{ $w['week_no'] }}">
                                         </td>
 
-                                        <td class="week-bobot"
+                                        <td class="week-bobot week-col"
                                             data-week="{{ $w['week_no'] }}"
                                             id="bobot-{{ $sub->id }}-{{ $w['week_no'] }}">
                                         </td>
@@ -349,7 +369,6 @@
                                             </td>
 
                                             <td class="nilai-pelaksanaan">0</td>
-                                        {{-- <td colspan="{{ $totalCols - 5 }}"></td> --}}
                                     </tr>
                                 @endforeach
                             @endforeach
@@ -357,7 +376,7 @@
                     @endforeach
                 </tbody>
                 <tfoot>
-                    <tr class="table-warning">
+                    <tr>
                         <th colspan="4" class="text-end">
                             Total Pekerjaan Kumulatif (%)
                         </th>
@@ -365,18 +384,18 @@
                         <th class="totalBobotKontrak">0</th>
 
                         @foreach($project->week_labels as $w)
-                            <th></th>
-                            <th></th>
-                            <th>
+                            <th class="week-foot" data-week="{{ $w['week_no'] }}"></th>
+                            <th class="week-foot" data-week="{{ $w['week_no'] }}"></th>
+                            <th class="week-foot" data-week="{{ $w['week_no'] }}">
                                 <input type="number"
                                     step="0.001"
                                     class="form-control plan-bobot"
                                     data-week="{{ $w['week_no'] }}"
                                     value="{{ $plans[$w['week_no']]->bobot_percent ?? 0 }}">
                             </th>
-                            <th></th>
-                            <th></th>
-                            <th></th>
+                            <th class="week-foot" data-week="{{ $w['week_no'] }}"></th>
+                            <th class="week-foot" data-week="{{ $w['week_no'] }}"></th>
+                            <th class="week-foot" data-week="{{ $w['week_no'] }}"></th>
                         @endforeach
                         <th id="grand-total-justek">0</th>
                         <th id="grand-total-pelaksanaan">0</th>
@@ -384,7 +403,7 @@
                         <th id="grand-total-pelaksanaan-nilai">0</th>
                     </tr>
 
-                    <tr class="table-info">
+                    <tr>
                         <th colspan="4" class="text-end">
                             Realisasi kumulatif kemajuan Pekerjaan
                         </th>
@@ -392,12 +411,12 @@
                         <th class="totalBobotKontrak">0</th>
 
                         @foreach($project->week_labels as $w)
-                            <th></th>
-                            <th></th>
-                            <th id="sum-bobot-{{ $w['week_no'] }}">0</th>
-                            <th></th>
-                            <th></th>
-                            <th></th>
+                            <th class="week-foot" data-week="{{ $w['week_no'] }}"></th>
+                            <th class="week-foot" data-week="{{ $w['week_no'] }}"></th>
+                            <th class="week-foot" data-week="{{ $w['week_no'] }}" id="sum-bobot-{{ $w['week_no'] }}">0</th>
+                            <th class="week-foot" data-week="{{ $w['week_no'] }}"></th>
+                            <th class="week-foot" data-week="{{ $w['week_no'] }}"></th>
+                            <th class="week-foot" data-week="{{ $w['week_no'] }}"></th>
                         @endforeach
                         <th></th>
                         <th id="grand-total-pelaksanaan">0</th>
@@ -417,6 +436,175 @@
 </div>
 
 @push('js')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+    const weeks = @json($project->week_labels);
+    let activeWeek = null;
+
+    const table = document.querySelector(".progress-table");
+    const colgroup = table.querySelectorAll("colgroup col");
+    const freezeCount = 6; // kolom yang di-freeze
+    const colsPerWeek = 6; // 3 normal + 3 Justek
+    const colsPerubahan = 4; // Perubahan Volume
+
+    // UTILITY: recalc total volume & nilai
+    function recalcAll() {
+        table.querySelectorAll('tr[data-item-id]').forEach(row => {
+            const itemId = row.dataset.itemId;
+            let totalVolume = 0;
+
+            if (activeWeek) {
+                const input = row.querySelector(`.week-vol[data-week="${activeWeek}"]`);
+                totalVolume = parseFloat(input?.value || 0);
+            } else {
+                row.querySelectorAll('.week-vol').forEach(inp => {
+                    totalVolume += parseFloat(inp.value || 0);
+                });
+            }
+
+            const priceCell = row.querySelector('.harga-kontrak');
+            const price = parseFloat(priceCell?.dataset.price || 0);
+
+            const totalCell = row.querySelector('.nilai-pelaksanaan');
+            if (totalCell) {
+                totalCell.textContent = formatRupiah(totalVolume * price);
+            }
+        });
+    }
+
+    // UTILITY: apply sticky/freeze
+    function applyAutoFreeze() {
+        if (!table) return;
+
+        table.querySelectorAll(".sticky-col").forEach(cell => {
+            cell.classList.remove("sticky-col");
+            cell.style.left = "";
+            cell.style.width = "";
+        });
+
+        // hitung offset kiri untuk kolom freeze
+        const offsets = [];
+        let left = 0;
+        for (let i = 0; i < freezeCount; i++) {
+            offsets.push(left);
+            left += colgroup[i]?.offsetWidth || 0;
+        }
+
+        const rowspanMap = [];
+        table.querySelectorAll("tr").forEach(row => {
+            let colIndex = 0;
+            Array.from(row.children).forEach(cell => {
+                while (rowspanMap[colIndex] && rowspanMap[colIndex] > 0) {
+                    rowspanMap[colIndex]--;
+                    colIndex++;
+                }
+
+                const colspan = parseInt(cell.getAttribute("colspan")) || 1;
+                const rowspan = parseInt(cell.getAttribute("rowspan")) || 1;
+
+                if (colIndex < freezeCount) {
+                    cell.classList.add("sticky-col");
+                    cell.style.left = offsets[colIndex] + "px";
+                    // batasi width jika colspan > 1
+                    let width = 0;
+                    for (let i = 0; i < colspan && (colIndex + i) < freezeCount; i++) {
+                        width += colgroup[colIndex + i]?.offsetWidth || 0;
+                    }
+                    cell.style.width = width + "px";
+                }
+
+                if (rowspan > 1) {
+                    for (let i = 0; i < colspan; i++) {
+                        rowspanMap[colIndex + i] = rowspan - 1;
+                    }
+                }
+                colIndex += colspan;
+            });
+        });
+
+        // row-category: freeze td pertama
+        table.querySelectorAll("tr.row-category").forEach(row => {
+            const cell = row.querySelector("td");
+            if (!cell) return;
+            const width = Array.from(colgroup).slice(0, freezeCount).reduce((sum, c) => sum + c.offsetWidth, 0);
+            cell.classList.add("sticky-col");
+            cell.style.left = "0px";
+            cell.style.width = width + "px";
+        });
+    }
+
+    // FILTER WEEK
+        function filterWeek(weekNo) {
+            activeWeek = weekNo || null;
+
+            // toggle COLGROUP (ini kunci utama)
+            colgroup.forEach(col => {
+                const w = col.dataset.week;
+                if (!w) return;
+
+                if (!weekNo || w == weekNo) {
+                    col.classList.remove("col-hidden");
+                } else {
+                    col.classList.add("col-hidden");
+                }
+            });
+
+            // toggle header + body cell
+            table.querySelectorAll('[data-week]').forEach(cell => {
+                if (!weekNo || cell.dataset.week == weekNo) {
+                    cell.classList.remove("col-hidden");
+                } else {
+                    cell.classList.add("col-hidden");
+                }
+            });
+
+            requestAnimationFrame(() => {
+                applyAutoFreeze();
+                recalcAll();
+            });
+        }
+
+    // FILTER: select week
+    const weekSelect = document.getElementById('filter-week');
+    if (weekSelect) {
+        $('#filter-week').on('change', function () {
+            filterWeek(this.value);
+        });
+    }
+
+    // FILTER: by date
+    const dateInput = document.getElementById('filter-date');
+
+    if (dateInput) {
+        dateInput.addEventListener('change', function() {
+
+            const selectedDate = this.value;
+            if (!selectedDate) return;
+
+            const selected = new Date(selectedDate);
+            let foundWeek = null;
+
+            weeks.forEach(w => {
+                const start = new Date(w.start);
+                const end   = new Date(w.end);
+
+                if (selected >= start && selected <= end) {
+                    foundWeek = w.week_no;
+                }
+            });
+
+            if (foundWeek) {
+                $('#filter-week').val(foundWeek).trigger('change');
+                filterWeek(foundWeek);
+            }
+        });
+    }
+
+    // inisialisasi
+    applyAutoFreeze();
+});
+</script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.plan-bobot')
@@ -1195,100 +1383,4 @@
             setupJustekAccess();
         });
     </script>
-    <script>
-        const weekMap = @json($project->week_labels);
-
-        document.getElementById('filter-date').addEventListener('change', function() {
-            let selected = new Date(this.value);
-
-            let foundWeek = null;
-
-            weekMap.forEach(w => {
-                let start = new Date(w.start + " 2026"); // sesuaikan tahun
-                let end   = new Date(w.end + " 2026");
-
-                if (selected >= start && selected <= end) {
-                    foundWeek = w.week_no;
-                }
-            });
-
-            document.getElementById('filter-week').value = foundWeek;
-            document.getElementById('filter-week').dispatchEvent(new Event('change'));
-        });
-    </script>
-    <script>
-function applyAutoFreeze() {
-
-    const table = document.querySelector(".progress-table");
-    if (!table) return;
-
-    const colgroup = table.querySelector("colgroup");
-    if (!colgroup) return;
-
-    const cols = colgroup.querySelectorAll("col");
-
-    const firstHeaderRow = table.querySelector("thead tr");
-    if (!firstHeaderRow) return;
-
-    let freezeCount = 0;
-    let beforeCount = 0;
-
-    const firstRowCells = firstHeaderRow.children;
-
-    // Cari TERKONTRAK
-    for (let i = 0; i < firstRowCells.length; i++) {
-
-        const cell = firstRowCells[i];
-        const text = cell.textContent.trim().toUpperCase();
-        const colspan = parseInt(cell.getAttribute("colspan") || 1);
-
-        if (text.includes("TERKONTRAK")) {
-            freezeCount = beforeCount + colspan;
-            break;
-        }
-
-        beforeCount += colspan;
-    }
-
-    if (freezeCount === 0) return;
-
-    let leftOffset = 0;
-
-    for (let i = 1; i <= freezeCount; i++) {
-
-        const width = cols[i - 1].offsetWidth;
-
-        const cells = table.querySelectorAll(
-            `thead th:nth-child(${i}),
-             tbody td:nth-child(${i}),
-             tfoot th:nth-child(${i}),
-             tfoot td:nth-child(${i})`
-        );
-
-        cells.forEach(cell => {
-            cell.style.position = "sticky";
-            cell.style.left = leftOffset + "px";
-            cell.style.background = "#fff";
-            cell.style.zIndex = 15;
-        });
-
-        leftOffset += width;
-    }
-
-    // Shadow di kolom terakhir freeze
-    const lastCells = table.querySelectorAll(
-        `thead th:nth-child(${freezeCount}),
-         tbody td:nth-child(${freezeCount}),
-         tfoot th:nth-child(${freezeCount}),
-         tfoot td:nth-child(${freezeCount})`
-    );
-
-    lastCells.forEach(cell => {
-        cell.style.boxShadow = "3px 0 6px rgba(0,0,0,0.1)";
-    });
-}
-
-document.addEventListener("DOMContentLoaded", applyAutoFreeze);
-window.addEventListener("resize", applyAutoFreeze);
-</script>
 @endpush

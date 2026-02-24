@@ -287,10 +287,14 @@ public function getWeekLabelsAttribute()
     $w = 1;
 
     while ($start <= $end) {
+
+        $weekEnd = $start->copy()->addDays(6)->min($end);
+
         $labels[] = [
-            'week_no'=>$w,
-            'start'=>$start->format('d M Y'),
-            'end'=>$start->copy()->addDays(6)->min($end)->format('d M Y'),
+            'week_no' => $w,
+            'start'   => $start->format('d-m-Y'),   // untuk JS
+            'end'     => $weekEnd->format('d-m-Y'), // untuk JS
+            'label'   => $start->format('d M') . ' - ' . $weekEnd->format('d M Y'),
         ];
 
         $start->addWeek();

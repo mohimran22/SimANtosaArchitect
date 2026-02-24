@@ -147,7 +147,7 @@
             </div>
 
             <div class="text-center text-muted mt-4 small">
-                Antosa Architect © {{ date('Y') }} All Rights Reserved
+                Antosa Architect © {{ date('Y') }} Semua Hak Dilindungi
             </div>
         </form>
     </div>
