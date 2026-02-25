@@ -6,7 +6,9 @@
         <div class="page">
             <!-- Sidebar -->
             @include('tablar::partials.navbar.sidebar')
+            
             <div class="page-wrapper">
+                @include('tablar::partials.header.sidebar-top')
                 <!-- Page Content -->
                 @hasSection('content')
                     @yield('content')

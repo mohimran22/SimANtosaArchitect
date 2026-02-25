@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', function () {
 /* ✅ Tambah jarak dari sidebar kiri via container-xl bawaan Tablar */
 .dashboard-container {
     margin-top: 16px;
-    margin-left: 18px;
+    padding-left: 30px !important;
 }
 
 /* Tombol panah elegan */

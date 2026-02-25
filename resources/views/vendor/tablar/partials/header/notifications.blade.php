@@ -12,7 +12,7 @@
                 <path d="M9 17v1a3 3 0 0 0 6 0v-1"/>
             </svg>
             @if(auth()->user()->unreadNotifications->count())
-                <span id="notification-count" class="badge bg-red">{{ auth()->user()->unreadNotifications->count() }}</span>
+                <span id="notification-count" class="badge bg-red text-white">{{ auth()->user()->unreadNotifications->count() }}</span>
             @endif
         </a>
         <div class="dropdown-menu dropdown-menu-arrow dropdown-menu-end dropdown-menu-card">
@@ -20,7 +20,7 @@
                 <div class="card-header">
                     <h3 class="card-title">Last updates</h3>
                 </div>
-                <div class="d-flex justify-content-between align-items-center px-3 py-2">
+                <div id="notif-header" class="d-flex justify-content-between align-items-center px-3 py-2">
                     <strong>Notifikasi</strong>
                     @if(auth()->user()->unreadNotifications->count())
                         <button id="mark-all-btn" onclick="markAllAsRead()" class="btn btn-sm btn-outline-dark">
@@ -107,6 +107,7 @@ function markAsRead(notificationId, el) {
     });
 }
 </script>
+
 <script>
 function markAllAsRead() {
     fetch(`/notifications/read-all`, {
@@ -117,15 +118,23 @@ function markAllAsRead() {
     })
     .then(res => res.json())
     .then(res => {
+
         if (res.status === 'ok') {
-            document.querySelectorAll('.notification-item').forEach(el => el.remove());
 
-            const badge = document.querySelector('#notification-count');
-            if (badge) {
-                badge.remove();
-            }
+            // 1️⃣ Hapus badge notif
+            document.querySelectorAll('#notification-count')
+                .forEach(el => el.remove());
 
-            const container = document.querySelector('#notification-list');
+            // 2️⃣ Hapus semua notif item
+            document.querySelectorAll('.notification-item')
+                .forEach(el => el.remove());
+
+            // 3️⃣ Hapus header notif + tombol
+            const header = document.getElementById('notif-header');
+            if (header) header.remove();
+
+            // 4️⃣ Tampilkan kosong
+            const container = document.getElementById('notification-list');
             if (container) {
                 container.innerHTML = `
                     <div class="list-group-item text-center text-muted">
@@ -133,11 +142,10 @@ function markAllAsRead() {
                     </div>
                 `;
             }
-            const btn = document.querySelector('#mark-all-btn');
-                if (btn) btn.remove();
 
         }
     });
 }
 </script>
+
 @endpush

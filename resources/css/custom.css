@@ -16,12 +16,21 @@ body {
   background-color: #f8f9fc;
 }
 
-.page {
-  margin-left: 20px !important;
-} 
+
+/* Content tetap fleksibel */
+.page-wrapper {
+    margin-left: 260px;
+    padding: 20px 20px 0 40px;
+    transition: margin-left .25s ease;
+}
+
+/* ===== TEXT VISIBILITY ===== */
+.nav-link-title {
+    transition: opacity 0.2s ease;
+}
 
 .page-title {
-  margin-left: 20px !important;
+  padding-left: 20px !important;
 } 
 
 label.required::after {
@@ -145,6 +154,7 @@ button.bg-transparent {
 input, select, textarea, button {
     font-family: 'Poppins', sans-serif !important;
     font-weight: 400 !important;
+    font-size: 14px !important;
 }
 
 /* Label form juga */
@@ -157,7 +167,7 @@ label {
     font-family: 'Poppins', sans-serif !important;
     font-weight: 400 !important;
     font-style: italic;
-    font-size: 12px;
+    font-size: 14px;
 }
 
 /* Styling untuk user menu di navbar */
@@ -285,25 +295,27 @@ label {
 }
 
 .sidebar-menu-wraper {
-  flex: 1;
   background: #ced4da;
-  max-height: calc(100vh - 100px); /* sesuaikan tinggi logo */
+  max-height: calc(100vh - 150px); /* sesuaikan tinggi logo */
+  overflow-y: auto !important;
 }
 
-.navbar.navbar-vertical {
+.navbar.navbar-vertical.navbar-expand-lg {
   color:#000 !important;
   display: flex !important;
-  min-width: 16rem;
-  width: 19rem;
   margin: 0 10px;
   flex-direction: column;
   padding-top: 15px;
   position: fixed;
+    width: 260px;
+    left: 0;
+    top: 0;
+    bottom: 0;
+transition: width 0.25s ease;
+overflow-x: hidden;
 }
 
 .navbar-expand-md {
-  margin-left: 270px !important;
-  margin-right: 17px !important;
   border-radius: 12px;
   background: #fff;
   box-shadow: 0 4px 14px rgba(0,0,0,.05);
@@ -320,9 +332,9 @@ label {
   font-size: 14px !important;
 }
 
-footer {
+/* footer {
   margin-left: 20px !important;
-}
+} */
 
 .avatar {
     display: inline-block;
@@ -342,7 +354,6 @@ footer {
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  margin-left: 20px;
 }
 
 
@@ -353,12 +364,13 @@ footer {
 
 .table th,
 .table td {
+    font-family: 'Poppins', sans-serif !important;
     font-weight: 400;
   color: #666;
   padding: 12px 16px;
   text-align: left;
   border-bottom: 1px solid #eee;
-  font-size: 14px !important;
+  font-size: 12px !important;
     white-space: nowrap;
 
 }
@@ -499,7 +511,7 @@ col.just-hidden {
     border-collapse: separate !important;
     border-spacing: 0;
     margin: 0 !important;
-    table-layout: fixed;
+    table-layout: auto;
     width: 100%;
     min-width: max-content;
 }
@@ -521,6 +533,7 @@ col.just-hidden {
     background-color: #f8f9fa;
     position: sticky;
     top: 0;
+    vertical-align: middle;
     z-index: 80; /* base header */
 }
 

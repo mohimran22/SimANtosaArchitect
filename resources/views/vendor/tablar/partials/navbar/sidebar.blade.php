@@ -13,6 +13,9 @@
                 aria-controls="sidebar-menu" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
+        <button class="btn btn-outline-secondary w-100" id="sidebarToggle">
+            <i class="ti ti-menu-2"></i>
+        </button>
         <div class="navbar-nav flex-row d-lg-none">
             <div class="nav-item d-none d-lg-flex me-3">
                 <div class="btn-list">
@@ -36,7 +39,35 @@
         </div>
     </div>
 </aside>
-
+{{-- 
 @if(config('tablar.layout_enable_top_header'))
     @include('tablar::partials.header.sidebar-top')
-@endif
+@endif --}}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const btn = document.getElementById("sidebarToggle");
+
+    if(!btn) return;
+
+    btn.addEventListener("click", function(){
+
+        document.documentElement.classList.toggle("sidebar-collapsed");
+
+        localStorage.setItem(
+            "sidebarCollapsed",
+            document.documentElement.classList.contains("sidebar-collapsed")
+        );
+
+    });
+
+});
+</script>
+<script>
+document.addEventListener("mousemove", function(e) {
+    document.documentElement.style.setProperty(
+        "--mouse-y",
+        e.clientY + "px"
+    );
+});
+</script>

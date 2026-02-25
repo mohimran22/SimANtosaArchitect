@@ -71,7 +71,7 @@
             <table class="table table-bordered progress-table">
                     <colgroup>
                         <col style="width:60px;">   
-                        <col style="width:420px;">  
+                        <col style="width:260px;">  
                         <col style="width:80px;">   
                         <col style="width:80px;">   
                         <col style="width:140px;">  
@@ -447,7 +447,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const freezeCount = 6; // kolom yang di-freeze
     const colsPerWeek = 6; // 3 normal + 3 Justek
     const colsPerubahan = 4; // Perubahan Volume
-
+    
+    function formatRupiah(angka) {
+        angka = Number(angka || 0);
+        return new Intl.NumberFormat('id-ID').format(angka);
+    }
     // UTILITY: recalc total volume & nilai
     function recalcAll() {
         table.querySelectorAll('tr[data-item-id]').forEach(row => {
@@ -558,7 +562,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     cell.classList.add("col-hidden");
                 }
             });
-
+                table.style.display = "none";
+                table.offsetHeight; 
+                table.style.display = "";
             requestAnimationFrame(() => {
                 applyAutoFreeze();
                 recalcAll();
@@ -572,8 +578,13 @@ document.addEventListener('DOMContentLoaded', function() {
             filterWeek(this.value);
         });
     }
+    // helper parse tanggal lokal (ANTI timezone shift)
+    function parseLocalDate(dateStr) {
+        if (!dateStr) return null;
+        const [y, m, d] = dateStr.split("-").map(Number);
+        return new Date(y, m - 1, d);
+    }
 
-    // FILTER: by date
     const dateInput = document.getElementById('filter-date');
 
     if (dateInput) {
@@ -582,12 +593,13 @@ document.addEventListener('DOMContentLoaded', function() {
             const selectedDate = this.value;
             if (!selectedDate) return;
 
-            const selected = new Date(selectedDate);
+            const selected = parseLocalDate(selectedDate);
             let foundWeek = null;
 
             weeks.forEach(w => {
-                const start = new Date(w.start);
-                const end   = new Date(w.end);
+                // SESUAIKAN NAMA FIELD DARI BACKEND
+                const start = parseLocalDate(w.start_date || w.start);
+                const end   = parseLocalDate(w.end_date || w.end);
 
                 if (selected >= start && selected <= end) {
                     foundWeek = w.week_no;
@@ -598,6 +610,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 $('#filter-week').val(foundWeek).trigger('change');
                 filterWeek(foundWeek);
             }
+
+            console.log("selected:", selected);
+            console.log("found:", foundWeek);
         });
     }
 
