@@ -70,13 +70,13 @@ $colors = [
                                 @foreach($employees as $emp)
                                     <option value="{{ $emp->id }}"
                                         @selected($task->employee_id == $emp->id)>
-                                        {{ $emp->user->nickname }}
+                                        {{ $emp->user->fullname }}
                                     </option>
                                 @endforeach
                             </select>
                             @else
                                 <div class="form-control bg-light">
-                                    {{ $task->employee?->user?->nickname ?? '-' }}
+                                    {{ $task->employee?->user?->fullname ?? '-' }}
                                 </div>
                             @endif
                         </td>
@@ -125,8 +125,8 @@ $colors = [
                                     </span>
                                     <div class="action-meta text-muted small">
                                         Disetujui oleh
-                                        <strong>{{ optional($task->approvedBy)->nickname ?? 'Sistem' }}</strong><br>
-                                        {{ optional($task->approved_at)?->format('d-m-Y H:i') }}
+                                        <strong>{{ optional($task->approvedBy)->fullname ?? 'Sistem' }}</strong><br>
+                                        {{ optional($task->approved_at)?->timezone('Asia/Jakarta')->format('d-m-Y H:i') }}
                                     </div>
                                 </div>
 
@@ -138,8 +138,8 @@ $colors = [
                                     </span>
                                     <div class="action-meta text-muted small">
                                         Ditolak oleh
-                                        <strong>{{ optional($task->rejectedBy)->nickname ?? 'Sistem' }}</strong><br>
-                                        {{ optional($task->rejected_at)?->format('d-m-Y H:i') }}
+                                        <strong>{{ optional($task->rejectedBy)->fullname ?? 'Sistem' }}</strong><br>
+                                        {{ optional($task->rejected_at)?->timezone('Asia/Jakarta')->format('d-m-Y H:i') }}
                                     </div>
                                 </div>
 
