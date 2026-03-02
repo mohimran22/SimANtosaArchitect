@@ -24,8 +24,8 @@ $colors = [
         <table class="table table-bordered align-middle table-fixed">
 <colgroup>
     <col style="width: 28%">
-    <col style="width: 10%">
-    <col style="width: 30%">
+    <col style="width: 20%">
+    <col style="width: 20%">
     <col style="width: 22%">
     <col style="width: 10%">
 </colgroup>
@@ -99,10 +99,11 @@ $colors = [
                                             @endif
                                         </div>
                                         <div class="doc-meta">
-                                            <strong title="{{ $file->uploader_name }}">
-                                                {{ $file->uploader_short_name }}
-                                            </strong><br>
-                                            {{ $file->created_at->format('d-m-Y H:i') }}
+                                        <strong title="{{ $file->uploader_name }}">
+                                            {{ $file->uploader_short_name }}
+                                        </strong>
+                                            <br>
+                                            {{ $file->created_at->timezone('Asia/Jakarta')->format('d-m-Y H:i') }}
                                         </div>
 
                                     </div>

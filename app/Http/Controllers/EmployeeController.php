@@ -338,8 +338,7 @@ public static function generateNikAjax()
         'account_holder' => 'nullable|string|max:100',
         'photo' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
 
-        // --- data employee ---
-        'nik' => 'required|unique:employees,nik,' . $employee->id,
+        'nik' => 'required|string|max:50|unique:employees,nik,' . $employee->id,
         'role' => 'required|array',
         'role.*' => 'string|exists:roles,name',
         'marital_status' => 'nullable|in:1,2,3,4',

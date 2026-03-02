@@ -26,17 +26,28 @@ class ProjectTaskFile extends Model
         return $this->belongsTo(User::class, 'uploaded_by');
     }
 
-    public function getUploaderShortNameAttribute()
+    public function getUploaderNameAttribute()
+{
+    if (!$this->uploader) {
+        return 'Sistem';
+    }
+
+    return optional($this->uploader->employee?->user)->fullname
+        ?? $this->uploader->fullname
+        ?? 'Sistem';
+}
+
+public function getUploaderShortNameAttribute()
 {
     $fullname = $this->uploader_name;
 
-    if (!$fullname || $fullname === 'System') {
+    if (!$fullname || $fullname === 'Sistem') {
         return $fullname;
     }
 
-    return collect(explode(' ', $fullname))
-        ->take(2) // ubah jadi 3 kalau mau 3 kata
-        ->implode(' ');
+    $words = preg_split('/\s+/', trim($fullname));
+
+    return implode(' ', array_slice($words, 0, 3));
 }
 
 }
