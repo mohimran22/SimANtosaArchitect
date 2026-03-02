@@ -22,13 +22,13 @@ $colors = [
     <h3 class="fw-bold mt-4">{{ $category }}</h3>
 
         <table class="table table-bordered align-middle table-fixed">
-            <colgroup>
-                <col style="width: 35%">
-                <col style="width: 15%">
-                <col style="width: 15%">
-                <col style="width: 20%">
-                <col style="width: 15%">
-            </colgroup>
+<colgroup>
+    <col style="width: 28%">
+    <col style="width: 10%">
+    <col style="width: 30%">
+    <col style="width: 22%">
+    <col style="width: 10%">
+</colgroup>
             <thead>
                 <tr>
                     <th>Uraian Pekerjaan</th>
@@ -99,7 +99,9 @@ $colors = [
                                             @endif
                                         </div>
                                         <div class="doc-meta">
-                                            <strong>{{ $file->uploader_name }}</strong><br>
+                                            <strong title="{{ $file->uploader_name }}">
+                                                {{ $file->uploader_short_name }}
+                                            </strong><br>
                                             {{ $file->created_at->format('d-m-Y H:i') }}
                                         </div>
 
@@ -125,7 +127,7 @@ $colors = [
                                     </span>
                                     <div class="action-meta text-muted small">
                                         Disetujui oleh
-                                        <strong>{{ optional($task->approvedBy)->fullname ?? 'Sistem' }}</strong><br>
+                                        <strong>{{ optional($task->approvedBy)->short_name ?? 'Sistem' }}</strong><br>
                                         {{ optional($task->approved_at)?->timezone('Asia/Jakarta')->format('d-m-Y H:i') }}
                                     </div>
                                 </div>
@@ -138,7 +140,7 @@ $colors = [
                                     </span>
                                     <div class="action-meta text-muted small">
                                         Ditolak oleh
-                                        <strong>{{ optional($task->rejectedBy)->fullname ?? 'Sistem' }}</strong><br>
+                                        <strong>{{ optional($task->rejectedBy)->short_name ?? 'Sistem' }}</strong><br>
                                         {{ optional($task->rejected_at)?->timezone('Asia/Jakarta')->format('d-m-Y H:i') }}
                                     </div>
                                 </div>
