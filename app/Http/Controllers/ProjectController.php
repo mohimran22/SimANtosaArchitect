@@ -224,9 +224,9 @@ if (
 
         $canEdit = auth()->user()->can('lihat daftar proyek'); 
         $weeks = $project->rab->job_duration ?? 0;
-            $totalReport = BuildDailyReport::where('project_id', $project->id)->count();
+            $totalReport = BuildDailyReport::where('project_id', $project?->id)->count();
 
-    $nextDate = Carbon::parse($project->start_date)
+    $nextDate = Carbon::parse($project?->start_date)
                     ->addDays($totalReport);
 
         return view('projects.create', array_merge(
