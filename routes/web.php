@@ -541,7 +541,8 @@ Route::post('/build-weekly-plan/update',
 Route::post('/build-daily/store',
     [BuildDailyController::class,'store']
 )->name('build.daily.store');
-
+Route::get('/daily/{id}/detail', [BuildDailyController::class, 'detail'])
+    ->name('build.daily.detail');
 Route::get('/projects/{project}/invoice-panel',
 [ProjectController::class,'invoicePanel'])
 ->name('projects.invoice.panel');

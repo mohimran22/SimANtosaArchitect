@@ -3,6 +3,7 @@
     $planningLevel = $project->levels->firstWhere('level_order', 2);
     $planningEmployees = $planningLevel ? $planningLevel->employees : collect();
 @endphp
+
 <div class="card mb-4">
     <div class="card-header fw-bold"> Edit Data Penawaran</div>
     <div class="card-body">

@@ -18,6 +18,7 @@ use App\Models\ProjectTask;
 use App\Models\JobCategory;
 use App\Models\RabProcess;
 use App\Models\RabProcessItem;
+use App\Models\BuildDailyReport;
 use App\Models\User;
 use App\Services\ProjectNotifier;
 use Illuminate\Http\Request;
@@ -223,11 +224,15 @@ if (
 
         $canEdit = auth()->user()->can('lihat daftar proyek'); 
         $weeks = $project->rab->job_duration ?? 0;
+            $totalReport = BuildDailyReport::where('project_id', $project->id)->count();
+
+    $nextDate = Carbon::parse($project->start_date)
+                    ->addDays($totalReport);
 
         return view('projects.create', array_merge(
             $this->formData($project),
             compact('project', 'timelineSteps', 'activeStep', 'surveyInvoice',
-        'surveyApproved',
+        'surveyApproved', 'nextDate',
         'isFreeSurvey', 'surveyWaiting', 'surveyRejected', 'invoiceDp', 'invoiceRab', 'invoiceBuild', 'canEdit', 'weeks')
         ));
     }

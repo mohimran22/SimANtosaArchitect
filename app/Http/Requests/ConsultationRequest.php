@@ -25,9 +25,9 @@ class ConsultationRequest extends FormRequest
             'items.*.description' => 'required|string|max:2000',
             'items.*.remark' => 'nullable|string|max:2000',
             'documentation'     => 'nullable|array',
-            'documentation.*'   => 'image|mimes:jpg,jpeg,png|max:2048',
+            'documentation.*'   => 'image|mimes:jpg,jpeg,png|max:51240',
             'documents'     => 'nullable|array',
-            'documents.*'   => 'file|mimes:pdf|max:2048',
+            'documents.*'   => 'file|mimes:pdf|max:51240',
         ];
     }
 }

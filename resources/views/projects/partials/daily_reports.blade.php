@@ -28,8 +28,10 @@
             </div>
             <div class="col-md-3">
                 <label class="form-label required">Tanggal</label>
-                    <input type="text" id="tanggal" name="tanggal" class="form-control" 
-                            placeholder="dd mm YYYY" value="{{ old('tanggal') }}" required>
+                    {{-- <input type="text" id="tanggal" name="tanggal" class="form-control" 
+                            placeholder="dd mm YYYY" value="{{ old('tanggal') }}" required> --}}
+                    <input type="text" class="form-control" 
+       value="{{ $nextDate->format('d m Y') }}" readonly>
             </div>
             <div class="col-md-3">
                 <label>Kontraktor</label>
@@ -211,7 +213,7 @@
 
             <div class="col-md-3">
                 <label>Total Jam</label>
-                    <input type="number" name="total_jam" class="form-control">
+                    <input type="number" name="total_jam" class="form-control" readonly>
             </div>
 
             <div class="col-md-3">
@@ -365,5 +367,25 @@ $(document).on('change', '.rab-select', function(){
 
 });
 
+</script>
+<script>
+document.querySelectorAll('[name="jam_mulai"], [name="jam_selesai"]')
+.forEach(input => {
+    input.addEventListener('change', function(){
+
+        let mulai = document.querySelector('[name="jam_mulai"]').value;
+        let selesai = document.querySelector('[name="jam_selesai"]').value;
+
+        if(mulai && selesai){
+            let start = new Date(`1970-01-01T${mulai}`);
+            let end = new Date(`1970-01-01T${selesai}`);
+
+            let diff = (end - start) / 3600000;
+
+            document.querySelector('[name="total_jam"]').value = diff;
+        }
+
+    });
+});
 </script>
 @endpush

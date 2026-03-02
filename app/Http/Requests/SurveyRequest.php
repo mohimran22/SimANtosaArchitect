@@ -33,9 +33,9 @@ public function rules(): array
         'documents'     => 'nullable|array',
         'documents.*'   => 'file|mimes:pdf|max:2048',
         'documentation'     => 'nullable|array',
-        'documentation.*'   => 'image|mimes:jpg,jpeg,png|max:2048',
+        'documentation.*'   => 'image|mimes:jpg,jpeg,png|max:51240',
         'result_images'     => 'nullable|array',
-        'result_images.*'   => 'image|mimes:jpg,jpeg,png|max:2048',
+        'result_images.*'   => 'image|mimes:jpg,jpeg,png|max:51240',
     ];
 }
 
