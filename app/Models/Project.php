@@ -132,7 +132,8 @@ public function buildItems()
 
 public function dailyReports()
 {
-    return $this->hasMany(BuildDailyReport::class);
+    return $this->hasMany(BuildDailyReport::class,'project_id')
+                ->orderBy('tanggal','desc');
 }
 
 public function weeklyPlans()
@@ -217,7 +218,7 @@ public function generateLevels()
                 ['level_order' => 5, 'level_name' => 'Kontrak Kerja'],
                 ['level_order' => 6, 'level_name' => 'Invoice Tahap 1'],
                 ['level_order' => 7, 'level_name' => 'Pelaksanaan'],
-                // ['level_order' => 8, 'level_name' => 'Pelaksanaan & Pembayaran Tahap 2'],
+                ['level_order' => 8, 'level_name' => 'Serah Terima'],
                 // ['level_order' => 9, 'level_name' => 'Pelaksanaan & Pembayaran Tahap 3'],
                 // ['level_order' => 10, 'level_name' => 'Pelaksanaan & Pembayaran Tahap 4'],
             ],

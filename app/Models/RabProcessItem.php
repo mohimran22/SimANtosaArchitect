@@ -25,7 +25,7 @@ public function category()
 
 public function rab()
 {
-    return $this->belongsTo(RabProcess::class);
+    return $this->belongsTo(RabProcess::class, 'rab_process_id');
 }
 
 public function getNamaPekerjaanAttribute()

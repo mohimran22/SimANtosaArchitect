@@ -10,8 +10,8 @@ class BuildDailyMaterial extends Model
         'daily_report_id',
         'nama_bahan',
         'qty',
-        'satuan',
-        'status',
+        'diterima',
+        'ditolak'
     ];
 
     protected $casts = [

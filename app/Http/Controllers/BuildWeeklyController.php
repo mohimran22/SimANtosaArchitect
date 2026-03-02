@@ -77,7 +77,6 @@ class BuildWeeklyController extends Controller
 
 public function update(Request $r)
 {
-    \Log::info('WEEKLY UPDATE', $r->all());
 
     $item = BuildProcessItem::findOrFail($r->item_id);
 
@@ -144,7 +143,19 @@ public function update(Request $r)
 
     $progress->updated_at = now();
     $progress->save();
+    $project = $item->project;
 
+    $totalProgress = BuildWeeklyProgress::whereHas('item', function($q) use ($project){
+            $q->where('project_id',$project->id);
+        })
+        ->sum('bobot_percent');
+
+    InvoiceBuildController::autoGenerate(
+        $project,
+        $totalProgress
+    );
+    app(\App\Services\BuildInvoiceService::class)
+    ->generateJustek($project);
     return response()->json([
         'ok' => true,
         'item_id' => $item->id,

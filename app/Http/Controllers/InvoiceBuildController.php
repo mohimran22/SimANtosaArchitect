@@ -6,7 +6,7 @@ use App\Models\Project;
 use App\Models\InvoiceBuild;
 use App\Models\ProjectLevel;
 use App\Models\BuildProcessItem;
-use App\Models\BuildProcessProgress;
+use App\Models\BuildWeeklyProgress;
 use App\Services\ProjectNotifier;
 use App\Services\InvoiceBuildNumberGenerator;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -192,4 +192,153 @@ class InvoiceBuildController extends Controller
                 "Invoice Termin {$invoice->termin} berhasil disetujui."
             );
     }
+
+public static function autoGenerate(Project $project, $progress)
+{
+
+    $buffer = 10; // 2%
+
+    $terminMap = [
+        1 => 0,
+        2 => 30,
+        3 => 60,
+        4 => 90,
+    ];
+
+    foreach ($terminMap as $termin => $targetProgress) {
+
+        $triggerProgress = max(0, $targetProgress - $buffer);
+
+        if($progress >= $triggerProgress){
+
+            InvoiceBuild::firstOrCreate([
+                'project_id'=>$project->id,
+                'termin'=>$termin
+            ],[
+
+                'invoice_type'=>InvoiceBuild::TYPE_BUILD,
+
+                'invoice_number'=>InvoiceBuildNumberGenerator::generate($termin),
+
+                'invoice_date'=>now(),
+
+                'progress_start'=>$targetProgress,
+
+                'progress_end'=>match($termin){
+                    1=>30,
+                    2=>60,
+                    3=>90,
+                    4=>100
+                },
+
+                'payment_percentage'=>match($termin){
+                    1=>30,
+                    2=>30,
+                    3=>30,
+                    4=>10
+                },
+
+                'amount'=>$project->offer->grand_total * (
+                    match($termin){
+                        1=>0.30,
+                        2=>0.30,
+                        3=>0.30,
+                        4=>0.10
+                    }
+                ),
+
+                'status'=>'waiting'
+            ]);
+
+        }
+
+    }
+
+}
+
+public function invoiceJustek(Project $project)
+{
+    $invoice = InvoiceBuild::where([
+        'project_id'=>$project->id,
+        'invoice_type'=>'justek'
+    ])->firstOrFail();
+
+    $justekRows = BuildWeeklyProgress::whereHas('item', function ($q) use ($project) {
+            $q->where('project_id', $project->id);
+        })
+        ->where(function ($q) {
+            $q->where('just_tambah', '>', 0)
+              ->orWhere('just_kurang', '>', 0)
+              ->orWhere('just_baru', '>', 0);
+        })
+        ->with('item')
+        ->get();
+    // $justekRows = BuildWeeklyProgress::whereHas('item', function ($q) use ($project) {
+    //     $q->where('project_id', $project->id);
+    // })
+    // ->where(function ($q) {
+    //     $q->where('just_tambah', '>', 0)
+    //       ->orWhere('just_kurang', '>', 0)
+    //       ->orWhere('just_baru', '>', 0);
+    // })
+    // ->with('item')
+    // ->get()
+    // ->groupBy('build_process_item_id');
+
+    $grandTotal = $justekRows->sum(function ($row) {
+        $price = optional($row->item)->price ?? 0;
+
+        return 
+            ($row->just_tambah * $price)
+        + ($row->just_baru * $price)
+        - ($row->just_kurang * $price);
+    });
+
+    return Pdf::loadView('invoice.build-justek', [
+        'invoice'=>$invoice,
+        'project'=>$project,
+        'offer'=>$project->offer,
+        'justekRows'=>$justekRows,
+        'grandTotal'=>$grandTotal
+    ])->stream("Invoice-Justek-{$project->project_name}.pdf");
+}
+public function autoJustek(Project $project)
+{
+    $nilaiJustek = $project->buildItems()
+        ->with('weeklyProgresses')
+        ->get()
+        ->sum(function($item){
+
+            return $item->weeklyProgresses->sum(function($w){
+
+                return ($w->just_tambah ?? 0)
+                     - ($w->just_kurang ?? 0)
+                     + ($w->just_baru ?? 0);
+
+            });
+
+        });
+
+    if($nilaiJustek <= 0){
+        return response()->json(['ok'=>false]);
+    }
+
+    $exist = InvoiceBuild::where('project_id',$project->id)
+        ->where('invoice_type','justek')
+        ->first();
+
+    if(!$exist){
+
+        InvoiceBuild::create([
+            'project_id'=>$project->id,
+            'invoice_type'=>'justek',
+            'termin'=>0,
+            'nominal'=>$nilaiJustek,
+            'status'=>'draft'
+        ]);
+
+    }
+
+    return response()->json(['ok'=>true]);
+}
 }

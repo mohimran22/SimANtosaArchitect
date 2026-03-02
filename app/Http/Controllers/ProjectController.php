@@ -17,6 +17,7 @@ use App\Models\ProjectLevel;
 use App\Models\ProjectTask;
 use App\Models\JobCategory;
 use App\Models\RabProcess;
+use App\Models\RabProcessItem;
 use App\Models\User;
 use App\Services\ProjectNotifier;
 use Illuminate\Http\Request;
@@ -335,7 +336,10 @@ if (
         'rab.items.category',
         'buildItems.jobCategory',
         'buildItems.weeklyProgresses',
-        'buildItems.tambahan.weeklyProgresses'
+        'buildItems.tambahan.weeklyProgresses',
+        'dailyReports.works.rabProcessItem',
+        'dailyReports.workers.worker.user',
+        'dailyReports.materials'
         ])->findOrFail($projectId);
     }
 
@@ -353,7 +357,10 @@ if (
         'rab.items.category',
         'buildItems.jobCategory',
         'buildItems.weeklyProgresses', 
-        'buildItems.tambahan.weeklyProgresses'
+        'buildItems.tambahan.weeklyProgresses',
+        'dailyReports.works.rabProcessItem',
+        'dailyReports.workers.worker.user',
+        'dailyReports.materials'
     ]);
 
     $activeStep = $this->computeActiveStep($project);
@@ -428,6 +435,7 @@ public function update(Request $request, Project $project)
             'employees'     => \App\Models\Employee::with('user:id,fullname')->get(['id','user_id']),
             'customers'     => \App\Models\Customer::with('user:id,fullname')->get(['id','user_id']),
             'affiliators'   => \App\Models\Affiliator::with('user:id,fullname')->get(['id','user_id']),
+            'workers'   => \App\Models\Worker::with('user:id,fullname')->get(['id','user_id']),
             'provinces'     =>  Province::all(),
             'designPackages' => \App\Models\DesignPackage::orderBy('name')->orderBy('price_meter')->get(),
             'rabPackages' => \App\Models\RabPackage::orderBy('name')->orderBy('price_meter')->get(),
@@ -435,6 +443,11 @@ public function update(Request $request, Project $project)
             'rabProcesses' => RabProcess::whereHas('project', function ($q) use ($project) {
                     $q->where('customer_id', $project?->customer_id);
                 })->get(),
+            'rabs' => RabProcessItem::whereHas('rab.project', function ($q) use ($project) {
+                $q->where('customer_id', $project?->customer_id);
+            })
+            ->orderBy('job_name')
+            ->get(),
             'projectStatus' => [
                 1 => 'Proses',
                 2 => 'Revisi',
@@ -443,4 +456,11 @@ public function update(Request $request, Project $project)
             ]
         ], $merge);
     }
+    public function invoicePanel(Project $project)
+{
+    $project->load('invoiceBuilds');
+
+    return view('projects.partials.invoice_panel',
+    compact('project'));
+}
 }

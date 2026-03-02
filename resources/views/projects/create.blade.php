@@ -727,8 +727,6 @@ function initLocationCascade(config) {
             $postal.trigger('change.select2');
         });
     }
-
-    // Event listeners
     $province.on('change', function () {
         loadCities(this.value);
     });
@@ -770,32 +768,26 @@ $(document).ready(function() {
             let subdistrict = $('#sub_district').val();
             let postal = $('#postal_code').val();
 
-            // Ambil data teks (untuk select2 append manual)
             let provinceText = $('#province option:selected').text();
             let cityText = $('#city option:selected').text();
             let districtText = $('#district option:selected').text();
             let subdistrictText = $('#sub_district option:selected').text();
             let postalText = $('#postal_code option:selected').text();
 
-            // 1️⃣ Province
             $('#survey_province').append(new Option(provinceText, province, true, true)).trigger('change.select2');
 
-            // 2️⃣ Tunggu AJAX kota selesai, lalu isi City
             setTimeout(() => {
                 $('#survey_city').append(new Option(cityText, city, true, true)).trigger('change.select2');
             }, 400);
 
-            // 3️⃣ Isi District
             setTimeout(() => {
                 $('#survey_district').append(new Option(districtText, district, true, true)).trigger('change.select2');
             }, 800);
 
-            // 4️⃣ Isi SubDistrict
             setTimeout(() => {
                 $('#survey_sub_district').append(new Option(subdistrictText, subdistrict, true, true)).trigger('change.select2');
             }, 1200);
 
-            // 5️⃣ Isi Postal Code
             setTimeout(() => {
                 $('#survey_postal_code').append(new Option(postalText, postal, true, true)).trigger('change.select2');
             }, 1500);
@@ -1079,7 +1071,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 });
 </script>
-<script>
+{{-- <script>
 document.addEventListener("DOMContentLoaded", () => {
 
     const view = document.getElementById("rab-view");
@@ -1097,7 +1089,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
 });
-</script>
+</script> --}}
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {

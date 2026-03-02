@@ -10,6 +10,7 @@ class InvoiceBuild extends Model
     use HasUuid;
 
     const TYPE_BUILD = 'build';
+    const TYPE_JUSTEK = 'justek';
 
     protected $casts = [
         'invoice_date' => 'date',
@@ -38,7 +39,8 @@ class InvoiceBuild extends Model
         'progress_end',
         'payment_percentage',
         'paid_at',
-        'note'
+        'note',
+        'nominal'
     ];
 
         public function project()

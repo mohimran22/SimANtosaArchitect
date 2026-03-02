@@ -60,11 +60,11 @@
                         </h3>
 
                         {{-- SKU --}}
-                        {{-- @if($item['sku'])
+                        @if($item['sku'])
                             <div class="text-muted small mb-2">
                                 SKU: {{ $item['sku'] }}
                             </div>
-                        @endif --}}
+                        @endif
 
                         {{-- KATEGORI & BRAND --}}
                         <div class="small text-muted mb-3">
@@ -80,9 +80,9 @@
                             </span>
 
                             {{-- Jika ada original price, tampilkan strikethrough --}}
-                            @if($item['original_price'])
+                            @if($item['selling_price'])
                                 <span class="text-muted text-decoration-line-through ms-1">
-                                    Rp {{ number_format($item['original_price'], 0, ',', '.') }}
+                                    Rp {{ number_format($item['selling_price'], 0, ',', '.') }}
                                 </span>
                             @endif
                         </div>

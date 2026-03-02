@@ -2,7 +2,15 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>Invoice Pembangunan Tahap {{ $invoice->termin }}</title>
+<title>
+
+@if($invoice->invoice_type == 'justek')
+Invoice Penyesuaian Pekerjaan (JUSTEK)
+@else
+Invoice Pembangunan Tahap {{ $invoice->termin }}
+@endif
+
+</title>
 
 <style>
 @page {
@@ -26,6 +34,14 @@ body {
 table {
     width: 100%;
     border-collapse: collapse;
+}
+thead {
+    display: table-header-group;
+}
+tfoot {
+    display: table-row-group;
+}
+tr {
     page-break-inside: avoid;
 }
 th, td {
@@ -133,92 +149,142 @@ p {
 </tr>
 </table>
 
-
 <br>
 
-{{-- TABEL --}}
-<table>
-<thead>
-<tr>
-    <th>Deskripsi</th>
-    <th>%</th>
-    <th>Total Harga Proyek (Rp)</th>
-    <th>Total Yang Harus Dibayar (Rp)</th>
-</tr>
-</thead>
+    <table>
+        <thead>
+            <tr>
+                <th>Deskripsi</th>
+                <th>Volume</th>
+                <th>Satuan</th>
+                <th>Harga Satuan</th>
+                <th>Total Yang Harus Dibayar (Rp)</th>
+            </tr>
+        </thead>
 
-<tbody>
-<tr>
-   
-        <td>
-Pembayaran Termin {{ $invoice->termin }} 
-Proyek {{ $project->project_name }} 
-Progress Pekerjaan {{ $invoice->progress_start }}% - {{ $invoice->progress_end }}%
-        </td>
+        <tbody>
 
-    
-    <td class="text-center">{{ $invoice->payment_percentage }}%</td>
-    <td class="text-right">{{ number_format($offer->grand_total,0,',','.') }}</td>
-    <td class="text-right">{{ number_format($invoice->amount,0,',','.') }}</td>
-</tr>
-</tbody>
+        @if($invoice->invoice_type == 'justek')
 
-<tfoot>
-    @if(isset($total_price))
-    <tr>
-        <th colspan="3" class="text-right">SUBTOTAL</th>
-        <th class="text-right">
-            {{ number_format($offer->total_price,0,',','.') }}
-        </th>
-    </tr>
-    @endif
+        @foreach($justekRows as $row)
 
-    <tr>
-        <th colspan="3" class="text-right bold">TOTAL PEMBAYARAN TAHAP {{ $invoice->termin }}
-        ({{ $invoice->payment_percentage }}%)</th>
-        <th class="text-right bold">
-            {{ number_format($invoice->amount,0,',','.') }}
-        </th>
-    </tr>
-</tfoot>
-</table>
+        @php
+            $item = $row->item;
+
+            $volume =
+                $row->just_tambah
+            + $row->just_baru
+            - $row->just_kurang;
+
+            $total = $volume * $item->price;
+        @endphp
+        {{-- @foreach($justekRows as $itemId => $rows)
+
+        @php
+            $item = $rows->first()->item;
+
+            $volume =
+                $rows->sum('just_tambah')
+            + $rows->sum('just_baru')
+            - $rows->sum('just_kurang');
+
+            $total = $volume * $item->price;
+        @endphp --}}
+
+        <tr>
+            <td>{{ $item->uraian }}</td>
+
+            <td class="text-center">
+                {{ number_format($volume,2) }}
+            </td>
+
+            <td class="text-center">
+                {{ $item->satuan }}
+            </td>
+
+            <td class="text-right">
+                Rp {{ number_format($item->price,0,',','.') }}
+            </td>
+
+            <td class="text-right">
+                Rp {{ number_format($total,0,',','.') }}
+            </td>
+        </tr>
+
+        @endforeach
+
+        @else
+
+            {{-- TERMIN NORMAL --}}
+            <tr>
+                <td>
+                    Pembayaran Termin {{ $invoice->termin }}<br>
+                    Proyek {{ $project->project_name }}
+                </td>
+                <td class="text-center">{{ $invoice->payment_percentage }}%</td>
+                <td class="text-right">{{ number_format($offer->grand_total,0,',','.') }}</td>
+                <td class="text-right">{{ number_format($invoice->amount,0,',','.') }}</td>
+            </tr>
+
+        @endif
+
+        </tbody>
+
+        <tfoot>
+                <tr>
+                    <th colspan="4" class="text-right bold">
+                            TOTAL PENYESUAIAN PEKERJAAN
+                    </th>
+                    <th class="text-right">
+                        Rp {{ number_format($grandTotal,0,',','.') }}
+                    </th>
+                </tr>
+        </tfoot>
+    </table>
 <br>
 <p><strong>Terbilang :</strong><br>
-{{ ucwords(terbilang($invoice->amount)) }} Rupiah
+    {{ ucwords(terbilang($grandTotal)) }} Rupiah
 </p>
+
+@if($invoice->invoice_type!='justek')
 
 <p class="bold">Keterangan :</p>
 
 <p>Mekanisme Pembayaran sebagai berikut :</p>
 
 <ul>
+    @php
+        $terminInvoices = $project->invoicebuilds
+            ->where('termin','>',0)
+            ->sortBy('termin')
+    @endphp
+@foreach($terminInvoices as $inv)
 
-@foreach($project->invoicebuilds->sortBy('termin') as $inv)
-
-<li>
-Pembayaran Termin {{ $inv->termin }}
-sebesar {{ $inv->payment_percentage }}%
-x Rp {{ number_format($offer->grand_total,0,',','.') }}
-=
-Rp {{ number_format($inv->amount,0,',','.') }}
-</li>
+    <li>
+        Pembayaran Termin {{ $inv->termin }}
+        sebesar {{ $inv->payment_percentage }}%
+        x Rp {{ number_format($offer->grand_total,0,',','.') }}
+        =
+        Rp {{ number_format($inv->amount,0,',','.') }}
+    </li>
 
 @endforeach
 
 </ul>
 
+@endif
+
 <div style="
     page-break-inside: avoid;
-    page-break-before: avoid;
     margin-top:15px;
 ">
 
     <p>PT. Tosa Ahmad Jaya<br>
        <strong>Antosa Architect</strong>
     </p>
-    <div style="height:120px;">
+    <div style="height:100px;">
         <img src="{{ public_path('images/ttd-dwiantosa.png') }}"
-             style="height:140px;">
+             style="height:120px;">
     </div>
     <p>
         <strong><u>Ir. Ar. Dwiantosa Ahmad Fathony, IAI., IPP</u></strong><br>

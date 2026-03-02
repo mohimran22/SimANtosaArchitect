@@ -12,9 +12,12 @@ class BuildDailyReport extends Model
         'cuaca',
         'jam_mulai',
         'jam_selesai',
+        'total_jam',
         'pekerjaan',
         'catatan',
-        'created_by',
+        'mk',
+        'kontraktor_ttd',
+        'created_by'
     ];
 
     protected $casts = [
@@ -22,8 +25,6 @@ class BuildDailyReport extends Model
         'jam_mulai' => 'datetime:H:i',
         'jam_selesai' => 'datetime:H:i',
     ];
-
-    // ======================
 
     public function project()
     {
@@ -38,6 +39,11 @@ class BuildDailyReport extends Model
     public function materials()
     {
         return $this->hasMany(BuildDailyMaterial::class, 'daily_report_id');
+    }
+
+        public function works()
+    {
+        return $this->hasMany(BuildDailyWork::class, 'build_daily_report_id');
     }
 
     public function creator()

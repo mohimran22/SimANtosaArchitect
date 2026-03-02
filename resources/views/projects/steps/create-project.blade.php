@@ -54,6 +54,8 @@
                             <input type="date" name="end_date" class="form-control"
                                 value="{{ old('end_date') }}"
                                 pattern="\d{4}-\d{2}-\d{2}" placeholder="YYYY-MM-DD">
+                            {{-- <input type="text" id="tanggal" name="end_date" class="form-control" 
+                            placeholder="dd/mm/YYYY" value="{{ old('end_date') }}" required> --}}
             </div>
             {{-- <div class="col-md-2">
                 <label class="form-label">Status Proyek</label>

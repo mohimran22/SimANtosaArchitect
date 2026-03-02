@@ -34,6 +34,7 @@ use App\Http\Controllers\RabController;
 use App\Http\Controllers\JobCategoryController;
 use App\Http\Controllers\InvoiceBuildController;
 use App\Http\Controllers\BuildProcessItemController;
+use App\Http\Controllers\BuildDailyController;
 use App\Http\Controllers\BuildWeeklyController;
 use App\Http\Controllers\BuildWeeklyPlanController;
 
@@ -507,7 +508,14 @@ Route::prefix('projects/{project}')
             [InvoiceBuildController::class, 'invoiceBuild']
         )->name('projects.invoice.build');
 
+        Route::get(
+'/invoice-build-justek',
+[InvoiceBuildController::class,'invoiceJustek']
+)->name('projects.invoice.build.justek');
         // Approve invoice build
+        Route::post('/invoice-build-justek-auto',
+    [InvoiceBuildController::class,'autoJustek']
+)->name('projects.invoice.justek.auto');
         Route::post(
             '/invoice/build/{invoice}/approve',
             [InvoiceBuildController::class, 'approve']
@@ -529,6 +537,14 @@ Route::post('/build-weekly/update',
 Route::post('/build-weekly-plan/update', 
     [BuildWeeklyPlanController::class,'update']
 )->name('build-weekly-plan.update');
+
+Route::post('/build-daily/store',
+    [BuildDailyController::class,'store']
+)->name('build.daily.store');
+
+Route::get('/projects/{project}/invoice-panel',
+[ProjectController::class,'invoicePanel'])
+->name('projects.invoice.panel');
 
 Route::middleware(['auth', 'permission:lihat daftar role'])->group(function () {
     Route::resource('/roles', RoleController::class);

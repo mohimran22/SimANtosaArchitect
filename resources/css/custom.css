@@ -136,6 +136,7 @@ button.bg-transparent {
     font-size: 0.9rem !important;
     font-weight: 500 !important;
     border-radius: 4px !important;
+    color: white !important;
 }
 
 .notification-dropdown, 
