@@ -64,10 +64,10 @@
                                             class="btn btn-sm btn-dark" title="Ubah">
                                             <i class="ti ti-pencil"></i>
                                         </a>
-                                        <button class="btn btn-sm btn-dark btn-edit" title="Ubah"
+                                        {{-- <button class="btn btn-sm btn-dark btn-edit" title="Ubah"
                                             data-id="{{ $report->id }}">
                                             <i class="ti ti-pencil"></i>
-                                        </button>
+                                        </button> --}}
 
                                         <button class="btn btn-sm btn-dark btn-hapus" title="Hapus"
                                             data-id="{{ $report->id }}">
@@ -97,33 +97,25 @@
                             </div>
                         </div>
                     </div>
-                    <div class="modal fade" id="editModal" tabindex="-1">
-                    <div class="modal-dialog">
+                    <div class="modal fade" id="fullEditModal" tabindex="-1">
+                    <div class="modal-dialog modal-xl">
                         <div class="modal-content">
+
                         <div class="modal-header">
                             <h5 class="modal-title">Edit Laporan</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            <button class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
-                        <div class="modal-body">
 
-                            <form id="editForm">
-                                <input type="hidden" id="edit_id">
-
-                                <div class="mb-3">
-                                    <label>Tanggal</label>
-                                    <input type="date" id="edit_tanggal" class="form-control">
-                                </div>
-
-                                <div class="form-check">
-                                    <input type="checkbox" id="edit_libur" class="form-check-input">
-                                    <label class="form-check-label">Hari Libur</label>
-                                </div>
-                            </form>
-
+                        <div class="modal-body" id="editModalBody">
+                            Loading...
                         </div>
+
                         <div class="modal-footer">
-                            <button class="btn btn-primary" id="saveEdit">Simpan</button>
+                            <button class="btn btn-primary" id="saveFullEdit">
+                                Simpan
+                            </button>
                         </div>
+
                         </div>
                     </div>
                     </div>
@@ -399,14 +391,16 @@ $(document).on('click', '.btn-edit', function(){
 
     let id = $(this).data('id');
 
-    $.get('/reports/' + id + '/edit', function(data){
+    $('#editModalBody').html('Loading...');
 
-        $('#edit_id').val(data.id);
-        $('#edit_tanggal').val(data.tanggal);
-        $('#edit_libur').prop('checked', data.is_libur == 1);
+    $('#fullEditModal').modal('show');
 
-        $('#editModal').modal('show');
+    $.get('/reports/' + id + '/edit', function(html){
+
+        $('#editModalBody').html(html);
+
     });
+
 });
 
 // SAVE UPDATE

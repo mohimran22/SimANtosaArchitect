@@ -15,6 +15,8 @@ class RabProcessItem extends Model
     'satuan',
     'volume',
     'base_price',
+    'overhead',
+    'profit',
     'price',
     'total'
 ];

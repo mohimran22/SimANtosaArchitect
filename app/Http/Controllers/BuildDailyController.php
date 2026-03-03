@@ -261,7 +261,7 @@ public function editPage($id)
         'documentations'
     ])->findOrFail($id);
 
-    return view('reports.edit', compact('report'));
+    return view('projects.edit.daily', compact('report'));
 }
 public function destroy($id)
 {

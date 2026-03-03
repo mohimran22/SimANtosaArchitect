@@ -1071,7 +1071,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 });
 </script>
-{{-- <script>
+<script>
 document.addEventListener("DOMContentLoaded", () => {
 
     const view = document.getElementById("rab-view");
@@ -1089,7 +1089,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
 });
-</script> --}}
+</script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {

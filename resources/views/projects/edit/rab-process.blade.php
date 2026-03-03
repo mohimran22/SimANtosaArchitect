@@ -81,12 +81,12 @@
         
         <div class="col-md-2">
             <label class="form-label">Profit</label>
-            <input type="text" class="form-control" id="rab_profit_display_edit" value="{{ old('profit', $rab->profit) }}">
+            <input type="number" class="form-control" id="rab_profit_display_edit" value="{{ old('profit', $rab->profit) }}" step="0.01" min="0">
             <input type="hidden" name="profit" id="rab_profit_edit">
         </div>
         <div class="col-md-2">
             <label class="form-label">Overhead</label>
-            <input type="text" class="form-control" id="rab_overhead_display_edit" value="{{ old('overhead', $rab->overhead) }}">
+            <input type="number" class="form-control" id="rab_overhead_display_edit" value="{{ old('overhead', $rab->overhead) }}" step="0.01" min="0">
             <input type="hidden" name="overhead" id="rab_overhead_edit">
         </div>
     </div>
@@ -222,7 +222,7 @@
             let base = volume * harga;
             let profitValue = base * (profitPercent / 100);
             let overheadValue = base * (overheadPercent / 100);
-            return base + profitValue + overheadValue;
+            return Math.round(base + profitValue + overheadValue);
         }
 
         $('#jobCategorySelect').on('change', function () {
@@ -246,74 +246,42 @@
                 });
         });
 
-        // document.addEventListener('input', function(e) {
+        document.getElementById('rab_add_volume')
+            ?.addEventListener('input', function(e) {
 
-        //     if (e.target.name !== 'volume') return;
-        //     if (!currentRabJob) return;
+            if (!currentRabJob) return;
 
-        //     const volume = parseFloat(e.target.value) || 0;
-        //     if (volume <= 0) return;
+            const volume = parseFloat(this.value) || 0;
+            if (volume <= 0) return;
 
-        //     const harga = parseFloat(currentRabJob.harga ?? currentRabJob.price ?? 0);
-            
-        //     let profitPercent = globalProfit;
-        //     let overheadPercent = globalOverhead;
+            const basePrice = parseFloat(currentRabJob.base_price ?? currentRabJob.harga ?? 0);
 
-        //     let total = calculateItemTotal(volume, harga, globalProfit, globalOverhead);
+            const total = calculateItemTotal(
+                volume,
+                basePrice,
+                globalProfit,
+                globalOverhead
+            );
 
-        //     document.getElementById('rab_totalPrice').value = total;
-        //     document.getElementById('rab_totalPriceFormatted').value = formatRp(total);
+            const finalUnit = applyGlobalMarginToUnit(basePrice);
 
-        //     const jobId = currentRabJob.id;
+            document.getElementById('rab_totalPrice').value = total;
+            document.getElementById('rab_totalPriceFormatted').value = formatRp(total);
 
-        //     rabItems[jobId] = {
-        //         ...currentRabJob,
-        //         volume: volume,
-        //         base_price: harga,
-        //         harga: applyGlobalMarginToUnit(harga),
-        //         profit: profitPercent,
-        //         overhead: overheadPercent,
-        //         total: total
-        //     };
+            rabItems[currentRabJob.id] = {
+                ...currentRabJob,
+                volume: volume,
+                base_price: basePrice,
+                harga: finalUnit,
+                profit: globalProfit,
+                overhead: globalOverhead,
+                total: total
+            };
 
-        //     renderRabTable();
-        // });
-document.getElementById('rab_add_volume')
-    ?.addEventListener('input', function(e) {
+            console.log("ADD ITEM GP:", globalProfit, "GO:", globalOverhead);
 
-    if (!currentRabJob) return;
-
-    const volume = parseFloat(this.value) || 0;
-    if (volume <= 0) return;
-
-    const basePrice = parseFloat(job.base_price ?? job.harga ?? 0);
-
-    const total = calculateItemTotal(
-        volume,
-        basePrice,
-        globalProfit,
-        globalOverhead
-    );
-
-    const finalUnit = applyGlobalMarginToUnit(basePrice);
-
-    document.getElementById('rab_totalPrice').value = total;
-    document.getElementById('rab_totalPriceFormatted').value = formatRp(total);
-
-    rabItems[currentRabJob.id] = {
-        ...currentRabJob,
-        volume: volume,
-        base_price: basePrice,
-        harga: finalUnit,
-        profit: globalProfit,
-        overhead: globalOverhead,
-        total: total
-    };
-
-    console.log("ADD ITEM GP:", globalProfit, "GO:", globalOverhead);
-
-    renderRabTable();
-});
+            renderRabTable();
+        });
 
         function renderRabTable() {
 
@@ -609,7 +577,7 @@ document.getElementById('rab_add_volume')
             };
 
             overheadInput.oninput = () => {
-                let newOverhead = parseFloat(profitOverhead.value) || 0;
+                let newOverhead = parseFloat(overheadInput.value) || 0;
                 if (newOverhead === globalOverhead) return;
 
                 globalOverhead =  newOverhead;

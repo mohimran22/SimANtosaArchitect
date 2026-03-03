@@ -22,8 +22,6 @@ class RabProcess extends Model
     'shipping',
     'grand_total',
     'notes',
-    'overhead',
-    'profit',
     'created_by',
     'updated_by',
     'analisa_version',

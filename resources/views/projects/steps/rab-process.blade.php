@@ -63,11 +63,11 @@
         
         <div class="col-md-2">
             <label class="form-label">Profit</label>
-            <input type="text" class="form-control" id="rab_profit_display">
+            <input type="number" class="form-control" id="rab_profit_display">
         </div>
         <div class="col-md-2">
             <label class="form-label">Overhead</label>
-            <input type="text" class="form-control" id="rab_overhead_display">
+            <input type="number" class="form-control" id="rab_overhead_display">
         </div>
     </div>
   
@@ -305,7 +305,7 @@ function renderRabTable() {
                     <td>${no}</td>
                     <td>${item.nama}</td>
                     <td width="100">
-                        <input type="number" class="form-control text-center volume-input"
+                        <input type="number" class="form-control text-center"
                             value="${item.volume}"
                             min="0.01" step="0.01"
                             onchange="updateVolume(${item.id}, this.value)">

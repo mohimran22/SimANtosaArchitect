@@ -196,8 +196,6 @@ public function update(Request $request, Project $project, RabProcess $rab)
 
             'tax_rate' => $taxRate,
             'tax_total' => $taxTotal,
-            'profit' => $request->profit,
-            'overhead' => $request->overhead,
             'shipping' => $shipping,
             'grand_total' => $grandTotal,
 
@@ -211,15 +209,13 @@ public function update(Request $request, Project $project, RabProcess $rab)
         // ================= INSERT ITEM BARU =================
         foreach ($request->items as $item) {
 
-            // $base = $item['volume'] * $item['price'];
-            // $profitValue = $base * ($item['profit'] / 100);
-            // $overheadValue = $base * ($item['overhead'] / 100);
-            // $total = $base + $profitValue + $overheadValue;
-            $expected = $item['volume'] * $item['price'];
-            // $expected += $expected * ($item['profit']/100);
-            // $expected += $expected * ($item['overhead']/100);
+            $base = $item['volume'] * $item['base_price'];
+            $profitValue = $base * ($item['profit'] / 100);
+            $overheadValue = $base * ($item['overhead'] / 100);
+            $total = $base + $profitValue + $overheadValue;
+            $total = round($total);
 
-            if (abs($expected - $item['total']) > 1) {
+            if ($total !== (int) $item['total']) {
                 abort(422, 'Total item tidak valid');
             }
 
@@ -232,7 +228,7 @@ public function update(Request $request, Project $project, RabProcess $rab)
                 'overhead' => $item['overhead'],
                 'base_price' => $item['base_price'],
                 'price' => $item['price'],
-                'total' => $item['total'],
+                'total' => $total,
             ]);
         }
     });

@@ -228,7 +228,7 @@ if (
 
     $nextDate = Carbon::parse($project?->start_date)
                     ->addDays($totalReport);
-        $reports = BuildDailyReport::where('project_id', $project->id)
+        $reports = BuildDailyReport::where('project_id', $project?->id)
     ->orderBy('tanggal')
     ->get()
     ->groupBy('minggu');
