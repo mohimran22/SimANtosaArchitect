@@ -63,8 +63,8 @@
                             <col style="width:260px;">  
                             <col style="width:80px;">   
                             <col style="width:80px;">   
-                            <col style="width:140px;">  
-                            <col style="width:120px;">  
+                            <col style="width:110px;">  
+                            <col style="width:100px;">  
                             @foreach($project->week_labels as $w)
                                 <col class="week-col" data-week="{{ $w['week_no'] }}" style="width:130px;">
                                 <col class="week-col" data-week="{{ $w['week_no'] }}" style="width:110px;">
@@ -114,14 +114,14 @@
                         <tr>
                             <th class="align-middle">Satuan</th>
                             <th class="align-middle text-center">Vol</th>
-                            <th class="align-middle">Jumlah Harga</th>
-                            <th class="align-middle text-center">Bobot (%)</th>
+                            <th class="align-middle">Jumlah<br>Harga</th>
+                            <th class="align-middle text-center">Bobot<br>(%)</th>
 
 
                             @foreach($project->week_labels as $w)
                                 <th class="align-middle text-center">Vol</th>
-                                <th class="text-center">Progres<br>(%)</th>
-                                <th class="text-center">Bobot<br>(%)</th>
+                                <th class="align-middle text-center">Progres<br>(%)</th>
+                                <th class="align-middle text-center">Bobot<br>(%)</th>
 
                                 <th class="just-col" data-week="{{ $w['week_no'] }}">Kurang</th>
                                 <th class="just-col" data-week="{{ $w['week_no'] }}">Tambah</th>

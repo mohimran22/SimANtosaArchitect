@@ -5,7 +5,7 @@
 @if($dailies->count())
     <div class="card shadow-sm border-0 mt-4">
 
-        <div class="card-header fw-bold">
+        <div class="card-header fw-bold mb-0">
         Riwayat Laporan Harian
         </div>
 
@@ -14,28 +14,72 @@
                 <table class="table table-bordered">
                     <thead>
                         <tr>
-                            <th>No</th>
+                            <th width="20">No</th>
                             <th>Tanggal</th>
                             <th>Minggu</th>
-                            <th>Aksi</th>
+                            <th width="120">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        @foreach($dailies as $i=>$daily)
-                            <tr>
-                                <td>{{ $i+1 }}</td>
-                                <td>{{ \Carbon\Carbon::parse($daily->tanggal)->format('d-m-Y') }}</td>
-                                <td>{{ $daily->week }}</td>
-                                <td>
-                                    <button 
-                                        class="btn btn-sm btn-dark btn-detail"
-                                        data-id="{{ $daily->id }}">
-                                        Detail
-                                    </button>
+
+                    @foreach($reports as $minggu => $items)
+
+                        <tbody>
+
+                            {{-- HEADER MINGGU --}}
+                            <tr class="table-secondary">
+                                <td colspan="4"
+                                    class="fw-bold week-header"
+                                    data-week="{{ $minggu }}"
+                                    style="cursor:pointer;">
+
+                                    <span class="week-icon">▼</span>
+                                    Minggu ke-{{ $minggu }}
+                                    ({{ $items->where('is_libur', false)->count() }} Hari Kerja)
                                 </td>
                             </tr>
-                        @endforeach
-                    </tbody>
+
+                            {{-- ISI MINGGU --}}
+                            @foreach($items as $report)
+                                <tr class="week-row week-{{ $minggu }} {{ $report->is_libur ? 'table-warning' : '' }}">
+                                    <td>{{ $loop->iteration }}</td>
+
+                                    <td>
+                                        {{ \Carbon\Carbon::parse($report->tanggal)->format('d-m-Y') }}
+
+                                        @if($report->is_libur)
+                                            <span class="badge bg-warning text-dark ms-2">
+                                                Libur
+                                            </span>
+                                        @endif
+                                    </td>
+
+                                    <td>Minggu ke-{{ $report->minggu }}</td>
+
+                                    <td>
+                                        <button class="btn btn-sm btn-dark btn-detail" title="Detail"
+                                            data-id="{{ $report->id }}">
+                                            <i class="ti ti-eye"></i>
+                                        </button>
+                                        <a href="{{ route('build.daily.edit', $report->id) }}"
+                                            class="btn btn-sm btn-dark" title="Ubah">
+                                            <i class="ti ti-pencil"></i>
+                                        </a>
+                                        <button class="btn btn-sm btn-dark btn-edit" title="Ubah"
+                                            data-id="{{ $report->id }}">
+                                            <i class="ti ti-pencil"></i>
+                                        </button>
+
+                                        <button class="btn btn-sm btn-dark btn-hapus" title="Hapus"
+                                            data-id="{{ $report->id }}">
+                                            <i class="ti ti-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            @endforeach
+
+                        </tbody>
+
+                    @endforeach
                 </table>
                 @foreach($dailies as $daily)
                     <div class="modal fade" id="dailyModal" tabindex="-1">
@@ -52,6 +96,36 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
+                    <div class="modal fade" id="editModal" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Edit Laporan</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+
+                            <form id="editForm">
+                                <input type="hidden" id="edit_id">
+
+                                <div class="mb-3">
+                                    <label>Tanggal</label>
+                                    <input type="date" id="edit_tanggal" class="form-control">
+                                </div>
+
+                                <div class="form-check">
+                                    <input type="checkbox" id="edit_libur" class="form-check-input">
+                                    <label class="form-check-label">Hari Libur</label>
+                                </div>
+                            </form>
+
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-primary" id="saveEdit">Simpan</button>
+                        </div>
+                        </div>
+                    </div>
                     </div>
                 @endforeach
                     {{-- <div class="row text-center">
@@ -171,6 +245,8 @@ document.addEventListener('DOMContentLoaded', function(){
                 </thead>
                 <tbody>${pekerjaanRows}</tbody>
                 </table>
+                <h6 class="mt-4">File Upload</h6>
+                ${renderDocumentation(data, 'tenaga')}
 
                 <h6>Tenaga Kerja</h6>
                 <table class="table table-bordered mb-4">
@@ -184,7 +260,8 @@ document.addEventListener('DOMContentLoaded', function(){
                 </thead>
                 <tbody>${workerRows}</tbody>
                 </table>
-
+                <h6 class="mt-4">File Upload</h6>
+                ${renderDocumentation(data, 'pekerjaan')}
                 <h6>Bahan Masuk</h6>
                 <table class="table table-bordered">
                 <thead class="table-light">
@@ -197,7 +274,8 @@ document.addEventListener('DOMContentLoaded', function(){
                 </thead>
                 <tbody>${materialRows}</tbody>
                 </table>
-
+                <h6 class="mt-4">File Upload</h6>
+                ${renderDocumentation(data, 'material')}
                 <div class="mt-3">
                 <label class="fw-semibold">Catatan</label>
                 <textarea class="form-control" readonly>${data.catatan ?? ''}</textarea>
@@ -208,6 +286,189 @@ document.addEventListener('DOMContentLoaded', function(){
             });
 
         });
+
+    });
+        function renderDocumentation(data, category) {
+            let docs = (data.documentations || []).filter(doc =>
+    doc.category.toLowerCase() === category.toLowerCase()
+);
+
+        if(docs.length === 0){
+            return `<p class="text-muted">Tidak ada File Upload</p>`;
+        }
+
+        let html = `<div class="d-flex flex-wrap gap-3">`;
+
+        docs.forEach(doc => {
+
+            let fileUrl = "/storage/" + doc.file_path;
+
+            // Jika image
+            if(doc.file_type.startsWith("image")){
+
+                html += `
+                    <div style="width:120px">
+                        <a href="${fileUrl}" target="_blank">
+                            <img src="${fileUrl}" 
+                                class="img-fluid rounded shadow-sm mb-1">
+                        </a>
+                        <small class="d-block text-truncate">${doc.file_name}</small>
+                    </div>
+                `;
+            }
+            // Jika PDF
+            else if(doc.file_type === "application/pdf"){
+
+                html += `
+                    <div style="width:120px">
+                        <a href="${fileUrl}" 
+                        target="_blank"
+                        class="text-decoration-none">
+                            <div class="border rounded p-3 text-center shadow-sm">
+                                📄
+                            </div>
+                            <small class="d-block text-truncate mt-1">
+                                ${doc.file_name}
+                            </small>
+                        </a>
+                    </div>
+                `;
+            }
+
+        });
+
+        html += `</div>`;
+
+        return html;
+    }
+});
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+
+    const storageKey = "weeklyCollapseState";
+
+    // ambil state dari localStorage
+    let savedState = JSON.parse(localStorage.getItem(storageKey)) || {};
+
+    document.querySelectorAll(".week-header").forEach(function(header){
+
+        let week = header.getAttribute("data-week");
+        let rows = document.querySelectorAll(".week-" + week);
+        let icon = header.querySelector(".week-icon");
+
+        // 🔹 Restore state saat reload
+        if(savedState[week] === true){
+            rows.forEach(row => row.style.display = "");
+            icon.innerHTML = "▼";
+        } else {
+            rows.forEach(row => row.style.display = "none");
+            icon.innerHTML = "▶";
+        }
+
+        // 🔹 Saat diklik
+        header.addEventListener("click", function(){
+
+            let isOpen = rows[0].style.display !== "none";
+
+            rows.forEach(function(row){
+                row.style.display = isOpen ? "none" : "";
+            });
+
+            icon.innerHTML = isOpen ? "▶" : "▼";
+
+            // Simpan ke localStorage
+            savedState[week] = !isOpen;
+            localStorage.setItem(storageKey, JSON.stringify(savedState));
+
+        });
+
+    });
+
+});
+</script>
+<script>
+$.ajaxSetup({
+    headers: {
+        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+    }
+});
+
+// ================= EDIT =================
+$(document).on('click', '.btn-edit', function(){
+
+    let id = $(this).data('id');
+
+    $.get('/reports/' + id + '/edit', function(data){
+
+        $('#edit_id').val(data.id);
+        $('#edit_tanggal').val(data.tanggal);
+        $('#edit_libur').prop('checked', data.is_libur == 1);
+
+        $('#editModal').modal('show');
+    });
+});
+
+// SAVE UPDATE
+$('#saveEdit').click(function(){
+
+    let id = $('#edit_id').val();
+
+    $.ajax({
+        url: '/reports/' + id,
+        type: 'PUT',
+        data: {
+            tanggal: $('#edit_tanggal').val(),
+            is_libur: $('#edit_libur').is(':checked') ? 1 : 0
+        },
+        success: function(response){
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil',
+                text: response.message,
+                timer: 2000,
+                showConfirmButton: false
+            });
+
+            location.reload(); // nanti bisa kita ganti tanpa reload
+        }
+    });
+
+});
+
+// ================= DELETE =================
+$(document).on('click', '.btn-hapus', function(){
+
+    let id = $(this).data('id');
+
+    Swal.fire({
+        title: 'Yakin hapus?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, hapus'
+    }).then((result) => {
+
+        if(result.isConfirmed){
+
+            $.ajax({
+                url: '/reports/' + id,
+                type: 'DELETE',
+                success: function(response){
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Terhapus',
+                        text: response.message,
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+
+                    location.reload(); // nanti kita bikin tanpa reload
+                }
+            });
+
+        }
 
     });
 

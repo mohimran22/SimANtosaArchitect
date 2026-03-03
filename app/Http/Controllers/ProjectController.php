@@ -228,11 +228,15 @@ if (
 
     $nextDate = Carbon::parse($project?->start_date)
                     ->addDays($totalReport);
+        $reports = BuildDailyReport::where('project_id', $project->id)
+    ->orderBy('tanggal')
+    ->get()
+    ->groupBy('minggu');
 
         return view('projects.create', array_merge(
             $this->formData($project),
             compact('project', 'timelineSteps', 'activeStep', 'surveyInvoice',
-        'surveyApproved', 'nextDate',
+        'surveyApproved', 'nextDate', 'reports',
         'isFreeSurvey', 'surveyWaiting', 'surveyRejected', 'invoiceDp', 'invoiceRab', 'invoiceBuild', 'canEdit', 'weeks')
         ));
     }

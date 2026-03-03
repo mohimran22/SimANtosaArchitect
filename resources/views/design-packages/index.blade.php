@@ -61,7 +61,7 @@
                                         <td>{{ $p->items_count }}</td>
                                         <td>
                                             <a href="{{ route('design-packages.edit', $p->id) }}" 
-                                            class="btn btn-sm btn-dark">
+                                            class="btn btn-sm btn-dark" title="Ubah">
                                                 <i class="ti ti-edit"></i>
                                             </a>
 
@@ -71,7 +71,7 @@
 
                                                 @csrf @method('DELETE')
 
-                                                <button class="btn btn-sm btn-dark">
+                                                <button class="btn btn-sm btn-dark" title="Hapus">
                                                     <i class="ti ti-trash"></i>
                                                 </button>
                                             </form>

@@ -17,7 +17,8 @@ class BuildDailyReport extends Model
         'catatan',
         'mk',
         'kontraktor_ttd',
-        'created_by'
+        'created_by',
+        'is_libur'
     ];
 
     protected $casts = [
@@ -50,4 +51,16 @@ class BuildDailyReport extends Model
     {
         return $this->belongsTo(User::class, 'created_by');
     }
+    public function documentations()
+{
+    return $this->hasMany(DailyDocumentation::class);
+}
+
+public function getMingguAttribute()
+{
+    $start = \Carbon\Carbon::parse($this->project->start_date);
+    $current = \Carbon\Carbon::parse($this->tanggal);
+
+    return floor($start->diffInDays($current) / 7) + 1;
+}
 }

@@ -17,11 +17,10 @@ class BuildDailyController extends Controller
 {
     public function store(Request $request)
 {
+    $isLibur = $request->has('is_libur');
+    
     $request->validate([
-
-        // === MASTER REPORT ===
         'project_id' => 'required|exists:projects,id',
-        'tanggal' => 'required|date',
         'jam_mulai' => 'nullable|date_format:H:i',
         'jam_selesai' => 'nullable|date_format:H:i',
         'total_jam' => 'nullable|numeric|min:0',
@@ -29,168 +28,249 @@ class BuildDailyController extends Controller
         'catatan' => 'nullable|string',
         'mk' => 'nullable|string|max:100',
         'kontraktor_ttd' => 'nullable|string|max:100',
-
-        // === TENAGA KERJA ===
         'worker_id.*' => 'nullable',
         'keahlian.*' => 'nullable|string|max:100',
         'jumlah.*' => 'nullable|numeric|min:0',
         'alat.*' => 'nullable|string|max:150',
-
-        // === PEKERJAAN ===
         'rab_process_item_id.*' => 'nullable',
         'uraian_manual.*' => 'nullable|string|max:255',
-        'volume.*' => 'nullable|numeric|min:0',
-        'satuan.*' => 'nullable|string|max:50',
+        'daily.volume.*' => 'nullable|numeric|min:0',
+        'daily.satuan.*' => 'nullable|string|max:50',
         'ket.*' => 'nullable|string|max:255',
-
-        // === MATERIAL ===
         'bahan.*' => 'nullable|string|max:150',
         'diterima.*' => 'nullable|numeric|min:0',
         'ditolak.*' => 'nullable|numeric|min:0',
+        'documentation_tenaga' => 'nullable|array',
+        'documentation_tenaga.*' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
 
+        'documentation_pekerjaan' => 'nullable|array',
+        'documentation_pekerjaan.*' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+
+        'documentation_material' => 'nullable|array',
+        'documentation_material.*' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
     ]);
     foreach($request->worker_id ?? [] as $i => $worker){
 
-    if($worker === 'manual'){
-        if(empty($request->keahlian[$i])){
-            return back()
-                ->withErrors(['keahlian.'.$i => 'Keahlian manual wajib diisi.'])
-                ->withInput();
+        if($worker === 'manual'){
+            if(empty($request->keahlian[$i])){
+                return back()
+                    ->withErrors(['keahlian.'.$i => 'Keahlian manual wajib diisi.'])
+                    ->withInput();
+            }
         }
     }
-}
-foreach($request->rab_process_item_id ?? [] as $i => $rab){
+    foreach($request->rab_process_item_id ?? [] as $i => $rab) {
 
-    if($rab === 'manual'){
-        if(empty($request->uraian_manual[$i])){
-            return back()
-                ->withErrors(['uraian_manual.'.$i => 'Uraian manual wajib diisi.'])
-                ->withInput();
+        if($rab === 'manual'){
+            if(empty($request->uraian_manual[$i])){
+                return back()
+                    ->withErrors(['uraian_manual.'.$i => 'Uraian manual wajib diisi.'])
+                    ->withInput();
+            }
         }
     }
-}
-DB::beginTransaction();
+    DB::beginTransaction();
 
-try {
+    try {
+
         $project = Project::findOrFail($request->project_id);
 
-        // Hitung jumlah laporan yang sudah ada
-        $totalReport = BuildDailyReport::where('project_id', $project->id)->count();
+        $lastReport = BuildDailyReport::where('project_id', $project->id)
+                        ->orderBy('tanggal', 'desc')
+                        ->first();
 
-        // Tanggal = start_date + jumlah laporan
-        $tanggal = Carbon::parse($project->start_date)
-                    ->addDays($totalReport);
+        $tanggal = $lastReport
+                    ? Carbon::parse($lastReport->tanggal)->addDay()
+                    : Carbon::parse($project->start_date);
 
-    $report = BuildDailyReport::create([
-        'project_id' => $request->project_id,
-        'pekerjaan' => $request->project_name,
-        'tanggal' => $tanggal,
-        'jam_mulai' => $request->jam_mulai,
-        'jam_selesai' => $request->jam_selesai,
-        'total_jam' => $request->total_jam,
-        'cuaca' => $request->cuaca,
-        'catatan' => $request->catatan,
-        'mk' => $request->mk,
-        'kontraktor_ttd' => $request->kontraktor_ttd
-    ]);
+        $exists = BuildDailyReport::where('project_id', $project->id)
+                    ->whereDate('tanggal', $tanggal)
+                    ->exists();
 
-    if($request->worker_id){
-
-    foreach($request->worker_id as $i=>$worker){
-
-        if(empty($worker)) continue;
-
-        if($worker == 'manual'){
-
-            BuildDailyWorker::create([
-
-                'daily_report_id'=>$report->id,
-                'worker_id'=>null,
-                'keahlian'=>$request->keahlian[$i] ?? null,
-                'jumlah'=>$request->jumlah[$i] ?? 0,
-                'alat'=>$request->alat[$i] ?? null
-
-            ]);
-
-        }else{
-            $workerModel = Worker::find($worker);
-
-            if(!$workerModel) continue;
-
-            BuildDailyWorker::create([
-
-                'daily_report_id'=>$report->id,
-                'worker_id'=>$workerModel->id,
-                'keahlian'=>null,
-                'jumlah'=>$request->jumlah[$i] ?? 0,
-                'alat'=>$request->alat[$i] ?? null
-
-            ]);
-
+        if ($exists) {
+            return back()
+                ->with('error', 'Laporan untuk tanggal ini sudah ada.')
+                ->withInput();
         }
 
-    }
+        $report = BuildDailyReport::create([
+            'project_id' => $request->project_id,
+            'pekerjaan' => $project->project_name,
+            'tanggal' => $tanggal,
+            'is_libur' => $isLibur,
+            'jam_mulai' => $isLibur ? null : $request->jam_mulai,
+            'jam_selesai' => $isLibur ? null : $request->jam_selesai,
+            'total_jam' => $isLibur ? 0 : $request->total_jam,
+            'cuaca' => $isLibur ? null : $request->cuaca,
+            'catatan' => $isLibur ? 'Tidak ada kegiatan (Hari Libur)' : $request->catatan,
+            'mk' => $isLibur ? null : $request->mk,
+            'kontraktor_ttd' => $isLibur ? null : $request->kontraktor_ttd,
+            'created_by' => auth()->id(),
+        ]);
+
+        if ($isLibur) {
+            DB::commit();
+
+            return redirect()
+                ->route('projects.create', ['project_id' => $report->project_id])
+                ->with('success','Laporan hari libur berhasil disimpan');
+        }
+
+    if($request->hasFile('documentation_tenaga')){
+        foreach($request->file('documentation_tenaga') as $file){
+
+            $path = $file->store('daily/tenaga','public');
+
+            $report->documentations()->create([
+                'category' => 'tenaga',
+                'file_path' => $path,
+                'file_name' => $file->getClientOriginalName(),
+                'file_type' => $file->getClientMimeType(),
+            ]);
+        }
     }
 
-    if($request->rab_process_item_id) {
-        foreach($request->rab_process_item_id as $i=>$rab){
+    if($request->hasFile('documentation_pekerjaan')){
+        foreach($request->file('documentation_pekerjaan') as $file){
+
+            $path = $file->store('daily/pekerjaan','public');
+
+            $report->documentations()->create([
+                'category' => 'pekerjaan',
+                'file_path' => $path,
+                'file_name' => $file->getClientOriginalName(),
+                'file_type' => $file->getClientMimeType(),
+            ]);
+        }
+    }
+
+    if($request->hasFile('documentation_material')){
+        foreach($request->file('documentation_material') as $file){
+
+            $path = $file->store('daily/material','public');
+
+            $report->documentations()->create([
+                'category' => 'material',
+                'file_path' => $path,
+                'file_name' => $file->getClientOriginalName(),
+                'file_type' => $file->getClientMimeType(),
+            ]);
+        }
+    }
+
+        foreach($request->worker_id ?? [] as $i => $worker){
+
+            if(empty($worker)) continue;
+
+            if($worker == 'manual'){
+
+                BuildDailyWorker::create([
+                    'daily_report_id'=>$report->id,
+                    'worker_id'=>null,
+                    'keahlian'=>$request->keahlian[$i] ?? null,
+                    'jumlah'=>$request->jumlah[$i] ?? 0,
+                    'alat'=>$request->alat[$i] ?? null
+                ]);
+
+            } else {
+
+                $workerModel = Worker::find($worker);
+                if(!$workerModel) continue;
+
+                BuildDailyWorker::create([
+                    'daily_report_id'=>$report->id,
+                    'worker_id'=>$workerModel->id,
+                    'keahlian'=>null,
+                    'jumlah'=>$request->jumlah[$i] ?? 0,
+                    'alat'=>$request->alat[$i] ?? null
+                ]);
+            }
+        }
+
+        $volumes = $request->daily['volume'] ?? [];
+        $satuans = $request->daily['satuan'] ?? [];
+
+        foreach($request->rab_process_item_id ?? [] as $i => $rab){
+
+            if(
+                empty($rab) &&
+                empty($request->uraian_manual[$i]) &&
+                empty($volumes[$i]) &&
+                empty($satuans[$i])
+            ){
+                continue;
+            }
+
             BuildDailyWork::create([
-                'build_daily_report_id'=>$report->id,
-                'rab_process_item_id'=>
-                $rab != 'manual'
-                ? $rab
-                : null,
-                'uraian_manual' =>
-                    $rab == 'manual'
-                    ? ($request->uraian_manual[$i] ?? null)
-                    : null,
-                'volume'=>$request->volume[$i] ?? 0,
-                'satuan'=>$request->satuan[$i] ?? 0,
-                'keterangan'=>$request->ket[$i] ?? null
+                'build_daily_report_id' => $report->id,
+                'rab_process_item_id'   => $rab != 'manual' ? $rab : null,
+                'uraian_manual'         => $rab == 'manual'
+                                            ? ($request->uraian_manual[$i] ?? null)
+                                            : null,
+                'volume'                => $volumes[$i] ?? 0,
+                'satuan'                => $satuans[$i] ?? null,
+                'keterangan'            => $request->ket[$i] ?? null,
             ]);
         }
-    }
 
-    if($request->bahan){
+        foreach($request->bahan ?? [] as $i => $bahan){
 
-        foreach($request->bahan as $i=>$bahan){
             if(empty($bahan)) continue;
+
             BuildDailyMaterial::create([
                 'daily_report_id'=>$report->id,
                 'nama_bahan'=>$bahan,
                 'diterima'=>$request->diterima[$i] ?? 0,
                 'ditolak'=>$request->ditolak[$i] ?? 0
-
             ]);
-
         }
 
+        DB::commit();
+
+        return redirect()
+            ->route('projects.create', ['project_id' => $report->project_id])
+            ->with('success','Laporan berhasil disimpan');
+
+    } catch(\Exception $e) {
+
+        DB::rollBack();
+        \Log::error($e);
+
+        return back()->with('error','Terjadi kesalahan saat menyimpan laporan.');
     }
 
-
-DB::commit();
-
-return redirect()->back()->with('success','Laporan berhasil disimpan');
-
-}catch(\Exception $e){
-
-DB::rollBack();
-
-\Log::error($e);
-
-return back()->with('error','Terjadi kesalahan saat menyimpan laporan.');
-
 }
 
-}
 public function detail($id)
 {
     $daily = BuildDailyReport::with([
         'works.rabProcessItem',
         'workers.worker.user',
-        'materials'
+        'materials',
+        'documentations'
     ])->findOrFail($id);
 
     return response()->json($daily);
+}
+public function editPage($id)
+{
+    $report = BuildDailyReport::with([
+        'works.rabProcessItem',
+        'workers.worker.user',
+        'materials',
+        'documentations'
+    ])->findOrFail($id);
+
+    return view('reports.edit', compact('report'));
+}
+public function destroy($id)
+{
+    $report = BuildDailyReport::findOrFail($id);
+    $report->delete();
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Data berhasil dihapus'
+    ]);
 }
 }

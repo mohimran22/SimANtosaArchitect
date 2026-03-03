@@ -304,8 +304,8 @@ function renderRabTable() {
                 <tr>
                     <td>${no}</td>
                     <td>${item.nama}</td>
-                    <td width="110">
-                        <input type="number" class="form-control text-center"
+                    <td width="100">
+                        <input type="number" class="form-control text-center volume-input"
                             value="${item.volume}"
                             min="0.01" step="0.01"
                             onchange="updateVolume(${item.id}, this.value)">

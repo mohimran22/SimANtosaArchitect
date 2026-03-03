@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('build_daily_works', function (Blueprint $table) {
-            $table->id('rab_process_item_id')->nullable()->change();
+        Schema::table('build_daily_reports', function (Blueprint $table) {
+            $table->unique('tanggal')->change();
         });
     }
 
@@ -21,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        //
+        Schema::table('build_daily_reports', function (Blueprint $table) {
+            //
+        });
     }
 };
