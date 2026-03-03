@@ -160,10 +160,10 @@ public function update(Request $request, Project $project, RabProcess $rab)
         'items.*.satuan' => 'required|string',
         'items.*.volume' => 'required|numeric|min:0.01',
         'items.*.base_price' => 'required|numeric|min:0',
-        'items.*.price' => 'required|numeric|min:0',
+        // 'items.*.price' => 'required|numeric|min:0',
         'items.*.profit' => 'required|numeric|max:100',
         'items.*.overhead' => 'required|numeric|max:100',
-        'items.*.total' => 'required|numeric|min:0',
+        // 'items.*.total' => 'required|numeric|min:0',
 
         'discount' => 'nullable|numeric|min:0',
         'tax_rate' => 'nullable|numeric|min:0|max:100',
@@ -171,67 +171,62 @@ public function update(Request $request, Project $project, RabProcess $rab)
         'notes' => 'nullable|string',
     ]);
 
-    DB::transaction(function () use ($request, $rab, $project) {
+DB::transaction(function () use ($request, $rab, $project) {
 
-        // ================= HITUNG ULANG SUMMARY =================
-        $subtotal = collect($request->items)->sum(fn ($item) => (float) $item['total']);
+    $rab->items()->delete();
 
-        $discount = (float) ($request->discount ?? 0);
-        $taxRate  = (float) ($request->tax_rate ?? 0);
-        $shipping = (float) ($request->shipping ?? 0);
+    $subtotal = 0;
 
-        $subtotalAfterDiscount = max($subtotal - $discount, 0);
-        $taxTotal = $subtotalAfterDiscount * ($taxRate / 100);
-        $grandTotal = $subtotalAfterDiscount + $taxTotal + $shipping;
+    foreach ($request->items as $item) {
 
-        // ================= UPDATE RAB HEADER =================
-        $rab->update([
-            'contact_name' => $request->contact_name,
-            'job_location' => $request->job_location,
-            'job_duration' => $request->job_duration,
+        $base = $item['volume'] * $item['base_price'];
+        $profitValue = $base * ($item['profit'] / 100);
+        $overheadValue = $base * ($item['overhead'] / 100);
 
-            'subtotal' => $subtotal,
-            'discount' => $discount,
-            'subtotal_after_discount' => $subtotalAfterDiscount,
+        $total = $base + $profitValue + $overheadValue;
+        $total = round($total);
 
-            'tax_rate' => $taxRate,
-            'tax_total' => $taxTotal,
-            'shipping' => $shipping,
-            'grand_total' => $grandTotal,
+        $subtotal += $total;
 
-            'notes' => $request->notes,
-            'updated_by' => auth()->id(),
+        $rab->items()->create([
+            'job_category_id' => $item['job_category_id'],
+            'job_name' => $item['job_name'],
+            'satuan' => $item['satuan'],
+            'volume' => $item['volume'],
+            'profit' => $item['profit'],
+            'overhead' => $item['overhead'],
+            'base_price' => $item['base_price'],
+            'price' => $item['price'],
+            'total' => $total,
         ]);
+    }
 
-        // ================= DELETE ITEM LAMA =================
-        $rab->items()->delete();
+    $discount = (float) ($request->discount ?? 0);
+    $taxRate  = (float) ($request->tax_rate ?? 0);
+    $shipping = (float) ($request->shipping ?? 0);
 
-        // ================= INSERT ITEM BARU =================
-        foreach ($request->items as $item) {
+    $subtotalAfterDiscount = max($subtotal - $discount, 0);
+    $taxTotal = round($subtotalAfterDiscount * ($taxRate / 100));
+    $grandTotal = round($subtotalAfterDiscount + $taxTotal + $shipping);
 
-            $base = $item['volume'] * $item['base_price'];
-            $profitValue = $base * ($item['profit'] / 100);
-            $overheadValue = $base * ($item['overhead'] / 100);
-            $total = $base + $profitValue + $overheadValue;
-            $total = round($total);
+    $rab->update([
+        'contact_name' => $request->contact_name,
+        'job_location' => $request->job_location,
+        'job_duration' => $request->job_duration,
 
-            if ($total !== (int) $item['total']) {
-                abort(422, 'Total item tidak valid');
-            }
+        'subtotal' => $subtotal,
+        'discount' => $discount,
+        'subtotal_after_discount' => $subtotalAfterDiscount,
 
-            $rab->items()->create([
-                'job_category_id' => $item['job_category_id'],
-                'job_name' => $item['job_name'],
-                'satuan' => $item['satuan'],
-                'volume' => $item['volume'],
-                'profit' => $item['profit'],
-                'overhead' => $item['overhead'],
-                'base_price' => $item['base_price'],
-                'price' => $item['price'],
-                'total' => $total,
-            ]);
-        }
-    });
+        'tax_rate' => $taxRate,
+        'tax_total' => $taxTotal,
+        'shipping' => $shipping,
+        'grand_total' => $grandTotal,
+
+        'notes' => $request->notes,
+        'updated_by' => auth()->id(),
+    ]);
+});
 
     return back()->with('success', 'RAB berhasil diperbarui');
 }
