@@ -103,8 +103,8 @@ class BuildDailyController extends Controller
             'total_jam' => $isLibur ? 0 : $request->total_jam,
             'cuaca' => $isLibur ? null : $request->cuaca,
             'catatan' => $isLibur ? 'Tidak ada kegiatan (Hari Libur)' : $request->catatan,
-            'mk' => $isLibur ? null : $request->mk,
-            'kontraktor_ttd' => $isLibur ? null : $request->kontraktor_ttd,
+            'mk_id' => $isLibur ? null : $request->mk,
+            'kontraktor_ttd_id' => $isLibur ? null : $request->kontraktor_ttd,
             'created_by' => auth()->id(),
         ]);
 
@@ -247,10 +247,50 @@ public function detail($id)
         'works.rabProcessItem',
         'workers.worker.user',
         'materials',
-        'documentations'
+        'documentations',
+        'mkEmployee.user',
+        'kontraktorEmployee.user'
     ])->findOrFail($id);
 
     return response()->json($daily);
+}
+
+public function updateHeader(Request $request, $id)
+{
+    $daily = BuildDailyReport::findOrFail($id);
+
+    $totalJam = null;
+
+    if ($request->jam_mulai && $request->jam_selesai) {
+        $mulai = Carbon::parse($request->jam_mulai);
+        $selesai = Carbon::parse($request->jam_selesai);
+
+        $diffInMinutes = $mulai->diffInMinutes($selesai);
+        $totalJam = $diffInMinutes / 60;
+    }
+
+    $daily->update([
+        'tanggal'     => $request->tanggal,
+        'jam_mulai'   => $request->jam_mulai,
+        'jam_selesai' => $request->jam_selesai,
+        'total_jam'   => $totalJam,
+        'cuaca'       => $request->cuaca,
+        'catatan'     => $request->catatan,
+    ]);
+
+    $daily->refresh(); // 🔥 penting supaya ambil data terbaru
+
+    return response()->json([
+        'success' => true,
+        'data' => [
+            'tanggal'     => $daily->tanggal->format('Y-m-d'),
+            'jam_mulai'   => optional($daily->jam_mulai)->format('H:i'),
+            'jam_selesai' => optional($daily->jam_selesai)->format('H:i'),
+            'total_jam'   => number_format($daily->total_jam, 2),
+            'cuaca'       => $daily->cuaca,
+            'catatan'     => $daily->catatan,
+        ]
+    ]);
 }
 public function editPage($id)
 {

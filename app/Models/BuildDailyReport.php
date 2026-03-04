@@ -15,8 +15,8 @@ class BuildDailyReport extends Model
         'total_jam',
         'pekerjaan',
         'catatan',
-        'mk',
-        'kontraktor_ttd',
+        'mk_id',
+        'kontraktor_ttd_id',
         'created_by',
         'is_libur'
     ];
@@ -25,6 +25,11 @@ class BuildDailyReport extends Model
         'tanggal' => 'date',
         'jam_mulai' => 'datetime:H:i',
         'jam_selesai' => 'datetime:H:i',
+    ];
+    protected $appends = [
+        'tanggal_formatted',
+        'jam_mulai_formatted',
+        'jam_selesai_formatted',
     ];
 
     public function project()
@@ -55,12 +60,40 @@ class BuildDailyReport extends Model
 {
     return $this->hasMany(DailyDocumentation::class);
 }
+public function mkEmployee()
+{
+    return $this->belongsTo(Employee::class, 'mk_id');
+}
 
+public function kontraktorEmployee()
+{
+    return $this->belongsTo(Employee::class, 'kontraktor_ttd_id');
+}
 public function getMingguAttribute()
 {
     $start = \Carbon\Carbon::parse($this->project->start_date);
     $current = \Carbon\Carbon::parse($this->tanggal);
 
     return floor($start->diffInDays($current) / 7) + 1;
+}
+public function getTanggalFormattedAttribute()
+{
+    return $this->tanggal 
+        ? $this->tanggal->format('Y-m-d') 
+        : null;
+}
+
+public function getJamMulaiFormattedAttribute()
+{
+    return $this->jam_mulai 
+        ? \Carbon\Carbon::parse($this->jam_mulai)->format('H:i')
+        : null;
+}
+
+public function getJamSelesaiFormattedAttribute()
+{
+    return $this->jam_selesai 
+        ? \Carbon\Carbon::parse($this->jam_selesai)->format('H:i')
+        : null;
 }
 }

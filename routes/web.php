@@ -544,7 +544,8 @@ Route::post('/build-daily/store',
 Route::get('/daily/{id}/detail', [BuildDailyController::class, 'detail'])
     ->name('build.daily.detail');
 Route::get('/reports/{id}/edit', [BuildDailyController::class, 'editPage'])->name('build.daily.edit');
-Route::put('/reports/{id}', [BuildDailyController::class, 'update'])->name('build.daily.update');
+Route::post('/daily/{id}/update-header',
+    [BuildDailyController::class, 'updateHeader']);
 Route::delete('/reports/{id}', [BuildDailyController::class, 'destroy']);
 Route::get('/projects/{project}/invoice-panel',
 [ProjectController::class,'invoicePanel'])

@@ -218,3 +218,35 @@ function markAllAsRead() {
     });
 }
 </script>
+        // document.addEventListener('input', function(e) {
+
+        //     if (e.target.name !== 'volume') return;
+        //     if (!currentRabJob) return;
+
+        //     const volume = parseFloat(e.target.value) || 0;
+        //     if (volume <= 0) return;
+
+        //     const harga = parseFloat(currentRabJob.harga ?? currentRabJob.price ?? 0);
+            
+        //     let profitPercent = globalProfit;
+        //     let overheadPercent = globalOverhead;
+
+        //     let total = calculateItemTotal(volume, harga, globalProfit, globalOverhead);
+
+        //     document.getElementById('rab_totalPrice').value = total;
+        //     document.getElementById('rab_totalPriceFormatted').value = formatRp(total);
+
+        //     const jobId = currentRabJob.id;
+
+        //     rabItems[jobId] = {
+        //         ...currentRabJob,
+        //         volume: volume,
+        //         base_price: harga,
+        //         harga: applyGlobalMarginToUnit(harga),
+        //         profit: profitPercent,
+        //         overhead: overheadPercent,
+        //         total: total
+        //     };
+
+        //     renderRabTable();
+        // });

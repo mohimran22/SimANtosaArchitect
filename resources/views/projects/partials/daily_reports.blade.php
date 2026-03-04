@@ -395,14 +395,21 @@
             <div class="col-md-6">
                 Side Manager
                 <br><br><br><br>
-                <input name="mk" class="form-control text-center" value="{{ auth()->user()->fullname }}" readonly>
+                <select name="mk_id" class="form-select select2">
+                    <option value="mk">-- Pilih Side Manager --</option>
+                    @foreach($employees as $emp)
+                        <option value="{{ $emp->id }}">
+                            {{ $emp->user->fullname }}
+                        </option>
+                    @endforeach
+                </select>
             </div>
 
             <div class="col-md-6">
                 Project Manager
                     <br><br><br><br>
-                <select name="mk" class="form-select select2">
-                    <option value="mk">-- Pilih Project Manager --</option>
+                <select name="kontraktor_ttd_id" class="form-select select2">
+                    <option value="kontraktor_ttd">-- Pilih Project Manager --</option>
                     @foreach($employees as $emp)
                         <option value="{{ $emp->id }}">
                             {{ $emp->user->fullname }}
