@@ -124,13 +124,199 @@ document.addEventListener('DOMContentLoaded', function(){
     const modalBody = document.getElementById('dailyModalBody');
     const btnEdit = document.getElementById('btnEdit');
 
+    let workIndex = 0;
+    let workerIndex = 0;
+    let materialIndex = 0;
+                function addWorkRow(){
+                
+                const tbody = document.querySelector('#worksTable tbody');
+
+                const row = `
+                <tr>
+                    <td class="row-number"></td>
+
+                    <td>
+                        <input type="text"
+                            name="works[${workIndex}][uraian_manual]"
+                            class="form-control">
+                    </td>
+
+                    <td>
+                        <input type="number" step="0.01"
+                            name="works[${workIndex}][volume]"
+                            class="form-control">
+                    </td>
+
+                    <td>
+                        <input type="text"
+                            name="works[${workIndex}][satuan]"
+                            class="form-control">
+                    </td>
+
+                    <td>
+                        <input type="text"
+                            name="works[${workIndex}][keterangan]"
+                            class="form-control">
+                    </td>
+
+                    <td>
+                        <button type="button"
+                            class="btn btn-sm btn-dark btn-remove-work">
+                            Hapus
+                        </button>
+                    </td>
+                </tr>`;
+
+                tbody.insertAdjacentHTML('beforeend', row);
+                workIndex++;
+                refreshNumber('#worksTable');
+            }
+            function addWorkerRow(){
+                                    const tbody = document.querySelector('#workersTable tbody');
+
+                                    const row = `
+                                    <tr>
+                                        <td class="row-number"></td>
+
+                                        <td>
+                                            <input type="text"
+                                                name="workers[${workerIndex}][keahlian]"
+                                                class="form-control">
+                                        </td>
+
+                                        <td>
+                                            <input type="number"
+                                                name="workers[${workerIndex}][jumlah]"
+                                                class="form-control" value="1">
+                                        </td>
+
+                                        <td>
+                                            <input type="text"
+                                                name="workers[${workerIndex}][alat]"
+                                                class="form-control">
+                                        </td>
+
+                                        <td>
+                                            <button type="button"
+                                                class="btn btn-sm btn-dark btn-remove-worker">
+                                                Hapus
+                                            </button>
+                                        </td>
+                                    </tr>`;
+
+                                    tbody.insertAdjacentHTML('beforeend', row);
+                                    workerIndex++;
+                                    refreshNumber('#workersTable');
+            }
+            function addMaterialRow(){
+                                    const tbody = document.querySelector('#materialsTable tbody');
+
+                                    const row = `
+                                    <tr>
+                                        <td class="row-number"></td>
+
+                                        <td>
+                                            <input type="text"
+                                                name="materials[${materialIndex}][nama_bahan]"
+                                                class="form-control">
+                                        </td>
+
+                                        <td>
+                                            <input type="number"
+                                                name="materials[${materialIndex}][diterima]"
+                                                class="form-control">
+                                        </td>
+
+                                        <td>
+                                            <input type="number"
+                                                name="materials[${materialIndex}][ditolak]"
+                                                class="form-control">
+                                        </td>
+
+                                        <td>
+                                            <button type="button"
+                                                class="btn btn-sm btn-dark btn-remove-material">
+                                                Hapus
+                                            </button>
+                                        </td>
+                                    </tr>`;
+
+                                    tbody.insertAdjacentHTML('beforeend', row);
+                                    materialIndex++;
+                                    refreshNumber('#materialsTable');
+            }
+            function handleDelete(e, tableId, urlPrefix){
+
+                const row = e.target.closest('tr');
+                const idInput = row.querySelector('input[name*="[id]"]');
+
+                if(idInput){
+
+                    const recordId = idInput.value;
+
+                    if(confirm('Yakin hapus data ini?')){
+
+                        fetch(`/${urlPrefix}/${recordId}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'X-CSRF-TOKEN': document
+                                    .querySelector('meta[name="csrf-token"]')
+                                    .content,
+                                'Accept': 'application/json'
+                            }
+                        })
+                        .then(res => res.json())
+                        .then(res => {
+                            if(res.success){
+                                row.remove();
+                                refreshNumber(tableId);
+                            }
+                        });
+                    }
+
+                }else{
+                    row.remove();
+                    refreshNumber(tableId);
+                }
+            }
+            function refreshNumber(tableId){
+                document.querySelectorAll(`${tableId} tbody tr`)
+                    .forEach((row,index)=>{
+                        const cell = row.querySelector('.row-number');
+                        if(cell){
+                            cell.innerText = index + 1;
+                        }
+                    });
+            }
+    modalBody.addEventListener('click', function(e){
+
+        if(e.target.id === 'btnAddWork') addWorkRow();
+        if(e.target.id === 'btnAddWorker') addWorkerRow();
+        if(e.target.id === 'btnAddMaterial') addMaterialRow();
+
+        if(e.target.classList.contains('btn-remove-work')){
+            handleDelete(e, '#worksTable', 'daily-work');
+        }
+
+        if(e.target.classList.contains('btn-remove-worker')){
+            handleDelete(e, '#workersTable', 'daily-worker');
+        }
+
+        if(e.target.classList.contains('btn-remove-material')){
+            handleDelete(e, '#materialsTable', 'daily-material');
+        }
+
+    });
     document.querySelectorAll('.btn-detail').forEach(btn => {
 
         btn.addEventListener('click', function(){
 
             const id = this.dataset.id;
-
-            modalBody.innerHTML = "Loading...";
+            
+            modalBody.innerHTML = "";
+            workIndex = 0;
+            workerIndex = 0;
+            materialIndex = 0;
 
             fetch(`/daily/${id}/detail`)
             .then(res => res.json())
@@ -216,8 +402,7 @@ document.addEventListener('DOMContentLoaded', function(){
                     <tbody>${pekerjaanRows}</tbody>
                 </table>
                 <h6 class="mt-4">File Upload</h6>
-                ${renderDocumentation(data, 'tenaga')}
-
+                ${renderDocumentation(data, 'pekerjaan')}
                 <h6>Tenaga Kerja</h6>
                 <table class="table table-bordered mb-4">
                     <thead class="table-light">
@@ -231,7 +416,7 @@ document.addEventListener('DOMContentLoaded', function(){
                     <tbody>${workerRows}</tbody>
                 </table>
                 <h6 class="mt-4">File Upload</h6>
-                ${renderDocumentation(data, 'pekerjaan')}
+                ${renderDocumentation(data, 'tenaga')}
                 <h6>Bahan Masuk</h6>
                 <table class="table table-bordered">
                     <thead class="table-light">
@@ -302,7 +487,7 @@ document.addEventListener('DOMContentLoaded', function(){
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <h6 class="mb-0">Pekerjaan</h6>
                             <button type="button" class="btn btn-sm btn-dark" id="btnAddWork">
-                                + Tambah
+                                + Tambah Pekerjaan
                             </button>
                         </div>
                         <table class="table table-bordered" id="worksTable">
@@ -310,16 +495,17 @@ document.addEventListener('DOMContentLoaded', function(){
                                 <tr>
                                     <th>No</th>
                                     <th>Uraian</th>
-                                    <th>Volume</th>
-                                    <th>Satuan</th>
+                                    <th width="120">Volume</th>
+                                    <th width="120">Satuan</th>
                                     <th>Keterangan</th>
-                                    <th width="80">Aksi</th>
+                                    <th width="40">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 ${data.works.map((w,i)=>`
                                 <tr>
-                                    <td>${i+1}</td>
+                                    <td class="row-number">${i+1}</td>
+
                                     <td>
                                         <input type="hidden" name="works[${i}][id]" value="${w.id}">
                                         <input type="text"
@@ -349,67 +535,95 @@ document.addEventListener('DOMContentLoaded', function(){
                                             class="form-control"
                                             value="${w.keterangan ?? '-'}">
                                     </td>
-                                    <td></td>
+                                    <td>
+                                        <button type="button"
+                                            class="btn btn-sm btn-dark btn-remove-work">
+                                            Hapus
+                                        </button>
+                                    </td>
                                 </tr>
                                 `).join('')}
                             </tbody>
                         </table>
+                        <h6 class="mt-4">File Upload (Pekerjaan)</h6>
+                        <div id="editDocsPekerjaan">
+                            ${renderDocumentationEdit(data, 'pekerjaan')}
+                        </div>
+
+                        <input type="file" name="new_files_pekerjaan[]" id="fileInputPekerjaan"
+                            class="form-control mt-2" multiple>
+                        <div id="previewPekerjaan"
+                            class="d-flex flex-wrap gap-3 mt-3">
+                        </div>
                         <hr>
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <h6 class="mb-0">Tenaga Kerja</h6>
-                            <button type="button" 
-                                    class="btn btn-sm btn-dark" 
-                                    id="btnAddWorker">
-                                + Tambah
+                            <button type="button" class="btn btn-sm btn-dark" id="btnAddWorker">
+                                + Tambah Tenaga
                             </button>
                         </div>
                         <table class="table table-bordered" id="workersTable">
-                        <thead class="table-light">
+                            <thead class="table-light">
+                                <tr>
+                                    <th width="50">No</th>
+                                    <th>Nama / Keahlian</th>
+                                    <th width="120">Jumlah</th>
+                                    <th width="150">Alat</th>
+                                    <th width="80">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            ${data.workers.map((w,i)=>`
                             <tr>
-                                <th width="50">No</th>
-                                <th>Nama / Keahlian</th>
-                                <th width="120">Jumlah</th>
-                                <th width="150">Alat</th>
-                                <th width="80">Aksi</th>
+                                <td class="row-number">${i+1}</td>
+                                <td>
+                                    ${w.worker 
+                                        ? w.worker.user.fullname
+                                        : (w.keahlian ?? '-')}
+                                    <input type="hidden" name="workers[${i}][id]" value="${w.id}">
+                                </td>
+                                <td>
+                                    <input type="number"
+                                        name="workers[${i}][jumlah]"
+                                        class="form-control"
+                                        value="${w.jumlah}">
+                                </td>
+                                <td>
+                                    <input type="text"
+                                        name="workers[${i}][alat]"
+                                        class="form-control"
+                                        value="${w.alat ?? ''}">
+                                </td>
+                                <td>
+                                    <button type="button"
+                                        class="btn btn-sm btn-dark btn-remove-worker">
+                                        Hapus
+                                    </button>
+                                </td>
                             </tr>
-                        </thead>
-                        <tbody>
-                        ${data.workers.map((w,i)=>`
-                        <tr>
-                            <td>${i+1}</td>
-                            <td>
-                                ${w.worker 
-                                    ? w.worker.user.fullname
-                                    : (w.keahlian ?? '-')}
-                                <input type="hidden" name="workers[${i}][id]" value="${w.id}">
-                            </td>
-                            <td>
-                                <input type="number"
-                                    name="workers[${i}][jumlah]"
-                                    class="form-control"
-                                    value="${w.jumlah}">
-                            </td>
-                            <td>
-                                <input type="text"
-                                    name="workers[${i}][alat]"
-                                    class="form-control"
-                                    value="${w.alat ?? ''}">
-                            </td>
-                            <td></td>
-                        </tr>
-                        `).join('')}
-                        </tbody>
+                            `).join('')}
+                            </tbody>
                         </table>
+                        <h6 class="mt-4">File Upload (Pekerjaan)</h6>
+                        <div id="editDocsTenaga">
+                            ${renderDocumentationEdit(data, 'tenaga')}
+                        </div>
+
+                        <input type="file" name="new_files_tenaga[]" 
+                            class="form-control mt-2" multiple>
+                        <div id="previewTenaga"
+                            class="d-flex flex-wrap gap-3 mt-3">
+                        </div>
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <h6 class="mb-0">Material</h6>
                             <button type="button" class="btn btn-sm btn-dark" id="btnAddMaterial">
-                                + Tambah
+                                + Tambah Material
                             </button>
                         </div>
                         <table class="table table-bordered" id="materialsTable">
                         <thead class="table-light">
                             <tr>
-                                <th>No</th>
+                                <th width="50">No</th>
                                 <th>Nama Bahan</th>
                                 <th>Diterima</th>
                                 <th>Ditolak</th>
@@ -419,7 +633,7 @@ document.addEventListener('DOMContentLoaded', function(){
                         <tbody>
                         ${data.materials.map((m,i)=>`
                         <tr>
-                            <td>${i+1}</td>
+                            <td class="row-number">${i+1}</td>
                             <td>
                                 ${m.nama_bahan}
                                 <input type="hidden" name="materials[${i}][id]" value="${m.id}">
@@ -436,11 +650,26 @@ document.addEventListener('DOMContentLoaded', function(){
                                     class="form-control"
                                     value="${m.ditolak}">
                             </td>
-                            <td></td>
+                                                <td>
+                        <button type="button"
+                            class="btn btn-sm btn-dark btn-remove-material">
+                            Hapus
+                        </button>
+                    </td>
                         </tr>
                         `).join('')}
                         </tbody>
                         </table>
+                        <h6 class="mt-4">File Upload (Pekerjaan)</h6>
+                        <div id="editDocsMaterial">
+                            ${renderDocumentationEdit(data, 'material')}
+                        </div>
+
+                        <input type="file" name="new_files_material[]" 
+                            class="form-control mt-2" multiple>
+                        <div id="previewMaterial"
+                            class="d-flex flex-wrap gap-3 mt-3">
+                        </div>
                         <div class="mb-3">
                             <label>Catatan</label>
                             <textarea name="catatan" class="form-control">${data.catatan ?? ''}</textarea>
@@ -454,175 +683,27 @@ document.addEventListener('DOMContentLoaded', function(){
                     </form>
                 </div>
                 `;
-                    // masuk mode edit
                     document.getElementById('btnEdit').addEventListener('click', function(){
                         document.getElementById('viewMode').style.display = 'none';
                         document.getElementById('editMode').style.display = 'block';
                         this.style.display = 'none';
                     });
 
-                    // batal edit
                     document.getElementById('btnCancelEdit').addEventListener('click', function(){
                         document.getElementById('editMode').style.display = 'none';
                         document.getElementById('viewMode').style.display = 'block';
                         document.getElementById('btnEdit').style.display = 'inline-block';
                     });
 
-                let workIndex = data.works.length;
-                let workerIndex = data.workers.length;
-                let materialIndex = data.materials.length;
+                workIndex = data.works.length;
+                workerIndex = data.workers.length;
+                materialIndex = data.materials.length;
 
-                // tombol tambah (pakai event delegation biar aman)
-                modalBody.addEventListener('click', function(e){
-                    if(e.target.id === 'btnAddWork') {
-
-                        const tbody = document.querySelector('#worksTable tbody');
-
-                        const row = `
-                        <tr>
-                            <td class="row-number"></td>
-
-                            <td>
-                                <input type="text"
-                                    name="works[${workIndex}][uraian_manual]"
-                                    class="form-control">
-                            </td>
-
-                            <td>
-                                <input type="number" step="0.01"
-                                    name="works[${workIndex}][volume]"
-                                    class="form-control">
-                            </td>
-
-                            <td>
-                                <input type="text"
-                                    name="works[${workIndex}][satuan]"
-                                    class="form-control">
-                            </td>
-
-                            <td>
-                                <input type="text"
-                                    name="works[${workIndex}][keterangan]"
-                                    class="form-control">
-                            </td>
-
-                            <td>
-                                <button type="button"
-                                    class="btn btn-sm btn-danger btn-remove-work">
-                                    Hapus
-                                </button>
-                            </td>
-                        </tr>`;
-
-                        tbody.insertAdjacentHTML('beforeend', row);
-                        workIndex++;
-                        refreshNumber('#worksTable');
-                    }
-
-                    if(e.target.classList.contains('btn-remove-work')){
-                        e.target.closest('tr').remove();
-                        refreshNumber('#worksTable');
-                    }
-                    if(e.target.id === 'btnAddWorker'){
-
-                        const tbody = document.querySelector('#workersTable tbody');
-
-                        const row = `
-                        <tr>
-                            <td class="row-number"></td>
-
-                            <td>
-                                <input type="text"
-                                    name="workers[${workerIndex}][nama]"
-                                    class="form-control">
-                            </td>
-
-                            <td>
-                                <input type="number"
-                                    name="workers[${workerIndex}][jumlah]"
-                                    class="form-control" value="1">
-                            </td>
-
-                            <td>
-                                <input type="text"
-                                    name="workers[${workerIndex}][alat]"
-                                    class="form-control">
-                            </td>
-
-                            <td>
-                                <button type="button"
-                                    class="btn btn-sm btn-danger btn-remove-worker">
-                                    Hapus
-                                </button>
-                            </td>
-                        </tr>`;
-
-                        tbody.insertAdjacentHTML('beforeend', row);
-                        workerIndex++;
-                        refreshNumber('#workersTable');
-                    }
-
-                    if(e.target.classList.contains('btn-remove-worker')){
-                        e.target.closest('tr').remove();
-                        refreshNumber('#workersTable');
-                    }
-                    if(e.target.id === 'btnAddMaterial'){
-
-                        const tbody = document.querySelector('#materialsTable tbody');
-
-                        const row = `
-                        <tr>
-                            <td class="row-number"></td>
-
-                            <td>
-                                <input type="text"
-                                    name="materials[${materialIndex}][nama_bahan]"
-                                    class="form-control">
-                            </td>
-
-                            <td>
-                                <input type="number"
-                                    name="materials[${materialIndex}][diterima]"
-                                    class="form-control">
-                            </td>
-
-                            <td>
-                                <input type="number"
-                                    name="materials[${materialIndex}][ditolak]"
-                                    class="form-control">
-                            </td>
-
-                            <td>
-                                <button type="button"
-                                    class="btn btn-sm btn-danger btn-remove-material">
-                                    Hapus
-                                </button>
-                            </td>
-                        </tr>`;
-
-                        tbody.insertAdjacentHTML('beforeend', row);
-                        materialIndex++;
-                        refreshNumber('#materialsTable');
-                    }
-
-                    if(e.target.classList.contains('btn-remove-material')){
-                        e.target.closest('tr').remove();
-                        refreshNumber('#materialsTable');
-                    }
-
-                });
                 modal.show();
+                setupAdvancedPreview('fileInputPekerjaan', 'previewPekerjaan');
+                setupAdvancedPreview('fileInputTenaga', 'previewTenaga');
+                setupAdvancedPreview('fileInputMaterial', 'previewMaterial');
             });
-function refreshNumber(tableId){
-    document.querySelectorAll(`${tableId} tbody tr`)
-        .forEach((row,index)=>{
-            const cell = row.querySelector('.row-number');
-            if(cell){
-                cell.innerText = index + 1;
-            }
-        });
-}
-
         });
 
     });
@@ -641,7 +722,6 @@ function refreshNumber(tableId){
 
             let fileUrl = "/storage/" + doc.file_path;
 
-            // Jika image
             if(doc.file_type.startsWith("image")){
 
                 html += `
@@ -654,7 +734,7 @@ function refreshNumber(tableId){
                     </div>
                 `;
             }
-            // Jika PDF
+
             else if(doc.file_type === "application/pdf"){
 
                 html += `
@@ -672,13 +752,179 @@ function refreshNumber(tableId){
                     </div>
                 `;
             }
-
         });
 
         html += `</div>`;
 
         return html;
     }
+    function renderDocumentationEdit(data, category) {
+
+        let docs = (data.documentations || []).filter(doc =>
+            doc.category.toLowerCase() === category.toLowerCase()
+        );
+
+        if(docs.length === 0){
+            return `<p class="text-muted">Tidak ada file</p>`;
+        }
+
+        let html = `<div class="d-flex flex-wrap gap-3">`;
+
+        docs.forEach(doc => {
+
+            let fileUrl = "/storage/" + doc.file_path;
+
+            html += `
+            <div style="width:120px; position:relative">
+                <input type="hidden" 
+                    name="existing_docs[]" 
+                    value="${doc.id}">
+
+                <button type="button"
+                        class="btn btn-sm btn-danger btn-delete-doc"
+                        data-id="${doc.id}"
+                        style="position:absolute; top:-5px; right:-5px;">
+                    ×
+                </button>
+
+                <a href="${fileUrl}" target="_blank">
+                    <img src="${fileUrl}"
+                        class="img-fluid rounded shadow-sm mb-1">
+                </a>
+
+                <small class="d-block text-truncate">
+                    ${doc.file_name}
+                </small>
+            </div>`;
+        });
+
+        html += `</div>`;
+
+        return html;
+    }
+    function setupAdvancedPreview(inputId, previewContainerId){
+
+        const input = document.getElementById(inputId);
+        const previewContainer = document.getElementById(previewContainerId);
+
+        if(!input) return;
+
+        let fileStore = []; // ⬅ simpan file aktif disini
+
+        input.addEventListener('change', function(e){
+
+            const newFiles = Array.from(e.target.files);
+
+            // Tambah ke store (tidak replace)
+            fileStore = [...fileStore, ...newFiles];
+
+            renderPreview();
+            rebuildFileList();
+        });
+
+        function renderPreview(){
+
+            previewContainer.innerHTML = '';
+
+            fileStore.forEach((file, index)=>{
+
+                const reader = new FileReader();
+
+                reader.onload = function(e){
+
+                    let html = `
+                    <div style="width:120px; position:relative">
+                        <button type="button"
+                            class="btn btn-sm btn-danger remove-file"
+                            data-index="${index}"
+                            style="position:absolute; top:-5px; right:-5px;">
+                            ×
+                        </button>`;
+
+                    if(file.type.startsWith('image')){
+                        html += `
+                            <img src="${e.target.result}"
+                                class="img-fluid rounded shadow-sm mb-1">`;
+                    } else if(file.type === "application/pdf"){
+                        html += `
+                            <div class="border rounded p-4 text-center shadow-sm">
+                                📄 PDF
+                            </div>`;
+                    } else {
+                        html += `
+                            <div class="border rounded p-4 text-center shadow-sm">
+                                📎 File
+                            </div>`;
+                    }
+
+                    html += `
+                        <small class="d-block text-truncate">
+                            ${file.name}
+                        </small>
+                    </div>`;
+
+                    previewContainer.insertAdjacentHTML('beforeend', html);
+                };
+
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function rebuildFileList(){
+
+            const dataTransfer = new DataTransfer();
+
+            fileStore.forEach(file => {
+                dataTransfer.items.add(file);
+            });
+
+            input.files = dataTransfer.files;
+        }
+
+        // Hapus individual file
+        previewContainer.addEventListener('click', function(e){
+
+            if(e.target.classList.contains('remove-file')){
+
+                const index = e.target.dataset.index;
+
+                fileStore.splice(index, 1);
+
+                renderPreview();
+                rebuildFileList();
+            }
+
+        });
+
+    }
+    document.addEventListener('click', function(e){
+
+        if(e.target.classList.contains('btn-delete-doc')){
+
+            const id = e.target.dataset.id;
+
+            if(confirm('Yakin hapus file ini?')){
+
+                fetch(`/daily/documentation/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': document
+                            .querySelector('meta[name="csrf-token"]')
+                            .content,
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(res => res.json())
+                .then(res => {
+                    if(res.success){
+                        e.target.closest('div').remove();
+                    }
+                });
+
+            }
+        }
+
+    });
     document.addEventListener('click', function(e){
 
         if(e.target.id === 'btnSaveAll'){
@@ -704,9 +950,7 @@ function refreshNumber(tableId){
                     location.reload();
                 }
             });
-
         }
-
     });
     function updateHeaderView(data){
 

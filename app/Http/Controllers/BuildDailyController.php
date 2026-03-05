@@ -8,9 +8,11 @@ use App\Models\BuildDailyWorker;
 use App\Models\BuildDailyWork;
 use App\Models\BuildDailyMaterial;
 use App\Models\BuildProcessItem;
+use App\Models\DailyDocumentation;
 use App\Models\Project;
 use App\Models\Worker;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Storage;
 use DB;
 
 class BuildDailyController extends Controller
@@ -254,55 +256,215 @@ public function detail($id)
 
     return response()->json($daily);
 }
-
-public function updateHeader(Request $request, $id)
+public function deleteWork($id)
 {
-    $daily = BuildDailyReport::findOrFail($id);
+    BuildDailyWork::findOrFail($id)->delete();
+    return response()->json(['success' => true]);
+}
 
-    $totalJam = null;
+public function deleteWorker($id)
+{
+    BuildDailyWorker::findOrFail($id)->delete();
+    return response()->json(['success' => true]);
+}
 
-    if ($request->jam_mulai && $request->jam_selesai) {
-        $mulai = Carbon::parse($request->jam_mulai);
-        $selesai = Carbon::parse($request->jam_selesai);
+public function deleteMaterial($id)
+{
+    BuildDailyMaterial::findOrFail($id)->delete();
+    return response()->json(['success' => true]);
+}
 
-        $diffInMinutes = $mulai->diffInMinutes($selesai);
-        $totalJam = $diffInMinutes / 60;
+public function updateAll(Request $request, $id)
+{
+    DB::beginTransaction();
+
+    try {
+
+        $daily = BuildDailyReport::with([
+            'works',
+            'workers',
+            'materials'
+        ])->findOrFail($id);
+
+        $daily->update([
+            'tanggal'      => $request->tanggal,
+            'jam_mulai'    => $request->jam_mulai,
+            'jam_selesai'  => $request->jam_selesai,
+            'cuaca'        => $request->cuaca,
+            'catatan'      => $request->catatan,
+        ]);
+
+        if ($request->hasFile('new_files_pekerjaan')) {
+
+            foreach ($request->file('new_files_pekerjaan') as $file) {
+
+                $path = $file->store('daily_docs', 'public');
+
+                DailyDocumentation::create([
+                    'build_daily_report_id' => $daily->id,
+                    'category' => 'pekerjaan',
+                    'file_path' => $path,
+                    'file_name' => $file->getClientOriginalName(),
+                    'file_type' => $file->getMimeType(),
+                ]);
+            }
+        }
+        if ($request->hasFile('new_files_tenaga')) {
+
+            foreach ($request->file('new_files_tenaga') as $file) {
+
+                $path = $file->store('daily_docs', 'public');
+
+                DailyDocumentation::create([
+                    'build_daily_report_id' => $daily->id,
+                    'category' => 'tenaga',
+                    'file_path' => $path,
+                    'file_name' => $file->getClientOriginalName(),
+                    'file_type' => $file->getMimeType(),
+                ]);
+            }
+        }
+        if ($request->hasFile('new_files_material')) {
+
+            foreach ($request->file('new_files_material') as $file) {
+
+                $path = $file->store('daily_docs', 'public');
+
+                DailyDocumentation::create([
+                    'build_daily_report_id' => $daily->id,
+                    'category' => 'material',
+                    'file_path' => $path,
+                    'file_name' => $file->getClientOriginalName(),
+                    'file_type' => $file->getMimeType(),
+                ]);
+            }
+        }
+        $existingWorkIds = $daily->works->pluck('id')->toArray();
+        $requestWorkIds = [];
+
+        foreach ($request->works ?? [] as $work) {
+
+            if (!empty($work['id'])) {
+
+                $requestWorkIds[] = $work['id'];
+
+                BuildDailyWork::where('id', $work['id'])->update([
+                    'uraian_manual' => $work['uraian_manual'] ?? null,
+                    'volume'        => $work['volume'],
+                    'satuan'        => $work['satuan'],
+                    'keterangan'    => $work['keterangan'],
+                ]);
+
+            } else {
+
+                $daily->works()->create([
+                    'uraian_manual'         => $work['uraian_manual'] ?? null,
+                    'volume'                => $work['volume'],
+                    'satuan'                => $work['satuan'],
+                    'keterangan'            => $work['keterangan'],
+                    'build_daily_report_id' => $daily->id
+                ]);
+            }
+        }
+
+        $deleteWorkIds = array_diff($existingWorkIds, $requestWorkIds);
+        BuildDailyWork::whereIn('id', $deleteWorkIds)->delete();
+
+        $existingWorkerIds = $daily->workers->pluck('id')->toArray();
+        $requestWorkerIds = [];
+
+        foreach ($request->workers ?? [] as $worker) {
+
+            if (!empty($worker['id'])) {
+
+                $requestWorkerIds[] = $worker['id'];
+
+                BuildDailyWorker::where('id', $worker['id'])->update([
+                    'jumlah' => $worker['jumlah'],
+                    'alat'   => $worker['alat'],
+                ]);
+
+            } else {
+
+                $daily->workers()->create([
+                    'daily_report_id' => $daily->id,
+                    'jumlah'          => $worker['jumlah'],
+                    'alat'            => $worker['alat'],
+                    'keahlian'        => $worker['keahlian'] ?? null,
+                ]);
+            }
+        }
+
+        $deleteWorkerIds = array_diff($existingWorkerIds, $requestWorkerIds);
+        BuildDailyWorker::whereIn('id', $deleteWorkerIds)->delete();
+
+        $existingMaterialIds = $daily->materials->pluck('id')->toArray();
+        $requestMaterialIds = [];
+
+        foreach ($request->materials ?? [] as $material) {
+
+            if (!empty($material['id'])) {
+
+                $requestMaterialIds[] = $material['id'];
+
+                BuildDailyMaterial::where('id', $material['id'])->update([
+                    'diterima' => $material['diterima'],
+                    'ditolak'  => $material['ditolak'],
+                ]);
+
+            } else {
+
+                $daily->materials()->create([
+                    'daily_report_id' => $daily->id,
+                    'nama_bahan'      => $material['nama_bahan'],
+                    'diterima'        => $material['diterima'],
+                    'ditolak'         => $material['ditolak'],
+                ]);
+            }
+        }
+
+        $deleteMaterialIds = array_diff($existingMaterialIds, $requestMaterialIds);
+        BuildDailyMaterial::whereIn('id', $deleteMaterialIds)->delete();
+
+        if ($daily->jam_mulai && $daily->jam_selesai) {
+            $start = Carbon::parse($daily->jam_mulai);
+            $end   = Carbon::parse($daily->jam_selesai);
+
+            $totalJam = $start->diffInMinutes($end) / 60;
+
+            $daily->update([
+                'total_jam' => $totalJam
+            ]);
+        }
+
+        DB::commit();
+
+        return response()->json([
+            'success' => true
+        ]);
+
+    } catch (\Exception $e) {
+
+        DB::rollBack();
+         \Log::error($e);
+
+        return response()->json([
+            'success' => false,
+            'message' => $e->getMessage()
+        ], 500);
     }
-
-    $daily->update([
-        'tanggal'     => $request->tanggal,
-        'jam_mulai'   => $request->jam_mulai,
-        'jam_selesai' => $request->jam_selesai,
-        'total_jam'   => $totalJam,
-        'cuaca'       => $request->cuaca,
-        'catatan'     => $request->catatan,
-    ]);
-
-    $daily->refresh(); // 🔥 penting supaya ambil data terbaru
-
-    return response()->json([
-        'success' => true,
-        'data' => [
-            'tanggal'     => $daily->tanggal->format('Y-m-d'),
-            'jam_mulai'   => optional($daily->jam_mulai)->format('H:i'),
-            'jam_selesai' => optional($daily->jam_selesai)->format('H:i'),
-            'total_jam'   => number_format($daily->total_jam, 2),
-            'cuaca'       => $daily->cuaca,
-            'catatan'     => $daily->catatan,
-        ]
-    ]);
 }
-public function editPage($id)
+public function deleteDocumentation($id)
 {
-    $report = BuildDailyReport::with([
-        'works.rabProcessItem',
-        'workers.worker.user',
-        'materials',
-        'documentations'
-    ])->findOrFail($id);
+    $doc = DailyDocumentation::findOrFail($id);
 
-    return view('projects.edit.daily', compact('report'));
+    Storage::disk('public')->delete($doc->file_path);
+
+    $doc->delete();
+
+    return response()->json(['success' => true]);
 }
+
 public function destroy($id)
 {
     $report = BuildDailyReport::findOrFail($id);
