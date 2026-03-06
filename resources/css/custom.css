@@ -332,7 +332,9 @@ overflow-x: hidden;
 .btn-list {
   font-size: 14px !important;
 }
-
+.btn-link {
+    color:#000 !important;
+}
 /* footer {
   margin-left: 20px !important;
 } */
@@ -594,6 +596,13 @@ col.just-hidden {
     padding: 4px 6px;
     font-size: 14px;
 }
+#offerItemsTable col:nth-child(1){ width:50px }
+#offerItemsTable col:nth-child(2){ width:35% }
+#offerItemsTable col:nth-child(3){ width:90px }
+#offerItemsTable col:nth-child(4){ width:110px }
+#offerItemsTable col:nth-child(5){ width:150px }
+#offerItemsTable col:nth-child(6){ width:160px }
+#offerItemsTable col:nth-child(7){ width:90px }
 
 /* Hilangkan spinner biar lebih rapi */
 /* input[type=number]::-webkit-inner-spin-button,

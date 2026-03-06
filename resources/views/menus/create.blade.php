@@ -26,7 +26,7 @@
 
                     <div class="col-md-3 mb-3">
                         <label class="form-label">Tipe</label>
-                        <select name="type" class="form-select">
+                        <select name="type" class="form-select select2">
                             <option value="route">Route</option>
                             <option value="url">URL</option>
                             <option value="label">Label</option>
@@ -45,7 +45,7 @@
 
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Parent Menu</label>
-                        <select name="parent_id" class="form-select">
+                        <select name="parent_id" class="form-select select2">
                             <option value="">-- None --</option>
                             @foreach($parents as $menu)
                                 <option value="{{ $menu->id }}">{{ $menu->text }}</option>
@@ -94,3 +94,13 @@
     </div>
 </div>
 @endsection
+@push('js')
+  <script>
+    $(document).ready(function() {
+        $('.select2').select2({
+            placeholder: "-- Pilih --",
+            width: '100%'
+        });
+    });
+</script>  
+@endpush
