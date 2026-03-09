@@ -142,11 +142,40 @@
                 </tr>
                 <tr>
                     <th colspan="5" class="text-end">GRAND TOTAL</th>
-                    <th id="grandTotal">Rp 0</th>
+                    <th id="rab_grandTotalDisplay">Rp 0</th>
                 </tr>
 
             </tfoot>
         </table>
+    </div>
+    <div class="modal fade" id="uraianGalleryModal">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content gambar-modal">
+
+                <div class="modal-header border-0">
+                    <div>
+                    <h5 class="modal-title fw-semibold" id="modalTitle"></h5>
+                    <small class="text-muted">Upload dokumentasi pekerjaan</small>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class= "upload-area mb-3">
+                    <input type="file"
+                        multiple
+                        accept="image/*"
+                        class="form-control mb-3"
+                        id="uraianImageInput">
+                    </div>
+
+                    <div id="uraianGallery" class="gambar-preview">
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
     </div>
         <input type="hidden" name="subtotal" id="rab_subtotal">
         <input type="hidden" name="subtotal_after_discount" id="rab_subAfterDiscount">
@@ -176,9 +205,8 @@ let categoryIndex = 0;
 let uraianIndex = {};
 let jobIndex = 0;
 let draggedGroup = [];
-</script>
-
-<script>
+let uraianImages = {}
+let activeUraian = null
 
 function parseRupiah(value){
 
@@ -267,7 +295,7 @@ new Sortable(tbody,{
         }
 
         renumberAll()
-
+        recalcAfterDrag()
     },
     onMove:function(evt){
 
@@ -422,10 +450,24 @@ function saveUraian(uraianId){
     const name = input.value || 'Uraian'
 
     row.cells[1].innerHTML = `
-        <span class="drag-handle me-2" style="cursor:move">
+    <div class="d-flex align-items-center gap-2">
+
+        <span class="drag-handle" style="cursor:move">
             <i class="ti ti-grip-vertical"></i>
         </span>
-        ${name}
+
+        <span>${name}</span>
+
+        <button type="button" class="btn btn-sm btn-gambar"         data-bs-toggle="modal"
+        data-bs-target="#uraianGalleryModal"
+        data-uraian="name"
+            onclick="openUraianGallery('${uraianId}')">
+
+            <i class="ti ti-photo"></i>
+
+        </button>
+
+    </div>
     `
 
     addJobRow(uraianId)
@@ -448,7 +490,10 @@ function addJobRow(uraianId){
 
     lastRow.insertAdjacentHTML('afterend',`
 
-    <tr class="job-row" id="${jobId}" data-parent="${uraianId}">
+<tr class="job-row"
+    id="${jobId}"
+    data-parent="${uraianId}"
+    data-category="${document.getElementById(uraianId).dataset.category}">
 
         <td class="drag-ahsp" style="cursor:move">
             <i class="ti ti-grip-vertical"></i>
@@ -534,18 +579,30 @@ function calculate(rowId){
 
     let hargaInput = row.querySelector('.harga')
 
-    let harga = Number(hargaInput.dataset.value || 0)
+    let basePrice = Number(hargaInput.dataset.value || 0)
 
-    let total = vol * harga
+    let profitValue   = basePrice * (globalProfit / 100)
+    let overheadValue = basePrice * (globalOverhead / 100)
+
+    let hargaFinal = basePrice + profitValue + overheadValue
+
+    let total = vol * hargaFinal
 
     const totalInput = row.querySelector('.total')
 
     totalInput.dataset.value = total
     totalInput.value = formatRupiah(total)
 
-    updateCategorySubtotal(row.dataset.parent)
-    calculateSummary()
+    rabItems[rowId] = {
+        volume: vol,
+        base_price: basePrice,
+        harga: hargaFinal,
+        total: total
+    }
 
+    updateCategorySubtotal(row.dataset.parent)
+
+    calculateSummary()
 }
 function updateCategorySubtotal(uraianId){
 
@@ -556,22 +613,15 @@ function updateCategorySubtotal(uraianId){
     const catId = uraianRow.dataset.category
 
     let subtotal = 0
+    document.querySelectorAll(`.job-row[data-category="${catId}"]`)
+    .forEach(row=>{
 
-    document.querySelectorAll('.job-row').forEach(row=>{
+        const totalInput = row.querySelector('.total')
 
-        const parentUraian = document.getElementById(row.dataset.parent)
-
-        if(parentUraian && parentUraian.dataset.category === catId){
-
-            let totalInput = row.querySelector('.total')
-
-            if(totalInput){
-                subtotal += Number(totalInput.dataset.value || 0)
-            }
-
-        }
+        subtotal += Number(totalInput.dataset.value || 0)
 
     })
+
 
     const subtotalInput = document.querySelector(
         `.subtotal-category[data-category="${catId}"]`
@@ -619,7 +669,7 @@ function calculateSummary(){
     // grand total
     let grand = subAfterDiscount + taxTotal + shipping
 
-    const grandEl = document.getElementById('grandTotal')
+    const grandEl = document.getElementById('rab_grandTotalDisplay')
 
     grandEl.dataset.value = grand
     grandEl.innerText = formatRupiah(grand)
@@ -637,7 +687,7 @@ function removeJob(id){
     row.remove()
 
     updateCategorySubtotal(uraianId)
-    updateGrandTotal()
+    calculateSummary()
 
 }
 function removeUraian(id){
@@ -665,259 +715,138 @@ function renumberAll(){
         uraianIndex[catId] = uraianRows.length + 1
     })
 }
+function recalcAfterDrag(){
 
-$('#jobCategorySelect').on('change', function () {
-    const jobId = $(this).val();
-    if (!jobId) return;
+    document.querySelectorAll('.job-row').forEach(row=>{
+        calculate(row.id)
+    })
 
-    fetch(`/job-categories/${jobId}/simple`)
-        .then(res => res.json())
-        .then(job => {
+}
+function openUraianGallery(uraianId){
 
-            currentRabJob = job;
+    activeUraian = uraianId
 
-            let harga = parseFloat(job.harga) || 0;
-            currentBasePrice = harga;
-            document.getElementById('rab_satuan').value = job.satuan;
-            document.getElementById('rab_priceMeter').value = harga;
-            document.getElementById('rab_priceMeterFormatted').value = formatRp(harga);
+    if(!uraianImages[uraianId]){
+        uraianImages[uraianId] = []
+    }
 
-            document.querySelector('input[name="volume"]').value = '';
-            document.getElementById('rab_totalPriceFormatted').value = '';
-        });
-});
+    renderGallery()
 
-const profitInput = document.getElementById('rab_profit_display');
-const overheadInput = document.getElementById('rab_overhead_display');
+    const modal = new bootstrap.Modal(
+        document.getElementById('uraianGalleryModal')
+    )
 
-profitInput.addEventListener('input', function () {
-    globalProfit = parseFloat(this.value) || 0;
-    if (globalProfit < 0) globalProfit = 0;
-    if (globalProfit > 100) globalProfit = 100;
-    applyProfitOverheadToAll();
-});
+    modal.show()
 
-overheadInput.addEventListener('input', function () {
-    globalOverhead = parseFloat(this.value) || 0;
-    if (globalOverhead < 0) globalOverhead = 0;
-    if (globalOverhead > 100) globalOverhead = 100;
-    applyProfitOverheadToAll();
-});
+}
+function renderGallery(){
 
-document.addEventListener('input', function(e) {
+    const gallery = document.getElementById('uraianGallery')
 
-    if (e.target.name !== 'volume') return;
-    if (!currentRabJob) return;
+    gallery.innerHTML = ''
 
-    const volume = parseFloat(e.target.value) || 0;
-    if (volume <= 0) return;
+    uraianImages[activeUraian].forEach((src,index)=>{
 
-    let hargaFinal = parseFloat(document.getElementById('rab_priceMeter').value) || 0;
-    let total = volume * hargaFinal;
+        gallery.insertAdjacentHTML('beforeend',`
 
-    document.getElementById('rab_totalPrice').value = total;
-    document.getElementById('rab_totalPriceFormatted').value = formatRp(total);
+        <div class="preview-item">
 
-    const jobId = currentRabJob.id;
+            <img src="${src}">
 
-    rabItems[jobId] = {
-        ...currentRabJob,
-        base_price: currentBasePrice,
-        volume: volume,
-        harga: hargaFinal,
-        total: total
-    };
+            <button type="button" class="btn btn-sm btn-danger remove-image"
+                onclick="removeUraianImage(${index})">
+                ×
+            </button>
+        </div>
+        `)
+    })
+}
+function removeUraianImage(index){
 
-    document.getElementById('rab_discount_display').value = '';
-    document.getElementById('rab_shipping_display').value = '';
-    document.getElementById('rab_discount').value = 0;
-    document.getElementById('rab_shipping').value = 0;
+    uraianImages[activeUraian].splice(index,1)
 
-    applyProfitOverheadToAll();
-});
+    renderGallery()
 
-function renderRabTable() {
+}
+document.getElementById('uraianImageInput').addEventListener('change',function(){
 
-    const tbody = document.getElementById('rab_offerItemsBody');
-    tbody.innerHTML = '';
+    const files = this.files
 
-    let grouped = {};
-    let rowIndex = 0;
+    Array.from(files).forEach(file=>{
 
-    Object.values(rabItems).forEach(item => {
-        if (!grouped[item.kode_group]) {
-            grouped[item.kode_group] = {
-                name: item.nama_group,
-                items: [],
-                subtotal: 0
-            };
+        const reader = new FileReader()
+
+        reader.onload = function(e){
+
+            uraianImages[activeUraian].push(e.target.result)
+
+            renderGallery()
+
         }
 
-        grouped[item.kode_group].items.push(item);
-        grouped[item.kode_group].subtotal += Number(item.total);
-    });
+        reader.readAsDataURL(file)
 
-    // 🔹 RENDER
-    Object.keys(grouped).forEach((groupCode, index) => {
+    })
 
-        const group = grouped[groupCode];
-        const cleanGroupName = group.name.replace(/^HARGA SATUAN\s*/i, '');
-        const groupLabel = numberToLetters(index);
+})
+$(document).on("click",".btn-gambar",function(){
 
-        // HEADER GROUP
-        tbody.insertAdjacentHTML('beforeend', `
-            <tr class="table-secondary fw-bold">
-                <td>${groupLabel}</td>
-                <td colspan="7">${cleanGroupName}</td>
-            </tr>
-        `);
+let uraian = $(this).data("uraian");
 
-        let no = 1;
+$("#modalTitle").text("Gambar - " + uraian);
 
-        group.items.forEach(item => {
-
-            tbody.insertAdjacentHTML('beforeend', `
-                <tr>
-                    <td>${no}</td>
-                    <td>${item.nama}</td>
-                    <td width="100">
-                        <input type="number" class="form-control text-center volume-input"
-                            value="${item.volume}"
-                            min="0.01" step="0.01"
-                            onchange="updateVolume(${item.id}, this.value)">
-                    </td>
-                    <td>${item.satuan}</td>
-                    <td>${formatRp(item.harga)}</td>
-
-                    <td class="text-end">${formatRp(item.total)}</td>
-                    <td class="text-center">
-                        <button type="button"
-                            class="btn btn-sm btn-danger"
-                            onclick="removeItem(${item.id})">
-                            -
-                        </button>
-                    </td>
-
-                    <input type="hidden" name="items[${rowIndex}][job_category_id]" value="${item.id}">
-                    <input type="hidden" name="items[${rowIndex}][job_name]" value="${item.nama}">
-                    <input type="hidden" name="items[${rowIndex}][satuan]" value="${item.satuan}">
-                    <input type="hidden" name="items[${rowIndex}][volume]" value="${item.volume}">
-                    <input type="hidden" name="items[${rowIndex}][base_price]" value="${item.base_price}">
-                    <input type="hidden" name="items[${rowIndex}][price]" value="${item.harga}">
-                    <input type="hidden" name="items[${rowIndex}][total]" value="${item.total}">
-                </tr>
-            `);
-
-            rowIndex++;
-            no++;
-        });
-
-        // 🔹 SUBTOTAL PER GROUP
-        tbody.insertAdjacentHTML('beforeend', `
-            <tr class="fw-bold">
-                <td colspan="5" class="text-end">Subtotal ${cleanGroupName}</td>
-                <td class="text-end">${formatRp(group.subtotal)}</td>
-            </tr>
-        `);
-    });
-
-    recalculateSummary();
-}
-
-function recalculateSummary() {
-
-    let subtotal = 0;
-
-    Object.values(rabItems).forEach(item => {
-        subtotal += item.total;
-    });
-
-    // DISCOUNT
-    let discount = cleanNumber(document.getElementById('rab_discount').value);
-    let subAfterDiscount = subtotal - discount;
-    if (subAfterDiscount < 0) subAfterDiscount = 0;
-
-    // TAX
-    let taxRate = parseFloat(document.getElementById('rab_tax_rate').value) || 0;
-    let totalTax = subAfterDiscount * (taxRate / 100);
-
-    // SHIPPING
-    let shipping = cleanNumber(document.getElementById('rab_shipping').value);
-
-    // GRAND TOTAL
-    let grandTotal = subAfterDiscount + totalTax + shipping;
-
-    // DISPLAY
-    document.getElementById('rab_subtotalDisplay').innerText = formatRp(subtotal);
-    document.getElementById('rab_subAfterDiscountDisplay').innerText = formatRp(subAfterDiscount);
-    document.getElementById('rab_totalTaxDisplay').innerText = formatRp(totalTax);
-    document.getElementById('rab_grandTotalDisplay').innerText = formatRp(grandTotal);
-    document.getElementById('rab_subtotal').value = subtotal;
-    document.getElementById('rab_subAfterDiscount').value = subAfterDiscount;
-    document.getElementById('rab_tax_total').value = totalTax;
-    document.getElementById('rab_grand_total').value = grandTotal;
-}
-
-const discountInput = document.getElementById('rab_discount_display');
-
-discountInput.addEventListener('input', function () {
-    let val = cleanNumber(this.value);
-    document.getElementById('rab_discount').value = val;
-    recalculateSummary();
 });
+document.getElementById('rab_profit_display').addEventListener('input', function(){
 
-discountInput.addEventListener('blur', function () {
-    let val = cleanNumber(this.value);
-    this.value = formatRp(val);
-});
+    globalProfit = Number(this.value) || 0
 
-const shippingInput = document.getElementById('rab_shipping_display');
+    recalcAllRows()
 
-shippingInput.addEventListener('input', function () {
-    let val = cleanNumber(this.value);
-    document.getElementById('rab_shipping').value = val;
-    recalculateSummary();
-});
+})
 
-shippingInput.addEventListener('blur', function () {
-    let val = cleanNumber(this.value);
-    this.value = formatRp(val);
-});
+document.getElementById('rab_overhead_display')
+.addEventListener('input', function(){
+
+    globalOverhead = Number(this.value) || 0
+
+    recalcAllRows()
+
+})
+
+document.getElementById('rab_discount_display')
+.addEventListener('input',function(){
+
+    rupiahInput(this)
+
+    document.getElementById('rab_discount').value =
+        parseRupiah(this.value)
+
+    calculateSummary()
+
+})
+
+document.getElementById('rab_shipping_display')
+.addEventListener('input',function(){
+
+    rupiahInput(this)
+
+    document.getElementById('rab_shipping').value =
+        parseRupiah(this.value)
+
+    calculateSummary()
+
+})
 
 document.getElementById('rab_tax_rate').addEventListener('input', function () {
-    recalculateSummary();
+    calculateSummary();
 });
 
-function applyProfitOverheadToAll() {
+function recalcAllRows(){
 
-    Object.values(rabItems).forEach(item => {
+    document.querySelectorAll('.job-row').forEach(row=>{
+        calculate(row.id)
+    })
 
-        let baseTotal = item.volume * item.base_price;
-
-        let profitValue   = baseTotal * (globalProfit / 100);
-        let overheadValue = baseTotal * (globalOverhead / 100);
-
-        let finalTotal = baseTotal + profitValue + overheadValue;
-
-        item.harga = finalTotal / item.volume; // harga final PER SATUAN (tabel)
-        item.total = finalTotal;
-    });
-
-    document.getElementById('final_profit').value = globalProfit;
-    document.getElementById('final_overhead').value = globalOverhead;
-
-    renderRabTable();
-}
-
-function updateVolume(jobId, newVolume) {
-
-    newVolume = parseFloat(newVolume) || 0;
-    if (newVolume <= 0) return;
-
-    let item = rabItems[jobId];
-    item.volume = newVolume;
-
-    applyProfitOverheadToAll();
 }
 </script>
 <script>
