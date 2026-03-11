@@ -427,7 +427,10 @@ public function update(Request $request, Project $project)
         ->withFragment('project-' . $project->number)
         ->with('success', 'Updated!');
 }
-
+public function show(Project $project)
+{
+    return redirect()->route('projects.create', ['project_id' => $project->id]);
+}
      public function destroy(Project $project) 
     {
         if ($project) {
