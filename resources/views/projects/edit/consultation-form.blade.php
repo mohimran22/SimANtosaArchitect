@@ -81,7 +81,7 @@
                                 {{ $item->description }}
                             </td>
 
-                            <td>
+                            {{-- <td>
                                 @if($project->type == 2 || $project->type == 3)
                                 <label class="me-3">
                                     <input type="radio"
@@ -98,13 +98,24 @@
                                     Tidak
                                 </label>
                                 @else
-                                    <input type="hidden"
+                                    <input type="text" class="form-control"
                                     name="items[{{ $i }}][remark]"
                                     value="{{ $item->remark }}">
                                 {{ $item->remark }}
                                 @endif
-                            </td>
-
+                            </td> --}}
+                            <td>
+    @if($project->type == 2 || $project->type == 3)
+        <select name="items[{{ $i }}][remark]" class="form-control">
+            <option value="Ada" {{ $item->remark == 'Ada' ? 'selected' : '' }}>Ada</option>
+            <option value="Tidak" {{ $item->remark == 'Tidak' ? 'selected' : '' }}>Tidak</option>
+        </select>
+    @else
+        <input type="text" class="form-control"
+            name="items[{{ $i }}][remark]"
+            value="{{ $item->remark }}">
+    @endif
+</td>
                             <td>
                                 @if(!in_array($item->description, ['Desain Denah','Desain 3D','Desain DED']))
                                     <button type="button"
