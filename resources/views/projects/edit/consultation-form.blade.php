@@ -82,6 +82,7 @@
                             </td>
 
                             <td>
+                                @if($project->type == 2 || $project->type == 3)
                                 <label class="me-3">
                                     <input type="radio"
                                         name="items[{{ $i }}][remark]"
@@ -96,6 +97,12 @@
                                         {{ $item->remark === 'Tidak' ? 'checked' : '' }}>
                                     Tidak
                                 </label>
+                                @else
+                                    <input type="hidden"
+                                    name="items[{{ $i }}][remark]"
+                                    value="{{ $item->remark }}">
+                                {{ $item->remark }}
+                                @endif
                             </td>
 
                             <td>

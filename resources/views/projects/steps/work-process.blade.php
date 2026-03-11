@@ -103,7 +103,7 @@ $colors = [
                                             {{ $file->uploader_short_name }}
                                         </strong>
                                             <br>
-                                            {{ $file->created_at->timezone('Asia/Jakarta')->format('d-m-Y H:i') }}
+                                            {{ $file->created_at->timezone('Asia/Jakarta') }}
                                         </div>
 
                                     </div>
@@ -129,7 +129,7 @@ $colors = [
                                     <div class="action-meta text-muted small">
                                         Disetujui oleh
                                         <strong>{{ optional($task->approvedBy)->short_name ?? 'Sistem' }}</strong><br>
-                                        {{ optional($task->approved_at)?->timezone('Asia/Jakarta')->format('d-m-Y H:i') }}
+                                        {{ optional($task->approved_at)?->timezone('Asia/Jakarta') }}
                                     </div>
                                 </div>
 
@@ -142,7 +142,7 @@ $colors = [
                                     <div class="action-meta text-muted small">
                                         Ditolak oleh
                                         <strong>{{ optional($task->rejectedBy)->short_name ?? 'Sistem' }}</strong><br>
-                                        {{ optional($task->rejected_at)?->timezone('Asia/Jakarta')->format('d-m-Y H:i') }}
+                                        {{ optional($task->rejected_at)?->timezone('Asia/Jakarta') }}
                                     </div>
                                 </div>
 

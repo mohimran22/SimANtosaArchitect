@@ -208,10 +208,9 @@ public function update(Request $request, Project $project, RabProcess $rab)
         'items.*.volume' => 'required|numeric|min:0.01',
         'items.*.base_price' => 'required|numeric|min:0',
         // 'items.*.price' => 'required|numeric|min:0',
-        'items.*.profit' => 'required|numeric|max:100',
-        'items.*.overhead' => 'required|numeric|max:100',
         // 'items.*.total' => 'required|numeric|min:0',
-
+        'profit' => 'required|numeric|max:100',
+        'overhead' => 'required|numeric|max:100',
         'discount' => 'nullable|numeric|min:0',
         'tax_rate' => 'nullable|numeric|min:0|max:100',
         'shipping' => 'nullable|numeric|min:0',
@@ -240,8 +239,6 @@ DB::transaction(function () use ($request, $rab, $project) {
             'job_name' => $item['job_name'],
             'satuan' => $item['satuan'],
             'volume' => $item['volume'],
-            'profit' => $item['profit'],
-            'overhead' => $item['overhead'],
             'base_price' => $item['base_price'],
             'price' => $item['price'],
             'total' => $total,
@@ -260,7 +257,8 @@ DB::transaction(function () use ($request, $rab, $project) {
         'contact_name' => $request->contact_name,
         'job_location' => $request->job_location,
         'job_duration' => $request->job_duration,
-
+        'profit' => $request->profit,      
+        'overhead' => $request->overhead, 
         'subtotal' => $subtotal,
         'discount' => $discount,
         'subtotal_after_discount' => $subtotalAfterDiscount,
@@ -448,7 +446,8 @@ public function uraianImages($uraianId)
 public function structure($id)
 {
     $rab = RabProcess::with([
-        'categories.uraians.items.category'
+        'categories.uraians.items.category',
+        'categories.uraians.images.image'
     ])->findOrFail($id);
 
     return response()->json([

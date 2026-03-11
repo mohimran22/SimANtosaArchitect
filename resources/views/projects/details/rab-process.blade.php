@@ -76,7 +76,7 @@ $rab = $project->rab()->with([
 
                                 <button type="button"
                                     class="btn btn-sm btn-gambar"
-                                    onclick="openUraianGallery('{{ $uraian->id }}','{{ $uraian->name }}')">
+                                    onclick="bukagaleri('{{ $uraian->id }}','{{ $uraian->name }}')">
 
                                     <i class="ti ti-photo"></i>
 
@@ -199,7 +199,7 @@ $rab = $project->rab()->with([
         @endif
     </div>
 </div>
-    <div class="modal fade" id="uraianGalleryModal">
+    <div class="modal fade" id="uraianGalleryModall">
         <div class="modal-dialog modal-lg modal-dialog-centered">
 
             <div class="modal-content">
@@ -246,10 +246,10 @@ let viewerImages = []
 let currentIndex = 0
 let scale = 1
 
-function openUraianGallery(uraianId, uraianName){
+function bukagaleri(uraianId, uraianName){
 
     const modal = new bootstrap.Modal(
-        document.getElementById('uraianGalleryModal')
+        document.getElementById('uraianGalleryModall')
     )
 
     const title = document.getElementById('uraianGalleryTitle')

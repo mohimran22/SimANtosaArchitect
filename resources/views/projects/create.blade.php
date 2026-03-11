@@ -1080,7 +1080,6 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("btn-edit-rab")?.addEventListener("click", () => {
         view.style.display = "none";
         edit.style.display = "block";
-            setTimeout(initRabEditMargin, 50);
     });
 
     document.getElementById("btn-cancel-rab").addEventListener("click", () => {
