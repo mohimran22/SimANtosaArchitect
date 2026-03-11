@@ -1,22 +1,8 @@
 @php
-    $rab = $project->rab;
-    $grouped = [];
+$rab = $project->rab()->with([
+    'categories.uraians.items'
+])->first();
 
-    foreach ($rab->items as $item) {
-        $kode = $item->category->kode_group ?? '-';
-        $nama = $item->category->nama_group ?? 'Tanpa Kategori';
-
-        if (!isset($grouped[$kode])) {
-            $grouped[$kode] = [
-                'kode' => $kode,
-                'nama' => $nama,
-                'items' => [],
-                'subtotal' => 0
-            ];
-        }
-        $grouped[$kode]['items'][] = $item;
-        $grouped[$kode]['subtotal'] += $item->total;
-    }
 @endphp
 
 @can('lihat data proyek')
@@ -43,96 +29,98 @@
             </div>
         </div>
 
-        {{-- <div class="row mt-4 g-4">
-
-            <div class="col-md-4">
-                <label class="fw-semibold">Paket RAB</label>
-                <input type="text" class="form-control" readonly
-                       value="{{ $rab->rabpackage->name ?? '-' }}">
-            </div>
-
-            <div class="col-md-2">
-                <label class="fw-semibold">Volume</label>
-                <input type="text" class="form-control" readonly value="{{ $rab->item->volume }}">
-            </div>
-
-            <div class="col-md-2">
-                <label class="fw-semibold">Satuan</label>
-                <input type="text" class="form-control" readonly value="{{ $rab->item->satuan }}">
-            </div>
-
-            <div class="col-md-2">
-                <label class="fw-semibold">Harga Satuan</label>
-                <input type="text" class="form-control" disabled
-                       value="Rp {{ number_format($rab->item->satuan, 0, ',', '.') }}">
-            </div>
-
-            <div class="col-md-2">
-                <label class="fw-semibold">Total Harga</label>
-                <input type="text" class="form-control" disabled
-                       value="Rp {{ number_format($rab->item->total_price, 0, ',', '.') }}">
-            </div>
-        </div> --}}
-
-
         <h5 class="fw-bold mt-5 mb-3">Rincian Pekerjaan</h5>
-            @php
-                    function numberToLetters($num) {
-                        $letters = '';
-                        while ($num >= 0) {
-                            $letters = chr(($num % 26) + 65) . $letters;
-                            $num = floor($num / 26) - 1;
-                        }
-                        return $letters;
-                    }
-            @endphp 
 
         <table class="table table-bordered align-middle">
             <thead>
                 <tr>
-                    <th width="50">No.</th>
-                    <th>Uraian Pekerjaan</th>
-                    <th>Volume</th>
-                    <th>Satuan</th>
-                    <th>Harga Satuan (Rp)</th>
-                    <th>Total Harga</th>
+                    <th width="50">NO</th>
+                    <th>URAIAN PEKERJAAN</th>
+                    <th>SAT</th>
+                    <th>VOL</th>
+                    <th>HARGA SATUAN</th>
+                    <th>JUMLAH HARGA</th>
                 </tr>
             </thead>
 
             <tbody>
-            @foreach($grouped as $group)
-                @php
-                    $cleanName = preg_replace('/^HARGA SATUAN\s*/i', '', $group['nama']);
-                @endphp
-                <tr class="table-secondary fw-bold">
-                    <td>{{ numberToLetters($loop->index) }}</td>
-                    <td colspan="5">{{ $cleanName }}</td>
-                    
-                </tr>
 
-                @foreach($group['items'] as $item)
-                <tr>
-                    <td>{{ $loop->iteration }}</td>
-                    <td>{{ $item->job_name }}</td>
-                    <td>{{ $item->volume }}</td>
-                    <td>{{ $item->satuan }}</td>
-                    <td>Rp {{ number_format($item->price,0,',','.') }}</td>
+            @foreach($rab->categories as $category)
+
+                @php
+                    $categoryLetter = chr(65 + $loop->index);
+                    $uraianNo = 1;
+
+                    $categoryTotal = $category->uraians
+                        ->flatMap->items
+                        ->sum('total');
+                @endphp
+
+                <tr class="table-secondary fw-bold">
+                    <td>{{ $categoryLetter }}</td>
+                    <td colspan="4">{{ $category->name }}</td>
                     <td class="text-end">
-                        Rp {{ number_format($item->total,0,',','.') }}
+                        Rp {{ number_format($categoryTotal,0,',','.') }}
                     </td>
                 </tr>
+
+                @foreach($category->uraians as $uraian)
+
+                    <tr class="fw-bold">
+                        <td>{{ $uraianNo }}</td>
+
+                        <td colspan="5">
+                            <div class="d-flex align-items-center gap-2">
+
+                                {{ $uraian->name }}
+
+                                <button type="button"
+                                    class="btn btn-sm btn-gambar"
+                                    onclick="openUraianGallery('{{ $uraian->id }}','{{ $uraian->name }}')">
+
+                                    <i class="ti ti-photo"></i>
+
+                                </button>
+
+                            </div>
+                        </td>
+
+                    </tr>
+
+                    @php $itemNo = 1; @endphp
+
+                    @foreach($uraian->items as $item)
+
+                    <tr>
+
+                        <td>{{ $uraianNo.'.'.$itemNo }}</td>
+
+                        <td>{{ $item->job_name }}</td>
+
+                        <td>{{ $item->satuan }}</td>
+
+                        <td>{{ number_format($item->volume,2) }}</td>
+
+                        <td>
+                            Rp {{ number_format($item->price,0,',','.') }}
+                        </td>
+
+                        <td class="text-end">
+                            Rp {{ number_format($item->total,0,',','.') }}
+                        </td>
+
+                    </tr>
+
+                    @php $itemNo++; @endphp
+
+                    @endforeach
+
+                    @php $uraianNo++; @endphp
+
                 @endforeach
 
-                {{-- SUBTOTAL PER GROUP --}}
-                <tr class="fw-bold">
-                    <td colspan="5" class="text-end">
-                        Subtotal {{ $cleanName }}
-                    </td>
-                    <td class="text-end">
-                        Rp {{ number_format($group['subtotal'],0,',','.') }}
-                    </td>
-                </tr>
             @endforeach
+
             </tbody>
 
             <tfoot>
@@ -211,5 +199,182 @@
         @endif
     </div>
 </div>
+    <div class="modal fade" id="uraianGalleryModal">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 id="uraianGalleryTitle"></h5>
+                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+
+                    <div id="uraianGalleryContainer"
+                        class="d-flex flex-wrap gap-2">
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <div id="imageViewer" class="image-viewer d-none">
+
+        <div class="viewer-toolbar">
+            <button onclick="zoomOut()">-</button>
+            <button onclick="zoomIn()">+</button>
+            <button onclick="closeViewer()">✕</button>
+        </div>
+
+        <button class="viewer-prev" onclick="prevImage()">‹</button>
+
+        <div class="viewer-stage">
+            <img id="viewerImage">
+        </div>
+
+        <button class="viewer-next" onclick="nextImage()">›</button>
+
+    </div>
 @endif
 @endcan
+@push('js')
+<script>
+
+let viewerImages = []
+let currentIndex = 0
+let scale = 1
+
+function openUraianGallery(uraianId, uraianName){
+
+    const modal = new bootstrap.Modal(
+        document.getElementById('uraianGalleryModal')
+    )
+
+    const title = document.getElementById('uraianGalleryTitle')
+    const container = document.getElementById('uraianGalleryContainer')
+
+    title.innerText = uraianName
+    container.innerHTML = '<div class="text-muted">Loading...</div>'
+
+    fetch(`/rab/uraian-images/${uraianId}`)
+    .then(res => res.json())
+    .then(data => {
+
+        container.innerHTML=''
+
+        if(data.length===0){
+            container.innerHTML='<div class="text-muted">Belum ada gambar</div>'
+            return
+        }
+
+        viewerImages = data.map(i => i.url)
+
+        data.forEach((img,index)=>{
+
+            container.insertAdjacentHTML('beforeend',`
+
+                <img src="${img.url}"
+                     class="rab-gallery-img"
+                     data-index="${index}">
+
+            `)
+
+        })
+
+    })
+
+    modal.show()
+
+}
+
+document.addEventListener("click",function(e){
+
+    if(e.target.classList.contains('rab-gallery-img')){
+
+        const index = e.target.dataset.index
+        openViewer(viewerImages,index)
+
+    }
+
+})
+
+function openViewer(images,index=0){
+
+    viewerImages = images
+    currentIndex = parseInt(index)
+    scale = 1
+
+    document.getElementById("viewerImage").src = images[currentIndex]
+
+    document
+    .getElementById("imageViewer")
+    .classList.remove("d-none")
+
+}
+
+function closeViewer(){
+
+    document
+    .getElementById("imageViewer")
+    .classList.add("d-none")
+
+}
+
+function nextImage(){
+
+    currentIndex++
+
+    if(currentIndex >= viewerImages.length){
+        currentIndex = 0
+    }
+
+    document.getElementById("viewerImage").src = viewerImages[currentIndex]
+
+}
+
+function prevImage(){
+
+    currentIndex--
+
+    if(currentIndex < 0){
+        currentIndex = viewerImages.length - 1
+    }
+
+    document.getElementById("viewerImage").src = viewerImages[currentIndex]
+
+}
+
+function zoomIn(){
+    scale += 0.2
+    updateZoom()
+}
+
+function zoomOut(){
+    scale -= 0.2
+    if(scale < 1) scale = 1
+    updateZoom()
+}
+
+function updateZoom(){
+
+    document
+    .getElementById("viewerImage")
+    .style.transform = `scale(${scale})`
+
+}
+
+document.addEventListener("keydown",function(e){
+
+    if(document.getElementById("imageViewer").classList.contains("d-none"))
+        return
+
+    if(e.key === "ArrowRight") nextImage()
+    if(e.key === "ArrowLeft") prevImage()
+    if(e.key === "Escape") closeViewer()
+
+})
+
+</script>
+@endpush

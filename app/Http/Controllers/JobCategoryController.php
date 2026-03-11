@@ -356,7 +356,7 @@ public function getSuppliersByProduct($productId)
             'id'    => $job->id,
             'kode_group'  => $job->kode_group,
             'nama_group'  => $job->nama_group,
-            'nama'  => $job->nama_pekerjaan,
+            'name'  => $job->job_name,
             'satuan'=> $job->satuan,
             'harga' => $job->grand_total,
         ]);

@@ -1,5 +1,5 @@
 @can('lihat daftar proyek')
-<form action="{{ route('projects.rab.store') }}" method="POST">
+<form id="rabForm" action="{{ route('projects.rab.store') }}" method="POST" enctype="multipart/form-data">
     @csrf
                         @if ($errors->any())
                                         <div class="alert alert-danger">
@@ -30,11 +30,12 @@
         </div>
         <div class="col-md-2">
             <label class="form-label">Profit</label>
-            <input type="number" class="form-control" id="rab_profit_display">
+            <input type="number" class="form-control" id="rab_profit_display" name="profit">
         </div>
+
         <div class="col-md-2">
             <label class="form-label">Overhead</label>
-            <input type="number" class="form-control" id="rab_overhead_display">
+            <input type="number" class="form-control" id="rab_overhead_display" name="overhead">
         </div>
     </div>
     <select style="display:none" id="jobCategorySelect">
@@ -45,43 +46,12 @@
             </option>
         @endforeach
     </select>
-
-    {{-- <div class="row g-4">
-        <div class="col-md-4">
-            <label class="form-label">Pilih Pekerjaan</label>
-        </div>
-        <div class="col-md-2">
-            <label class="form-label">Volume</label>
-            <input type="number" name="volume" class="form-control" step="0.01" min="0">
-        </div>
-        <div class="col-md-2">
-            <label class="form-label">Satuan</label>
-            <input type="text" name="satuan" class="form-control" id="rab_satuan" readonly>
-        </div>
-        <div class="col-md-2">
-            <label class="form-label">Harga Satuan (Rp)</label>
-            <input type="hidden" name="price_meter" id="rab_priceMeter">
-            <input type="text" id="rab_priceMeterFormatted" class="form-control bg-light" readonly>
-        </div>
-        <div class="col-md-2">
-            <label class="form-label">Total Harga (Rp)</label>
-            <input type="hidden" name="total_price" id="rab_totalPrice">
-            <input type="text" id="rab_totalPriceFormatted" class="form-control bg-light" readonly>
-        </div>
-    </div> --}}
   
     <div class="row mb-4 mt-3">
         <h4 class="fw-bold mb-3">Rincian Pekerjaan</h4>
 
         <table class="table table-bordered align-middle" id="offerItemsTable">
             <colgroup>
-                {{-- <col style="width:4%">
-                <col style="width:40%"> 
-                <col style="width:8%"> 
-                <col style="width:12%"> 
-                <col style="width:16%"> 
-                <col style="width:16%"> 
-                <col style="width:4%">  --}}
                 <col><col><col><col><col><col><col>
             </colgroup>
             <thead>
@@ -181,30 +151,30 @@
         <input type="hidden" name="subtotal_after_discount" id="rab_subAfterDiscount">
         <input type="hidden" name="tax_total" id="rab_tax_total">
         <input type="hidden" name="grand_total" id="rab_grand_total">                  
-        <input type="hidden" name="profit" id="final_profit">
-        <input type="hidden" name="overhead" id="final_overhead">
-
+    <div id="rabItemsContainer"></div>
     <h4 class="fw-bold mb-3">Keterangan</h4>
 
     <textarea name="notes" rows="3" class="form-control"></textarea>
 
     <div class="text-end mt-4">
-        <button class="btn btn-dark">Simpan RAB</button>
+        <button type="submit" class="btn btn-dark px-4">
+            <i class="ti ti-device-floppy me-1"></i>Simpan RAB
+        </button>
     </div>
 </form>
 @endcan
 
 @push('js')
 <script>
-let globalProfit = 0;
-let globalOverhead = 0;
-let currentBasePrice = 0;
-let currentRabJob = null;
-let rabItems = {};
-let categoryIndex = 0;
-let uraianIndex = {};
+let globalProfit = 0
+let globalOverhead = 0
+let currentBasePrice = 0
+let currentRabJob = null
+let rabItems = {}
+let categoryIndex = 0
+let uraianIndex = {}
 let jobIndex = 0;
-let draggedGroup = [];
+let draggedGroup = []
 let uraianImages = {}
 let activeUraian = null
 
@@ -389,11 +359,9 @@ function saveCategory(catId){
             ${row.cells[0].innerText}
         </td>
 
-        <td colspan="3" class="fw-bold">
+        <td colspan="4" class="fw-bold">
             ${name}
         </td>
-
-        <td></td>
 
         <td>
             <input type="text"
@@ -447,7 +415,9 @@ function saveUraian(uraianId){
     const row = document.getElementById(uraianId)
     const input = row.querySelector('input')
 
-    const name = input.value || 'Uraian'
+    const name = input.value || 'Uraian Baru'
+
+    row.dataset.name = name
 
     row.cells[1].innerHTML = `
     <div class="d-flex align-items-center gap-2">
@@ -457,14 +427,12 @@ function saveUraian(uraianId){
         </span>
 
         <span>${name}</span>
-
-        <button type="button" class="btn btn-sm btn-gambar"         data-bs-toggle="modal"
-        data-bs-target="#uraianGalleryModal"
-        data-uraian="name"
-            onclick="openUraianGallery('${uraianId}')">
+        <button type="button"
+            class="btn btn-sm btn-gambar"
+            data-uraian="${name}"
+            onclick="openUraianGallery('${uraianId}', '${name}')">
 
             <i class="ti ti-photo"></i>
-
         </button>
 
     </div>
@@ -476,10 +444,10 @@ function saveUraian(uraianId){
 function addJobRow(uraianId){
 
     const originalSelect = document.getElementById('jobCategorySelect')
-
     const options = originalSelect.innerHTML
 
-    const jobId = 'job_'+jobIndex++
+    const idx = jobIndex++
+    const jobId = 'job_'+idx
 
     const uraianRow = document.getElementById(uraianId)
 
@@ -490,23 +458,34 @@ function addJobRow(uraianId){
 
     lastRow.insertAdjacentHTML('afterend',`
 
-<tr class="job-row"
-    id="${jobId}"
-    data-parent="${uraianId}"
-    data-category="${document.getElementById(uraianId).dataset.category}">
+    <tr class="job-row"
+        id="${jobId}"
+        data-parent="${uraianId}"
+        data-category="${document.getElementById(uraianId).dataset.category}"
+        data-index="${idx}">
 
-        <td class="drag-ahsp" style="cursor:move">
-            <i class="ti ti-grip-vertical"></i>
+        <td></td>
+
+        <td>
+            <div class="d-flex align-items-center">
+
+                <span class="drag-ahsp me-2" style="cursor:move">
+                    <i class="ti ti-grip-vertical"></i>
+                </span>
+
+                <div class="flex-grow-1">
+
+                    <select class="form-select select2-row job-select w-100"
+                        onchange="loadJob('${jobId}', this.value)">
+                    ${options}
+                    </select>
+                </div>
+            </div>
         </td>
 
         <td>
-            <select class="form-select select2-row"
-                onchange="loadJob('${jobId}', this.value)">
-                ${options}
-            </select>
+            <span class="sat"></span>
         </td>
-
-        <td class="sat"></td>
 
         <td>
             <input type="number"
@@ -518,23 +497,28 @@ function addJobRow(uraianId){
         <td>
             <input type="text"
                 class="form-control harga"
-                oninput="rupiahInput(this); calculate('${jobId}')">
+                readonly>
+
         </td>
 
         <td>
-            <input type="text" class="form-control total" readonly>
+            <input type="text"
+                class="form-control total"
+                readonly>
         </td>
 
         <td>
 
-            <button type="button" class="btn btn-sm btn-dark"
+            <button type="button"
+                class="btn btn-sm btn-dark"
                 onclick="addJobRow('${uraianId}')">
-                +
+            +
             </button>
 
-            <button class="btn btn-sm btn-secondary"
+            <button type="button"
+                class="btn btn-sm btn-secondary"
                 onclick="removeJob('${jobId}')">
-                -
+            -
             </button>
 
         </td>
@@ -555,19 +539,26 @@ function loadJob(rowId, jobId){
 
         const row = document.getElementById(rowId)
 
-        row.querySelector('.sat').innerText = job.satuan
+        const sat = row.querySelector('.sat')
+        if(sat) sat.innerText = job.satuan
+        
+        const satInput = row.querySelector('.satuan')
+        if(satInput) satInput.value = job.satuan
+
+        const jobName = row.querySelector('.job_name')
+        if(jobName) jobName.value = job.name
+
+        const basePrice = row.querySelector('.base_price')
+        if(basePrice) basePrice.value = job.harga
 
         const hargaInput = row.querySelector('.harga')
+        if(hargaInput){
+            hargaInput.dataset.value = job.harga
+            hargaInput.value = formatRupiah(job.harga)
+        }
 
-        // simpan angka asli
-        hargaInput.dataset.value = job.harga
-
-        // tampilkan rupiah
-        hargaInput.value = formatRupiah(job.harga)
-
-        // langsung hitung ulang
         calculate(rowId)
-
+        updateHargaSemua()
     })
 }
 
@@ -588,10 +579,13 @@ function calculate(rowId){
 
     let total = vol * hargaFinal
 
-    const totalInput = row.querySelector('.total')
+    const hargaEl = row.querySelector('.harga')
+    const totalEl = row.querySelector('.total')
 
-    totalInput.dataset.value = total
-    totalInput.value = formatRupiah(total)
+    hargaEl.value = formatRupiah(hargaFinal)
+
+    totalEl.dataset.value = total
+    totalEl.value = formatRupiah(total)
 
     rabItems[rowId] = {
         volume: vol,
@@ -621,7 +615,6 @@ function updateCategorySubtotal(uraianId){
         subtotal += Number(totalInput.dataset.value || 0)
 
     })
-
 
     const subtotalInput = document.querySelector(
         `.subtotal-category[data-category="${catId}"]`
@@ -696,7 +689,7 @@ function removeUraian(id){
     document.querySelectorAll(`[data-parent="${id}"]`).forEach(e=>e.remove())
     row.remove()
     renumberUraian(catId)
-    updateGrandTotal()
+    calculateSummary()
 }
 function renumberUraian(catId){
     let rows = document.querySelectorAll(`.uraian-row[data-category="${catId}"]`)
@@ -722,9 +715,11 @@ function recalcAfterDrag(){
     })
 
 }
-function openUraianGallery(uraianId){
+function openUraianGallery(uraianId, uraianName){
 
     activeUraian = uraianId
+
+    $("#modalTitle").text(uraianName)
 
     if(!uraianImages[uraianId]){
         uraianImages[uraianId] = []
@@ -737,7 +732,6 @@ function openUraianGallery(uraianId){
     )
 
     modal.show()
-
 }
 function renderGallery(){
 
@@ -745,15 +739,15 @@ function renderGallery(){
 
     gallery.innerHTML = ''
 
-    uraianImages[activeUraian].forEach((src,index)=>{
+    uraianImages[activeUraian].forEach((img,index)=>{
 
         gallery.insertAdjacentHTML('beforeend',`
 
         <div class="preview-item">
 
-            <img src="${src}">
+            <img src="${img.url}" class="img-thumbnail">
 
-            <button type="button" class="btn btn-sm btn-danger remove-image"
+            <button type="button" class="btn btn-sm remove-img"
                 onclick="removeUraianImage(${index})">
                 ×
             </button>
@@ -763,58 +757,94 @@ function renderGallery(){
 }
 function removeUraianImage(index){
 
+    const img = uraianImages[activeUraian][index]
+
+    fetch('/rab-images/'+img.id,{
+        method:'DELETE',
+        headers:{
+            'X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]').content
+        }
+    })
+
     uraianImages[activeUraian].splice(index,1)
 
     renderGallery()
 
 }
+function updateHargaSemua(){
+
+    const profit = parseFloat(document.getElementById('rab_profit_display').value) || 0
+    const overhead = parseFloat(document.getElementById('rab_overhead_display').value) || 0
+
+    document.querySelectorAll('.job-row').forEach(row=>{
+
+        const hargaInput = row.querySelector('.harga')
+
+        const basePrice = parseFloat(hargaInput.dataset.value) || 0
+
+        const newPrice =
+            basePrice +
+            (basePrice * profit / 100) +
+            (basePrice * overhead / 100)
+
+        hargaInput.value = formatRupiah(newPrice)
+
+        calculate(row.id)
+
+    })
+
+}
+
 document.getElementById('uraianImageInput').addEventListener('change',function(){
 
     const files = this.files
 
     Array.from(files).forEach(file=>{
 
-        const reader = new FileReader()
+        const formData = new FormData()
+        formData.append('image', file)
 
-        reader.onload = function(e){
+        fetch('/rab-images/upload',{
+            method:'POST',
+            headers:{
+                'X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]').content
+            },
+            body:formData
+        })
+        .then(res=>res.json())
+        .then(img=>{
 
-            uraianImages[activeUraian].push(e.target.result)
+            if(!uraianImages[activeUraian]){
+                uraianImages[activeUraian] = []
+            }
+
+            uraianImages[activeUraian].push(img)
 
             renderGallery()
 
-        }
-
-        reader.readAsDataURL(file)
+        })
 
     })
 
 })
 $(document).on("click",".btn-gambar",function(){
 
-let uraian = $(this).data("uraian");
+    let uraian = $(this).data("uraian");
 
-$("#modalTitle").text("Gambar - " + uraian);
+    $("#modalTitle").text(uraian);
 
 });
 document.getElementById('rab_profit_display').addEventListener('input', function(){
-
     globalProfit = Number(this.value) || 0
-
-    recalcAllRows()
-
+    updateHargaSemua()
 })
 
-document.getElementById('rab_overhead_display')
-.addEventListener('input', function(){
-
+document.getElementById('rab_overhead_display').addEventListener('input', function(){
     globalOverhead = Number(this.value) || 0
-
-    recalcAllRows()
-
+    updateHargaSemua()
 })
 
-document.getElementById('rab_discount_display')
-.addEventListener('input',function(){
+document.getElementById('rab_discount_display').addEventListener('input',function(){
 
     rupiahInput(this)
 
@@ -825,8 +855,7 @@ document.getElementById('rab_discount_display')
 
 })
 
-document.getElementById('rab_shipping_display')
-.addEventListener('input',function(){
+document.getElementById('rab_shipping_display').addEventListener('input',function(){
 
     rupiahInput(this)
 
@@ -841,17 +870,92 @@ document.getElementById('rab_tax_rate').addEventListener('input', function () {
     calculateSummary();
 });
 
-function recalcAllRows(){
+document.addEventListener('DOMContentLoaded', function(){
+    document.getElementById('rabForm').addEventListener('submit', function () {
+        console.log("submit jalan")
+        const container = document.getElementById('rabItemsContainer')
+        container.innerHTML = ''
 
-    document.querySelectorAll('.job-row').forEach(row=>{
-        calculate(row.id)
+        let index = 0
+    document.querySelectorAll('.category-row').forEach((row,i)=>{
+
+        const name = row.querySelector('td:nth-child(2)')?.innerText || ''
+
+        const input = document.createElement('input')
+        input.type = 'hidden'
+        input.name = `categories[${i}][key]`
+        input.value = row.dataset.category
+
+        container.appendChild(input)
+
+        const input2 = document.createElement('input')
+        input2.type = 'hidden'
+        input2.name = `categories[${i}][name]`
+        input2.value = name
+
+        container.appendChild(input2)
+
     })
+        document.querySelectorAll('.job-row').forEach(row => {
 
-}
-</script>
-<script>
-document.querySelector('form').addEventListener('submit', function () {
-    applyProfitOverheadToAll();
-});
+            const rowId = row.id
+            const jobSelect = row.querySelector('.job-select')
+
+            if(!jobSelect || !jobSelect.value) return
+            const uraianId = row.dataset.parent
+            const uraianRow = document.getElementById(uraianId)
+            const categoryKey = uraianRow?.dataset.category
+            const uraianName = uraianRow?.dataset.name || ''
+            const jobName = jobSelect.options[jobSelect.selectedIndex].text
+            const satuan = row.querySelector('.sat')?.innerText || ''
+
+            const item = rabItems[rowId]
+            if(!item) return
+
+            const fields = {
+                category_key: categoryKey,
+                uraian_key: uraianId,
+                uraian_name: uraianName,
+                job_category_id: jobSelect.value,
+                job_name: jobName,
+                satuan: satuan,
+                volume: item.volume,
+                base_price: item.base_price,
+                price: item.harga,
+                total: item.total
+            }
+
+            Object.entries(fields).forEach(([key,val]) => {
+
+                const input = document.createElement('input')
+
+                input.type = 'hidden'
+                input.name = `items[${index}][${key}]`
+                input.value = val
+
+                container.appendChild(input)
+
+            })
+
+            index++
+
+        })
+        Object.entries(uraianImages).forEach(([uraianId,images])=>{
+
+            images.forEach((img,i)=>{
+
+                const input = document.createElement('input')
+
+                input.type = 'hidden'
+                input.name = `uraian_images[${uraianId}][]`
+                input.value = img.id
+
+                container.appendChild(input)
+
+            })
+
+        })
+    })
+})
 </script>
 @endpush

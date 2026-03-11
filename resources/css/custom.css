@@ -201,6 +201,7 @@ label {
     line-height: 1.5;
     padding-left: 0;
     color: #212529;
+    white-space: normal !important;
 }
 
 /* Panah dropdown sejajar */
@@ -658,7 +659,7 @@ transform:scale(1.05);
 position:absolute;
 top:5px;
 right:5px;
-background:#ff4d4f;
+background:#c4c4c4 !important;
 color:white;
 border:none;
 width:22px;
@@ -667,6 +668,72 @@ border-radius:50%;
 font-size:12px;
 cursor:pointer;
 }
+.rab-gallery-img{
+width:140px;
+height:100px;
+object-fit:cover;
+border-radius:6px;
+cursor:pointer;
+border:1px solid #ddd;
+transition:.2s;
+}
+
+.rab-gallery-img:hover{
+transform:scale(1.05);
+}
+.image-viewer{
+position:fixed;
+inset:0;
+background:rgba(0,0,0,.9);
+z-index:9999;
+display:flex;
+align-items:center;
+justify-content:center;
+}
+
+.viewer-stage{
+max-width:90vw;
+max-height:90vh;
+overflow:hidden;
+cursor:grab;
+}
+
+.viewer-stage img{
+max-width:100%;
+max-height:100%;
+transform-origin:center;
+transition:transform .15s;
+}
+
+.viewer-toolbar{
+position:absolute;
+top:20px;
+right:20px;
+display:flex;
+gap:10px;
+}
+
+.viewer-toolbar button{
+background:#fff;
+border:none;
+padding:6px 12px;
+border-radius:6px;
+}
+
+.viewer-prev,
+.viewer-next{
+position:absolute;
+top:50%;
+transform:translateY(-50%);
+background:none;
+border:none;
+color:#fff;
+font-size:40px;
+cursor:pointer;
+}
+
+.viewer-prev{ left:20px }
+.viewer-next{ right:20px }
 /* Hilangkan spinner biar lebih rapi */
 /* input[type=number]::-webkit-inner-spin-button,
 input[type=number]::-webkit-outer-spin-button {

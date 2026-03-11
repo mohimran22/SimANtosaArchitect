@@ -1,5 +1,5 @@
 @php
-    $rab = $project->rab->load('items.category');
+    $rab = $project->rab->load('categories.uraians.images.image');
         $latest = \Illuminate\Support\Facades\Cache::get('job_category_last_updated', 0);
 
     $needRefresh = $rab->analisa_version < $latest;
@@ -33,7 +33,7 @@
         @endif
     <h4 class="fw-bold mb-3">Informasi Pembuatan Rab</h4>
 
-    <div class="row mb-3">
+    <div class="row g-3">
         <div class="col-md-4">
             <label class="form-label">Nama Customer</label>
             <input type="text" name="contact_name" value="{{ old('contact_name', $rab->contact_name) }}" class="form-control">
@@ -46,39 +46,6 @@
             <label class="form-label required">Durasi Pekerjaan</label>
             <input type="text" name="job_duration" class="form-control" value="{{ old('job_duration', $rab->job_duration) }}" placeholder="175 Hari Kerja">
         </div>
-    </div>
-
-    <div class="row g-4">
-                <div class="col-md-4">
-                    <label class="form-label">Pilih Pekerjaan</label>
-                    <select class="form-select select2" id="jobCategorySelect">
-                        <option value="">-- Pilih Paket --</option>
-                        @foreach($jobCategories as $job) 
-                        <option value="{{ $job->id }}" > 
-                            {{ $job->nama_pekerjaan }} 
-                        </option> 
-                        @endforeach
-                    </select>
-                </div>
-        <div class="col-md-2">
-            <label class="form-label">Volume</label>
-            <input type="number" name="volume" id="rab_add_volume" class="form-control" step="0.01" min="0">
-        </div>
-        <div class="col-md-2">
-            <label class="form-label">Satuan</label>
-            <input type="text" name="satuan" class="form-control" id="rab_satuan" readonly>
-        </div>
-        <div class="col-md-2">
-            <label class="form-label">Harga Satuan (Rp)</label>
-            <input type="hidden" name="price_meter" id="rab_priceMeter">
-            <input type="text" id="rab_priceMeterFormatted" class="form-control bg-light" readonly>
-        </div>
-        <div class="col-md-2">
-            <label class="form-label">Total Harga (Rp)</label>
-            <input type="hidden" name="total_price" id="rab_totalPrice">
-            <input type="text" id="rab_totalPriceFormatted" class="form-control bg-light" readonly>
-        </div>
-        
         <div class="col-md-2">
             <label class="form-label">Profit</label>
             <input type="number" class="form-control" id="rab_profit_display_edit" value="{{ old('profit', $rab->profit) }}" step="0.01" min="0">
@@ -90,6 +57,14 @@
             <input type="hidden" name="overhead" id="rab_overhead_edit">
         </div>
     </div>
+    <select style="display:none" id="jobCategorySelect">
+        <option value="">-- Pilih AHSP --</option>
+        @foreach($jobCategories as $job) 
+        <option value="{{ $job->id }}" > 
+            {{ $job->nama_pekerjaan }} 
+        </option> 
+        @endforeach
+    </select>
   
     <div class="row mb-4 mt-3">
         <h4 class="fw-bold mb-3">Rincian Pekerjaan</h4>
@@ -97,20 +72,27 @@
         <table class="table table-bordered align-middle" id="offerItemsTable">
             <thead>
                 <tr>
-                    <th width="50">No.</th>
-                    <th>Uraian Pekerjaan</th>
-                    <th>Volume</th>
-                    <th>Satuan</th>
-                    <th>Harga Satuan (Rp)</th>
-                    {{-- <th>Profit (%)</th>
-                    <th>Overhead (%)</th> --}}
-                    <th>Total Harga</th>
+                    <th width="50">NO</th>
+                    <th>URAIAN PEKERJAAN</th>
+                    <th>SAT</th>
+                    <th>VOL</th>
+                    <th>HARGA SATUAN</th>
+                    <th>JUMLAH HARGA</th>
                     <th width="1%"></th>
                 </tr>
             </thead>
             <tbody id="rab_offerItemsBody">
             </tbody>
             <tfoot>
+                <tr>
+                    <td colspan="6">
+                        <button type="button"
+                            class="btn btn-link fw-bold text-decoration-none"
+                            onclick="addCategory()">
+                            + Kategori Pekerjaan
+                        </button>
+                    </td>
+                </tr>
                 <tr>
                     <th colspan="5" class="text-end">SUBTOTAL</th>
                     <th id="rab_subtotalDisplay">Rp 0</th>
@@ -163,6 +145,35 @@
             </tfoot>
         </table>
     </div>
+    <div class="modal fade" id="uraianGalleryModalEdit">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content gambar-modal">
+
+                <div class="modal-header border-0">
+                    <div>
+                    <h5 class="modal-title fw-semibold" id="modalTitle"></h5>
+                    <small class="text-muted">Upload dokumentasi pekerjaan</small>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class= "upload-area mb-3">
+                    <input type="file"
+                        multiple
+                        accept="image/*"
+                        class="form-control mb-3"
+                        id="uraianImageInput">
+                    </div>
+
+                    <div id="uraianGalleryEdit" class="gambar-preview">
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
         <input type="hidden" name="subtotal" id="rab_subtotal" value="{{ $rab->subtotal }}">
         <input type="hidden" name="subtotal_after_discount" id="rab_subAfterDiscount" value="{{ $rab->subtotal_after_discount }}">
         <input type="hidden" name="tax_total" id="rab_tax_total" value="{{ $rab->tax_total }}">
@@ -179,24 +190,22 @@
 </form>
 
 @push('js')
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+
+    const rabId = {{ $rab->id }};
+
+    fetch(`/rab/${rabId}/structure`)
+        .then(res => res.json())
+        .then(data => {
+
+            loadExistingRab(data);
+
+        });
+
+});
+</script>
     <script>
-    window.existingRabItems = @json($rab->items);
-    window.existingRabMeta = {
-        discount: {{ $rab->discount }},
-        tax_rate: {{ $rab->tax_rate }},
-        shipping: {{ $rab->shipping }},
-        profit: {{ $rab->profit }},
-        overhead: {{ $rab->overhead }}
-    };
-    window.marginLocked = {{ $rab->is_locked_margin ? 'true' : 'false' }};
-    </script>
-    <script>
-        // $(document).ready(function() {
-        //     $('.select2').select2({
-        //         placeholder: "-- Pilih --",
-        //         width: '100%'
-        //     });
-        // });
 
         function formatRp(num) {
             return new Intl.NumberFormat('id-ID', {
@@ -211,221 +220,277 @@
                 val.toString().replace(/[^0-9.-]+/g, '')
             ) || 0;
         }
+        function parseRupiah(value){
+
+    if(!value) return 0
+
+    return Number(
+        value
+        .toString()
+        .replace(/[^0-9]/g,'')
+    )
+}
+
+function formatRupiah(number){
+
+    number = Number(number) || 0
+
+    return 'Rp ' + number.toLocaleString('id-ID')
+
+}
+function rupiahInput(el){
+
+    let number = parseRupiah(el.value)
+
+    el.dataset.value = number
+
+    el.value = formatRupiah(number)
+
+}
+
+function numberToLetters(num) {
+    let letters = '';
+    while (num >= 0) {
+        letters = String.fromCharCode((num % 26) + 65) + letters;
+        num = Math.floor(num / 26) - 1;
+    }
+    return letters;
+}
 
         let currentRabJob = null;
-        let rabItems = {};
-        let globalProfit = 0;
-        let globalOverhead = 0;
+        let rabItems = {}
+        let currentBasePrice = 0
+        let globalProfit = 0
+        let globalOverhead = 0
+        let categoryIndex = 0
+        let uraianIndex = {}
+        let jobIndex = 0
+        let draggedGroup = []
+        let uraianImages = {}
+        let activeUraian = null
 
+        function loadExistingRab(data){
 
-        function calculateItemTotal(volume, harga, profitPercent, overheadPercent) {
-            let base = volume * harga;
-            let profitValue = base * (profitPercent / 100);
-            let overheadValue = base * (overheadPercent / 100);
-            return Math.round(base + profitValue + overheadValue);
-        }
+            const tbody = document.getElementById('rab_offerItemsBody')
+            tbody.innerHTML = ''
 
-        $('#jobCategorySelect').on('change', function () {
-            const jobId = $(this).val();
-            if (!jobId) return;
+            categoryIndex = 0
+            jobIndex = 0
+            uraianIndex = {}
 
-            fetch(`/job-categories/${jobId}/simple`)
-                .then(res => res.json())
-                .then(job => {
+            globalProfit = parseFloat(data.meta.profit) || 0
+            globalOverhead = parseFloat(data.meta.overhead) || 0
 
-                    currentRabJob = job;
+            data.categories.forEach(cat => {
 
-                    let baseHarga = parseFloat(job.harga ?? job.price ?? 0);
+                const catId = 'cat_'+categoryIndex
+                uraianIndex[catId] = 1
 
-                    document.getElementById('rab_satuan').value = job.satuan;
-                    document.getElementById('rab_priceMeter').value = baseHarga;
-                    document.getElementById('rab_priceMeterFormatted').value = formatRp(baseHarga);
+                // CATEGORY
+                tbody.insertAdjacentHTML('beforeend',`
+                <tr class="table-secondary fw-bold category-row"
+                    id="${catId}"
+                    data-category="${catId}">
 
-                    document.querySelector('input[name="volume"]').value = '';
-                    document.getElementById('rab_totalPriceFormatted').value = '';
-                });
-        });
+                    <td>
+                        <span class="drag-handle me-2">
+                            <i class="ti ti-grip-vertical"></i>
+                        </span>
+                        ${numberToLetters(categoryIndex)}
+                    </td>
 
-        document.getElementById('rab_add_volume')
-            ?.addEventListener('input', function(e) {
+                    <td colspan="4" class="fw-bold">
+                        ${cat.name}
+                    </td>
 
-            if (!currentRabJob) return;
+                    <td>
+                        <input class="form-control subtotal-category"
+                            data-category="${catId}"
+                            value="Rp 0"
+                            readonly>
+                    </td>
 
-            const volume = parseFloat(this.value) || 0;
-            if (volume <= 0) return;
+                    <td></td>
+                </tr>
+                `)
 
-            const basePrice = parseFloat(currentRabJob.base_price ?? currentRabJob.harga ?? 0);
+                // URAIAN
+                cat.uraians.forEach(uraian => {
 
-            const total = calculateItemTotal(
-                volume,
-                basePrice,
-                globalProfit,
-                globalOverhead
-            );
+                    const uraianId = uraian.uraian_key
+                    if(!uraianImages[uraianId]){
+                        uraianImages[uraianId] = []
+                    }
 
-            const finalUnit = applyGlobalMarginToUnit(basePrice);
+                    if(uraian.images){
+                        uraian.images.forEach(img=>{
+                            uraianImages[uraian.uraian_key].push({
+                                id: img.id,
+                                url: img.image.url
+                            })
+                        })
+                    }
 
-            document.getElementById('rab_totalPrice').value = total;
-            document.getElementById('rab_totalPriceFormatted').value = formatRp(total);
+                    tbody.insertAdjacentHTML('beforeend',`
 
-            rabItems[currentRabJob.id] = {
-                ...currentRabJob,
-                volume: volume,
-                base_price: basePrice,
-                harga: finalUnit,
-                profit: globalProfit,
-                overhead: globalOverhead,
-                total: total
-            };
+                    <tr class="uraian-row"
+                        id="${uraianId}"
+                        data-category="${catId}"
+                        data-name="${uraian.name}">
 
-            console.log("ADD ITEM GP:", globalProfit, "GO:", globalOverhead);
+                        <td class="text-center fw-bold">
+                            ${uraianIndex[catId]++}
+                        </td>
 
-            renderRabTable();
-        });
+                        <td colspan="5">
 
-        function renderRabTable() {
+                            <div class="d-flex align-items-center gap-2">
 
-            const tbody = document.getElementById('rab_offerItemsBody');
-            tbody.innerHTML = '';
+                                <span class="drag-handle">
+                                    <i class="ti ti-grip-vertical"></i>
+                                </span>
 
-            let grouped = {};
-            let rowIndex = 0;
+                                <span>${uraian.name}</span>
 
-            Object.values(rabItems).forEach(item => {
-                if (!grouped[item.kode_group]) {
-                    grouped[item.kode_group] = {
-                        name: item.nama_group,
-                        items: [],
-                        subtotal: 0
-                    };
-                }
+                                <button type="button" class="btn btn-sm btn-gambar"
+                                    onclick="openUraianGallery('${uraianId}','${uraian.name}')">
 
-                grouped[item.kode_group].items.push(item);
-                grouped[item.kode_group].subtotal += Number(item.total);
-            });
+                                    <i class="ti ti-photo"></i>
 
-            Object.keys(grouped).forEach(groupCode => {
-
-                const group = grouped[groupCode];
-
-                tbody.insertAdjacentHTML('beforeend', `
-                    <tr class="table-secondary fw-bold">
-                        <td>${groupCode}</td>
-                        <td colspan="5">${group.name}</td>
-                    </tr>
-                `);
-
-                let no = 1;
-
-                group.items.forEach(item => {
-
-                    tbody.insertAdjacentHTML('beforeend', `
-                        <tr>
-                            <td>${no}</td>
-                            <td>${item.nama}</td>
-                <td width="110">
-                    <input type="number" class="form-control text-center"
-                        value="${item.volume}"
-                        min="0.01" step="0.01"
-                        onchange="updateVolume(${item.id}, this.value)">
-                </td>
-                            <td>${item.satuan}</td>
-                            <td>${formatRp(item.harga)}</td>
-                <!-- <td width="90">
-                    <input type="number" class="form-control text-center"
-                        value="${item.profit}"
-                        min="0" max="100" step="0.01"
-                        onchange="updateProfit(${item.id}, this.value)">
-                </td> -->
-
-                <!-- ✅ OVERHEAD 
-                <td width="90">
-                    <input type="number" class="form-control text-center"
-                        value="${item.overhead}"
-                        min="0" max="100" step="0.01"
-                        onchange="updateOverhead(${item.id}, this.value)">
-                </td> -->
-                            <td class="text-end">${formatRp(item.total)}</td>
-                            <td class="text-center">
-                                <button type="button"
-                                    class="btn btn-sm btn-danger"
-                                    onclick="removeItem(${item.id})">
-                                    -
                                 </button>
+
+                            </div>
+
+                        </td>
+
+                        <td>
+                            <button class="btn btn-sm btn-secondary"
+                                onclick="removeUraian('${uraianId}')">
+                                -
+                            </button>
+                        </td>
+
+                    </tr>
+                    `)
+
+                    // JOB / ITEM
+                    uraian.items.forEach(job => {
+
+                        const jobId = 'job_'+jobIndex++
+
+                        tbody.insertAdjacentHTML('beforeend',`
+
+                        <tr class="job-row"
+                            id="${jobId}"
+                            data-parent="${uraianId}"
+                            data-category="${catId}">
+
+                            <td></td>
+
+                            <td>
+
+                                <div class="d-flex align-items-center">
+
+                                    <span class="drag-ahsp me-2">
+                                        <i class="ti ti-grip-vertical"></i>
+                                    </span>
+
+                                    <select class="form-select select2-row job-select"
+                                        onchange="loadJob('${jobId}',this.value)">
+
+                                        ${document.getElementById('jobCategorySelect').innerHTML}
+
+                                    </select>
+
+                                </div>
+
                             </td>
 
-                            <input type="hidden" name="items[${rowIndex}][job_category_id]" value="${item.id}">
-                            <input type="hidden" name="items[${rowIndex}][job_name]" value="${item.nama}">
-                            <input type="hidden" name="items[${rowIndex}][satuan]" value="${item.satuan}">
-                            <input type="hidden" name="items[${rowIndex}][volume]" value="${item.volume}">
-                            <input type="hidden" name="items[${rowIndex}][base_price]" value="${item.base_price}">
-                            <input type="hidden" name="items[${rowIndex}][price]" value="${item.harga}">
-                            <input type="hidden" name="items[${rowIndex}][profit]" value="${item.profit}">
-                            <input type="hidden" name="items[${rowIndex}][overhead]" value="${item.overhead}">
-                            <input type="hidden" name="items[${rowIndex}][total]" value="${item.total}">
+                            <td>
+                                <span class="sat">${job.satuan}</span>
+                            </td>
+
+                            <td>
+                                <input type="number"
+                                    class="form-control vol"
+                                    value="${job.volume}"
+                                    oninput="calculate('${jobId}')">
+                            </td>
+
+                            <td>
+                                <input class="form-control harga"
+                                    data-value="${job.base_price}"
+                                    value="${formatRupiah(job.price)}"
+                                    readonly>
+                            </td>
+
+                            <td>
+                                <input class="form-control total"
+                                    data-value="${job.total}"
+                                    value="${formatRupiah(job.total)}"
+                                    readonly>
+                            </td>
+
+                            <td>
+
+                                <button type="button" class="btn btn-sm btn-dark"
+                                    onclick="addJobRow('${uraianId}')">+</button>
+
+                                <button type="button" class="btn btn-sm btn-secondary"
+                                    onclick="removeJob('${jobId}')">-</button>
+
+                            </td>
+
                         </tr>
-                    `);
+                        `)
 
-                    rowIndex++;
-                    no++;
-                });
+                        rabItems[jobId] = {
+                            volume: job.volume,
+                            base_price: job.base_price,
+                            harga: job.price,
+                            total: job.total
+                        }
 
-                // 🔹 SUBTOTAL PER GROUP
-                tbody.insertAdjacentHTML('beforeend', `
-                    <tr class="fw-bold">
-                        <td colspan="5" class="text-end">Subtotal ${group.name}</td>
-                        <td class="text-end">${formatRp(group.subtotal)}</td>
-                    </tr>
-                `);
-            });
+                        setTimeout(()=>{
+                            $(`#${jobId} .job-select`)
+                                .val(job.job_category_id)
+                                .trigger('change')
+                        },50)
 
-            recalculateSummary();
-        }
+                    })
 
-        function loadExistingRab() {
+                })
 
-            if (!window.existingRabItems || window.existingRabItems.length === 0) return;
-            globalProfit = parseFloat(window.existingRabMeta.profit) || 0;
-            globalOverhead = parseFloat(window.existingRabMeta.overhead) || 0;
+                // ADD URAIAN BUTTON
+                tbody.insertAdjacentHTML('beforeend',`
 
-            rabItems = {}; // reset
+                <tr class="no-drag" id="addUraian_${catId}">
+                    <td></td>
+                    <td colspan="6">
 
-            window.existingRabItems.forEach(item => {
+                        <button type="button"
+                            class="btn btn-sm btn-link"
+                            onclick="addUraian('${catId}')">
 
-                rabItems[item.job_category_id] = {
-                    id: item.job_category_id,
-                    nama: item.job_name,
-                    satuan: item.satuan,
-                    volume: parseFloat(item.volume),
-                    base_price: parseFloat(item.base_price),
-                    harga: parseFloat(item.price), // harga final lama
+                            + Uraian Pekerjaan
 
-                    profit: parseFloat(item.profit),
-                    overhead: parseFloat(item.overhead),
-                    total: parseFloat(item.total),
+                        </button>
 
-                    kode_group: item.category?.kode_group ?? 'LAIN',
-                    nama_group: item.category?.nama_group ?? 'Lain-lain'
-                };
-            });
+                    </td>
+                </tr>
+                `)
 
-            renderRabTable();
+                categoryIndex++
 
-            document.getElementById('rab_profit_display_edit').value = globalProfit;
-            document.getElementById('rab_overhead_display_edit').value = globalOverhead;
-            document.getElementById('rab_profit_edit').value = globalProfit;
-            document.getElementById('rab_overhead_edit').value = globalOverhead;
+            })
 
-            document.getElementById('rab_discount').value = window.existingRabMeta.discount || 0;
-            document.getElementById('rab_discount_display').value = formatRp(window.existingRabMeta.discount || 0);
+            $('.select2-row').select2()
 
-            document.getElementById('rab_tax_rate_input').value = window.existingRabMeta.tax_rate || 0;
-            document.getElementById('rab_tax_rate').value = window.existingRabMeta.tax_rate || 0;
+            setTimeout(()=>{
+                recalcAfterDrag()
+                calculateSummary()
+            },300)
 
-            document.getElementById('rab_shipping').value = window.existingRabMeta.shipping || 0;
-            document.getElementById('rab_shipping_display').value = formatRp(window.existingRabMeta.shipping || 0);
-
-            recalculateSummary();
         }
 
         function applyGlobalMarginToUnit(basePrice) {
@@ -433,41 +498,492 @@
                 + basePrice * (globalProfit / 100)
                 + basePrice * (globalOverhead / 100);
         }
+function addCategory(){
 
-        function recalculateSummary() {
+    const tbody = document.getElementById('rab_offerItemsBody')
 
-            let subtotal = 0;
+    let letter = String.fromCharCode(65 + categoryIndex)
+    let catId = 'cat_'+categoryIndex
 
-            Object.values(rabItems).forEach(item => {
-                subtotal += item.total;
-            });
+    uraianIndex[catId] = 1
 
-            // DISCOUNT
-            let discount = cleanNumber(document.getElementById('rab_discount').value);
-            let subAfterDiscount = subtotal - discount;
-            if (subAfterDiscount < 0) subAfterDiscount = 0;
+    tbody.insertAdjacentHTML('beforeend',`
 
-            // TAX
-            let taxRate = parseFloat(document.getElementById('rab_tax_rate').value) || 0;
-            let totalTax = subAfterDiscount * (taxRate / 100);
+    <tr class="table-secondary fw-bold category-row" id="${catId}" data-category="${catId}">
+        <td>
+            <span class="drag-handle me-2" style="cursor:move">
+                <i class="ti ti-grip-vertical"></i>
+            </span>
+            ${letter}
+        </td>
 
-            // SHIPPING
-            let shipping = cleanNumber(document.getElementById('rab_shipping').value);
+        <td colspan="5">
+            <input type="text" class="form-control fw-bold"
+                placeholder="Nama kategori pekerjaan"
+                onkeydown="if(event.key==='Enter') saveCategory('${catId}')">
+        </td>
 
-            // GRAND TOTAL
-            let grandTotal = subAfterDiscount + totalTax + shipping;
+        <td></td>
+    </tr>
 
-            // DISPLAY
-            document.getElementById('rab_subtotalDisplay').innerText = formatRp(subtotal);
-            document.getElementById('rab_subAfterDiscountDisplay').innerText = formatRp(subAfterDiscount);
-            document.getElementById('rab_totalTaxDisplay').innerText = formatRp(totalTax);
-            document.getElementById('rab_grandTotalDisplay').innerText = formatRp(grandTotal);
-            document.getElementById('rab_subtotal').value = subtotal;
-            document.getElementById('rab_subAfterDiscount').value = subAfterDiscount;
-            document.getElementById('rab_tax_total').value = totalTax;
-            document.getElementById('rab_grand_total').value = grandTotal;
+    <tr class="no-drag" id="addUraian_${catId}">
+        <td></td>
+        <td colspan="6">
+            <button type="button" class="btn btn-sm btn-link"
+                onclick="addUraian('${catId}')">
+                + Uraian Pekerjaan
+            </button>
+        </td>
+    </tr>
+    `)
+
+    categoryIndex++
+}
+
+function saveCategory(catId){
+
+    const row = document.getElementById(catId)
+    const input = row.querySelector('input');
+
+    const name = input.value || 'Kategori Baru';
+
+    row.innerHTML = `
+        <td>
+            <span class="drag-handle me-2" style="cursor:move">
+                <i class="ti ti-grip-vertical"></i>
+            </span>
+            ${row.cells[0].innerText}
+        </td>
+
+        <td colspan="4" class="fw-bold">
+            ${name}
+        </td>
+
+        <td>
+            <input type="text"
+                class="form-control subtotal-category" data-category="${catId}"
+                value="Rp 0"
+                readonly>
+        </td>
+
+        <td></td>
+    `;
+}
+
+function addUraian(catId){
+
+    const addRow = document.getElementById('addUraian_'+catId)
+
+    let uraianNo = uraianIndex[catId]++
+    let uraianId = 'uraian_'+(jobIndex++)
+
+    addRow.insertAdjacentHTML('beforebegin',`
+
+    <tr class="uraian-row" id="${uraianId}" data-category="${catId}">
+        <td class="text-center fw-bold">${uraianNo}</td>
+
+        <td colspan="5">
+            <div class="d-flex align-items-center gap-2">
+
+                <span class="drag-handle" style="cursor:move">
+                    <i class="ti ti-grip-vertical"></i>
+                </span>
+
+                <input class="form-control"
+                    placeholder="Uraian pekerjaan"
+                    onkeydown="if(event.key==='Enter') saveUraian('${uraianId}')">
+            </div>
+        </td>
+
+        <td>
+            <button class="btn btn-sm btn-secondary"
+                onclick="removeUraian('${uraianId}')">
+                -
+            </button>
+        </td>
+    </tr>
+
+    `)
+}
+
+function saveUraian(uraianId){
+
+    const row = document.getElementById(uraianId)
+    const input = row.querySelector('input')
+
+    const name = input.value || 'Uraian Baru'
+
+    row.dataset.name = name
+
+    row.cells[1].innerHTML = `
+    <div class="d-flex align-items-center gap-2">
+
+        <span class="drag-handle" style="cursor:move">
+            <i class="ti ti-grip-vertical"></i>
+        </span>
+
+        <span>${name}</span>
+        <button type="button"
+            class="btn btn-sm btn-gambar"
+            data-uraian="${name}"
+            onclick="openUraianGallery('${uraianId}', '${name}')">
+
+            <i class="ti ti-photo"></i>
+        </button>
+
+    </div>
+    `
+
+    addJobRow(uraianId)
+}
+
+function addJobRow(uraianId){
+
+    const originalSelect = document.getElementById('jobCategorySelect')
+    const options = originalSelect.innerHTML
+
+    const idx = jobIndex++
+    const jobId = 'job_'+idx
+
+    const uraianRow = document.getElementById(uraianId)
+
+    let lastRow = uraianRow
+
+    document.querySelectorAll(`[data-parent="${uraianId}"]`)
+        .forEach(row => lastRow = row)
+
+    lastRow.insertAdjacentHTML('afterend',`
+
+    <tr class="job-row"
+        id="${jobId}"
+        data-parent="${uraianId}"
+        data-category="${document.getElementById(uraianId).dataset.category}"
+        data-index="${idx}">
+
+        <td></td>
+
+        <td>
+            <div class="d-flex align-items-center">
+
+                <span class="drag-ahsp me-2" style="cursor:move">
+                    <i class="ti ti-grip-vertical"></i>
+                </span>
+
+                <div class="flex-grow-1">
+
+                    <select class="form-select select2-row job-select w-100"
+                        onchange="loadJob('${jobId}', this.value)">
+                    ${options}
+                    </select>
+                </div>
+            </div>
+        </td>
+
+        <td>
+            <span class="sat"></span>
+        </td>
+
+        <td>
+            <input type="number"
+                step="0.01"
+                class="form-control vol"
+                oninput="calculate('${jobId}')">
+        </td>
+
+        <td>
+            <input type="text"
+                class="form-control harga"
+                readonly>
+
+        </td>
+
+        <td>
+            <input type="text"
+                class="form-control total"
+                readonly>
+        </td>
+
+        <td>
+
+            <button type="button"
+                class="btn btn-sm btn-dark"
+                onclick="addJobRow('${uraianId}')">
+            +
+            </button>
+
+            <button type="button"
+                class="btn btn-sm btn-secondary"
+                onclick="removeJob('${jobId}')">
+            -
+            </button>
+
+        </td>
+
+    </tr>
+    `)
+
+    $('.select2-row').select2()
+}
+
+function loadJob(rowId, jobId){
+
+    if(!jobId) return
+
+    fetch(`/job-categories/${jobId}/simple`)
+    .then(res => res.json())
+    .then(job => {
+
+        const row = document.getElementById(rowId)
+
+        const sat = row.querySelector('.sat')
+        if(sat) sat.innerText = job.satuan
+        
+        const satInput = row.querySelector('.satuan')
+        if(satInput) satInput.value = job.satuan
+
+        const jobName = row.querySelector('.job_name')
+        if(jobName) jobName.value = job.name
+
+        const basePrice = row.querySelector('.base_price')
+        if(basePrice) basePrice.value = job.harga
+
+        const hargaInput = row.querySelector('.harga')
+        if(hargaInput){
+            hargaInput.dataset.value = job.harga
+            hargaInput.value = formatRupiah(job.harga)
         }
 
+        calculate(rowId)
+        updateHargaSemua()
+    })
+}
+
+function calculate(rowId){
+
+    const row = document.getElementById(rowId)
+
+    let vol = Number(row.querySelector('.vol').value) || 0
+
+    let hargaInput = row.querySelector('.harga')
+
+    let basePrice = Number(hargaInput.dataset.value || 0)
+
+    let profitValue   = basePrice * (globalProfit / 100)
+    let overheadValue = basePrice * (globalOverhead / 100)
+
+    let hargaFinal = basePrice + profitValue + overheadValue
+
+    let total = vol * hargaFinal
+
+    const hargaEl = row.querySelector('.harga')
+    const totalEl = row.querySelector('.total')
+
+    hargaEl.value = formatRupiah(hargaFinal)
+
+    totalEl.dataset.value = total
+    totalEl.value = formatRupiah(total)
+
+    rabItems[rowId] = {
+        volume: vol,
+        base_price: basePrice,
+        harga: hargaFinal,
+        total: total
+    }
+
+    updateCategorySubtotal(row.dataset.category)
+
+    calculateSummary()
+}
+function updateCategorySubtotal(catId){
+
+    let subtotal = 0
+    document.querySelectorAll(`.job-row[data-category="${catId}"]`)
+    .forEach(row=>{
+
+        const totalInput = row.querySelector('.total')
+
+        subtotal += Number(totalInput.dataset.value || 0)
+
+    })
+
+    const subtotalInput = document.querySelector(
+        `.subtotal-category[data-category="${catId}"]`
+    )
+
+    if(subtotalInput){
+
+        subtotalInput.dataset.value = subtotal
+        subtotalInput.value = formatRupiah(subtotal)
+
+    }
+
+}
+function calculateSummary(){
+
+    let subtotal = 0
+
+    document.querySelectorAll('.total').forEach(el=>{
+        subtotal += Number(el.dataset.value || 0)
+    })
+
+    // tampilkan subtotal
+    document.getElementById('rab_subtotal').value = subtotal
+    document.getElementById('rab_subtotalDisplay').innerText = formatRupiah(subtotal)
+
+    // discount
+    let discount = Number(document.getElementById('rab_discount').value || 0)
+
+    let subAfterDiscount = subtotal - discount
+
+    document.getElementById('rab_subAfterDiscount').value = subAfterDiscount
+    document.getElementById('rab_subAfterDiscountDisplay').innerText = formatRupiah(subAfterDiscount)
+
+    // tax
+    let taxRate = Number(document.getElementById('rab_tax_rate').value || 0)
+
+    let taxTotal = subAfterDiscount * taxRate / 100
+
+    document.getElementById('rab_tax_total').value = taxTotal
+    document.getElementById('rab_totalTaxDisplay').innerText = formatRupiah(taxTotal)
+
+    // shipping
+    let shipping = Number(document.getElementById('rab_shipping').value || 0)
+
+    // grand total
+    let grand = subAfterDiscount + taxTotal + shipping
+
+    const grandEl = document.getElementById('rab_grandTotalDisplay')
+
+    grandEl.dataset.value = grand
+    grandEl.innerText = formatRupiah(grand)
+
+    document.getElementById('rab_grand_total').value = grand
+}
+function removeJob(id){
+
+    const row = document.getElementById(id)
+
+    if(!row) return
+
+    const uraianId = row.dataset.parent
+
+    row.remove()
+
+    updateCategorySubtotal(uraianId)
+    calculateSummary()
+
+}
+function removeUraian(id){
+    const row = document.getElementById(id)
+    const catId = row.dataset.category
+    document.querySelectorAll(`[data-parent="${id}"]`).forEach(e=>e.remove())
+    row.remove()
+    renumberUraian(catId)
+    calculateSummary()
+}
+function renumberUraian(catId){
+    let rows = document.querySelectorAll(`.uraian-row[data-category="${catId}"]`)
+    rows.forEach((row,i)=>{
+        row.querySelector('td').innerText = i+1
+    })
+    uraianIndex[catId] = rows.length + 1
+}
+function renumberAll(){
+    document.querySelectorAll('.category-row').forEach(cat=>{
+        const catId = cat.dataset.category
+        const uraianRows = document.querySelectorAll(`.uraian-row[data-category="${catId}"]`)
+        uraianRows.forEach((row,i)=>{
+            row.querySelector('td:first-child').innerText = i+1
+        })
+        uraianIndex[catId] = uraianRows.length + 1
+    })
+}
+function recalcAfterDrag(){
+
+    document.querySelectorAll('.job-row').forEach(row=>{
+        calculate(row.id)
+    })
+
+}
+function openUraianGallery(uraianId, uraianName){
+
+    activeUraian = uraianId
+
+    $("#modalTitle").text(uraianName)
+
+    if(!uraianImages[uraianId]){
+        uraianImages[uraianId] = []
+    }
+
+    renderGallery()
+
+    const modal = new bootstrap.Modal(
+        document.getElementById('uraianGalleryModalEdit')
+    )
+
+    modal.show()
+}
+function renderGallery(){
+
+    const gallery = document.getElementById('uraianGalleryEdit')
+
+    gallery.innerHTML = ''
+
+    uraianImages[activeUraian].forEach((img,index)=>{
+
+        gallery.insertAdjacentHTML('beforeend',`
+
+        <div class="preview-item">
+
+            <img src="${img.url}" class="img-thumbnail">
+
+            <button type="button" class="btn btn-sm remove-img"
+                onclick="removeUraianImage(${index})">
+                ×
+            </button>
+        </div>
+        `)
+    })
+}
+function removeUraianImage(index){
+
+    const img = uraianImages[activeUraian][index]
+
+    fetch('/rab-images/'+img.id,{
+        method:'DELETE',
+        headers:{
+            'X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]').content
+        }
+    })
+
+    uraianImages[activeUraian].splice(index,1)
+
+    renderGallery()
+
+}
+function updateHargaSemua(){
+
+    const profit = parseFloat(document.getElementById('rab_profit_display_edit').value) || 0
+    const overhead = parseFloat(document.getElementById('rab_overhead_display_edit').value) || 0
+
+    document.querySelectorAll('.job-row').forEach(row=>{
+
+        const hargaInput = row.querySelector('.harga')
+
+        const basePrice = parseFloat(hargaInput.dataset.value) || 0
+
+        const newPrice =
+            basePrice +
+            (basePrice * profit / 100) +
+            (basePrice * overhead / 100)
+
+        hargaInput.value = formatRupiah(newPrice)
+
+        calculate(row.id)
+
+    })
+
+}
         const discountInput = document.getElementById('rab_discount_display');
 
         discountInput.addEventListener('input', function () {
@@ -542,7 +1058,6 @@
         }
 
         document.addEventListener('DOMContentLoaded', function () {
-            loadExistingRab();
             initRabEditMargin();
         });
 

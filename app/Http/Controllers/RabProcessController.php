@@ -6,11 +6,16 @@ use App\Models\RabProcess;
 use App\Models\RabProcessItem;
 use App\Models\JobCategory;
 use App\Models\Project;
+use App\Models\RabImage;
+use App\Models\RabUraianImage;
+use App\Models\RabProcessUraian;
+use App\Models\RabProcessCategory;
 use App\Services\ProjectNotifier;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Storage;
 
 class RabProcessController extends Controller
 {
@@ -42,8 +47,9 @@ public function store(Request $request)
     ]);
 
     $project = null;
+    $rab = null;
 
-    DB::transaction(function () use ($request, &$project) {
+    DB::transaction(function () use ($request, &$project, &$rab) {
 
         $project = Project::findOrFail($request->project_id);
 
@@ -64,7 +70,6 @@ public function store(Request $request)
             'job_location' => $request->job_location,
             'job_duration' => $request->job_duration,
 
-            // 🔒 Snapshot dari JS
             'base_subtotal' => $subtotal,
             'subtotal' => $subtotal,
             'discount' => $discount,
@@ -72,8 +77,8 @@ public function store(Request $request)
 
             'tax_rate' => $taxRate,
             'tax_total' => $taxTotal,
-            'profit' => $request->profit,       // % saja
-            'overhead' => $request->overhead,    // % saja
+            'profit' => $request->profit,      
+            'overhead' => $request->overhead,    
             'shipping' => $shipping,
             'grand_total' => $grandTotal,
 
@@ -83,18 +88,60 @@ public function store(Request $request)
             'analisa_version' => Cache::get('job_category_last_updated', 0),
         ]);
 
-        foreach ($request->items as $item) {
+        $categoryMap = [];
 
+        foreach ($request->categories as $cat) {
+
+            $category = RabProcessCategory::create([
+                'rab_process_id' => $rab->id,
+                'name' => $cat['name'],
+            ]);
+
+            $categoryMap[$cat['key']] = $category->id;
+        }
+
+        $uraianMap = [];
+
+        foreach ($request->items as $item) {
+        $key = $item['uraian_key'];
+
+        if(!isset($uraianMap[$key])) {
+
+            $uraian = RabProcessUraian::create([
+                'rab_process_id' => $rab->id,
+                'job_category_id' => $item['job_category_id'],
+                'category_id' => $categoryMap[$item['category_key']],
+                'uraian_key' => $key,
+                'name' => $item['uraian_name'],
+            ]);
+
+            $uraianMap[$key] = $uraian->id;
+        }
             RabProcessItem::create([
                 'rab_process_id' => $rab->id,
+                'uraian_id' => $uraianMap[$key],
                 'job_category_id' => $item['job_category_id'],
                 'job_name' => $item['job_name'],
                 'base_price' => $item['base_price'],
                 'satuan' => $item['satuan'],
                 'volume' => $item['volume'],
-                'price' => $item['price'],   // ✅ SUDAH FINAL
-                'total' => $item['total'],   // ✅ SUDAH FINAL
+                'price' => $item['price'],   
+                'total' => $item['total'],  
             ]);
+        }
+
+        foreach($request->uraian_images ?? [] as $uraianKey => $images){
+
+            foreach($images as $imgId){
+
+                RabUraianImage::create([
+                    'rab_id' => $rab->id,
+                    'uraian_key' => $uraianKey,
+                    'image_id' => $imgId
+                ]);
+
+            }
+
         }
 
         $finalLevel = $project->levels()
@@ -356,4 +403,63 @@ public function items($id)
         ]);
 }
 
+public function upload(Request $request)
+{
+    $request->validate([
+        'image' => 'required|image|max:4096'
+    ]);
+
+    $path = $request->file('image')->store('rab/uraian','public');
+
+    $img = RabImage::create([
+        'path' => $path
+    ]);
+
+    return response()->json([
+        'id' => $img->id,
+        'url' => asset('storage/'.$path)
+    ]);
+}
+public function destroy($id)
+{
+    $img = RabImage::findOrFail($id);
+
+    Storage::disk('public')->delete($img->path);
+
+    $img->delete();
+
+    return response()->json(['success'=>true]);
+}
+public function uraianImages($uraianId)
+{
+
+    $uraian = RabProcessUraian::findOrFail($uraianId);
+
+    $images = RabUraianImage::with('image')
+        ->where('uraian_key', $uraian->uraian_key)
+        ->get();
+
+    return response()->json(
+        $images->map(fn($i)=>[
+            'url'=>asset('storage/'.$i->image->path)
+        ])
+    );
+}
+public function structure($id)
+{
+    $rab = RabProcess::with([
+        'categories.uraians.items.category'
+    ])->findOrFail($id);
+
+    return response()->json([
+        'meta' => [
+            'profit' => $rab->profit,
+            'overhead' => $rab->overhead,
+            'discount' => $rab->discount,
+            'tax_rate' => $rab->tax_rate,
+            'shipping' => $rab->shipping,
+        ],
+        'categories' => $rab->categories
+    ]);
+}
 }

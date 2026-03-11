@@ -450,6 +450,10 @@ Route::post('/projects/rab/{rab}/refresh-from-master', [\App\Http\Controllers\Ra
 Route::get('/rab-process/{id}/items',
     [\App\Http\Controllers\RabProcessController::class, 'items'])
     ->name('rab.process.items.json');
+Route::post('/rab-images/upload', [\App\Http\Controllers\RabProcessController::class,'upload']);
+Route::delete('/rab-images/{id}', [\App\Http\Controllers\RabProcessController::class,'destroy']);
+Route::get('/rab/uraian-images/{uraian}', [\App\Http\Controllers\RabProcessController::class,'uraianImages']);
+Route::get('/rab/{id}/structure', [\App\Http\Controllers\RabProcessController::class,'structure']);
 
 Route::post('projects/offerbuild', [\App\Http\Controllers\OfferBuildController::class, 'store'])
     ->name('projects.offerbuild.store');

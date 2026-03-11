@@ -334,7 +334,7 @@ if (
     private function loadFullProject($projectId)
     {
         return Project::with([
-         'customer.user',
+        'customer.user',
         'employee',
         'levels.employees',
         'consultation.items',
@@ -342,7 +342,7 @@ if (
         'survey.items',
         'offer.items',
         'offer.rab.items.category',
-        'rab.items.category',
+        'rab.categories.uraians.items.category',
         'buildItems.jobCategory',
         'buildItems.weeklyProgresses',
         'buildItems.tambahan.weeklyProgresses',
@@ -363,7 +363,7 @@ if (
         'survey.items',
         'offer.items',
         'offer.rab.items.category',
-        'rab.items.category',
+        'rab.categories.uraians.items.category',
         'buildItems.jobCategory',
         'buildItems.weeklyProgresses', 
         'buildItems.tambahan.weeklyProgresses',

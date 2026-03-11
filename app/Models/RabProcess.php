@@ -9,23 +9,25 @@ class RabProcess extends Model
     protected $table = 'rab_process';
 
     protected $fillable = [
-    'project_id',
-    'contact_name',
-    'job_location',
-    'job_duration',
-    'base_subtotal',
-    'subtotal',
-    'discount',
-    'subtotal_after_discount',
-    'tax_rate',
-    'tax_total',
-    'shipping',
-    'grand_total',
-    'notes',
-    'created_by',
-    'updated_by',
-    'analisa_version',
-];
+        'project_id',
+        'contact_name',
+        'job_location',
+        'job_duration',
+        'base_subtotal',
+        'subtotal',
+        'discount',
+        'subtotal_after_discount',
+        'tax_rate',
+        'tax_total',
+        'shipping',
+        'overhead',
+        'profit',
+        'grand_total',
+        'notes',
+        'created_by',
+        'updated_by',
+        'analisa_version',
+    ];
 
         public function project()
     {
@@ -37,14 +39,24 @@ class RabProcess extends Model
         return $this->hasMany(RabProcessItem::class, 'rab_process_id');
     }
 
-    public function creator()
-{
-    return $this->belongsTo(User::class, 'created_by');
-}
+        public function categories()
+    {
+        return $this->hasMany(RabProcessCategory::class);
+    }
 
-public function editor()
-{
-    return $this->belongsTo(User::class, 'updated_by');
-}
+        public function uraians()
+    {
+        return $this->hasMany(RabProcessUraian::class);
+    }
+
+        public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function editor()
+    {
+        return $this->belongsTo(User::class, 'updated_by');
+    }
 
 }
