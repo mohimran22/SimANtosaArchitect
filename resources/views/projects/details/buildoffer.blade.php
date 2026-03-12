@@ -109,20 +109,30 @@ foreach ($items as $item) {
 
                 <tbody>
                     @foreach($grouped as $category => $data)
-                        <tr class="table-secondary fw-bold">
-                            <td></td>
-                            <td colspan="5">{{ $category }}</td>
+                      @php
+                            $categoryLetter = chr(65 + $loop->index);
+                            $uraianNo = 1;
+                            $categoryTotal = collect($data['items'])
+                                ->flatMap(fn($u) => $u['items'])
+                                ->sum('total');
+                        @endphp
+                        <tr class="table-secondary">
+                            <th>{{ $categoryLetter }}</th>
+                            <th colspan="4">{{ $category }}</th>
+                            <th class="text-end">
+                                Rp {{ number_format($categoryTotal,0,',','.') }}
+                            </th>
                         </tr>
                         @foreach($data['items'] as $uraian => $uraianData)
 
                             <tr class="fw-bold">
-                                <td></td>
+                                <td>{{ $uraianNo }}</td>
                                 <td colspan="5">{{ $uraian }}</td>
                             </tr>
-
+                                @php $itemNo = 1; @endphp
                             @foreach($uraianData['items'] as $item)
                                 <tr>
-                                    <td>{{ $loop->iteration }}</td>
+                                    <td>{{ $uraianNo.'.'.$itemNo }}</td>
                                     <td>{{ $item->item_name }}</td>
                                     <td>{{ $item->satuan }}</td>
                                     <td>{{ $item->volume }}</td>
@@ -131,15 +141,9 @@ foreach ($items as $item) {
                                         Rp {{ number_format($item->total,0,',','.') }}
                                     </td>
                                 </tr>
+                                @php $itemNo++; @endphp
                             @endforeach
-                            <tr class="fw-bold">
-                                <td colspan="5" class="text-end">
-                                    Subtotal {{ $uraian }}
-                                </td>
-                                <td class="text-end">
-                                    Rp {{ number_format($uraianData['subtotal'],0,',','.') }}
-                                </td>
-                            </tr>
+                            @php $uraianNo++; @endphp
                         @endforeach    
                     @endforeach
 

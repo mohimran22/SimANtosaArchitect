@@ -252,7 +252,7 @@ public function update(Request $request, $id)
 public function printPdf(Project $project)
 {
     $project->load([
-        'offer.rab.items.category'
+        'offer.rab.categories.uraians.items'
     ]);
     
     $offer = $project->offer;

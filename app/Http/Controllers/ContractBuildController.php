@@ -23,14 +23,10 @@ class ContractBuildController extends Controller
 
         $tanggal = Carbon::parse($offer->offer_date ?? now());
         $jobDuration = (int) ($offer->rab->job_duration ?? 0);
-        $items = $offer->rab
-            ->items
-            ->load('category') // pastikan eager load
-            ->groupBy(function ($item) {
-                $cat = $item->category;
-                return $cat
-                    ? "{$cat->nama_group}"
-                    : 'Pekerjaan Lain-lain';
+        $items = $offer->items
+            ->groupBy('category_name')
+            ->map(function ($categoryItems) {
+                return $categoryItems->groupBy('uraian_name');
             });
         $data = [
             'project'  => $project,

@@ -288,7 +288,7 @@ document.addEventListener("DOMContentLoaded", function(){
                     ${numberToLetters(categoryIndex)}
                 </td>
 
-                <td colspan="4" class="fw-bold">
+                <td colspan="4" class="form-input fw-bold">
                     ${cat.name}
                 </td>
 
@@ -299,7 +299,12 @@ document.addEventListener("DOMContentLoaded", function(){
                         readonly>
                 </td>
 
-                <td></td>
+                <td>
+                    <button class="btn btn-sm btn-secondary"
+                        onclick="removeCat('${catId}')">
+                        -
+                    </button>
+                </td>
             </tr>
             `)
 
@@ -528,10 +533,11 @@ document.addEventListener("DOMContentLoaded", function(){
     function saveCategory(catId){
 
         const row = document.getElementById(catId)
-        const input = row.querySelector('input');
+        const input = row.querySelector('input')
 
-        const name = input.value || 'Kategori Baru';
-
+        const name = input.value || 'Kategori Baru'
+        row.dataset.name = name
+        
         row.innerHTML = `
             <td>
                 <span class="drag-handle me-2" style="cursor:move">
@@ -574,7 +580,7 @@ document.addEventListener("DOMContentLoaded", function(){
                         <i class="ti ti-grip-vertical"></i>
                     </span>
 
-                    <input class="form-control uraian-input"
+                    <input class="form-control"
                         placeholder="Uraian pekerjaan"
                         onkeydown="if(event.key==='Enter'){ event.preventDefault(); saveUraian('${uraianId}') }">
                 </div>
@@ -597,7 +603,7 @@ document.addEventListener("DOMContentLoaded", function(){
 
         if(!row) return
 
-        const input = row.querySelector('.uraian-input')
+        const input = row.querySelector('input')
 
         if(!input){
             console.warn('Input uraian tidak ditemukan', uraianId)
@@ -879,6 +885,56 @@ document.addEventListener("DOMContentLoaded", function(){
         renumberUraian(catId)
         calculateSummary()
     }
+    function removeCat(catId){
+
+        const catRow = document.getElementById(catId)
+
+        if(!catRow) return
+
+        // hapus semua uraian + job dalam kategori
+        document.querySelectorAll(`.uraian-row[data-category="${catId}"]`)
+        .forEach(uraian=>{
+
+            const uraianId = uraian.id
+
+            // hapus job dalam uraian
+            document.querySelectorAll(`[data-parent="${uraianId}"]`)
+            .forEach(job=>job.remove())
+
+            uraian.remove()
+        })
+
+        // hapus tombol + uraian
+        const addRow = document.getElementById('addUraian_'+catId)
+        if(addRow) addRow.remove()
+
+        // hapus kategori
+        catRow.remove()
+
+        // reset numbering
+        renumberCategory()
+
+        // hitung ulang
+        calculateSummary()
+    }
+    function renumberCategory(){
+
+        const categories = document.querySelectorAll('.category-row')
+
+        categories.forEach((cat,i)=>{
+
+            const letter = String.fromCharCode(65 + i)
+
+            cat.querySelector('td').innerHTML = `
+                <span class="drag-handle me-2" style="cursor:move">
+                    <i class="ti ti-grip-vertical"></i>
+                </span>
+                ${letter}
+            `
+        })
+
+        categoryIndex = categories.length
+    }
     function renumberUraian(catId){
         let rows = document.querySelectorAll(`.uraian-row[data-category="${catId}"]`)
         rows.forEach((row,i)=>{
@@ -1103,7 +1159,7 @@ document.addEventListener("DOMContentLoaded", function(){
             const uraianRow = document.getElementById(uraianKey)
             const uraianName = uraianRow?.dataset.name || ''
             const categoryRow = document.getElementById(categoryKey)
-            const categoryName = categoryRow?.innerText || 'Kategori'
+            const categoryName = categoryRow?.dataset.name|| 'Kategori'
 
             items.push({
                 id: id,

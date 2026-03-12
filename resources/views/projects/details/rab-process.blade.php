@@ -56,13 +56,13 @@ $rab = $project->rab()->with([
                         ->sum('total');
                 @endphp
 
-                <tr class="table-secondary fw-bold">
-                    <td>{{ $categoryLetter }}</td>
-                    <td colspan="4">{{ $category->name }}</td>
-                    <td class="text-end">
-                        Rp {{ number_format($categoryTotal,0,',','.') }}
-                    </td>
-                </tr>
+                    <tr class="table-secondary">
+                        <th>{{ $categoryLetter }}</th>
+                        <th colspan="4">{{ $category->name }}</th>
+                        <th class="text-end">
+                            Rp {{ number_format($categoryTotal,0,',','.') }}
+                        </th>
+                    </tr>
 
                 @foreach($category->uraians as $uraian)
 

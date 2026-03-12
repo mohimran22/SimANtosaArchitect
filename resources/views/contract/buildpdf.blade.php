@@ -238,23 +238,46 @@ adalah sebagai berikut:
     </li>
 </ol>
 
-<ol type="a" style="margin-left: 30px;">
-@foreach($offerItems as $categoryName => $items)
-                @php
-                    $cleanName = preg_replace('/^HARGA SATUAN\s*/i', '', $categoryName);
-                @endphp
+<ol type="A" style="margin-left: 30px;">
+
+@foreach($offerItems as $categoryName => $uraians)
+
+    @php
+        $cleanName = preg_replace('/^HARGA SATUAN\s*/i', '', $categoryName);
+    @endphp
+
     <li>
         <strong>{{ $cleanName }}</strong>
+
         <ol type="1" style="margin-top:6px; margin-left:20px;">
-            @foreach($items as $item)
+
+            @foreach($uraians as $uraianName => $items)
+
                 <li>
-                    {{ $item->job_name }}
-                    {{-- ({{ number_format($item->volume, 2) }} {{ $item->satuan }}) --}}
+                    <strong>{{ $uraianName }}</strong>
+
+                    <ol type="a" style="margin-left:20px; margin-top:4px;">
+
+                        @foreach($items as $item)
+
+                            <li>
+                                {{ $item->item_name }}
+                                {{-- ({{ number_format($item->volume, 2) }} {{ $item->satuan }}) --}}
+                            </li>
+
+                        @endforeach
+
+                    </ol>
                 </li>
+
             @endforeach
+
         </ol>
+
     </li>
+
 @endforeach
+
 </ol>
 
 <!-- PASAL 3 -->

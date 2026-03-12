@@ -3,7 +3,7 @@
 </h3>
 
 <table width="100%" cellspacing="0" cellpadding="6" border="1">
-<thead style="background:#eee; font-weight:bold; text-align:center;">
+<thead style="background:#c4c4c4; font-weight:bold; text-align:center;">
 <tr>
     <th width="4%">NO</th>
     <th>URAIAN PEKERJAAN</th>
@@ -21,7 +21,7 @@
             @php
                 $subtotal = $category->uraians->flatMap->items->sum('total');
             @endphp
-            <tr style="font-weight:bold; background:#f5f5f5;">
+            <tr style="font-weight:bold; background:#c4c4c4;">
                 <td align="center">{{ $noGroup }}</td>
                 <td colspan="4">{{ strtoupper($category->name) }}</td>
 
@@ -34,7 +34,7 @@
 
         @foreach($category->uraians as $uraian)
 
-            <tr style="font-weight:bold;">
+            <tr style="font-size:14px;">
                 <td align="center">{{ $no }}</td>
                 <td colspan="5">{{ $uraian->name }}</td>
             </tr>

@@ -370,7 +370,12 @@ function saveCategory(catId){
                 readonly>
         </td>
 
-        <td></td>
+        <td>
+            <button class="btn btn-sm btn-secondary"
+                onclick="removeCat('${catId}')">
+                -
+            </button>
+        </td>
     `;
 }
 
@@ -669,6 +674,41 @@ function calculateSummary(){
 
     document.getElementById('rab_grand_total').value = grand
 }
+function removeCat(catId){
+    if(!confirm('Hapus kategori ini beserta semua uraian?')){
+        return
+    }
+
+    const catRow = document.getElementById(catId)
+
+    if(!catRow) return
+
+    // hapus semua uraian + job dalam kategori
+    document.querySelectorAll(`.uraian-row[data-category="${catId}"]`)
+    .forEach(uraian=>{
+
+        const uraianId = uraian.id
+
+        // hapus job dalam uraian
+        document.querySelectorAll(`[data-parent="${uraianId}"]`)
+        .forEach(job=>job.remove())
+
+        uraian.remove()
+    })
+
+    // hapus tombol + uraian
+    const addRow = document.getElementById('addUraian_'+catId)
+    if(addRow) addRow.remove()
+
+    // hapus kategori
+    catRow.remove()
+
+    // reset numbering
+    renumberCategory()
+
+    // hitung ulang
+    calculateSummary()
+}
 function removeJob(id){
 
     const row = document.getElementById(id)
@@ -707,6 +747,24 @@ function renumberAll(){
         })
         uraianIndex[catId] = uraianRows.length + 1
     })
+}
+function renumberCategory(){
+
+    const categories = document.querySelectorAll('.category-row')
+
+    categories.forEach((cat,i)=>{
+
+        const letter = String.fromCharCode(65 + i)
+
+        cat.querySelector('td').innerHTML = `
+            <span class="drag-handle me-2" style="cursor:move">
+                <i class="ti ti-grip-vertical"></i>
+            </span>
+            ${letter}
+        `
+    })
+
+    categoryIndex = categories.length
 }
 function recalcAfterDrag(){
 

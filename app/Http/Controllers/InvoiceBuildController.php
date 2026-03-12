@@ -108,7 +108,7 @@ class InvoiceBuildController extends Controller
 
             if ($project->buildItems()->count() == 0) {
 
-                $project->load('offer.rab.items.category');
+                $project->load('offer.rab.categories.uraians.items.category');
 
                 foreach ($project->offer->rab->items as $item) {
                     BuildProcessItem::create([

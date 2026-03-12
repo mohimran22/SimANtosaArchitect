@@ -67,7 +67,7 @@
             <input type="text"
        class="form-control @error('site_area') is-invalid @enderror"
        name="site_area"
-       value="{{ old('site_area') }}">
+       value="{{ old('site_area') }}" required>
 
 @error('site_area')
     <div class="invalid-feedback">{{ $message }}</div>
@@ -80,7 +80,7 @@
             <input type="text"
        class="form-control @error('building_area') is-invalid @enderror"
        name="building_area"
-       value="{{ old('building_area') }}">
+       value="{{ old('building_area') }}" required>
 
 @error('building_area')
     <div class="invalid-feedback">{{ $message }}</div>
