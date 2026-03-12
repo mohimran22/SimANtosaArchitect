@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>RAB</title>
+    <title>RENCANA ANGGARAN BIAYA {{ $project->project_name }}</title>
     <style>
         @page {
             margin: 140px 30px 110px 30px;

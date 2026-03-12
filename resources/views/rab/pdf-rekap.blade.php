@@ -18,44 +18,56 @@
 </table>
 
 <table width="100%" border="1" cellpadding="6">
-<thead class="thead-dark">
-<tr>
-    <th width="5%">NO</th>
-    <th>URAIAN PEKERJAAN</th>
-    <th width="30%">JUMLAH HARGA</th>
-</tr>
-</thead>
+    <thead class="thead-dark">
+        <tr>
+            <th width="5%">NO</th>
+            <th>URAIAN PEKERJAAN</th>
+            <th width="30%">JUMLAH HARGA</th>
+        </tr>
+    </thead>
 
-<tbody>
-@php $no = 'A'; $grand = 0; @endphp
-@foreach($grouped as $group)
-                @php
-                    $cleanName = preg_replace('/^HARGA SATUAN\s*/i', '', $group['nama']);
-                @endphp
-<tr>
-    <td align="center" style="font-weight:bold;">{{ $no }}</td>
-    <td style="font-weight:bold;">{{ strtoupper($cleanName) }}</td>
-    <td align="right">
-        Rp {{ number_format($group['subtotal'],0,',','.') }}
-    </td>
-</tr>
-@php
-    $grand += $group['subtotal'];
-    $no++;
-@endphp
-@endforeach
-</tbody>
+    <tbody>
+        @php 
+            $no = 'A'; 
+            $grand = 0; 
+        @endphp
 
-<tfoot>
-<tr style="font-weight:bold;">
-    <td colspan="2" align="right">JUMLAH</td>
-    <td align="right">Rp {{ number_format($grand,0,',','.') }}</td>
-</tr>
-<tr style="font-weight:bold;">
-    <td colspan="2" align="right">DIBULATKAN</td>
-    <td align="right">
-        Rp {{ number_format(round($grand,-5),0,',','.') }}
-    </td>
-</tr>
-</tfoot>
+        @foreach($rab->categories as $category)
+
+            @php
+                $subtotal = $category->uraians->flatMap->items->sum('total');
+            @endphp
+
+            <tr>
+                <td align="center" style="font-weight:bold;">{{ $no }}</td>
+
+                <td style="font-weight:bold;">
+                    {{ strtoupper($category->name) }}
+                </td>
+
+                <td align="right">
+                    Rp {{ number_format($subtotal,0,',','.') }}
+                </td>
+            </tr>
+
+            @php
+                $grand += $subtotal;
+                $no++;
+            @endphp
+
+        @endforeach
+    </tbody>
+
+    <tfoot>
+        <tr style="font-weight:bold;">
+            <td colspan="2" align="right">JUMLAH</td>
+            <td align="right">Rp {{ number_format($grand,0,',','.') }}</td>
+        </tr>
+        <tr style="font-weight:bold;">
+            <td colspan="2" align="right">DIBULATKAN</td>
+            <td align="right">
+                Rp {{ number_format(floor($grand / 100000) * 100000,0,',','.') }}
+            </td>
+        </tr>
+    </tfoot>
 </table>

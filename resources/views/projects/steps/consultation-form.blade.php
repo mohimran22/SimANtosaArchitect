@@ -22,18 +22,18 @@
             <label class="form-label">Nama Customer</label>
             <input type="text" class="form-control"
                    name="contact_name"
-                   value="{{ old('contact_name', $project->customer->user->fullname ?? '') }}">
+                   value="{{ old('contact_name', $project->customer->user->fullname ?? '') }}" readonly>
         </div>
 
         <div class="col-md-4">
             <label class="form-label">No HP</label>
             <input type="text" class="form-control"
                    name="contact_phone"
-                   value="{{ old('contact_phone', $project->customer->user->phone ?? '') }}">
+                   value="{{ old('contact_phone', $project->customer->user->phone ?? '') }}" readonly>
         </div>
 
         <div class="col-md-4">
-            <label class="form-label">Karyawan</label>
+            <label class="form-label required">Karyawan</label>
             <select name="employee_id" class="form-select select2" required>
                 <option value="">-- Pilih Karyawan --</option>
                 @foreach($employees as $employee)

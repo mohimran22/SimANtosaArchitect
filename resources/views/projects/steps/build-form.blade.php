@@ -22,12 +22,12 @@
 
         </div>
         <div class="col-md-4">
-            <label>Tanggal Penawaran</label>
+            <label class="form-label required">Tanggal Penawaran</label>
             <input type="date" name="offer_date" class="form-control" required>
         </div>
         <div class="col-md-4">
             <label>Nama Customer</label>
-            <input type="text" name="contact_name" value="{{ $project->customer->user->fullname }}" class="form-control">
+            <input type="text" name="contact_name" value="{{ $project->customer->user->fullname }}" class="form-control" readonly>
         </div>
     </div>
 
@@ -82,12 +82,12 @@
             <table class="table table-bordered align-middle" id="offerItemsTable">
                 <thead>
                     <tr>
-                        <th width="50">No.</th>
-                        <th>Uraian Pekerjaan</th>
-                        <th>Volume</th>
-                        <th>Satuan</th>
-                        <th>Harga Satuan (Rp)</th>
-                        <th>Total Harga</th>            
+                        <th width="50">NO</th>
+                        <th>URAIAN PEKERJAAN</th>
+                        <th>SAT</th>
+                        <th>VOL</th>
+                        <th>HARGA SATUAN</th>
+                        <th>JUMLAH HARGA</th>            
                     </tr>
                 </thead>
 
@@ -159,82 +159,108 @@
 @push('js')
 <script>
 
-function formatRupiah(n) {
-    return 'Rp ' + Number(n).toLocaleString('id-ID');
+function formatRupiah(n){
+    return 'Rp ' + Number(n || 0).toLocaleString('id-ID')
 }
 
-function setRupiah(selector, val) {
-    $(selector).val(formatRupiah(val));
+function setRupiah(selector,val){
+    $(selector).val(formatRupiah(val))
 }
 
-function loadRabItems() {
+function loadRabItems(){
 
-    let rabId = $('#rab_process_id').val();
-    if (!rabId) return;
+    let rabId = $('#rab_process_id').val()
+    if(!rabId) return
 
-    $.get(`/rab-process/${rabId}/items`, function(res) {
+    $.get(`/rab-process/${rabId}/items`,function(res){
 
-        const tbody = $('#buildItemsBody');
-        tbody.empty();
+        const tbody = $('#buildItemsBody')
+        tbody.empty()
 
-        let no = 1;
+        let categoryLetter
+        let uraianNo
+        let itemNo
 
-        res.groups.forEach(group => {
+        res.categories.forEach((category,cIndex)=>{
 
+            categoryLetter = String.fromCharCode(65 + cIndex)
+
+            // CATEGORY
             tbody.append(`
                 <tr class="table-secondary fw-bold">
-                    <td colspan="6">
-                        ${group.category.code} ${group.category.name}
+                    <td style="font-weight:600" colspan="6">
+                        ${categoryLetter}. ${category.name}
                     </td>
                 </tr>
-            `);
+            `)
 
-            group.items.forEach(item => {
+            category.uraians.forEach((uraian,uIndex)=>{
+
+                uraianNo = uIndex + 1
+
+                // URAIAN
                 tbody.append(`
-                    <tr>
-                        <td>${no++}</td>
-                        <td>${item.job_name}</td>
-                        <td>${item.volume}</td>
-                        <td>${item.satuan}</td>
-                        <td>${formatRupiah(item.price)}</td>
-                        <td>${formatRupiah(item.total)}</td>
+                    <tr class="table-light fw-semibold">
+                        <td>${uraianNo}</td>
+                        <td colspan="5">
+                            ${uraian.name}
+                        </td>
                     </tr>
-                `);
-            });
+                `)
 
-            tbody.append(`
-                <tr class="fw-bold text-end">
-                    <td colspan="5">Subtotal ${group.category.name}</td>
-                    <td>${formatRupiah(group.subtotal)}</td>
-                </tr>
-            `);
-        });
+                itemNo = 1
 
-        // ✅ LANGSUNG DARI HEADER RAB
-        $('#tax_rate').val(res.header.tax_rate);
+                uraian.items.forEach(item=>{
 
-        setRupiah('#discount_display', res.header.discount);
-        setRupiah('#shipping_display', res.header.shipping);
-        $('#discount').val(res.header.discount);
-        $('#shipping').val(res.header.shipping);
+                    tbody.append(`
+                        <tr>
+                            <td>${uraianNo}.${itemNo}</td>
+                            <td style="padding-left:30px">
+                                ${item.job_name}
+                            </td>
+                            <td>${item.satuan}</td>
+                            <td>${item.volume}</td>
+                            <td>${formatRupiah(item.price)}</td>
+                            <td>${formatRupiah(item.total)}</td>
+                        </tr>
+                    `)
 
-        $('#subtotalDisplay').text(formatRupiah(res.header.subtotal));
-        $('#subAfterDiscountDisplay').text(formatRupiah(res.header.subtotal_after_discount));
-        $('#totalTaxDisplay').text(formatRupiah(res.header.tax_total));
-        $('#grandTotalDisplay').text(formatRupiah(res.header.grand_total));
+                    itemNo++
+                })
 
-    });
+            })
+
+        })
+
+        // HEADER RAB
+        $('#tax_rate').val(res.header.tax_rate)
+
+        setRupiah('#discount_display',res.header.discount)
+        setRupiah('#shipping_display',res.header.shipping)
+
+        $('#discount').val(res.header.discount)
+        $('#shipping').val(res.header.shipping)
+
+        $('#subtotalDisplay').text(formatRupiah(res.header.subtotal))
+        $('#subAfterDiscountDisplay').text(formatRupiah(res.header.subtotal_after_discount))
+        $('#totalTaxDisplay').text(formatRupiah(res.header.tax_total))
+        $('#grandTotalDisplay').text(formatRupiah(res.header.grand_total))
+
+    })
+
 }
 
-// trigger change
-$('#rab_process_id').on('change', loadRabItems);
+// trigger select
+$('#rab_process_id').on('change',loadRabItems)
 
-// auto load jika sudah ada value
-$(document).ready(function () {
-    if ($('#rab_process_id').val()) {
-        loadRabItems();
+// auto load jika edit
+$(document).ready(function(){
+
+    if($('#rab_process_id').val()){
+        loadRabItems()
     }
-});
+
+})
 
 </script>
 @endpush

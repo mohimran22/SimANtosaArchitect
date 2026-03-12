@@ -11,25 +11,28 @@ class OfferBuildRequest extends FormRequest
         return true;
     }
 
-    public function rules()
-    {
-        return [
-            'project_id'         => 'required|uuid',
-            'rab_process_id'     => 'required|exists:rab_process,id',
-            'offer_number'       => 'nullable|string|max:255',
-            'offer_date'         => 'nullable|date',
-            'contact_name'       => 'nullable|string|max:255',
-            'volume'             => 'nullable|numeric|min:1',
-            'satuan'             => 'nullable|string|max:50',
-            'price_meter'        => 'nullable|numeric',
-            'total_price'        => 'nullable|numeric',
-            'discount'           => 'nullable|numeric',
-            'tax_rate'           => 'nullable|numeric',
-            'shipping'           => 'nullable|numeric',
-            'notes'              => 'nullable|string',
-            'items'                       => 'nullable|array',
-            'items.*.item_name'           => 'required|string|max:255',
-            'items.*.category'            => 'nullable|string|max:255',
-        ];
-    }
+public function rules()
+{
+    return [
+
+        'project_id'     => 'required|uuid|exists:projects,id',
+        'rab_process_id' => 'required|exists:rab_process,id',
+
+        'offer_number' => 'nullable|string|max:255',
+        'offer_date'   => 'nullable|date',
+        'contact_name' => 'nullable|string|max:255',
+
+        'volume'      => 'nullable|numeric|min:0',
+        'price_meter' => 'nullable|numeric|min:0',
+        'total_price' => 'nullable|numeric|min:0',
+
+        'discount'    => 'nullable|numeric|min:0',
+        'tax_rate'    => 'nullable|numeric|min:0',
+        'total_tax'   => 'nullable|numeric|min:0',
+        'shipping'    => 'nullable|numeric|min:0',
+        'grand_total' => 'nullable|numeric|min:0',
+
+        'notes' => 'nullable|string',
+    ];
+}
 }

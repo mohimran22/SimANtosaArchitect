@@ -5,18 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
-class OfferItem extends Model
+class OfferItemBuild extends Model
 {
-    use HasUuids;
+        use HasUuids;
 
-    protected $table = 'offer_items';
+    protected $table = 'offer_item_builds';
     protected $keyType = 'string';
     public $incrementing = false;
-    public $timestamps = false;
         protected $fillable = [
-        'offer_id',
+        'offer_build_id',
         'item_name',
-        'category',
         'category_name',
         'uraian_name',
         'volume',
@@ -30,7 +28,6 @@ class OfferItem extends Model
 
         public function offer()
     {
-        return $this->belongsTo(Offer::class);
+        return $this->belongsTo(OfferBuild::class);
     }
-
 }

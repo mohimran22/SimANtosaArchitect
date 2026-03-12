@@ -22,7 +22,9 @@ public function store(OfferBuildRequest $request)
 
     $data = $request->validated();
 
-    $rab = RabProcess::findOrFail($data['rab_process_id']);
+    $rab = RabProcess::with([
+        'categories.uraians.items'
+    ])->findOrFail($data['rab_process_id']);
 
     DB::beginTransaction();
 
@@ -37,7 +39,7 @@ public function store(OfferBuildRequest $request)
             'contact_name'   => $data['contact_name'],
             'volume' => $rab->volume,
             'price_meter' => $rab->price_meter,
-            'total_price' => $rab->subtotal,
+            'total_price' => $rab->volume * $rab->price_meter,
             'subtotal'       => $rab->subtotal,
             'discount'       => $rab->discount,
             'tax_rate'       => $rab->tax_rate,
@@ -49,14 +51,29 @@ public function store(OfferBuildRequest $request)
             'created_by'     => auth()->id(),
         ]);
 
-        if ($request->has('items')) {
-                foreach ($rab->items as $item) {
-                OfferItem::create([
-                    'offer_id'  => $offer->id,
-                    'item_name' => $item['item_name'],
-                    'category'  => $item['category'],
-                ]);
+        $rab->load('categories.uraians.items');
+
+        foreach ($rab->categories as $category) {
+
+            foreach ($category->uraians as $uraian) {
+
+                foreach ($uraian->items as $item) {
+
+                    OfferItem::create([
+                        'offer_id' => $offer->id,
+                        'category_name' => $category->name,
+                        'uraian_name'   => $uraian->name,
+                        'item_name'     => $item->job_name,
+                        'volume' => $item->volume,
+                        'satuan' => $item->satuan,
+                        'price'  => $item->price,
+                        'total'  => $item->total,
+                    ]);
+
                 }
+
+            }
+
         }
 
         ProjectLevel::where([

@@ -17,37 +17,49 @@
 <tbody>
 @php $noGroup = 'A'; @endphp
 
-@foreach($grouped as $group)
-                @php
-                    $cleanName = preg_replace('/^HARGA SATUAN\s*/i', '', $group['nama']);
-                @endphp
-<tr style="font-weight:bold; background:#f5f5f5;">
-    <td align="center">{{ $noGroup }}</td>
-    <td colspan="5">{{ strtoupper($cleanName) }}</td>
-</tr>
+    @foreach($rab->categories as $category)
+            @php
+                $subtotal = $category->uraians->flatMap->items->sum('total');
+            @endphp
+            <tr style="font-weight:bold; background:#f5f5f5;">
+                <td align="center">{{ $noGroup }}</td>
+                <td colspan="4">{{ strtoupper($category->name) }}</td>
 
-@php $no = 1; @endphp
-@foreach($group['items'] as $item)
-<tr>
-    <td align="center">{{ $no++ }}</td>
-    <td>{{ $item->job_name }}</td>
-    <td align="center">{{ $item->satuan }}</td>
-    <td align="right">{{ number_format($item->volume,2,',','.') }}</td>
-    <td align="right">Rp {{ number_format($item->price,0,',','.') }}</td>
-    <td align="right">Rp {{ number_format($item->total,0,',','.') }}</td>
-</tr>
-@endforeach
+                <td align="right">
+                    Rp {{ number_format($subtotal,0,',','.') }}
+                </td>
+            </tr>
 
-<tr style="font-weight:bold;">
-    <td colspan="5" align="right">Jumlah {{ $cleanName }}</td>
-    <td align="right">
-        Rp {{ number_format($group['subtotal'],0,',','.') }}
-    </td>
-</tr>
+        @php $no = 1; @endphp
 
+        @foreach($category->uraians as $uraian)
 
-@php $noGroup++; @endphp
-@endforeach
+            <tr style="font-weight:bold;">
+                <td align="center">{{ $no }}</td>
+                <td colspan="5">{{ $uraian->name }}</td>
+            </tr>
+
+            @php $itemNo = 1; @endphp
+
+            @foreach($uraian->items as $item)
+
+                <tr>
+                    <td align="center">{{ $no }}.{{ $itemNo }}</td>
+                    <td>{{ $item->job_name }}</td>
+                    <td align="center">{{ $item->satuan }}</td>
+                    <td align="right">{{ number_format($item->volume,2,',','.') }}</td>
+                    <td align="right">Rp {{ number_format($item->price,0,',','.') }}</td>
+                    <td align="right">Rp {{ number_format($item->total,0,',','.') }}</td>
+                </tr>
+
+                @php $itemNo++; @endphp
+            @endforeach
+
+            @php $no++; @endphp
+        @endforeach
+
+        @php $noGroup++; @endphp
+    @endforeach
 </tbody>
 <tfoot>
 <tr>
@@ -77,7 +89,7 @@
 <tr style="font-weight:bold;">
     <th colspan="5" align="right">DIBULATKAN</th>
     <th align="right">
-        {{ number_format(round($rab->grand_total,-5),0,',','.') }}
+        Rp {{ number_format(floor($rab->grand_total / 100000) * 100000,0,',','.') }}
     </th>
 </tr>
 </tfoot>

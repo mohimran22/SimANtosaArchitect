@@ -161,35 +161,49 @@ public function store(Request $request)
     return back()->with('success', 'RAB berhasil disimpan dan proyek dinyatakan selesai');
 }
 
+// public function exportPdf(Project $project)
+// {
+//     $rab = $project->rab;
+//     if (!$rab) abort(404);
+
+//     $grouped = [];
+
+//     foreach ($rab->items as $item) {
+
+//         $kode = $item->category->kode_group ?? '-';
+//         $nama = $item->category->nama_group ?? 'PEKERJAAN LAIN-LAIN';
+
+//         if (!isset($grouped[$kode])) {
+//             $grouped[$kode] = [
+//                 'kode' => $kode,
+//                 'nama' => $nama,
+//                 'items' => [],
+//                 'subtotal' => 0
+//             ];
+//         }
+
+//         $grouped[$kode]['items'][] = $item;
+//         $grouped[$kode]['subtotal'] += $item->total;
+//     }
+
+//     $pdf = Pdf::loadView('rab.pdf', compact('rab', 'project', 'grouped'))
+//         ->setPaper('A4', 'portrait');
+
+//     return $pdf->stream('RAB-'.$project->name.'.pdf');
+// }
 public function exportPdf(Project $project)
 {
-    $rab = $project->rab;
+    $rab = $project->rab()->with([
+        'categories.uraians.items',
+        'categories.uraians.images.image'
+    ])->first();
+
     if (!$rab) abort(404);
 
-    $grouped = [];
-
-    foreach ($rab->items as $item) {
-
-        $kode = $item->category->kode_group ?? '-';
-        $nama = $item->category->nama_group ?? 'PEKERJAAN LAIN-LAIN';
-
-        if (!isset($grouped[$kode])) {
-            $grouped[$kode] = [
-                'kode' => $kode,
-                'nama' => $nama,
-                'items' => [],
-                'subtotal' => 0
-            ];
-        }
-
-        $grouped[$kode]['items'][] = $item;
-        $grouped[$kode]['subtotal'] += $item->total;
-    }
-
-    $pdf = Pdf::loadView('rab.pdf', compact('rab', 'project', 'grouped'))
+    $pdf = Pdf::loadView('rab.pdf', compact('rab', 'project'))
         ->setPaper('A4', 'portrait');
 
-    return $pdf->stream('RAB-'.$project->name.'.pdf');
+    return $pdf->stream('RENCANA ANGGARAN BIAYA-'.$project->project_name.'.pdf');
 }
 
 public function update(Request $request, Project $project, RabProcess $rab)
@@ -445,24 +459,13 @@ protected function notifyProjectEvent(Project $project, string $event)
 
 public function items($id)
 {
-    $rab = RabProcess::with('items.category')->findOrFail($id);
-
-    $grouped = $rab->items
-        ->groupBy('job_category_id')
-        ->map(function ($rows) {
-            return [
-                'category' => [
-                    'id'   => $rows->first()->category->id,
-                    'code' => $rows->first()->category->kode_urut,
-                    'name' => $rows->first()->category->nama_pekerjaan,
-                ],
-                'items' => $rows->values(),
-                'subtotal' => $rows->sum('total')
-            ];
-        })
-        ->values();
+    $rab = RabProcess::with([
+        'categories.uraians.items',
+        'categories.uraians.images.image'
+    ])->findOrFail($id);
 
         return response()->json([
+            'categories' => $rab->categories,
             'header' => [
                 'tax_rate' => $rab->tax_rate,
                 'discount' => $rab->discount,
@@ -473,7 +476,6 @@ public function items($id)
                 'grand_total' => $rab->grand_total,
                 'notes' => $rab->notes,
             ],
-            'groups' => $grouped
         ]);
 }
 

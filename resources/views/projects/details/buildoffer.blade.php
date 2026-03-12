@@ -1,24 +1,33 @@
 @php
 $offer = $project->offer;
-$rab   = $offer?->rab;
+$items = $offer?->items ?? collect();
 
-    $grouped = [];
+$grouped = [];
 
-    foreach ($rab->items as $item) {
-        $kode = $item->category->kode_group ?? '-';
-        $nama = $item->category->nama_group ?? 'Tanpa Kategori';
+foreach ($items as $item) {
 
-        if (!isset($grouped[$kode])) {
-            $grouped[$kode] = [
-                'kode' => $kode,
-                'nama' => $nama,
-                'items' => [],
-                'subtotal' => 0
-            ];
-        }
-        $grouped[$kode]['items'][] = $item;
-        $grouped[$kode]['subtotal'] += $item->total;
+    $category = $item->category_name ?? 'Tanpa Kategori';
+    $uraian   = $item->uraian_name ?? 'Tanpa Uraian';
+
+    if (!isset($grouped[$category])) {
+        $grouped[$category] = [
+            'items' => [],
+            'subtotal' => 0
+        ];
     }
+
+    if (!isset($grouped[$category]['items'][$uraian])) {
+        $grouped[$category]['items'][$uraian] = [
+            'items' => [],
+            'subtotal' => 0
+        ];
+    }
+
+    $grouped[$category]['items'][$uraian]['items'][] = $item;
+
+    $grouped[$category]['items'][$uraian]['subtotal'] += $item->total;
+    $grouped[$category]['subtotal'] += $item->total;
+}
 @endphp
 
 @can('lihat data proyek')
@@ -58,7 +67,7 @@ $rab   = $offer?->rab;
             <div class="col-md-4">
                 <label class="fw-semibold">Pilihan RAB</label>
                 <input type="text" class="form-control" readonly
-                       value="{{ $rab->project->project_name ?? '-' }}">
+                       value="{{ $project->project_name ?? '-' }}">
             </div>
 
             {{-- <div class="col-md-2">
@@ -89,46 +98,49 @@ $rab   = $offer?->rab;
         <table class="table table-bordered align-middle">
             <thead>
                 <tr>
-                    <th width="50">#</th>
-                    <th>Uraian Pekerjaan</th>
-                    <th>Volume</th>
-                    <th>Satuan</th>
-                    <th>Harga Satuan (Rp)</th>
-                    <th>Total Harga</th>
+                    <th width="50">NO</th>
+                    <th>URAIAN PEKERJAAN</th>
+                    <th>SAT</th>
+                    <th>VOL</th>
+                    <th>HARGA SATUAN</th>
+                    <th>JUMAH HARGA</th>
                 </tr>
             </thead>
 
                 <tbody>
-
-                    @foreach($grouped as $group)
-
-                        {{-- BARIS KATEGORI --}}
+                    @foreach($grouped as $category => $data)
                         <tr class="table-secondary fw-bold">
-                            <td>{{ $group['kode'] }}</td>
-                            <td colspan="5">{{ $group['nama'] }}</td> 
+                            <td></td>
+                            <td colspan="5">{{ $category }}</td>
                         </tr>
+                        @foreach($data['items'] as $uraian => $uraianData)
 
-                        {{-- ITEM DI DALAM KATEGORI --}}
-                        @foreach($group['items'] as $item)
-                <tr>
-                    <td>{{ $loop->iteration }}</td>
-                    <td>{{ $item->job_name }}</td>
-                    <td>{{ $item->volume }}</td>
-                    <td>{{ $item->satuan }}</td>
-                    <td>Rp {{ number_format($item->price,0,',','.') }}</td>
-                    <td class="text-end">
-                        Rp {{ number_format($item->total,0,',','.') }}
-                    </td>
-                </tr>
-                        @endforeach
+                            <tr class="fw-bold">
+                                <td></td>
+                                <td colspan="5">{{ $uraian }}</td>
+                            </tr>
+
+                            @foreach($uraianData['items'] as $item)
+                                <tr>
+                                    <td>{{ $loop->iteration }}</td>
+                                    <td>{{ $item->item_name }}</td>
+                                    <td>{{ $item->satuan }}</td>
+                                    <td>{{ $item->volume }}</td>
+                                    <td>Rp {{ number_format($item->price,0,',','.') }}</td>
+                                    <td class="text-end">
+                                        Rp {{ number_format($item->total,0,',','.') }}
+                                    </td>
+                                </tr>
+                            @endforeach
                             <tr class="fw-bold">
                                 <td colspan="5" class="text-end">
-                                    Subtotal {{ $group['nama'] }}
+                                    Subtotal {{ $uraian }}
                                 </td>
                                 <td class="text-end">
-                                    Rp {{ number_format($group['subtotal'],0,',','.') }}
+                                    Rp {{ number_format($uraianData['subtotal'],0,',','.') }}
                                 </td>
                             </tr>
+                        @endforeach    
                     @endforeach
 
                 </tbody>
@@ -136,50 +148,50 @@ $rab   = $offer?->rab;
             <tfoot>
                 <tr>
                     <th colspan="5" class="text-end">SUBTOTAL</th>
-                    <th>Rp {{ number_format($rab->subtotal, 0, ',', '.') }}</th>
+                    <th>Rp {{ number_format($offer->subtotal, 0, ',', '.') }}</th>
                 </tr>
 
                 <tr>
                     <th colspan="5" class="text-end">DISCOUNT</th>
-                    <th>Rp {{ number_format($rab->discount, 0, ',', '.') }}</th>
+                    <th>Rp {{ number_format($offer->discount, 0, ',', '.') }}</th>
                 </tr>
 
                 <tr>
                     <th colspan="5" class="text-end">SUBTOTAL AFTER DISCOUNT</th>
                     <th>
-                        Rp {{ number_format($rab->subtotal_after_discount, 0, ',', '.') }}
+                        Rp {{ number_format($offer->subtotal_after_discount, 0, ',', '.') }}
                     </th>
                 </tr>
 
                 <tr>
                     <th colspan="5" class="text-end">TAX RATE (%)</th>
-                    <th>{{ $rab->tax_rate }}%</th>
+                    <th>{{ $offer->tax_rate }}%</th>
                 </tr>
 
                 <tr>
                     <th colspan="5" class="text-end">TOTAL TAX</th>
-                    <th>Rp {{ number_format($rab->total_tax, 0, ',', '.') }}</th>
+                    <th>Rp {{ number_format($offer->total_tax, 0, ',', '.') }}</th>
                 </tr>
 
                 <tr>
                     <th colspan="5" class="text-end">SHIPPING / HANDLING</th>
-                    <th>Rp {{ number_format($rab->shipping, 0, ',', '.') }}</th>
+                    <th>Rp {{ number_format($offer->shipping, 0, ',', '.') }}</th>
                 </tr>
 
                 <tr>
                     <th colspan="5" class="text-end">GRAND TOTAL</th>
                     <th class="fw-bold">
-                        Rp {{ number_format($rab->grand_total, 0, ',', '.') }}
+                        Rp {{ number_format($offer->grand_total, 0, ',', '.') }}
                     </th>
                 </tr>
             </tfoot>
         </table>
 
         {{-- Notes --}}
-        @if($rab->notes)
+        @if($offer->notes)
         <div class="mt-4">
             <h5 class="fw-bold">Keterangan</h5>
-            <div class="border p-3">{{ $rab->notes }}</div>
+            <div class="border p-3">{{ $offer->notes }}</div>
         </div>
         @endif
         <div class="d-flex align-items-center gap-2">
