@@ -161,11 +161,11 @@
                     </div>
                     <div class="d-flex justify-content-between align-items-center p-3 mb-3">
                         <div class="d-flex gap-2 align-items-center">
-                            <button class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#modalAddProduct">
+                            <button type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#modalAddProduct">
                                 <i class="ti ti-plus"></i> Tambah Produk
                             </button>
 
-                            <input type="text" id="searchProduct"
+                            <input type="text" id="searchCatalogueProduct"
                                 class="form-control"
                                 placeholder="🔍 Cari produk... (nama / SKU)"
                                 style="width:260px;">
@@ -588,9 +588,11 @@ $(document).ready(function () {
         });
     });
 
-    $(document).on("click", ".product-item", function () {
+    $(document).on("click", "#searchResult .product-item", function () {
 
         let id = $(this).data("id");
+        $("#searchResult").hide().html("");
+        $("#searchProduct").val("");
 
         $.get("/supplier/product-detail/" + id, function (p) {
 
@@ -788,28 +790,6 @@ $(document).on('keyup change', '#tax, #discount', function () {
 });
 </script>
 
-{{-- <script>
-$(document).ready(function () {
-    window.productDataTable = $('#productTable').DataTable({
-        pageLength: 10,
-        lengthChange: false,
-        ordering: true,
-        info: true,
-        autoWidth: false,
-        responsive: true,
-        language: {
-            search: "Cari:",
-            zeroRecords: "Produk tidak ditemukan",
-            info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ produk",
-            infoEmpty: "Tidak ada data",
-            paginate: {
-                next: "›",
-                previous: "‹"
-            }
-        }
-    });
-});
-</script> --}}
 <script>
 $(document).ready(function () {
     window.productDataTable = $('#productTable').DataTable({
@@ -948,16 +928,14 @@ document.addEventListener('click', function(e) {
 });
 </script>
 <script>
-document.getElementById('searchProduct').addEventListener('keyup', function () {
+document.getElementById('searchCatalogueProduct').addEventListener('keyup', function () {
     let keyword = this.value.toLowerCase();
 
-    // Kalau table mode aktif → lempar ke DataTables
     if (!document.getElementById('productTableContainer').classList.contains('d-none')) {
         window.productDataTable.search(keyword).draw();
         return;
     }
 
-    // Kalau grid mode → pakai filter card
     document.querySelectorAll('.product-card').forEach(function(card) {
         let name = card.dataset.name || '';
         let sku  = card.dataset.sku || '';
@@ -988,7 +966,6 @@ document.getElementById('btnTable').addEventListener('click', function () {
     document.getElementById('productCardContainer').classList.add('d-none');
     document.getElementById('productTableContainer').classList.remove('d-none');
 
-    // 🔥 WAJIB: recalc DataTable width
     setTimeout(() => {
         window.productDataTable.columns.adjust().draw();
     }, 100);

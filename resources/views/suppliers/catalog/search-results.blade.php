@@ -11,7 +11,8 @@
         @foreach($products as $product)
 
             <div class="list-group-item list-group-item-action py-3 product-item"
-                 data-id="{{ $product->id }}"
+                data-id="{{ $product->id }}"
+                data-name="{{ $product->name }}"
                  style="cursor:pointer;">
 
                 <div class="d-flex align-items-center">
