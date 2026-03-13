@@ -480,7 +480,9 @@ Route::delete(
     '/tasks/files/{file}',
     [\App\Http\Controllers\ProjectTaskController::class, 'deleteFile']
 )->name('tasks.files.delete');
-
+Route::post('/projects/{project}/sync-tasks',
+    [\App\Http\Controllers\ProjectTaskController::class, 'syncFromOffer']
+)->name('projects.tasks.sync');
 Route::get('/survey-invoice/{invoice}/approve', [\App\Http\Controllers\SurveyInvoiceController::class, 'approve'])
     ->name('survey.approve');
 

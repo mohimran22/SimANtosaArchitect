@@ -189,8 +189,8 @@ class InvoiceController extends Controller
         DB::transaction(function () use ($project) {
 
             $invoice = Invoice::where('project_id', $project->id)
-            ->where('invoice_type', Invoice::TYPE_DP)
-            ->firstOrFail();
+                ->where('invoice_type', Invoice::TYPE_DP)
+                ->firstOrFail();
 
             abort_if(!$invoice, 404, 'Invoice DP belum dibuat.');
 
@@ -203,27 +203,43 @@ class InvoiceController extends Controller
             $offer = $project->offer;
             abort_if(!$offer, 404, 'Offer belum tersedia.');
 
-            if ($project->tasks()->count() === 0) {
-                foreach ($offer->items as $item) {
+            // ===============================
+            // SYNC PROJECT TASK DARI OFFER
+            // ===============================
+
+            $existingTasks = ProjectTask::where('project_id', $project->id)
+                ->pluck('task_name')
+                ->toArray();
+
+            foreach ($offer->items as $item) {
+
+                if (!in_array($item->item_name, $existingTasks)) {
+
                     ProjectTask::create([
                         'project_id' => $project->id,
                         'offer_id'   => $offer->id,
+                        'offer_item_id' => $item->id,
                         'category'   => $item->category,
                         'task_name'  => $item->item_name,
                     ]);
+
                 }
             }
- 
+
+            // ===============================
+            // UPDATE LEVEL
+            // ===============================
+
             ProjectLevel::where([
                 'project_id'  => $project->id,
                 'level_order' => 6,
             ])->update(['is_completed' => true]);
 
-            // LEVEL 7 DIMULAI
             ProjectLevel::where([
                 'project_id'  => $project->id,
                 'level_order' => 7,
             ])->update(['is_started' => true]);
+
         });
 
         $event = 'dp_paid';

@@ -309,6 +309,45 @@ protected function notifyTask(ProjectTask $task, string $event, array $extra = [
         );
     }
 }
+public function syncFromOffer(Project $project)
+{
+    abort_if(auth()->user()->cannot('lihat daftar proyek'), 403);
 
+    $offer = $project->offer;
+
+    if (!$offer) {
+        return back()->withErrors('Offer tidak ditemukan.');
+    }
+
+    DB::transaction(function () use ($project, $offer) {
+
+        $existingTasks = ProjectTask::where('project_id', $project->id)
+            ->get()
+            ->map(function ($task) {
+                return $task->category.'|'.$task->task_name;
+            })
+            ->toArray();
+
+        foreach ($offer->items as $item) {
+
+            $key = $item->category.'|'.$item->item_name;
+
+            if (!in_array($key, $existingTasks)) {
+
+                ProjectTask::create([
+                    'project_id' => $project->id,
+                    'offer_id'   => $offer->id,
+                    'category'   => $item->category,
+                    'task_name'  => $item->item_name,
+                ]);
+
+            }
+
+        }
+
+    });
+
+    return back()->with('success', 'Task berhasil disinkronkan dari penawaran.');
+}
 
 }

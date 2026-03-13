@@ -20,6 +20,15 @@ $colors = [
     @endphp
 
     <h3 class="fw-bold mt-4">{{ $category }}</h3>
+    <div class="mb-3">
+        <form method="POST" action="{{ route('projects.tasks.sync', $project->id) }}">
+            @csrf
+            <button type="submit" class="btn btn-outline-warning">
+                <i class="ti ti-refresh"></i>
+                Sync Task dari Offer
+            </button>
+        </form>
+    </div>
 
         <table class="table table-bordered align-middle table-fixed">
 <colgroup>

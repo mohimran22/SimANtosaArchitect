@@ -21,6 +21,7 @@ class ProjectTask extends Model
         protected $fillable = [
         'project_id',
         'offer_id',
+        'offer_item_id',
         'category',
         'task_name',
         'employee_id',

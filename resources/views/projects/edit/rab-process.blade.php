@@ -193,21 +193,32 @@
 
 @push('js')
 <script>
-document.addEventListener("DOMContentLoaded", function(){
+    let rabLoaded = false
+    document.addEventListener("DOMContentLoaded", function(){
 
-    const rabId = {{ $rab->id }};
+        const rabId = {{ $rab->id }};
 
-    fetch(`/rab/${rabId}/structure`)
-        .then(res => res.json())
-        .then(data => {
+        fetch(`/rab/${rabId}/structure`)
+            .then(res => res.json())
+            .then(data => {
 
-            loadExistingRab(data);
+                loadExistingRab(data);
+                rabLoaded = true
+            });
 
-        });
+    });
+    function initRabEdit(){
 
-});
-</script>
-<script>
+        // aktifkan select2 lagi
+        $('.select2-row').select2()
+
+        // hitung ulang subtotal
+        recalcAfterDrag()
+
+        // refresh harga
+        updateHargaSemua()
+
+    }
 
     function parseRupiah(value){
 
@@ -510,7 +521,7 @@ document.addEventListener("DOMContentLoaded", function(){
             <td colspan="5">
                 <input type="text" class="form-control fw-bold"
                     placeholder="Nama kategori pekerjaan"
-                    onkeydown="if(event.key==='Enter') saveCategory('${catId}')">
+                    onkeydown="if(event.key==='Enter'){ event.preventDefault(); saveCategory('${catId}') }">
             </td>
 
             <td></td>
@@ -557,7 +568,12 @@ document.addEventListener("DOMContentLoaded", function(){
                     readonly>
             </td>
 
-            <td></td>
+            <td>
+                <button class="btn btn-sm btn-secondary"
+                    onclick="removeCat('${catId}')">
+                    -
+                </button>
+            </td>
         `;
     }
 
@@ -580,9 +596,8 @@ document.addEventListener("DOMContentLoaded", function(){
                         <i class="ti ti-grip-vertical"></i>
                     </span>
 
-                    <input class="form-control"
-                        placeholder="Uraian pekerjaan"
-                        onkeydown="if(event.key==='Enter'){ event.preventDefault(); saveUraian('${uraianId}') }">
+                    <input class="form-control uraian-input"
+                        placeholder="Uraian pekerjaan">
                 </div>
             </td>
 
@@ -595,16 +610,25 @@ document.addEventListener("DOMContentLoaded", function(){
         </tr>
 
         `)
-    }
 
+        const row = document.getElementById(uraianId)
+        const input = row.querySelector('.uraian-input')
+        
+        input.addEventListener('keydown', function(e){
+            if(e.key === 'Enter'){
+                e.preventDefault()
+                saveUraian(uraianId)
+            }
+        })
+    }
     function saveUraian(uraianId){
 
         const row = document.getElementById(uraianId)
 
         if(!row) return
 
-        const input = row.querySelector('input')
-
+        const input = row.querySelector('.uraian-input')
+        
         if(!input){
             console.warn('Input uraian tidak ditemukan', uraianId)
             return

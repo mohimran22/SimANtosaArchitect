@@ -1002,15 +1002,22 @@ document.addEventListener('click', function (e) {
 <script>
 document.addEventListener("DOMContentLoaded", () => {
 
-    const view = document.getElementById("project-view");
-    const edit = document.getElementById("project-edit");
+    const view = document.getElementById("rab-view");
+    const edit = document.getElementById("rab-edit");
 
-    document.getElementById("btn-edit-project").addEventListener("click", () => {
+    document.getElementById("btn-edit-rab")?.addEventListener("click", () => {
+
         view.style.display = "none";
         edit.style.display = "block";
+
+        // tunggu DOM render
+        setTimeout(() => {
+            initRabEdit()
+        }, 50)
+
     });
 
-    document.getElementById("btn-cancel-project").addEventListener("click", () => {
+    document.getElementById("btn-cancel-rab").addEventListener("click", () => {
         edit.style.display = "none";
         view.style.display = "block";
     });
