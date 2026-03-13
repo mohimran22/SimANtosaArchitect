@@ -207,6 +207,21 @@
             });
 
     });
+    document.querySelector('#rab_offerItemsBody_edit').addEventListener('keydown', function(e){
+
+        if(e.key === 'Enter'){
+
+            if(
+                e.target.classList.contains('uraian-input') ||
+                e.target.closest('.category-row')
+            ){
+                return
+            }
+
+            e.preventDefault()
+        }
+
+    })
     function initRabEdit(){
 
         // aktifkan select2 lagi
@@ -547,14 +562,18 @@
         const input = row.querySelector('input')
 
         const name = input.value || 'Kategori Baru'
+
         row.dataset.name = name
-        
+
+        // SIMPAN huruf kategori dulu
+        const letter = row.cells[0].innerText.trim()
+
         row.innerHTML = `
             <td>
                 <span class="drag-handle me-2" style="cursor:move">
                     <i class="ti ti-grip-vertical"></i>
                 </span>
-                ${row.cells[0].innerText}
+                ${letter}
             </td>
 
             <td colspan="4" class="fw-bold">
@@ -563,7 +582,8 @@
 
             <td>
                 <input type="text"
-                    class="form-control subtotal-category" data-category="${catId}"
+                    class="form-control subtotal-category"
+                    data-category="${catId}"
                     value="Rp 0"
                     readonly>
             </td>
@@ -574,7 +594,7 @@
                     -
                 </button>
             </td>
-        `;
+        `
     }
 
     function addUraian(catId){
@@ -608,9 +628,8 @@
                 </button>
             </td>
         </tr>
-
         `)
-
+        renumberUraian(catId)
         const row = document.getElementById(uraianId)
         const input = row.querySelector('.uraian-input')
         

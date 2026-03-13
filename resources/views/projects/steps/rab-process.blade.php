@@ -413,6 +413,7 @@ function addUraian(catId){
     </tr>
 
     `)
+    renumberUraian(catId)
 }
 
 function saveUraian(uraianId){
