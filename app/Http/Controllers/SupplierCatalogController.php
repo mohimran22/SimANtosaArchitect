@@ -63,7 +63,7 @@ class SupplierCatalogController extends Controller
             'unit_4_name'        => $product->unit_4_name,
             'unit_4_value'       => $product->unit_4_value,
 
-            'default_buying_prices' => $product->default_buying_prices ?? 0,
+            'default_selling_prices' => $product->default_selling_prices ?? 0,
             'default_discount'      => $product->default_discount ?? 0,
             'tax_percentage'        => $product->tax_percentage ?? 0,
 
@@ -83,7 +83,7 @@ class SupplierCatalogController extends Controller
             'supplier_id'    => 'required|exists:suppliers,id',
             'product_id'     => 'required|exists:products,id',
             'stock'          => 'required|numeric',
-            'buying_prices'  => 'required|numeric',
+            'selling_prices'  => 'required|numeric',
             'tax_percentage' => 'nullable|numeric',
             'discount'       => 'nullable|numeric',
         ]);
@@ -92,7 +92,7 @@ class SupplierCatalogController extends Controller
 
         $supplier->products()->attach($request->product_id, [
             'stock'           => $request->stock,
-            'buying_prices'   => $request->buying_prices,
+            'selling_prices'   => $request->selling_prices,
             'tax_percentage'  => $request->tax_percentage ?? 0,
             'discount'        => $request->discount ?? 0,
         ]);

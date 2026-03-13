@@ -5,7 +5,7 @@
     <div class="container-xl">
         <div class="row align-items-center">
             <div class="col d-flex align-items-center">
-                <a href="{{ route('products.index') }}" class="btn btn-dark d-flex align-items-center" style="margin-left: 30px;">
+                <a href="{{ route('products.index') }}" class="btn btn-dark d-flex align-items-center">
                     <i class="ti ti-arrow-left"></i>
                 </a>
                 
@@ -250,24 +250,24 @@
                             <div class="row g-3">
 
                                 <div class="mb-3">
-    <label class="form-label">Harga Modal (HPP Otomatis)</label>
+                                    <label class="form-label">Harga Modal (HPP Otomatis)</label>
 
-    <input type="number"
-           id="base_price"
-           class="form-control"
-           value="{{ $hpp ?? old('base_price') }}"
-           readonly>
+                                    <input type="number"
+                                        id="base_price"
+                                        class="form-control"
+                                        value="{{ $hpp ?? old('base_price') }}"
+                                        readonly>
 
-    @if(!$hpp)
-        <small class="text-danger">
-            Produk ini belum memiliki harga dari supplier
-        </small>
-    @else
-        <small class="text-muted">
-            Diambil otomatis dari harga supplier termurah
-        </small>
-    @endif
-</div>
+                                    @if(!$hpp)
+                                        <small class="text-danger">
+                                            Produk ini belum memiliki harga dari supplier
+                                        </small>
+                                    @else
+                                        <small class="text-muted">
+                                            Diambil otomatis dari harga supplier termurah
+                                        </small>
+                                    @endif
+                                </div>
 
 
                                 <div class="col-md-3">

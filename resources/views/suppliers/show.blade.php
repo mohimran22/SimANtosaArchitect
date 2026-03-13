@@ -213,9 +213,9 @@
 
                                         <div class="product-hover-action">
 
-                                            <form action="#" method="POST" class="d-inline">
-                                                @csrf @method('DELETE')
-                                                <button type="submit" class="btn btn-sm btn-danger">
+                                            <form class="form-delete" data-id="{{ $product->id }}">
+                                                @csrf
+                                                <button type="button" class="btn btn-sm btn-danger btn-delete">
                                                     <i class="ti ti-trash"></i>
                                                 </button>
                                             </form>
@@ -477,7 +477,7 @@
 
                         <input type="hidden"
                             id="final_price"
-                            name="buying_prices"
+                            name="selling_prices"
                             required>
                         </div>
 
@@ -553,7 +553,6 @@ $(document).ready(function () {
         }
 
         $.get("{{ route('supplier.searchProduct') }}", { keyword }, function (res) {
-            console.log(res);
 
             if (!res.found) {
                 $('#formCreateProduct')[0].reset();
@@ -642,11 +641,11 @@ $(document).ready(function () {
                 `);
             }
 
-            $("[name='buying_prices']").val(p.default_buying_prices);
+            $("[name='selling_prices']").val(p.default_selling_prices);
             $("[name='discount']").val(p.default_discount);
             $("[name='tax_percentage']").val(p.tax_percentage);
 
-            $('#base_price').val(formatRupiah(p.default_buying_prices));
+            $('#base_price').val(formatRupiah(p.default_selling_prices));
             $('#tax').val(p.tax_percentage);
             $('#discount').val(p.default_discount);
 
@@ -693,7 +692,7 @@ $(document).ready(function () {
         // ✅ INI YANG HILANG DI KODE KAMU
         submitSupplierProduct();
     }
-});
+    });
     function submitSupplierProduct() {
         let form = $("#formSupplier");
 
@@ -713,10 +712,10 @@ $(document).ready(function () {
 </script>
 
 <script>
-function formatRupiah(angka) {
-    return new Intl.NumberFormat('id-ID').format(angka);
-}
 
+    function formatRupiah(angka) {
+        return new Intl.NumberFormat('id-ID').format(angka);
+    }
 function cleanNumber(value) {
     return parseFloat(value.replace(/[^\d]/g, '')) || 0;
 }
@@ -924,6 +923,25 @@ document.addEventListener('click', function(e) {
         })
         .catch(() => alert('Terjadi kesalahan server'));
     }
+
+});
+$(document).on("click", ".btn-delete", function(){
+
+    let card = $(this).closest(".product-card");
+    let id = $(this).closest("form").data("id");
+
+    if(!confirm("Hapus produk ini?")) return;
+
+    $.ajax({
+        url: "/products/" + id,
+        type: "DELETE",
+        data: {
+            _token: "{{ csrf_token() }}"
+        },
+        success: function(res){
+            card.remove();
+        }
+    });
 
 });
 </script>
