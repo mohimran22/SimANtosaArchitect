@@ -9,6 +9,8 @@ class BuildProcessItem extends Model
     protected $fillable = [
         'project_id',
         'rab_item_id',
+        'category_name',
+        'uraian_name',
         'uraian',
         'volume',
         'job_category_id',

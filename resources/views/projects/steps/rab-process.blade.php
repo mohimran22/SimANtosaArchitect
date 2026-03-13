@@ -398,7 +398,7 @@ function addUraian(catId){
                     <i class="ti ti-grip-vertical"></i>
                 </span>
 
-                <input class="form-control"
+                <input class="form-control uraian-input"
                     placeholder="Uraian pekerjaan"
                     onkeydown="if(event.key==='Enter') saveUraian('${uraianId}')">
             </div>
@@ -419,7 +419,14 @@ function addUraian(catId){
 function saveUraian(uraianId){
 
     const row = document.getElementById(uraianId)
-    const input = row.querySelector('input')
+    if(!row) return
+    
+    const input = row.querySelector('.uraian-input')
+    
+    if(!input){
+        console.warn('Input uraian tidak ditemukan', uraianId)
+        return
+    }
 
     const name = input.value || 'Uraian Baru'
 
@@ -928,7 +935,23 @@ document.getElementById('rab_shipping_display').addEventListener('input',functio
 document.getElementById('rab_tax_rate').addEventListener('input', function () {
     calculateSummary();
 });
+document
+.querySelector('#rab_offerItemsBody')
+.addEventListener('keydown', function(e){
 
+    if(e.key === 'Enter'){
+
+        if(
+            e.target.classList.contains('uraian-input') ||
+            e.target.closest('.category-row')
+        ){
+            return
+        }
+
+        e.preventDefault()
+    }
+
+})
 document.addEventListener('DOMContentLoaded', function(){
     document.getElementById('rabForm').addEventListener('submit', function () {
         console.log("submit jalan")
