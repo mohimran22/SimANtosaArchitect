@@ -11,107 +11,97 @@
 
         <div class="card-body">
             <div class="border rounded p-3 mb-4">
-                <table class="table table-bordered">
-                    <thead>
-                        <tr>
-                            <th width="20">No</th>
-                            <th>Tanggal</th>
-                            <th>Minggu</th>
-                            <th width="120">Aksi</th>
-                        </tr>
-                    </thead>
-
-                    @foreach($reports as $minggu => $items)
-
-                        <tbody>
-
-                            {{-- HEADER MINGGU --}}
-                            <tr class="table-secondary">
-                                <td colspan="4"
-                                    class="fw-bold week-header"
-                                    data-week="{{ $minggu }}"
-                                    style="cursor:pointer;">
-
-                                    <span class="week-icon">▼</span>
-                                    Minggu ke-{{ $minggu }}
-                                    ({{ $items->where('is_libur', false)->count() }} Hari Kerja)
-                                </td>
+                <div id="daily-report-page" data-project="{{ $project->id }}">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th width="20">No</th>
+                                <th>Tanggal</th>
+                                <th>Minggu</th>
+                                <th width="120">Aksi</th>
                             </tr>
+                        </thead>
 
-                            {{-- ISI MINGGU --}}
-                            @foreach($items as $report)
-                                <tr class="week-row week-{{ $minggu }} {{ $report->is_libur ? 'table-warning' : '' }}">
-                                    <td>{{ $loop->iteration }}</td>
+                        @foreach($reports as $minggu => $items)
 
-                                    <td>
-                                        {{ \Carbon\Carbon::parse($report->tanggal)->format('d-m-Y') }}
+                            <tbody id="reportTable">
 
-                                        @if($report->is_libur)
-                                            <span class="badge bg-warning text-dark ms-2">
-                                                Libur
-                                            </span>
-                                        @endif
-                                    </td>
+                                {{-- HEADER MINGGU --}}
+                                <tr class="table-secondary week-header" data-week="{{ $minggu }}">
+                                    <td colspan="4"
+                                        class="fw-bold week-header"
+                                        {{-- data-week="{{ $minggu }}" --}}
+                                        style="cursor:pointer;">
 
-                                    <td>Minggu ke-{{ $report->minggu }}</td>
-
-                                    <td>
-                                        <button class="btn btn-sm btn-dark btn-detail" title="Detail"
-                                            data-id="{{ $report->id }}">
-                                            <i class="ti ti-eye"></i>
-                                        </button>
-                                        <button class="btn btn-sm btn-dark btn-hapus" title="Hapus"
-                                            data-id="{{ $report->id }}">
-                                            <i class="ti ti-trash"></i>
-                                        </button>
+                                        <span class="week-icon">▼</span>
+                                        Minggu ke-{{ $minggu }}
+                                        (<span class="hari-kerja">
+                                            {{ $items->where('is_libur', false)->count() }}
+                                        </span> Hari Kerja)
                                     </td>
                                 </tr>
-                            @endforeach
 
-                        </tbody>
+                                {{-- ISI MINGGU --}}
+                                @foreach($items as $report)
+                                        <tr id="report-row-{{ $report->id }}"
+                                            data-week="{{ $minggu }}"
+                                            class="week-row week-{{ $minggu }} {{ $report->is_libur ? 'table-warning' : '' }}">
+                                        <td>{{ $loop->iteration }}</td>
 
-                    @endforeach
-                </table>
-                {{-- @foreach($dailies as $daily) --}}
-                        <div class="modal fade" id="dailyModal" tabindex="-1">
-                            <div class="modal-dialog modal-xl modal-dialog-scrollable">
-                                <div class="modal-content">
+                                        <td>
+                                            {{ \Carbon\Carbon::parse($report->tanggal)->format('d-m-Y') }}
 
-                                    <div class="modal-header">
-                                        <h5 class="modal-title">Detail Laporan Harian</h5>
+                                            @if($report->is_libur)
+                                                <span class="badge bg-warning text-dark ms-2">
+                                                    Libur
+                                                </span>
+                                            @endif
+                                        </td>
 
-                                        <div class="ms-auto d-flex gap-2">
-                                            <button class="btn btn-dark" id="btnEdit">Edit</button>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                        </div>
+                                        <td>Minggu ke-{{ $report->minggu }}</td>
+
+                                        <td>
+                                            <button class="btn btn-sm btn-dark btn-detail" title="Detail"
+                                                data-id="{{ $report->id }}">
+                                                <i class="ti ti-eye"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-dark btn-hapus" title="Hapus"
+                                                data-id="{{ $report->id }}">
+                                                <i class="ti ti-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                @endforeach
+
+                            </tbody>
+
+                        @endforeach
+                    </table>
+                </div>
+                <div class="modal fade" id="dailyModal" tabindex="-1">
+                    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+                        <div class="modal-content">
+
+                            <div class="modal-header">
+                                <h5 class="modal-title">Detail Laporan Harian</h5>
+
+                                    <div class="ms-auto d-flex gap-2">
+                                        <button class="btn btn-dark" id="btnToggleEdit">
+                                            Edit
+                                        </button>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                     </div>
+                            </div>
 
-                                    <div class="modal-body" id="dailyModalBody">
-                                        <div class="text-center py-5">
-                                            Loading...
-                                        </div>
-                                    </div>
-
+                            <div class="modal-body" id="dailyModalBody">
+                                <div class="text-center py-5">
+                                    Loading...
                                 </div>
                             </div>
+
                         </div>
-                {{-- @endforeach --}}
-                    {{-- <div class="row text-center">
-                        <div class="col-md-6">
-                            Side Manager
-                            <br><br><br><br>
-                            <input name="mk" class="form-control text-center" value="{{ $daily->mk }}">
-                        </div>
-
-                        <div class="col-md-6">
-
-                            Kontraktor
-
-                                <br><br><br><br>
-
-                            <input name="kontraktor_ttd" class="form-control text-center" placeholder="Nama Project Manager">
-                        </div>
-                    </div> --}}
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -122,7 +112,6 @@ document.addEventListener('DOMContentLoaded', function(){
 
     const modal = new bootstrap.Modal(document.getElementById('dailyModal'));
     const modalBody = document.getElementById('dailyModalBody');
-    const btnEdit = document.getElementById('btnEdit');
 
     let workIndex = 0;
     let workerIndex = 0;
@@ -361,6 +350,7 @@ document.addEventListener('DOMContentLoaded', function(){
                 });
 
                 modalBody.innerHTML = `
+
                 <div id="viewMode">
                 <div class="row mb-3">
 
@@ -386,7 +376,7 @@ document.addEventListener('DOMContentLoaded', function(){
                     </div>
 
                 </div>
-
+               
                 <hr>
                 <h6>Pekerjaan</h6>
                 <table class="table table-bordered mb-4">
@@ -482,6 +472,14 @@ document.addEventListener('DOMContentLoaded', function(){
                                 <input type="text" name="cuaca" class="form-control"
                                     value="${data.cuaca ?? ''}">
                             </div>
+                        </div>
+                        <div class="d-flex align-items-center gap-2 mb-3">
+                            <label class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="switchLibur">
+                                <span class="ms-2">Tandai sebagai Hari Libur</span>
+                            </label>
+
+                            <span id="statusHari" class="badge bg-success">Hari Kerja</span>
                         </div>
                         <hr>
                         <div class="d-flex justify-content-between align-items-center mb-2">
@@ -677,24 +675,77 @@ document.addEventListener('DOMContentLoaded', function(){
                         <button type="button" class="btn btn-dark" id="btnSaveAll">
                             Simpan
                         </button>
-                        <button type="button" class="btn btn-secondary" id="btnCancelEdit">
-                            Batal
-                        </button>
                     </form>
                 </div>
                 `;
-                    document.getElementById('btnEdit').addEventListener('click', function(){
-                        document.getElementById('viewMode').style.display = 'none';
-                        document.getElementById('editMode').style.display = 'block';
-                        this.style.display = 'none';
+                const switchLibur = document.getElementById('switchLibur');
+                const statusHari = document.getElementById('statusHari');
+
+                switchLibur.checked = data.is_libur;
+
+                if(data.is_libur){
+                    statusHari.className = "badge bg-danger";
+                    statusHari.innerText = "Hari Libur";
+                }else{
+                    statusHari.className = "badge bg-success";
+                    statusHari.innerText = "Hari Kerja";
+                }
+                
+                switchLibur.addEventListener('change', function(){
+
+                    let isLibur = this.checked ? 1 : 0;
+
+                    fetch(`/daily-report/toggle-libur/${dailyId}`,{
+                        method: "POST",
+                        headers:{
+                            "Content-Type":"application/json",
+                            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content
+                        },
+                        body: JSON.stringify({
+                            is_libur: isLibur
+                        })
+                    })
+                    .then(res=>res.json())
+                    .then(res=>{
+
+                        if(res.success){
+
+                            if(isLibur){
+                                statusHari.className = "badge bg-danger";
+                                statusHari.innerText = "Hari Libur";
+                            }else{
+                                statusHari.className = "badge bg-success";
+                                statusHari.innerText = "Hari Kerja";
+                            }
+
+                        }
+
                     });
 
-                    document.getElementById('btnCancelEdit').addEventListener('click', function(){
-                        document.getElementById('editMode').style.display = 'none';
-                        document.getElementById('viewMode').style.display = 'block';
-                        document.getElementById('btnEdit').style.display = 'inline-block';
-                    });
+                });
+                const btnToggle = document.getElementById('btnToggleEdit');
+                const viewMode = document.getElementById('viewMode');
+                const editMode = document.getElementById('editMode');
 
+                btnToggle.addEventListener('click', function(){
+
+                    if(viewMode.style.display !== 'none'){
+                        // Masuk mode edit
+                        viewMode.style.display = 'none';
+                        editMode.style.display = 'block';
+                        btnToggle.textContent = 'Kembali';
+                        btnToggle.classList.remove('btn-dark');
+                        btnToggle.classList.add('btn-secondary');
+                    }else{
+                        // Kembali ke view
+                        editMode.style.display = 'none';
+                        viewMode.style.display = 'block';
+                        btnToggle.textContent = 'Edit';
+                        btnToggle.classList.remove('btn-secondary');
+                        btnToggle.classList.add('btn-dark');
+                    }
+
+                });
                 workIndex = data.works.length;
                 workerIndex = data.workers.length;
                 materialIndex = data.materials.length;
@@ -948,6 +999,12 @@ document.addEventListener('DOMContentLoaded', function(){
                 if(res.success){
                     alert('Semua data berhasil diupdate');
                     location.reload();
+                    editMode.style.display = 'none';
+                    viewMode.style.display = 'block';
+
+                    btnToggle.textContent = 'Edit';
+                    btnToggle.classList.remove('btn-secondary');
+                    btnToggle.classList.add('btn-dark');
                 }
             });
         }
@@ -1020,34 +1077,41 @@ document.addEventListener("DOMContentLoaded", function(){
 });
 </script>
 <script>
-$(document).on('click', '.btn-hapus', function(){
+$(document).on('click','.btn-hapus',function(){
 
     let id = $(this).data('id');
+    let row = $('#report-row-'+id);
+    let week = row.data('week');
 
     Swal.fire({
-        title: 'Yakin hapus?',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Ya, hapus'
-    }).then((result) => {
+        title:'Yakin hapus?',
+        icon:'warning',
+        showCancelButton:true,
+        confirmButtonText:'Ya hapus'
+    }).then((result)=>{
 
         if(result.isConfirmed){
 
             $.ajax({
-                url: '/reports/' + id,
-                type: 'DELETE',
-                success: function(response){
+                url:'/reports/'+id,
+                type:'DELETE',
+
+                success:function(res){
+
+                    row.remove();
+
+                    updateWeekHeader(week);
+                    refreshNextDate();
 
                     Swal.fire({
-                        icon: 'success',
-                        title: 'Terhapus',
-                        text: response.message,
-                        timer: 2000,
-                        showConfirmButton: false
+                        icon:'success',
+                        title:'Terhapus',
+                        timer:1500,
+                        showConfirmButton:false
                     });
 
-                    location.reload(); // nanti kita bikin tanpa reload
                 }
+
             });
 
         }
@@ -1055,5 +1119,34 @@ $(document).on('click', '.btn-hapus', function(){
     });
 
 });
+function refreshNextDate(){
+
+    let projectId = $('#daily-report-page').data('project');
+
+    $.get('/reports/next-date/' + projectId, function(res){
+
+        $('#nextDate').val(res.date);
+
+    });
+
+}
+function updateWeekHeader(week){
+
+    let rows = $('tr[data-week="'+week+'"]');
+
+    let header = $('.week-header[data-week="'+week+'"]');
+
+    if(rows.length === 0){
+
+        header.remove();
+        return;
+
+    }
+
+    let hariKerja = rows.not('.table-warning').length;
+
+    header.find('.hari-kerja').text(hariKerja);
+
+}
 </script>
 @endpush

@@ -28,8 +28,8 @@ class BuildDailyController extends Controller
         'total_jam' => 'nullable|numeric|min:0',
         'cuaca' => 'nullable|string|max:50',
         'catatan' => 'nullable|string',
-        'mk' => 'nullable|string|max:100',
-        'kontraktor_ttd' => 'nullable|string|max:100',
+        'mk_id' => 'nullable|string|max:100',
+        'kontraktor_ttd_id' => 'nullable|string|max:100',
         'worker_id.*' => 'nullable',
         'keahlian.*' => 'nullable|string|max:100',
         'jumlah.*' => 'nullable|numeric|min:0',
@@ -105,8 +105,8 @@ class BuildDailyController extends Controller
             'total_jam' => $isLibur ? 0 : $request->total_jam,
             'cuaca' => $isLibur ? null : $request->cuaca,
             'catatan' => $isLibur ? 'Tidak ada kegiatan (Hari Libur)' : $request->catatan,
-            'mk_id' => $isLibur ? null : $request->mk,
-            'kontraktor_ttd_id' => $isLibur ? null : $request->kontraktor_ttd,
+            'mk_id' => $isLibur ? null : $request->mk_id,
+            'kontraktor_ttd_id' => $isLibur ? null : $request->kontraktor_ttd_id,
             'created_by' => auth()->id(),
         ]);
 
@@ -473,6 +473,27 @@ public function destroy($id)
     return response()->json([
         'success' => true,
         'message' => 'Data berhasil dihapus'
+    ]);
+}
+public function nextDate($projectId)
+{
+    if(!$projectId || $projectId === 'undefined'){
+        return response()->json([
+            'date' => null
+        ]);
+    }
+    $project = Project::findOrFail($projectId);
+
+    $lastReport = BuildDailyReport::where('project_id',$projectId)
+                    ->orderByDesc('tanggal')
+                    ->first();
+
+    $nextDate = $lastReport
+        ? Carbon::parse($lastReport->tanggal)->addDay()
+        : Carbon::parse($project->start_date);
+
+    return response()->json([
+        'date' => $nextDate->translatedFormat('d F Y')
     ]);
 }
 }

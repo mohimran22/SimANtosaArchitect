@@ -35,10 +35,8 @@
             </div>
             <div class="col-md-3">
                 <label class="form-label required">Tanggal</label>
-                    {{-- <input type="text" id="tanggal" name="tanggal" class="form-control" 
-                            placeholder="dd mm YYYY" value="{{ old('tanggal') }}" required> --}}
-                    <input type="text" class="form-control" 
-       value="{{ $nextDate->format('d m Y') }}" readonly>
+                    <input id="nextDate" class="form-control" 
+                        value="{{ $nextDate->translatedFormat('d F Y') }}" readonly>
             </div>
             <div class="col-md-3">
                 <label>Kontraktor</label>
@@ -367,7 +365,8 @@
 
             <div class="col-md-3">
                 <label>Cuaca</label>
-                    <select name="cuaca" class="form-select">
+                    <select name="cuaca" class="form-select select2">
+                        <option value="cuaca">-- Pilih Cuaca --</option>
                         <option>Baik</option>
                         <option>Mendung</option>
                         <option>Hujan</option>
@@ -396,7 +395,7 @@
                 Side Manager
                 <br><br><br><br>
                 <select name="mk_id" class="form-select select2">
-                    <option value="mk">-- Pilih Side Manager --</option>
+                    <option value="mk_id">-- Pilih Side Manager --</option>
                     @foreach($employees as $emp)
                         <option value="{{ $emp->id }}">
                             {{ $emp->user->fullname }}
@@ -409,7 +408,7 @@
                 Project Manager
                     <br><br><br><br>
                 <select name="kontraktor_ttd_id" class="form-select select2">
-                    <option value="kontraktor_ttd">-- Pilih Project Manager --</option>
+                    <option value="kontraktor_ttd_id">-- Pilih Project Manager --</option>
                     @foreach($employees as $emp)
                         <option value="{{ $emp->id }}">
                             {{ $emp->user->fullname }}

@@ -493,7 +493,7 @@ public function upload(Request $request)
 
     return response()->json([
         'id' => $img->id,
-        'url' => asset('storage/'.$path)
+        'url' => Storage::url($path)
     ]);
 }
 public function destroy($id)

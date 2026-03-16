@@ -558,6 +558,7 @@ Route::post('/daily/{id}/update-all',
 Route::delete('/daily/documentation/{id}',
     [BuildDailyController::class, 'deleteDocumentation']);
 Route::delete('/reports/{id}', [BuildDailyController::class, 'destroy']);
+Route::get('/reports/next-date/{project}', [BuildDailyController::class,'nextDate']);
 Route::get('/projects/{project}/invoice-panel',
 [ProjectController::class,'invoicePanel'])
 ->name('projects.invoice.panel');

@@ -224,14 +224,17 @@ if (
 
         $canEdit = auth()->user()->can('lihat daftar proyek'); 
         $weeks = $project->rab->job_duration ?? 0;
-            $totalReport = BuildDailyReport::where('project_id', $project?->id)->count();
+        $lastReport = BuildDailyReport::where('project_id',$project?->id)
+            ->orderByDesc('tanggal')
+            ->first();
 
-    $nextDate = Carbon::parse($project?->start_date)
-                    ->addDays($totalReport);
+        $nextDate = $lastReport
+            ? Carbon::parse($lastReport->tanggal)->addDay()
+            : Carbon::parse($project?->start_date);
         $reports = BuildDailyReport::where('project_id', $project?->id)
-    ->orderBy('tanggal')
-    ->get()
-    ->groupBy('minggu');
+            ->orderBy('tanggal')
+            ->get()
+            ->groupBy('minggu');
 
         return view('projects.create', array_merge(
             $this->formData($project),

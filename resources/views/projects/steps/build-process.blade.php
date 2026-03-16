@@ -3,7 +3,7 @@
     $groups = $project->buildItems
         ->groupBy('category_name');
 
-    $no = 1;
+    $itemNo = 1;
     $weekCount = count($project->week_labels);
     $colsFixed   = 6;
     $colsNormal  = 3;
@@ -62,7 +62,7 @@
                             <col style="width:260px;">  
                             <col style="width:80px;">   
                             <col style="width:80px;">   
-                            <col style="width:110px;">  
+                            <col style="width:120px;">  
                             <col style="width:100px;">  
                             @foreach($project->week_labels as $w)
                                 <col class="week-col" data-week="{{ $w['week_no'] }}" style="width:130px;">
@@ -146,10 +146,9 @@
                             @endphp
                             @foreach($items->groupBy('uraian_name') as $uraian => $rows)
 
-                                <tr class="table-light">
-                                    <td colspan="{{ $totalCols }}">
-                                        {{ $uraian }}
-                                    </td>
+                                <tr class="row-uraian">
+                                    <td colspan="6"> {{ $uraian }} </td> 
+                                    <td colspan="{{ $totalCols - 6 }}"></td> 
                                 </tr>
                                 @php
                                     $sub = $rows->groupBy(fn($i) =>
@@ -158,223 +157,225 @@
                                 @endphp
                                 @foreach($sub as $namaPekerjaan => $itemsSub)
                                     @foreach($itemsSub->whereNull('parent_id') as $item)
-                                    @php
-                                        $volKontrak = $item->volume;
+                                        @php
+                                            $volKontrak = $item->volume;
 
-                                        $volTerpakai = $item->weeklyProgresses->sum('volume');
+                                            $volTerpakai = $item->weeklyProgresses->sum('volume');
 
-                                        $isFull = $volTerpakai >= $volKontrak;
-                                    @endphp
-                                        <tr
-                                            data-item-id="{{ $item->id }}"
-                                            data-item-vol="{{ $item->volume }}"
-                                            data-item-bobot="{{ $item->bobot_percent }}"
-                                            data-full="{{ $isFull ? 1 : 0 }}">                              
-                                            <td>{{ $no++ }}</td>
-                                            <td class="uraian-pekerjaan">
-                                                <div class="d-flex justify-content-between align-items-start">
-                                                    <div>
-                                                        {{ $item->uraian }}
+                                            $isFull = $volTerpakai >= $volKontrak;
+                                        @endphp
+                                            <tr
+                                                data-item-id="{{ $item->id }}"
+                                                data-item-vol="{{ $item->volume }}"
+                                                data-item-bobot="{{ $item->bobot_percent }}"
+                                                data-full="{{ $isFull ? 1 : 0 }}">                              
+                                                <td>{{ $itemNo }}</td>
+                                                <td class="uraian-pekerjaan">
+                                                    <div class="d-flex justify-content-between align-items-start">
+                                                        <div>
+                                                            {{ $item->uraian }}
+                                                        </div>
+
+                                                        <button type="button"
+                                                                class="btn btn-sm btn-light btn-add-tambah"
+                                                                data-item="{{ $item->id }}">
+                                                            +
+                                                        </button>
                                                     </div>
+                                                </td>
+                                                <td>{{ $item->satuan }}</td>
+                                                <td>{{ $item->volume }}</td>
+                                                <td class="harga-kontrak"
+                                                    data-price="{{ $item->price }}">
+                                                    Rp {{ number_format($item->price,0,',','.') }}
+                                                </td>
+                                                <td width="120">
+                                                    <input type="number"
+                                                        step="0.001"
+                                                        class="form-control bobot-input"
+                                                        data-id="{{ $item->id }}"
+                                                        value="{{ $item->bobot_percent }}"
+                                                        @if($project->bobot_locked) disabled @endif>
+                                                </td>
+                                                    @foreach($project->week_labels as $w)
+                                                        @php
+                                                            $prog = $item->weeklyProgresses
+                                                                ->firstWhere('week_no', $w['week_no']);
+                                                        @endphp
+                                                        <td class="week-col">
+                                                            @if(!$isReadOnly)
+                                                            <input type="number"
+                                                                step="0.01"
+                                                                class="form-control week-vol"
+                                                                data-item="{{ $item->id }}"
+                                                                data-week="{{ $w['week_no'] }}"
+                                                                data-last="{{ $prog->volume ?? 0 }}"
+                                                                value="{{ $prog->volume ?? '' }}"
+                                                                {{ $isFull ? 'disabled' : '' }}>
+                                                            @else
+                                                            <div class="form-control bg-light">
+                                                                {{ $prog->volume ?? '' }}
+                                                            </div>
+                                                            @endif
+                                                        </td>
+                                                        <td class="week-progress week-col"
+                                                            data-week="{{ $w['week_no'] }}"
+                                                            id="prog-{{ $item->id }}-{{ $w['week_no'] }}">
+                                                        </td>
+                                                        <td class="week-bobot week-col"
+                                                            data-week="{{ $w['week_no'] }}"
+                                                            id="bobot-{{ $item->id }}-{{ $w['week_no'] }}">
+                                                        </td>
+                                                        <td class="just-col" data-week="{{ $w['week_no'] }}">
+                                                            <input class="form-control just-kurang"
+                                                                    
+                                                                    data-item="{{ $item->id }}"
+                                                                    data-week="{{ $w['week_no'] }}"
+                                                                    value="{{ $prog->just_kurang ?? 0 }}">
+                                                        </td>
+                                                        <td class="just-col" data-week="{{ $w['week_no'] }}">
+                                                            <input class="form-control just-tambah"
+                                                                    
+                                                                    data-item="{{ $item->id }}"
+                                                                    data-week="{{ $w['week_no'] }}" value="{{ $prog->just_tambah ?? 0 }}"></td>
+                                                        <td class="just-col" data-week="{{ $w['week_no'] }}">
+                                                            <input class="form-control just-baru"
+                                                                data-item="{{ $item->id }}"
+                                                                data-week="{{ $w['week_no'] }}"
+                                                                value="{{ $prog->just_baru ?? 0 }}"
+                                                                {{ $item->tambahan->count() ? '' : 'readonly' }}>
+                                                        </td>
+                                                    @endforeach
+                                                    <td class="total-justek"
+                                                        data-item="{{ $item->id }}">
+                                                        0
+                                                    </td>
+                                                    <td class="total-pelaksanaan"
+                                                        data-item="{{ $item->id }}"
+                                                        data-vol-kontrak="{{ $item->volume }}">
+                                                        {{ number_format($item->volume, 3) }}
+                                                    </td>
+                                                    <td class="harga-kontrak" data-price="{{ $item->price }}">Rp {{ number_format($item->price,0,',','.') }}</td>
+                                                    <td class="nilai-pelaksanaan">0</td>
+                                            </tr>
+                                            <tr class="row-tambahan d-none"
+                                                data-item="{{ $item->id }}">
 
-                                                    <button type="button"
-                                                            class="btn btn-sm btn-light btn-add-tambah"
-                                                            data-item="{{ $item->id }}">
-                                                        +
-                                                    </button>
-                                                </div>
-                                            </td>
-                                            <td>{{ $item->satuan }}</td>
-                                            <td>{{ $item->volume }}</td>
-                                            <td class="harga-kontrak"
-                                                data-price="{{ $item->price }}">
-                                                Rp {{ number_format($item->price,0,',','.') }}
-                                            </td>
-                                            <td width="120">
-                                                <input type="number"
-                                                    step="0.001"
-                                                    class="form-control bobot-input"
-                                                    data-id="{{ $item->id }}"
-                                                    value="{{ $item->bobot_percent }}"
-                                                    @if($project->bobot_locked) disabled @endif>
-                                            </td>
-                                                @foreach($project->week_labels as $w)
+                                                <td colspan="{{ $totalCols }}">
+                                                    <div class="p-3 bg-light rounded">
+
+                                                        <div class="row">
+
+                                                            <div class="col-auto" style="width:300px;">
+                                                                <label>Pekerjaan Tambahan</label>
+
+                                                                <select class="form-select select2 job-tambahan"
+                                                                        data-item="{{ $item->id }}">
+
+                                                                    <option value="">-- Pilih Pekerjaan --</option>
+
+                                                                    @foreach($jobCategories as $job)
+                                                                        <option value="{{ $job->id }}">
+                                                                            {{ $job->nama_pekerjaan }}
+                                                                        </option>
+                                                                    @endforeach
+
+                                                                </select>
+
+                                                                <button type="button"
+                                                                        class="btn btn-sm btn-dark btn-simpan-tambahan"
+                                                                        data-item="{{ $item->id }}">
+                                                                    Tambahkan ke Kontrak
+                                                                </button>
+
+                                                            </div>
+
+                                                        </div>
+
+                                                    </div>
+                                                </td>
+
+                                            </tr>
+                                            @foreach($item->tambahan as $sub)
+                                                <tr class="table-warning"
+                                                    data-item-id="{{ $sub->id }}"
+                                                    data-item-vol="{{ $sub->volume }}"
+                                                    data-item-bobot="{{ $sub->bobot_percent ?? 0 }}">
+                                                    <td></td>
+                                                    <td>
+                                                        ↳ {{ $sub->uraian }}
+                                                        <span class="badge bg-warning text-dark">Tambahan</span>
+                                                    </td>
+                                                    <td>{{ $sub->satuan }}</td>
+                                                    <td>{{ $sub->volume }}</td>
+                                                    <td class="harga-kontrak" data-price="{{ $sub->price }}">
+                                                        Rp {{ number_format($sub->price,0,',','.') }}
+                                                    </td>
+                                                    <td></td>
+                                                @foreach($project->week_labels as $w)    
                                                     @php
-                                                        $prog = $item->weeklyProgresses
-                                                            ->firstWhere('week_no', $w['week_no']);
+                                                        $prog = $sub->weeklyProgresses->firstWhere('week_no', $w['week_no']);
                                                     @endphp
+
                                                     <td class="week-col">
-                                                        @if(!$isReadOnly)
                                                         <input type="number"
                                                             step="0.01"
                                                             class="form-control week-vol"
-                                                            data-item="{{ $item->id }}"
+                                                            data-item="{{ $sub->id }}"
                                                             data-week="{{ $w['week_no'] }}"
                                                             data-last="{{ $prog->volume ?? 0 }}"
-                                                            value="{{ $prog->volume ?? '' }}"
-                                                            {{ $isFull ? 'disabled' : '' }}>
-                                                        @else
-                                                        <div class="form-control bg-light">
-                                                            {{ $prog->volume ?? '' }}
-                                                        </div>
-                                                        @endif
+                                                            value="{{ $prog->volume ?? '' }}">
                                                     </td>
+
                                                     <td class="week-progress week-col"
                                                         data-week="{{ $w['week_no'] }}"
-                                                        id="prog-{{ $item->id }}-{{ $w['week_no'] }}">
+                                                        id="prog-{{ $sub->id }}-{{ $w['week_no'] }}">
                                                     </td>
+
                                                     <td class="week-bobot week-col"
                                                         data-week="{{ $w['week_no'] }}"
-                                                        id="bobot-{{ $item->id }}-{{ $w['week_no'] }}">
+                                                        id="bobot-{{ $sub->id }}-{{ $w['week_no'] }}">
                                                     </td>
+
                                                     <td class="just-col" data-week="{{ $w['week_no'] }}">
                                                         <input class="form-control just-kurang"
-                                                                
-                                                                data-item="{{ $item->id }}"
-                                                                data-week="{{ $w['week_no'] }}"
-                                                                value="{{ $prog->just_kurang ?? 0 }}">
+                                                            data-item="{{ $sub->id }}"
+                                                            data-week="{{ $w['week_no'] }}"
+                                                            value="{{ $prog->just_kurang ?? 0 }}">
                                                     </td>
+
                                                     <td class="just-col" data-week="{{ $w['week_no'] }}">
                                                         <input class="form-control just-tambah"
-                                                                
-                                                                data-item="{{ $item->id }}"
-                                                                data-week="{{ $w['week_no'] }}" value="{{ $prog->just_tambah ?? 0 }}"></td>
+                                                            data-item="{{ $sub->id }}"
+                                                            data-week="{{ $w['week_no'] }}"
+                                                            value="{{ $prog->just_tambah ?? 0 }}">
+                                                    </td>
+
                                                     <td class="just-col" data-week="{{ $w['week_no'] }}">
                                                         <input class="form-control just-baru"
-                                                            data-item="{{ $item->id }}"
+                                                            data-item="{{ $sub->id }}"
                                                             data-week="{{ $w['week_no'] }}"
-                                                            value="{{ $prog->just_baru ?? 0 }}"
-                                                            {{ $item->tambahan->count() ? '' : 'readonly' }}>
+                                                            value="{{ $prog->just_baru ?? 0 }}">
                                                     </td>
                                                 @endforeach
-                                                <td class="total-justek"
-                                                    data-item="{{ $item->id }}">
-                                                    0
-                                                </td>
-                                                <td class="total-pelaksanaan"
-                                                    data-item="{{ $item->id }}"
-                                                    data-vol-kontrak="{{ $item->volume }}">
-                                                    {{ number_format($item->volume, 3) }}
-                                                </td>
-                                                <td class="harga-kontrak" data-price="{{ $item->price }}">Rp {{ number_format($item->price,0,',','.') }}</td>
-                                                <td class="nilai-pelaksanaan">0</td>
-                                        </tr>
-                                        <tr class="row-tambahan d-none"
-                                            data-item="{{ $item->id }}">
+                                                        <td class="total-justek" data-item="{{ $sub->id }}">0</td>
+                                                        <td class="total-pelaksanaan"
+                                                            data-item="{{ $sub->id }}"
+                                                            data-vol-kontrak="{{ $sub->volume }}">
+                                                            {{ $sub->volume }}
+                                                        </td>
 
-                                            <td colspan="{{ $totalCols }}">
-                                                <div class="p-3 bg-light rounded">
+                                                        <td class="harga-kontrak" data-price="{{ $sub->price }}">
+                                                            Rp {{ number_format($sub->price, 0, ',', '.') }}
+                                                        </td>
 
-                                                    <div class="row">
-
-                                                        <div class="col-auto" style="width:300px;">
-                                                            <label>Pekerjaan Tambahan</label>
-
-                                                            <select class="form-select select2 job-tambahan"
-                                                                    data-item="{{ $item->id }}">
-
-                                                                <option value="">-- Pilih Pekerjaan --</option>
-
-                                                                @foreach($jobCategories as $job)
-                                                                    <option value="{{ $job->id }}">
-                                                                        {{ $job->nama_pekerjaan }}
-                                                                    </option>
-                                                                @endforeach
-
-                                                            </select>
-
-                                                            <button type="button"
-                                                                    class="btn btn-sm btn-dark btn-simpan-tambahan"
-                                                                    data-item="{{ $item->id }}">
-                                                                Tambahkan ke Kontrak
-                                                            </button>
-
-                                                        </div>
-
-                                                    </div>
-
-                                                </div>
-                                            </td>
-
-                                        </tr>
-                                        @foreach($item->tambahan as $sub)
-                                            <tr class="table-warning"
-                                                data-item-id="{{ $sub->id }}"
-                                                data-item-vol="{{ $sub->volume }}"
-                                                data-item-bobot="{{ $sub->bobot_percent ?? 0 }}">
-                                                <td></td>
-                                                <td>
-                                                    ↳ {{ $sub->uraian }}
-                                                    <span class="badge bg-warning text-dark">Tambahan</span>
-                                                </td>
-                                                <td>{{ $sub->satuan }}</td>
-                                                <td>{{ $sub->volume }}</td>
-                                                <td class="harga-kontrak" data-price="{{ $sub->price }}">
-                                                    Rp {{ number_format($sub->price,0,',','.') }}
-                                                </td>
-                                                <td></td>
-                                            @foreach($project->week_labels as $w)    
-                                                @php
-                                                    $prog = $sub->weeklyProgresses->firstWhere('week_no', $w['week_no']);
-                                                @endphp
-
-                                                <td class="week-col">
-                                                    <input type="number"
-                                                        step="0.01"
-                                                        class="form-control week-vol"
-                                                        data-item="{{ $sub->id }}"
-                                                        data-week="{{ $w['week_no'] }}"
-                                                        data-last="{{ $prog->volume ?? 0 }}"
-                                                        value="{{ $prog->volume ?? '' }}">
-                                                </td>
-
-                                                <td class="week-progress week-col"
-                                                    data-week="{{ $w['week_no'] }}"
-                                                    id="prog-{{ $sub->id }}-{{ $w['week_no'] }}">
-                                                </td>
-
-                                                <td class="week-bobot week-col"
-                                                    data-week="{{ $w['week_no'] }}"
-                                                    id="bobot-{{ $sub->id }}-{{ $w['week_no'] }}">
-                                                </td>
-
-                                                <td class="just-col" data-week="{{ $w['week_no'] }}">
-                                                    <input class="form-control just-kurang"
-                                                        data-item="{{ $sub->id }}"
-                                                        data-week="{{ $w['week_no'] }}"
-                                                        value="{{ $prog->just_kurang ?? 0 }}">
-                                                </td>
-
-                                                <td class="just-col" data-week="{{ $w['week_no'] }}">
-                                                    <input class="form-control just-tambah"
-                                                        data-item="{{ $sub->id }}"
-                                                        data-week="{{ $w['week_no'] }}"
-                                                        value="{{ $prog->just_tambah ?? 0 }}">
-                                                </td>
-
-                                                <td class="just-col" data-week="{{ $w['week_no'] }}">
-                                                    <input class="form-control just-baru"
-                                                        data-item="{{ $sub->id }}"
-                                                        data-week="{{ $w['week_no'] }}"
-                                                        value="{{ $prog->just_baru ?? 0 }}">
-                                                </td>
+                                                        <td class="nilai-pelaksanaan">0</td>
+                                                </tr>
                                             @endforeach
-                                                    <td class="total-justek" data-item="{{ $sub->id }}">0</td>
-                                                    <td class="total-pelaksanaan"
-                                                        data-item="{{ $sub->id }}"
-                                                        data-vol-kontrak="{{ $sub->volume }}">
-                                                        {{ $sub->volume }}
-                                                    </td>
-
-                                                    <td class="harga-kontrak" data-price="{{ $sub->price }}">
-                                                        Rp {{ number_format($sub->price, 0, ',', '.') }}
-                                                    </td>
-
-                                                    <td class="nilai-pelaksanaan">0</td>
-                                            </tr>
-                                        @endforeach
                                     @endforeach
+                                    
                                 @endforeach
+                                @php $itemNo++; @endphp
                             @endforeach
                         @endforeach
                     </tbody>
@@ -469,9 +470,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const table = document.querySelector(".progress-table");
     const colgroup = table.querySelectorAll("colgroup col");
-    const freezeCount = 6; // kolom yang di-freeze
-    const colsPerWeek = 6; // 3 normal + 3 Justek
-    const colsPerubahan = 4; // Perubahan Volume
+    const freezeCount = 6; 
+    const colsPerWeek = 6; 
+    const colsPerubahan = 4; 
     
     function formatRupiah(angka) {
         angka = Number(angka || 0);
@@ -502,7 +503,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // UTILITY: apply sticky/freeze
     function applyAutoFreeze() {
         if (!table) return;
 
@@ -553,7 +553,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         // row-category: freeze td pertama
-        table.querySelectorAll("tr.row-category").forEach(row => {
+        table.querySelectorAll("tr.row-category, tr.row-uraian").forEach(row => {
             const cell = row.querySelector("td");
             if (!cell) return;
             const width = Array.from(colgroup).slice(0, freezeCount).reduce((sum, c) => sum + c.offsetWidth, 0);

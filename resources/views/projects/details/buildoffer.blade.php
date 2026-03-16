@@ -41,7 +41,6 @@ foreach ($items as $item) {
 
         <div class="row g-4">
 
-            {{-- Informasi utama --}}
             <div class="col-md-4">
                 <label class="fw-semibold">Nomor Penawaran</label>
                 <input type="text" class="form-control" readonly
@@ -69,28 +68,6 @@ foreach ($items as $item) {
                 <input type="text" class="form-control" readonly
                        value="{{ $project->project_name ?? '-' }}">
             </div>
-
-            {{-- <div class="col-md-2">
-                <label class="fw-semibold">Volume</label>
-                <input type="text" class="form-control" readonly value="{{ $offer->volume }}">
-            </div>
-
-            <div class="col-md-2">
-                <label class="fw-semibold">Satuan</label>
-                <input type="text" class="form-control" readonly value="{{ $offer->satuan }}">
-            </div>
-
-            <div class="col-md-2">
-                <label class="fw-semibold">Harga Satuan</label>
-                <input type="text" class="form-control" disabled
-                       value="Rp {{ number_format($offer->price_meter, 0, ',', '.') }}">
-            </div>
-
-            <div class="col-md-2">
-                <label class="fw-semibold">Total Harga</label>
-                <input type="text" class="form-control" disabled
-                       value="Rp {{ number_format($offer->total_price, 0, ',', '.') }}">
-            </div> --}}
         </div>
 
         <h5 class="fw-bold mt-5 mb-3">Rincian Pekerjaan</h5>

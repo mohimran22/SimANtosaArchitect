@@ -69,12 +69,15 @@
             <li class="nav-item {{ $hasChildren ? 'has-dropdown' : '' }}"
                 data-title="{{ $menu['text'] }}">
 
-                <a class="nav-link {{ $isActive ? 'active show' : '' }} {{ $hasChildren ? 'dropdown-toggle' : '' }}"
+                <a class="nav-link {{ $isActive ? 'active' : '' }} {{ $hasChildren ? 'dropdown-toggle' : '' }}"
                 data-title="{{ $menu['text'] }}"
-                href="{{ $hasChildren ? '#submenu-'.$loop->index : ($menu['type'] === 'route' ? route($menu['url']) : url($menu['url'])) }}"
-                @if($hasChildren) data-bs-toggle="collapse" @endif
-                aria-expanded="{{ $isActive ? 'true' : 'false' }}"
+                href="{{ $hasChildren ? '#' : ($menu['type'] === 'route' ? route($menu['url']) : url($menu['url'])) }}"
+                @if($hasChildren) 
+                data-bs-toggle="collapse"
+                data-bs-target="#submenu-{{ $loop->index }}"
+                @endif
                 aria-controls="submenu-{{ $loop->index }}"
+                aria-expanded="{{ $isActive ? 'true' : 'false' }}"
                 >
                     <span class="nav-link-icon">
                         <i class="{{ $menu['icon'] ?? 'ti ti-circle' }}"></i>
@@ -85,9 +88,7 @@
 
                 @if($hasChildren)
                     <div class="collapse {{ $isActive ? 'show' : '' }}"
-                        id="submenu-{{ $loop->index }}"
-                        data-bs-parent="#sidebar-menu"
-                    >
+                        id="submenu-{{ $loop->index }}">
                         <ul class="nav nav-sm flex-column ms-4">
                             @foreach($filteredChildren as $child)
                                 @php
@@ -243,7 +244,7 @@
 }
 
 /* Hilangkan submenu */
-.sidebar-collapsed .nav-item.collapse {
+.sidebar-collapsed .collapse {
     display: none !important;
 }
 
