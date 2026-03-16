@@ -3,7 +3,6 @@
     $groups = $project->buildItems
         ->groupBy('category_name');
 
-    $itemNo = 1;
     $weekCount = count($project->week_labels);
     $colsFixed   = 6;
     $colsNormal  = 3;
@@ -133,6 +132,7 @@
                         </tr>
                     </thead>
                     <tbody>
+                        @php $itemNo = 1; @endphp
                         @foreach($groups as $category => $items)
                             <tr class="row-category"> 
                                 <td colspan="6"> {{ $category }} </td> 
@@ -372,10 +372,10 @@
                                                         <td class="nilai-pelaksanaan">0</td>
                                                 </tr>
                                             @endforeach
+                                            @php $itemNo++; @endphp
                                     @endforeach
                                     
                                 @endforeach
-                                @php $itemNo++; @endphp
                             @endforeach
                         @endforeach
                     </tbody>

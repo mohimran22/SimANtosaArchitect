@@ -57,7 +57,7 @@
             <input type="hidden" name="overhead" id="rab_overhead_edit">
         </div>
     </div>
-    <select style="display:none" id="jobCategorySelect">
+    <select style="display:none" id="jobCategorySelectEdit">
         <option value="">-- Pilih AHSP --</option>
         @foreach($jobCategories as $job) 
         <option value="{{ $job->id }}" > 
@@ -91,7 +91,7 @@
                     <td colspan="6">
                         <button type="button"
                             class="btn btn-link fw-bold text-decoration-none"
-                            onclick="addCategory()">
+                            onclick="addCategoryEdit()">
                             + Kategori Pekerjaan
                         </button>
                     </td>
@@ -207,34 +207,27 @@
             });
 
     });
+
     document.addEventListener('keydown', function(e){
 
-        const target = e.target
-        
-        // ENTER di input uraian -> simpan
-        if(target.closest('.uraian-input')){
-            e.preventDefault()
+    if(e.key !== "Enter") return
+    if(!e.target.classList.contains("uraian-input")) return
 
-            const row = target.closest('.uraian-row')
-            if(!row) return
+    e.preventDefault()
 
-            saveUraianEdit(row.id)
-            return
-        }
+    const row = e.target.closest(".uraian-row")
+    if(!row) return
 
-        // ENTER di kategori -> biarkan
-        if(target.closest('.category-row')) return
-
-        // selain itu dicegah
-        e.preventDefault()
+    saveUraianEdit(row.id)
 
     })
+
     function initRabEdit(){
 
         // aktifkan select2 lagi
         $('.select2-row').select2()
 
-        // hitung ulang subtotal
+        
         recalcAfterDrag()
 
         // refresh harga
@@ -269,14 +262,8 @@
         el.value = formatRupiah(number)
 
     }
-
-    function numberToLetters(num) {
-        let letters = '';
-        while (num >= 0) {
-            letters = String.fromCharCode((num % 26) + 65) + letters;
-            num = Math.floor(num / 26) - 1;
-        }
-        return letters;
+    function numberToLetters(num){
+        return String.fromCharCode(65 + num)
     }
 
     let currentRabJob = null;
@@ -291,7 +278,97 @@
     let draggedGroup = []
     let uraianImages = {}
     let activeUraian = null
+    const tbody = document.getElementById('rab_offerItemsBody_edit')
 
+    new Sortable(tbody,{
+        animation:150,
+        handle:'.drag-handle,.drag-ahsp',
+        draggable:'tr',
+
+        onStart:function(evt){
+
+                const row = evt.item
+                draggedGroup = [row]
+
+                if(row.classList.contains('category-row')){
+
+                    let next = row.nextElementSibling
+
+                    while(next && !next.classList.contains('category-row')){
+                        draggedGroup.push(next)
+                        next = next.nextElementSibling
+                    }
+
+                }
+
+                if(row.classList.contains('uraian-row')){
+
+                    const uraianId = row.id
+
+                    document.querySelectorAll(`[data-parent="${uraianId}"]`)
+                        .forEach(r=>draggedGroup.push(r))
+
+                }
+
+        },
+
+        onEnd:function(evt){
+
+            const row = evt.item
+
+            if(draggedGroup.length > 1){
+
+                let insertPoint = row.nextElementSibling
+
+                draggedGroup.slice(1).forEach(r=>{
+                    tbody.insertBefore(r, insertPoint)
+                })
+
+            }
+
+            renumberAll()
+            recalcAfterDrag()
+        },
+        onMove:function(evt){
+
+            const dragged = evt.dragged
+            const related = evt.related
+
+            if(!related) return true
+
+            // CATEGORY hanya boleh bertemu CATEGORY
+            if(dragged.classList.contains('category-row')){
+                if(!related.classList.contains('category-row')){
+                    return false
+                }
+            }
+
+            // AHSP tidak boleh keluar dari uraian
+            if(dragged.classList.contains('job-row')){
+                if(!related.classList.contains('job-row') &&
+                !related.classList.contains('uraian-row')){
+                    return false
+                }
+            }
+
+            // URAIAN tidak boleh keluar kategori
+            if(dragged.classList.contains('uraian-row')){
+
+                const draggedCat = dragged.dataset.category
+                const relatedCat = related.dataset.category
+
+                if(draggedCat !== relatedCat){
+                    return false
+                }
+
+            }
+            if(related.classList.contains('no-drag')){
+                return false
+            }
+
+            return true
+        }
+    })
     function loadExistingRab(data){
 
         const tbody = document.getElementById('rab_offerItemsBody_edit')
@@ -394,7 +471,7 @@
 
                     <td>
                         <button type="button" class="btn btn-sm btn-secondary"
-                            onclick="removeUraian('${uraianId}')">
+                            onclick="removeUraianEdit('${uraianId}')">
                             -
                         </button>
                     </td>
@@ -426,9 +503,9 @@
                                 </span>
 
                                 <select class="form-select select2-row job-select"
-                                    onchange="loadJob('${jobId}',this.value)">
+                                    onchange="loadJobEdit('${jobId}',this.value)">
 
-                                    ${document.getElementById('jobCategorySelect').innerHTML}
+                                    ${document.getElementById('jobCategorySelectEdit').innerHTML}
 
                                 </select>
 
@@ -464,7 +541,7 @@
                         <td>
 
                             <button type="button" class="btn btn-sm btn-dark"
-                                onclick="addJobRow('${uraianId}')">+</button>
+                                onclick="addJobRowEdit('${uraianId}')">+</button>
 
                             <button type="button" class="btn btn-sm btn-secondary"
                                 onclick="removeJob('${jobId}')">-</button>
@@ -522,7 +599,7 @@
 
     }
 
-    function addCategory(){
+    function addCategoryEdit(){
 
         const tbody = document.getElementById('rab_offerItemsBody_edit')
 
@@ -544,7 +621,7 @@
             <td colspan="5">
                 <input type="text" class="form-control fw-bold"
                     placeholder="Nama kategori pekerjaan"
-                    onkeydown="if(event.key==='Enter'){ event.preventDefault(); saveCategory('${catId}') }">
+                    onkeydown="if(event.key==='Enter'){ event.preventDefault(); saveCategoryEdit('${catId}') }">
             </td>
 
             <td></td>
@@ -564,7 +641,7 @@
         categoryIndex++
     }
 
-    function saveCategory(catId){
+    function saveCategoryEdit(catId){
 
         const row = document.getElementById(catId)
         const input = row.querySelector('input')
@@ -627,15 +704,15 @@
                     <span class="drag-handle" style="cursor:move">
                         <i class="ti ti-grip-vertical"></i>
                     </span>
-
-                    <input type="text" class="form-control uraian-input"
+                    <input type="text"
+                        class="form-control uraian-input"
                         placeholder="Uraian pekerjaan">
                 </div>
             </td>
 
             <td>
                 <button type="button" class="btn btn-sm btn-secondary"
-                    onclick="removeUraian('${uraianId}')">
+                    onclick="removeUraianEdit('${uraianId}')">
                     -
                 </button>
             </td>
@@ -644,6 +721,7 @@
         renumberUraian(catId)
 
     }
+
     function saveUraianEdit(uraianId){
 
         const row = document.getElementById(uraianId)
@@ -651,45 +729,45 @@
 
         const input = row.querySelector('.uraian-input')
 
-        let name = ''
+        // kalau sudah tersimpan jangan proses lagi
+        if(!input) return
 
-        if(input){
-            name = input.value || 'Uraian Baru'
-        }else{
-            name = row.dataset.name || row.querySelector('span')?.innerText || 'Uraian Baru'
-        }
+        const name = input.value.trim() || 'Uraian Baru'
 
         row.dataset.name = name
 
         row.cells[1].innerHTML = `
-        <div class="d-flex align-items-center gap-2">
+            <div class="d-flex align-items-center gap-2">
 
-            <span class="drag-handle" style="cursor:move">
-                <i class="ti ti-grip-vertical"></i>
-            </span>
+                <span class="drag-handle">
+                    <i class="ti ti-grip-vertical"></i>
+                </span>
 
-            <span>${name}</span>
+                <span>${name}</span>
 
-            <button type="button"
-                class="btn btn-sm btn-gambar-edit"
-                data-uraian="${name}"
-                onclick="openUraianGalleryEdit('${uraianId}','${name}')">
+                <button type="button"
+                    class="btn btn-sm btn-gambar-edit"
+                    onclick="openUraianGalleryEdit('${uraianId}','${name}')">
 
-                <i class="ti ti-photo"></i>
-            </button>
+                    <i class="ti ti-photo"></i>
 
-        </div>
+                </button>
+
+            </div>
         `
-        const existingJobs = document.querySelectorAll(`[data-parent="${uraianId}"]`)
 
-        if(existingJobs.length === 0){
-            addJobRow(uraianId)
-        }
+        // 🔥 cek apakah sudah ada job-row
+    const nextRow = row.nextElementSibling
+
+    if(!nextRow || nextRow.dataset.parent !== uraianId){
+        addJobRowEdit(uraianId)
     }
 
-    function addJobRow(uraianId){
+    }
 
-        const originalSelect = document.getElementById('jobCategorySelect')
+    function addJobRowEdit(uraianId){
+
+        const originalSelect = document.getElementById('jobCategorySelectEdit')
         const options = originalSelect.innerHTML
 
         const idx = jobIndex++
@@ -723,7 +801,7 @@
                     <div class="flex-grow-1">
 
                         <select class="form-select select2-row job-select w-100"
-                            onchange="loadJob('${jobId}', this.value)">
+                            onchange="loadJobEdit('${jobId}', this.value)">
                         ${options}
                         </select>
                     </div>
@@ -758,7 +836,7 @@
 
                 <button type="button"
                     class="btn btn-sm btn-dark"
-                    onclick="addJobRow('${uraianId}')">
+                    onclick="addJobRowEdit('${uraianId}')">
                 +
                 </button>
 
@@ -774,9 +852,12 @@
         `)
 
         $('.select2-row').select2()
+        setTimeout(()=>{
+            $(`#${jobId} .job-select`).select2('open')
+        },100)
     }
 
-    function loadJob(rowId, jobId){
+    function loadJobEdit(rowId, jobId){
 
         if(!jobId) return
 
@@ -805,7 +886,6 @@
             }
 
             calculate(rowId)
-            updateHargaSemua()
         })
     }
 
@@ -927,7 +1007,7 @@
         calculateSummary()
 
     }
-    function removeUraian(id){
+    function removeUraianEdit(id){
         const row = document.getElementById(id)
         const catId = row.dataset.category
         document.querySelectorAll(`[data-parent="${id}"]`).forEach(e=>e.remove())
