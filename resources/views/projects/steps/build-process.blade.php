@@ -132,7 +132,6 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @php $itemNo = 1; @endphp
                         @foreach($groups as $category => $items)
                             <tr class="row-category"> 
                                 <td colspan="6"> {{ $category }} </td> 
@@ -156,6 +155,7 @@
                                     );
                                 @endphp
                                 @foreach($sub as $namaPekerjaan => $itemsSub)
+                                @php $itemNo = 1; @endphp
                                     @foreach($itemsSub->whereNull('parent_id') as $item)
                                         @php
                                             $volKontrak = $item->volume;
@@ -169,7 +169,7 @@
                                                 data-item-vol="{{ $item->volume }}"
                                                 data-item-bobot="{{ $item->bobot_percent }}"
                                                 data-full="{{ $isFull ? 1 : 0 }}">                              
-                                                <td>{{ $itemNo }}</td>
+                                                <td>{{ $itemNo++ }}</td>
                                                 <td class="uraian-pekerjaan">
                                                     <div class="d-flex justify-content-between align-items-start">
                                                         <div>
@@ -372,9 +372,7 @@
                                                         <td class="nilai-pelaksanaan">0</td>
                                                 </tr>
                                             @endforeach
-                                            @php $itemNo++; @endphp
                                     @endforeach
-                                    
                                 @endforeach
                             @endforeach
                         @endforeach

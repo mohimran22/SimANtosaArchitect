@@ -35,7 +35,7 @@
 
                         <div class="text-center mb-5">
                         <div class="position-relative d-inline-block">
-                            @if ($product->photo)
+                            @if(isset($product) && $product->photo)
                                 <img id="previewImage" src="{{ asset('storage/'.$product->photo) }}" alt="Profile" 
                                     class="rounded-3 shadow-sm border" width="150" height="150"
                                     style="object-fit: cover;">
@@ -96,7 +96,7 @@
                                 <div class="col-md-4">
                                     <label class="form-label">Merk</label>
                                     <select id="brand_id" name="brand_id" class="form-select select2">
-                                        <option value="brand_id">-- Pilih Merk --</option>
+                                        <option value="">-- Pilih Merk --</option>
                                         @foreach($brands as $brand)
                                             <option value="{{ $brand->id }}" {{ old('brand_id') == $brand->id ? 'selected' : '' }}>
                                                 {{ $brand->name }}
@@ -110,7 +110,7 @@
                                 <div class="col-md-4">
                                     <label class="form-label">Kategori</label>
                                     <select id="category_id" name="category_id" class="form-select select2">
-                                        <option value="category_id">-- Pilih Kategori --</option>
+                                        <option value="">-- Pilih Kategori --</option>
                                         @foreach($categories as $category)
                                             <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>
                                                 {{ $category->name }}
@@ -124,7 +124,7 @@
                                 <div class="col-md-4">
                                     <label class="form-label">Tipe Produk</label>
                                     <select id="type_id" name="type_id" class="form-select select2">
-                                        <option value="type_id">-- Pilih Tipe --</option>
+                                        <option value="">-- Pilih Tipe --</option>
                                         @foreach($types as $type)
                                             <option value="{{ $type->id }}" {{ old('type_id') == $type->id ? 'selected' : '' }}>
                                                 {{ $type->name }}

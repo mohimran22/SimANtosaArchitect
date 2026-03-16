@@ -55,11 +55,6 @@ protected $fillable = [
         return $this->belongsTo(Supplier::class, 'supplier_id');
     }
 
-        public function category()
-    {
-        return $this->belongsTo(JobCategory::class);
-    }
-
     public function getSupplierNameAttribute()
 {
     if (!$this->product_id) return null;

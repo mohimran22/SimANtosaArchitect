@@ -537,8 +537,8 @@ public function datatableProducts(Request $request, Supplier $supplier)
 public function updatePrice(Request $request)
 {
     $request->validate([
-        'supplier_id' => 'required',
-        'product_id' => 'required',
+        'supplier_id' => 'required|exists:suppliers,id',
+        'product_id'  => 'required|exists:products,id',
         'price' => 'required|numeric|min:0'
     ]);
 

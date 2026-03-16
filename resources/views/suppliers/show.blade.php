@@ -862,6 +862,9 @@ $(document).on('click', '.btn-save-price', function () {
 
         if (res.success) {
             td.find('.price-value').text(res.price);
+            if (window.productDataTable) {
+                window.productDataTable.ajax.reload(null,false);
+            }
         }
 
         td.find('.price-edit').addClass('d-none');
@@ -875,34 +878,37 @@ $(document).on('click', '.btn-save-price', function () {
 <script>
 document.addEventListener('click', function(e) {
 
-    // ✅ MODE EDIT
+    const wrapper = e.target.closest('.price-wrapper');
+
+    // Jika bukan card mode, biarkan script lain (datatable) yang handle
+    if (!wrapper) return;
+
+    // EDIT
     if (e.target.closest('.btn-edit-price')) {
-        const wrapper = e.target.closest('.price-wrapper');
         wrapper.querySelector('.price-text').classList.add('d-none');
         wrapper.querySelector('.price-edit').classList.remove('d-none');
     }
 
-    // ✅ BATAL
+    // CANCEL
     if (e.target.closest('.btn-cancel-price')) {
-        const wrapper = e.target.closest('.price-wrapper');
         wrapper.querySelector('.price-edit').classList.add('d-none');
         wrapper.querySelector('.price-text').classList.remove('d-none');
     }
 
-    // ✅ SIMPAN VIA AJAX
+    // SAVE
     if (e.target.closest('.btn-save-price')) {
-        const wrapper    = e.target.closest('.price-wrapper');
+
         const url        = wrapper.dataset.url;
         const supplierId = wrapper.dataset.supplier;
         const productId  = wrapper.dataset.product;
         const value      = wrapper.querySelector('.price-input').value;
 
         fetch(url, {
-            method: 'PUT',
+            method: 'POST',
             headers: {
-                'X-CSRF-TOKEN': document
-                    .querySelector('meta[name="csrf-token"]').content,
-                'Content-Type': 'application/json'
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
             },
             body: JSON.stringify({
                 supplier_id: supplierId,
@@ -912,16 +918,14 @@ document.addEventListener('click', function(e) {
         })
         .then(res => res.json())
         .then(res => {
+
             if (res.success) {
                 wrapper.querySelector('.price-label').innerText = 'Rp ' + res.price;
-
-                wrapper.querySelector('.price-edit').classList.add('d-none');
-                wrapper.querySelector('.price-text').classList.remove('d-none');
-            } else {
-                alert('Gagal update harga!');
             }
-        })
-        .catch(() => alert('Terjadi kesalahan server'));
+
+            wrapper.querySelector('.price-edit').classList.add('d-none');
+            wrapper.querySelector('.price-text').classList.remove('d-none');
+        });
     }
 
 });

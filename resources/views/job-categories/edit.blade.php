@@ -156,12 +156,6 @@
                 <hr>
 
                 <h3 class="fw-bold mb-3">Daftar Analisa</h3>
-                {{-- <form method="POST" action="/rab/recalculate-all">
-                    @csrf
-                    <button class="btn btn-warning">
-                        🔁 Refresh Harga RAB dari Master
-                    </button>
-                </form> --}}
 
                 @include('job-categories.partials.items-table', [
                     'items' => $jobCategory->items
@@ -181,11 +175,26 @@ $(document).ready(function() {
         placeholder: "-- Pilih --",
         width: '100%'
     });
+updatePriceFromMaster();
 });
 
-/* ==============================
-   KETIKA GANTI KATEGORI
-============================== */
+function updatePriceFromMaster() {
+    const productId  = $('#itemSelect').val();
+    const supplierId = $('#supplierSelect').val();
+    if (!productId || !supplierId) return;
+
+    fetch(`/ajax/product/${productId}/supplier/${supplierId}`)
+        .then(res => res.json())
+        .then(item => {
+            $('#price_raw').val(item.price);
+            $('#price').val(formatRp(item.price));
+            hitungTotal();
+        });
+}
+
+// panggil ini setiap kali supplier atau item diganti
+$('#itemSelect, #supplierSelect').on('change', updatePriceFromMaster);
+
 $('#categorySelect').on('change', function () {
     const type = this.value;
     const itemSelect = $('#itemSelect');

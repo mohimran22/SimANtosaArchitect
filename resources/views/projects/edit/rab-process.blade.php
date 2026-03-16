@@ -208,7 +208,7 @@
 
     });
 
-    document.addEventListener('keydown', function(e){
+    document.addEventListener('keyup', function(e){
 
     if(e.key !== "Enter") return
     if(!e.target.classList.contains("uraian-input")) return
@@ -621,7 +621,7 @@
             <td colspan="5">
                 <input type="text" class="form-control fw-bold"
                     placeholder="Nama kategori pekerjaan"
-                    onkeydown="if(event.key==='Enter'){ event.preventDefault(); saveCategoryEdit('${catId}') }">
+                    onkeyup="if(event.key==='Enter'){ event.preventDefault(); saveCategoryEdit('${catId}') }">
             </td>
 
             <td></td>
@@ -757,11 +757,11 @@
         `
 
         // 🔥 cek apakah sudah ada job-row
-    const nextRow = row.nextElementSibling
+        const jobs = document.querySelectorAll(`.job-row[data-parent="${uraianId}"]`)
 
-    if(!nextRow || nextRow.dataset.parent !== uraianId){
-        addJobRowEdit(uraianId)
-    }
+        if(jobs.length === 0){
+            addJobRowEdit(uraianId)
+        }
 
     }
 
