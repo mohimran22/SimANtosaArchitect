@@ -71,7 +71,7 @@
 
                 <a class="nav-link {{ $isActive ? 'active' : '' }} {{ $hasChildren ? 'dropdown-toggle' : '' }}"
                 data-title="{{ $menu['text'] }}"
-                href="{{ $hasChildren ? '#' : ($menu['type'] === 'route' ? route($menu['url']) : url($menu['url'])) }}"
+                href="{{ $hasChildren ? '#' : ($menu['type'] === 'route' ? route($menu['url']) : url($menu['url'])) }}" role="button"
                 @if($hasChildren) 
                 data-bs-toggle="collapse"
                 data-bs-target="#submenu-{{ $loop->index }}"

@@ -62,8 +62,8 @@
                             <col style="width:260px;">  
                             <col style="width:80px;">   
                             <col style="width:80px;">   
-                            <col style="width:120px;">  
-                            <col style="width:100px;">  
+                            <col style="width:140px;">  
+                            <col style="width:80px;">  
                             @foreach($project->week_labels as $w)
                                 <col class="week-col" data-week="{{ $w['week_no'] }}" style="width:130px;">
                                 <col class="week-col" data-week="{{ $w['week_no'] }}" style="width:110px;">

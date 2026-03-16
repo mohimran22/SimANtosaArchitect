@@ -207,19 +207,26 @@
             });
 
     });
-    document.querySelector('#rab_offerItemsBody_edit').addEventListener('keydown', function(e){
+    document.addEventListener('keydown', function(e){
 
-        if(e.key === 'Enter'){
-
-            if(
-                e.target.classList.contains('uraian-input') ||
-                e.target.closest('.category-row')
-            ){
-                return
-            }
-
+        const target = e.target
+        
+        // ENTER di input uraian -> simpan
+        if(target.closest('.uraian-input')){
             e.preventDefault()
+
+            const row = target.closest('.uraian-row')
+            if(!row) return
+
+            saveUraianEdit(row.id)
+            return
         }
+
+        // ENTER di kategori -> biarkan
+        if(target.closest('.category-row')) return
+
+        // selain itu dicegah
+        e.preventDefault()
 
     })
     function initRabEdit(){
@@ -279,6 +286,7 @@
     let globalOverhead = 0
     let categoryIndex = 0
     let uraianIndex = {}
+    let uraianGlobalIndex = 0
     let jobIndex = 0
     let draggedGroup = []
     let uraianImages = {}
@@ -292,6 +300,7 @@
         categoryIndex = 0
         jobIndex = 0
         uraianIndex = {}
+        uraianGlobalIndex = 0
 
         globalProfit = parseFloat(data.meta.profit) || 0
         globalOverhead = parseFloat(data.meta.overhead) || 0
@@ -326,7 +335,7 @@
                 </td>
 
                 <td>
-                    <button class="btn btn-sm btn-secondary"
+                    <button type="button" class="btn btn-sm btn-secondary"
                         onclick="removeCat('${catId}')">
                         -
                     </button>
@@ -384,7 +393,7 @@
                     </td>
 
                     <td>
-                        <button class="btn btn-sm btn-secondary"
+                        <button type="button" class="btn btn-sm btn-secondary"
                             onclick="removeUraian('${uraianId}')">
                             -
                         </button>
@@ -479,19 +488,18 @@
                     },50)
 
                 })
-                    console.log(uraianImages)
             })
 
             // ADD URAIAN BUTTON
             tbody.insertAdjacentHTML('beforeend',`
 
-            <tr class="no-drag" id="addUraian_${catId}">
+            <tr class="no-drag" id="addUraianEdit_${catId}">
                 <td></td>
                 <td colspan="6">
 
                     <button type="button"
                         class="btn btn-sm btn-link"
-                        onclick="addUraian('${catId}')">
+                        onclick="addUraianEdit('${catId}')">
 
                         + Uraian Pekerjaan
 
@@ -542,11 +550,11 @@
             <td></td>
         </tr>
 
-        <tr class="no-drag" id="addUraian_${catId}">
+        <tr class="no-drag" id="addUraianEdit_${catId}">
             <td></td>
             <td colspan="6">
                 <button type="button" class="btn btn-sm btn-link"
-                    onclick="addUraian('${catId}')">
+                    onclick="addUraianEdit('${catId}')">
                     + Uraian Pekerjaan
                 </button>
             </td>
@@ -589,7 +597,7 @@
             </td>
 
             <td>
-                <button class="btn btn-sm btn-secondary"
+                <button type="button" class="btn btn-sm btn-secondary"
                     onclick="removeCat('${catId}')">
                     -
                 </button>
@@ -597,12 +605,16 @@
         `
     }
 
-    function addUraian(catId){
+    function addUraianEdit(catId){
 
-        const addRow = document.getElementById('addUraian_'+catId)
-
+        const addRow = document.getElementById('addUraianEdit_'+catId)
+        if(!addRow){
+            console.error('addRow tidak ditemukan:', 'addUraianEdit_'+catId)
+            return
+        }
+        if(!uraianIndex[catId]) uraianIndex[catId] = 1
         let uraianNo = uraianIndex[catId]++
-        let uraianId = 'uraian_'+(jobIndex++)
+        let uraianId = 'uraian_'+(uraianGlobalIndex++)
 
         addRow.insertAdjacentHTML('beforebegin',`
 
@@ -616,13 +628,13 @@
                         <i class="ti ti-grip-vertical"></i>
                     </span>
 
-                    <input class="form-control uraian-input"
+                    <input type="text" class="form-control uraian-input"
                         placeholder="Uraian pekerjaan">
                 </div>
             </td>
 
             <td>
-                <button class="btn btn-sm btn-secondary"
+                <button type="button" class="btn btn-sm btn-secondary"
                     onclick="removeUraian('${uraianId}')">
                     -
                 </button>
@@ -630,30 +642,22 @@
         </tr>
         `)
         renumberUraian(catId)
-        const row = document.getElementById(uraianId)
-        const input = row.querySelector('.uraian-input')
-        
-        input.addEventListener('keydown', function(e){
-            if(e.key === 'Enter'){
-                e.preventDefault()
-                saveUraian(uraianId)
-            }
-        })
+
     }
-    function saveUraian(uraianId){
+    function saveUraianEdit(uraianId){
 
         const row = document.getElementById(uraianId)
-
         if(!row) return
 
         const input = row.querySelector('.uraian-input')
-        
-        if(!input){
-            console.warn('Input uraian tidak ditemukan', uraianId)
-            return
-        }
 
-        const name = input.value || 'Uraian Baru'
+        let name = ''
+
+        if(input){
+            name = input.value || 'Uraian Baru'
+        }else{
+            name = row.dataset.name || row.querySelector('span')?.innerText || 'Uraian Baru'
+        }
 
         row.dataset.name = name
 
@@ -676,8 +680,11 @@
 
         </div>
         `
+        const existingJobs = document.querySelectorAll(`[data-parent="${uraianId}"]`)
 
-        addJobRow(uraianId)
+        if(existingJobs.length === 0){
+            addJobRow(uraianId)
+        }
     }
 
     function addJobRow(uraianId){
@@ -948,7 +955,7 @@
         })
 
         // hapus tombol + uraian
-        const addRow = document.getElementById('addUraian_'+catId)
+        const addRow = document.getElementById('addUraianEdit_'+catId)
         if(addRow) addRow.remove()
 
         // hapus kategori
