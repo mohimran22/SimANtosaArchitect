@@ -14,9 +14,6 @@ use App\Services\RabRecalculator;
 
 class SupplierCatalogController extends Controller
 {
-    /**
-     * AJAX Search produk
-     */
     public function searchProduct(Request $request)
     {
         $keyword = $request->keyword;
@@ -31,10 +28,6 @@ class SupplierCatalogController extends Controller
         ]);
     }
 
-
-    /**
-     * AJAX Detail produk
-     */
     public function productDetail($id)
     {
         $product = Product::with(['brand', 'category', 'type', 'colors'])->findOrFail($id);
@@ -73,10 +66,6 @@ class SupplierCatalogController extends Controller
         ]);
     }
 
-
-    /**
-     * Simpan produk ke supplier (pivot)
-     */
     public function storeSupplierProduct(Request $request)
     {
         $request->validate([

@@ -817,7 +817,7 @@ $(document).ready(function () {
 });
 </script>
 <script>
-// === KLIK EDIT ===
+
 $(document).on('click', '.btn-edit-price', function () {
     let td = $(this).closest('td');
 
@@ -825,7 +825,6 @@ $(document).on('click', '.btn-edit-price', function () {
     td.find('.price-edit').removeClass('d-none');
 });
 
-// === CANCEL ===
 $(document).on('click', '.btn-cancel-price', function () {
     let td = $(this).closest('td');
 
@@ -833,45 +832,6 @@ $(document).on('click', '.btn-cancel-price', function () {
     td.find('.price-text').removeClass('d-none');
 });
 
-// === SAVE ===
-$(document).on('click', '.btn-save-price', function () {
-
-    let btn = $(this);
-    let td = btn.closest('td');
-
-    let productId = btn.data('product');
-    let supplierId = btn.data('supplier');
-    let newPrice = td.find('.price-input').val();
-
-    btn.prop('disabled', true);
-
-    fetch("{{ route('supplier-product.update-price') }}", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content
-        },
-        body: JSON.stringify({
-            supplier_id: supplierId,
-            product_id: productId,
-            price: newPrice
-        })
-    })
-    .then(res => res.json())
-    .then(res => {
-
-        if (res.success) {
-            td.find('.price-value').text(res.price);
-            if (window.productDataTable) {
-                window.productDataTable.ajax.reload(null,false);
-            }
-        }
-
-        td.find('.price-edit').addClass('d-none');
-        td.find('.price-text').removeClass('d-none');
-        btn.prop('disabled', false);
-    });
-});
 </script>
 
 
@@ -880,7 +840,6 @@ document.addEventListener('click', function(e) {
 
     const wrapper = e.target.closest('.price-wrapper');
 
-    // Jika bukan card mode, biarkan script lain (datatable) yang handle
     if (!wrapper) return;
 
     // EDIT
@@ -895,8 +854,10 @@ document.addEventListener('click', function(e) {
         wrapper.querySelector('.price-text').classList.remove('d-none');
     }
 
-    // SAVE
     if (e.target.closest('.btn-save-price')) {
+
+        const btn = e.target.closest('.btn-save-price');
+        btn.disabled = true;
 
         const url        = wrapper.dataset.url;
         const supplierId = wrapper.dataset.supplier;
@@ -904,7 +865,7 @@ document.addEventListener('click', function(e) {
         const value      = wrapper.querySelector('.price-input').value;
 
         fetch(url, {
-            method: 'POST',
+            method: 'PUT',
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                 'Content-Type': 'application/json',
@@ -925,6 +886,9 @@ document.addEventListener('click', function(e) {
 
             wrapper.querySelector('.price-edit').classList.add('d-none');
             wrapper.querySelector('.price-text').classList.remove('d-none');
+        })
+        .finally(() => {
+            btn.disabled = false;
         });
     }
 

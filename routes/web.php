@@ -91,9 +91,6 @@ Route::middleware(['auth', 'permission:lihat daftar supplier|lihat data supplier
     Route::get('/suppliers/generate-SupplierId', [SupplierController::class, 'generateSupplierIdAjax'])->name('suppliers.generateSupplierId');
     Route::get('/supplier/{supplier}/products-datatable', [SupplierController::class, 'datatableProducts'])
     ->name('supplier.products.datatable');
-    // routes/web.php
-Route::post('/supplier-product/update-price', [SupplierController::class, 'updatePrice'])
-    ->name('supplier-product.update-price');
 
     Route::resource('/suppliers', SupplierController::class);
 });

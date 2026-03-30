@@ -534,6 +534,7 @@ public function datatableProducts(Request $request, Supplier $supplier)
 ->rawColumns(['selling_prices'])
         ->make(true);
 }
+
 public function updatePrice(Request $request)
 {
     $request->validate([
