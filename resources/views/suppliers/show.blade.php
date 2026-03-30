@@ -819,80 +819,63 @@ $(document).ready(function () {
 <script>
 
 $(document).on('click', '.btn-edit-price', function () {
-    let td = $(this).closest('td');
+    console.log('EDIT CLICKED'); 
+    let wrapper = $(this).closest('.price-wrapper');
 
-    td.find('.price-text').addClass('d-none');
-    td.find('.price-edit').removeClass('d-none');
+    wrapper.find('.price-text').addClass('d-none');
+    wrapper.find('.price-edit').removeClass('d-none');
 });
 
 $(document).on('click', '.btn-cancel-price', function () {
-    let td = $(this).closest('td');
+    let wrapper = $(this).closest('.price-wrapper');
 
-    td.find('.price-edit').addClass('d-none');
-    td.find('.price-text').removeClass('d-none');
+    wrapper.find('.price-edit').addClass('d-none');
+    wrapper.find('.price-text').removeClass('d-none');
 });
 
+$(document).on('click', '.btn-save-price', function () {
+
+    let btn = $(this);
+    let wrapper = btn.closest('.price-wrapper');
+
+    let productId = wrapper.data('product');
+    let supplierId = wrapper.data('supplier');
+    let newPrice = wrapper.find('.price-input').val();
+
+    btn.prop('disabled', true);
+
+    fetch(wrapper.data('url'), {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+            supplier_id: supplierId,
+            product_id: productId,
+            price: newPrice
+        })
+    })
+    .then(res => res.json())
+    .then(res => {
+
+        if (res.success) {
+            wrapper.find('.price-label').text('Rp ' + res.price);
+        }
+
+        wrapper.find('.price-edit').addClass('d-none');
+        wrapper.find('.price-text').removeClass('d-none');
+    })
+    .finally(() => {
+        btn.prop('disabled', false);
+    });
+});
 </script>
 
 
 <script>
-document.addEventListener('click', function(e) {
 
-    const wrapper = e.target.closest('.price-wrapper');
-
-    if (!wrapper) return;
-
-    // EDIT
-    if (e.target.closest('.btn-edit-price')) {
-        wrapper.querySelector('.price-text').classList.add('d-none');
-        wrapper.querySelector('.price-edit').classList.remove('d-none');
-    }
-
-    // CANCEL
-    if (e.target.closest('.btn-cancel-price')) {
-        wrapper.querySelector('.price-edit').classList.add('d-none');
-        wrapper.querySelector('.price-text').classList.remove('d-none');
-    }
-
-    if (e.target.closest('.btn-save-price')) {
-
-        const btn = e.target.closest('.btn-save-price');
-        btn.disabled = true;
-
-        const url        = wrapper.dataset.url;
-        const supplierId = wrapper.dataset.supplier;
-        const productId  = wrapper.dataset.product;
-        const value      = wrapper.querySelector('.price-input').value;
-
-        fetch(url, {
-            method: 'PUT',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({
-                supplier_id: supplierId,
-                product_id: productId,
-                price: value
-            })
-        })
-        .then(res => res.json())
-        .then(res => {
-
-            if (res.success) {
-                wrapper.querySelector('.price-label').innerText = 'Rp ' + res.price;
-            }
-
-            wrapper.querySelector('.price-edit').classList.add('d-none');
-            wrapper.querySelector('.price-text').classList.remove('d-none');
-        })
-        .finally(() => {
-            btn.disabled = false;
-        });
-    }
-
-});
 $(document).on("click", ".btn-delete", function(){
 
     let card = $(this).closest(".product-card");

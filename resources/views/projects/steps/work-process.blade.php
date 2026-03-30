@@ -218,6 +218,9 @@ $colors = [
 
 @push('js')
 <script>
+    const isReadOnly = @json($isReadOnly);
+</script>
+<script>
 document.querySelectorAll('.assign-employee').forEach(select => {
     select.addEventListener('change', function () {
         const taskId = this.dataset.task;
@@ -623,14 +626,17 @@ function renderRevisionRow(task) {
         </td>
 
         <td class="task-document" data-task="${task.id}">
-            !$isReadOnly
-            <button class="btn btn-sm btn-dark btn-upload"
-                    data-task="${task.id}">
-                <i class="ti ti-upload"></i> Upload
-            </button>
-            <input type="file"
-                   class="d-none upload-input"
-                   data-task="${task.id}">
+            ${!isReadOnly ? `
+                <button class="btn btn-sm btn-dark btn-upload"
+                        data-task="${task.id}">
+                    <i class="ti ti-upload"></i> Upload
+                </button>
+                <input type="file"
+                       class="d-none upload-input"
+                       data-task="${task.id}">
+            ` : `
+                <span class="text-muted">Menunggu...</span>
+            `}
         </td>
 
         <td class="task-action" data-task="${task.id}">

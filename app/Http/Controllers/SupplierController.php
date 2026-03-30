@@ -505,30 +505,31 @@ public function datatableProducts(Request $request, Supplier $supplier)
         ->editColumn('selling_prices', function ($row) use ($supplier) {
 
             return '
-            <span class="price-text">
-                Rp <span class="price-value">'.number_format($row->selling_prices).'</span>
-                <button class="btn btn-sm btn-warning ms-1 btn-edit-price"
-                    data-product="'.$row->id.'"
-                    data-price="'.$row->selling_prices.'"
-                    data-supplier="'.$supplier->id.'">
-                    <i class="ti ti-pencil"></i>
-                </button>
-            </span>
+            <div class="price-wrapper"
+                data-product="'.$row->id.'"
+                data-supplier="'.$supplier->id.'"
+                data-url="'.route('supplier-product.update-price').'">
 
-            <span class="price-edit d-none">
-                <input type="number" class="form-control form-control-sm price-input"
-                    value="'.$row->selling_prices.'" style="width:120px;display:inline-block">
+                <span class="price-text">
+                    Rp <span class="price-label">'.number_format($row->selling_prices).'</span>
+                    <button class="btn btn-sm btn-warning ms-1 btn-edit-price">
+                        <i class="ti ti-pencil"></i>
+                    </button>
+                </span>
 
-                <button class="btn btn-sm btn-success btn-save-price"
-                    data-product="'.$row->id.'"
-                    data-supplier="'.$supplier->id.'">
-                    <i class="ti ti-check"></i>
-                </button>
+                <span class="price-edit d-none">
+                    <input type="number" class="form-control form-control-sm price-input"
+                        value="'.$row->selling_prices.'" style="width:120px;display:inline-block">
 
-                <button class="btn btn-sm btn-danger btn-cancel-price">
-                    <i class="ti ti-x"></i>
-                </button>
-            </span>
+                    <button class="btn btn-sm btn-success btn-save-price">
+                        <i class="ti ti-check"></i>
+                    </button>
+
+                    <button class="btn btn-sm btn-danger btn-cancel-price">
+                        <i class="ti ti-x"></i>
+                    </button>
+                </span>
+            </div>
             ';
         })
 ->rawColumns(['selling_prices'])
