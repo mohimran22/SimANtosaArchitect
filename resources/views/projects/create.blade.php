@@ -332,15 +332,15 @@
             <div id="invoice" class="step-section">
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body px-5 py-4">
-                    <h3 class="mb-3 fw-bold">
-                        @if($project->project_type == 1)
-                            6. Invoice Pembayaran Desain (DP)
-                        @elseif($project->project_type == 2)
-                            5. Invoice Jasa Pembuatan RAB
-                        @elseif($project->project_type == 3)
-                            6. Invoice Pembayaran Tahap 1
-                        @endif
-                    </h3>
+                        <h3 class="mb-3 fw-bold">
+                            @if($project->project_type == 1)
+                                6. Invoice Pembayaran Desain (DP)
+                            @elseif($project->project_type == 2)
+                                5. Invoice Jasa Pembuatan RAB
+                            @elseif($project->project_type == 3)
+                                6. Invoice Pembayaran Tahap 1
+                            @endif
+                        </h3>
                         @php
                             $termin = $project->build_progress < 30 ? 1 :
                                     ($project->build_progress < 60 ? 2 :

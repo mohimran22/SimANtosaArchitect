@@ -136,20 +136,43 @@ class InvoiceBuildController extends Controller
                     }
                 }
             }
+            $lastTermin = $project->invoicebuilds()->max('termin');
 
-            ProjectLevel::where([
-                'project_id' => $project->id,
-                'level_order' => 6,
-            ])->update(['is_completed' => true]);
+            // TERMIN AWAL (biasanya 1)
+            if ($invoice->termin == 1) {
 
-            ProjectLevel::where([
-                'project_id' => $project->id,
-                'level_order' => 7,
-            ])->update(['is_started' => true]);
+                ProjectLevel::where([
+                    'project_id' => $project->id,
+                    'level_order' => 6,
+                ])->update(['is_completed' => true]);
 
-            $project->update([
-                'active_step' => 7
-            ]);
+                ProjectLevel::where([
+                    'project_id' => $project->id,
+                    'level_order' => 7,
+                ])->update(['is_started' => true]);
+
+                $project->update([
+                    'active_step' => 7
+                ]);
+            }
+
+            // TERMIN TERAKHIR
+            elseif ($invoice->termin == $lastTermin) {
+
+                ProjectLevel::where([
+                    'project_id' => $project->id,
+                    'level_order' => 7,
+                ])->update(['is_completed' => true]);
+
+                ProjectLevel::where([
+                    'project_id' => $project->id,
+                    'level_order' => 8,
+                ])->update(['is_started' => true]);
+
+                $project->update([
+                    'active_step' => 8
+                ]);
+            }
         });
 
         $event = 'invoice_build_created';

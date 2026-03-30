@@ -681,9 +681,9 @@
                         <i class="ti ti-grip-vertical"></i>
                     </span>
 
-                    <input type="text" class="form-control uraian-input"
-                        placeholder="Uraian pekerjaan"
-                        onkeydown="if(event.key==='Enter'){ event.preventDefault(); event.stopPropagation(); saveUraianEdit('${uraianId}') }">
+                <input class="form-control uraian-input"
+                    placeholder="Uraian pekerjaan"
+                    onkeydown="if(event.key==='Enter') saveUraianEdit('${uraianId}')">
                 </div>
             </td>
 
