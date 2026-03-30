@@ -1,6 +1,5 @@
 @php
-    $rab = $project->rab;
-        $latest = \Illuminate\Support\Facades\Cache::get('job_category_last_updated', 0);
+    $latest = \Illuminate\Support\Facades\Cache::get('job_category_last_updated', 0);
 
     $needRefresh = $rab->analisa_version < $latest;
 @endphp
@@ -205,34 +204,11 @@
                 loadExistingRab(data);
                 rabLoaded = true
             });
-
     });
-
-    document.addEventListener('keyup', function(e){
-
-    if(e.key !== "Enter") return
-    if(!e.target.classList.contains("uraian-input")) return
-
-    e.preventDefault()
-
-    const row = e.target.closest(".uraian-row")
-    if(!row) return
-
-    saveUraianEdit(row.id)
-
-    })
-
     function initRabEdit(){
-
-        // aktifkan select2 lagi
-        $('.select2-row').select2()
-
-        
+        $('.select2-row').select2()   
         recalcAfterDrag()
-
-        // refresh harga
         updateHargaSemua()
-
     }
 
     function parseRupiah(value){
@@ -621,7 +597,7 @@
             <td colspan="5">
                 <input type="text" class="form-control fw-bold"
                     placeholder="Nama kategori pekerjaan"
-                    onkeyup="if(event.key==='Enter'){ event.preventDefault(); saveCategoryEdit('${catId}') }">
+                    onkeydown="if(event.key==='Enter'){ event.preventDefault(); saveCategoryEdit('${catId}') }">
             </td>
 
             <td></td>
@@ -704,19 +680,21 @@
                     <span class="drag-handle" style="cursor:move">
                         <i class="ti ti-grip-vertical"></i>
                     </span>
-                    <input type="text"
-                        class="form-control uraian-input"
-                        placeholder="Uraian pekerjaan">
+
+                    <input type="text" class="form-control uraian-input"
+                        placeholder="Uraian pekerjaan"
+                        onkeydown="if(event.key==='Enter'){ event.preventDefault(); event.stopPropagation(); saveUraianEdit('${uraianId}') }">
                 </div>
             </td>
 
             <td>
                 <button type="button" class="btn btn-sm btn-secondary"
-                    onclick="removeUraianEdit('${uraianId}')">
+                    onclick="removeUraian('${uraianId}')">
                     -
                 </button>
             </td>
         </tr>
+
         `)
         renumberUraian(catId)
 
@@ -760,7 +738,9 @@
         const jobs = document.querySelectorAll(`.job-row[data-parent="${uraianId}"]`)
 
         if(jobs.length === 0){
-            addJobRowEdit(uraianId)
+            setTimeout(()=>{
+                addJobRowEdit(uraianId)
+            },50)
         }
 
     }
@@ -853,9 +833,16 @@
 
         $('.select2-row').select2()
         setTimeout(()=>{
-            $(`#${jobId} .job-select`).select2('open')
-        },100)
-    }
+    const select = $(`#${jobId} .job-select`)
+    select.select2()
+
+    select.next('.select2-container')
+        .find('.select2-selection')
+        .focus()
+
+    select.select2('open')
+    },200)
+        }
 
     function loadJobEdit(rowId, jobId){
 
@@ -1016,7 +1003,6 @@
         calculateSummary()
     }
     function removeCat(catId){
-
         const catRow = document.getElementById(catId)
 
         if(!catRow) return

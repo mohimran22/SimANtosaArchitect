@@ -167,8 +167,8 @@
                 <thead class="table-light">
                     <tr>
                         <th>Uraian Pekerjaan</th>
-                        <th width="120">Volume</th>
                         <th width="120">Satuan</th>
+                        <th width="120">Volume</th>
                         <th>Keterangan</th>
                         <th width="40"></th>
                     </tr>
@@ -198,18 +198,16 @@
                                 class="form-control mt-2 manual-rab d-none"
                                 placeholder="Isi uraian manual">
                         </td>
-
+                        <td>
+                            <input name="daily[satuan][]" 
+                                type="text"
+                                class="form-control satuan-input">
+                        </td>
                         <td>
                             <input name="daily[volume][]" 
                                 type="number" 
                                 step="0.01"
                                 class="form-control volume-input">
-                        </td>
-
-                        <td>
-                            <input name="daily[satuan][]" 
-                                type="text"
-                                class="form-control satuan-input">
                         </td>
 
                         <td>
@@ -248,18 +246,16 @@
                             class="form-control mt-2 manual-rab d-none"
                             placeholder="Isi uraian manual">
                     </td>
-
+                    <td>
+                        <input name="daily[satuan][]" 
+                            type="text"
+                            class="form-control satuan-input">
+                    </td>
                     <td>
                         <input name="daily[volume][]" 
                             type="number" 
                             step="0.01"
                             class="form-control volume-input">
-                    </td>
-
-                    <td>
-                        <input name="daily[satuan][]" 
-                            type="text"
-                            class="form-control satuan-input">
                     </td>
 
                     <td>

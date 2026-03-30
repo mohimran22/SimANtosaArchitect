@@ -177,7 +177,7 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    white-space: normal;
+    white-space: normal !important;
     word-break: break-word;
 }
 

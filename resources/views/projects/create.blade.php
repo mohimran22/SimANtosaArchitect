@@ -19,6 +19,7 @@
         <div class="container-xl">
             @include('projects.components.timeline-horizontal')
                 @php
+                    $rab = $project?->rab;
                     $planning = $project?->planning;
                     $disableEdit = $surveyWaiting;
                     use Illuminate\Support\Facades\Storage;
@@ -1005,17 +1006,25 @@ document.addEventListener("DOMContentLoaded", () => {
     const view = document.getElementById("rab-view");
     const edit = document.getElementById("rab-edit");
 
-    document.getElementById("btn-edit-rab")?.addEventListener("click", () => {
+document.getElementById("btn-edit-rab")?.addEventListener("click", async () => {
 
-        view.style.display = "none";
-        edit.style.display = "block";
+    view.style.display = "none";
+    edit.style.display = "block";
 
-        // tunggu DOM render
-        setTimeout(() => {
-            initRabEdit()
-        }, 50)
+    const rabId = {{ $rab->id }};
 
-    });
+    try {
+        const res = await fetch(`/rab/${rabId}/structure`)
+        const data = await res.json()
+
+        loadExistingRab(data)   // render DOM
+        initRabEdit()           // init setelah render
+
+    } catch (err) {
+        console.error(err)
+    }
+
+});
 
     document.getElementById("btn-cancel-rab").addEventListener("click", () => {
         edit.style.display = "none";
@@ -1072,24 +1081,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     document.getElementById("btn-cancel-survey").addEventListener("click", () => {
-        edit.style.display = "none";
-        view.style.display = "block";
-    });
-
-});
-</script>
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-
-    const view = document.getElementById("rab-view");
-    const edit = document.getElementById("rab-edit");
-
-    document.getElementById("btn-edit-rab")?.addEventListener("click", () => {
-        view.style.display = "none";
-        edit.style.display = "block";
-    });
-
-    document.getElementById("btn-cancel-rab").addEventListener("click", () => {
         edit.style.display = "none";
         view.style.display = "block";
     });

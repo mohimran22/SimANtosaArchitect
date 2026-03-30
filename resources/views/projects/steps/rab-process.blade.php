@@ -683,9 +683,6 @@ function calculateSummary(){
     document.getElementById('rab_grand_total').value = grand
 }
 function removeCat(catId){
-    if(!confirm('Hapus kategori ini beserta semua uraian?')){
-        return
-    }
 
     const catRow = document.getElementById(catId)
 
