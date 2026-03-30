@@ -192,19 +192,6 @@
 
 @push('js')
 <script>
-    let rabLoaded = false
-    document.addEventListener("DOMContentLoaded", function(){
-
-        const rabId = {{ $rab->id }};
-
-        fetch(`/rab/${rabId}/structure`)
-            .then(res => res.json())
-            .then(data => {
-
-                loadExistingRab(data);
-                rabLoaded = true
-            });
-    });
     function initRabEdit(){
         $('.select2-row').select2()   
         recalcAfterDrag()
@@ -689,7 +676,7 @@
 
             <td>
                 <button type="button" class="btn btn-sm btn-secondary"
-                    onclick="removeUraian('${uraianId}')">
+                    onclick="removeUraianEdit('${uraianId}')">
                     -
                 </button>
             </td>

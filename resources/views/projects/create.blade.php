@@ -1001,32 +1001,40 @@ document.addEventListener('click', function (e) {
 });
 </script>
 <script>
+let rabLoaded = false
 document.addEventListener("DOMContentLoaded", () => {
 
     const view = document.getElementById("rab-view");
     const edit = document.getElementById("rab-edit");
-
-    const rabId = @json(optional($rab)->id)
-
-    document.getElementById("btn-edit-rab")?.addEventListener("click", async () => {
-
-        if(!rabId){
-            console.warn("RAB belum ada")
-            return
-        }
+    document.getElementById("btn-edit-rab")?.addEventListener("click", () => {
 
         view.style.display = "none";
         edit.style.display = "block";
 
-        try {
-            const res = await fetch(`/rab/${rabId}/structure`)
-            const data = await res.json()
+        // ✅ load hanya sekali saat pertama klik
+        if(!rabLoaded){
 
-            loadExistingRab(data)
-            initRabEdit()
+            const rabId = {{ $rab->id }};
 
-        } catch (err) {
-            console.error(err)
+            fetch(`/rab/${rabId}/structure`)
+                .then(res => res.json())
+                .then(data => {
+
+                    loadExistingRab(data);
+
+                    // 🔥 init AFTER DOM benar-benar masuk
+                    requestAnimationFrame(() => {
+                        initRabEdit()
+                    })
+
+                    rabLoaded = true
+                });
+
+        }else{
+            // kalau sudah pernah load → cukup init ulang
+            requestAnimationFrame(() => {
+                initRabEdit()
+            })
         }
 
     });
