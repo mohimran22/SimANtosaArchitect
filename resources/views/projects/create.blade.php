@@ -1006,25 +1006,30 @@ document.addEventListener("DOMContentLoaded", () => {
     const view = document.getElementById("rab-view");
     const edit = document.getElementById("rab-edit");
 
-document.getElementById("btn-edit-rab")?.addEventListener("click", async () => {
+    const rabId = @json(optional($rab)->id)
 
-    view.style.display = "none";
-    edit.style.display = "block";
+    document.getElementById("btn-edit-rab")?.addEventListener("click", async () => {
 
-    const rabId = {{ $rab->id }};
+        if(!rabId){
+            console.warn("RAB belum ada")
+            return
+        }
 
-    try {
-        const res = await fetch(`/rab/${rabId}/structure`)
-        const data = await res.json()
+        view.style.display = "none";
+        edit.style.display = "block";
 
-        loadExistingRab(data)   // render DOM
-        initRabEdit()           // init setelah render
+        try {
+            const res = await fetch(`/rab/${rabId}/structure`)
+            const data = await res.json()
 
-    } catch (err) {
-        console.error(err)
-    }
+            loadExistingRab(data)
+            initRabEdit()
 
-});
+        } catch (err) {
+            console.error(err)
+        }
+
+    });
 
     document.getElementById("btn-cancel-rab").addEventListener("click", () => {
         edit.style.display = "none";
