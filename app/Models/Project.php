@@ -130,6 +130,11 @@ class Project extends Model
     return $this->hasOne(FinalProject::class);
 }
 
+    public function finalBuild()
+{
+    return $this->hasOne(FinalBuild::class);
+}
+
 public function buildItems()
 {
     return $this->hasMany(BuildProcessItem::class);
@@ -308,5 +313,11 @@ public function getWeekLabelsAttribute()
     }
 
     return $labels;
+}
+public function getFinalRouteAttribute()
+{
+    return $this->project_type == 3
+        ? route('projects.finals-build.store', $this->id)
+        : route('projects.finals.store', $this->id);
 }
 }

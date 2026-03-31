@@ -23,7 +23,11 @@
                     $planning = $project?->planning;
                     $disableEdit = $surveyWaiting;
                     use Illuminate\Support\Facades\Storage;
-                    $final = $project?->finalDocument;
+    
+                        $final = $project?->project_type == 1 
+                            ? $project?->finalDocument 
+                            : $project?->finalBuild;
+                    
                     $ReadOnly = !$canEdit;
                 @endphp
             @if($activeStep == 1)
@@ -443,7 +447,7 @@
                 </div>
             </div>
             @endif
-            {{-- @if($activeStep >= 9) --}}
+            
             @if(
                 ($project?->project_type == 1 && $activeStep >= 9)
                 ||
@@ -454,7 +458,11 @@
                     <div class="card-body px-5 py-4">
                         <div class="d-flex justify-content-between align-items-center mb-4">
                             <h3 class="mb-3 fw-bold">
-                                {{ $project->project_type == 1 ? '8. Invoice Pelunasan Desain' : '6. Rencana Anggaran Biaya' }}
+                                @if($project->project_type == 1)
+                                    8. Invoice Pelunasan Desain
+                                @elseif($project->project_type == 2)
+                                    6. Rencana Anggaran Biaya
+                                @endif
                             </h3>
                             @if($project->project_type == 2)
                             @can('ubah data proyek')
@@ -529,26 +537,52 @@
             @endif
             
             @if(
-                $project?->levels->firstWhere('level_order', 9)?->is_started
-                && !$ReadOnly
+                (
+                    $project?->levels->firstWhere('level_order', 9)?->is_started 
+                    && !$ReadOnly
+                )
+                ||
+                (
+                    $project?->project_type == 3 
+                    && $activeStep >= 9
+                )
             )
             <div id="final" class="step-section">
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body px-5 py-4">
                         <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h3 class="mb-4 fw-bold">9. Hasil Proyek</h3>
+                            <h3 class="mb-3 fw-bold">
+                                @if($project->project_type == 1)
+                                    9. Hasil Proyek
+                                @elseif($project->project_type == 3)
+                                    8. Serah terima
+                                @endif
+                            </h3>
                             @if($project->finalDocument)
                                 @can('ubah data proyek')
                                 <div class="btn-group">
                                     <button class="btn btn-sm btn-dark"
-                                            onclick="document.getElementById('form-reupload').classList.toggle('d-none')">
+                                            onclick="document.getElementById('form-reupload-{{ $project->project_type }}').classList.toggle('d-none')">
+                                        <i class="ti ti-edit"></i>
+                                    </button>
+                                </div>
+                                @endcan
+                            @elseif($project->finalBuild)
+                                @can('ubah data proyek')
+                                <div class="btn-group">
+                                    <button class="btn btn-sm btn-dark"
+                                            onclick="document.getElementById('form-reupload-{{ $project->project_type }}').classList.toggle('d-none')">
                                         <i class="ti ti-edit"></i>
                                     </button>
                                 </div>
                                 @endcan
                             @endif
                         </div>
-                        @include('projects.steps.upload-final')
+                        @if($project->project_type == 1)
+                            @include('projects.steps.upload-final')
+                        @elseif($project->project_type == 3)
+                            @include('projects.steps.upload-final-build')
+                        @endif
                         @if($final)
                         <div class="alert alert-success mt-4 d-flex align-items-center justify-content-between">
                             <div>
@@ -564,8 +598,8 @@
                                     <i class="ti ti-download"></i>Download File
                                 </a>
                             </div>
-                        <form id="form-reupload"
-                            action="{{ route('projects.finals.store', $project->id) }}"
+                        <form id="form-reupload-{{ $project->project_type }}"
+                            action="{{ $project->final_route }}"
                             method="POST"
                             enctype="multipart/form-data"
                             class="d-none mt-3">
@@ -1013,7 +1047,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if(!rabLoaded){
 
-            const rabId = {{ $rab?->id }};
+            const rabId = @json($rab?->id);
 
             fetch(`/rab/${rabId}/structure`)
                 .then(res => res.json())

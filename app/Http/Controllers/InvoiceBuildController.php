@@ -106,7 +106,7 @@ class InvoiceBuildController extends Controller
                 'approved_ip' => request()->ip(),
             ]);
 
-            if ($project->buildItems()->count() == 0) {
+            if ($invoice->termin == 1 && $project->buildItems()->count() == 0) {
 
                 $project->load('offer.rab.categories.uraians.items');
 
@@ -136,7 +136,7 @@ class InvoiceBuildController extends Controller
                     }
                 }
             }
-            $lastTermin = $project->invoicebuilds()->max('termin');
+            $lastTermin = 4;
 
             // TERMIN AWAL (biasanya 1)
             if ($invoice->termin == 1) {

@@ -494,6 +494,14 @@ Route::delete(
     '/projects/{project}/final',
     [\App\Http\Controllers\FinalProjectController::class, 'destroy']
 )->name('projects.finals.destroy');
+Route::post(
+    '/projects/{project}/finalBuild',
+    [\App\Http\Controllers\FinalBuildProjectController::class, 'store']
+)->name('projects.finals-build.store');
+Route::delete(
+    '/projects/{project}/finalBuild',
+    [\App\Http\Controllers\FinalBuildProjectController::class, 'destroy']
+)->name('projects.finals-build.destroy');
 });
 
 Route::middleware(['auth', 'permission:lihat daftar user'])->group(function () {

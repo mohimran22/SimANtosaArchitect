@@ -17,7 +17,7 @@
 
     <div class="row mb-3">
         <div class="col-md-4">
-            <label>Nomor Penawaran</label>
+            <label class="form-label">Nomor Penawaran</label>
             <input type="text" name="offer_number" class="form-control" value="{{ old('offer_number') ?? '' }}" placeholder="AUTO GENARATE" readonly>
 
         </div>
@@ -26,7 +26,7 @@
             <input type="date" name="offer_date" class="form-control" required>
         </div>
         <div class="col-md-4">
-            <label>Nama Customer</label>
+            <label class="form-label">Nama Customer</label>
             <input type="text" name="contact_name" value="{{ $project->customer->user->fullname }}" class="form-control" readonly>
         </div>
     </div>
@@ -49,31 +49,6 @@
 
             </select>
         </div>
-        {{-- <div class="col-md-2">
-            <label class="form-label">Volume</label>
-            <input type="text" name="volume" class="form-control">
-            <small class="text-muted">
-                Minimal order 100 m2
-            </small>
-        </div>
-        <div class="col-md-2">
-            <label class="form-label">Satuan</label>
-            <input type="text" name="satuan" class="form-control" id="satuan" readonly>
-        </div>
-        <div class="col-md-2">
-            <label class="form-label">Harga Satuan (Rp)</label>
-            <input type="hidden" name="price_meter" id="priceMeter">
-            <span id="priceMeterFormatted" class="form-control bg-light"></span>
-
-        </div>
-        <div class="col-md-2">
-            <label class="form-label">Total Harga (Rp)</label>
-            <input type="hidden" name="total_price" id="totalPrice">
-            <span id="totalPriceFormatted" class="form-control bg-light"></span>
-                <small class="text-warning d-none" id="minOrderNote">
-                    * Volume < 100 m² dihitung sebagai 100 m²
-                </small>
-        </div> --}}
     </div>
 
         <div class="row mb-4">

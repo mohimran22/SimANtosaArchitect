@@ -198,34 +198,32 @@
 
         const el = e.target
 
+        if(!el || el.disabled) return
+
         if(el.classList.contains('uraian-input')){
+
             e.preventDefault()
-            e.stopPropagation()
+            e.stopImmediatePropagation()
 
             const row = el.closest('.uraian-row')
-            if(row) saveUraianEdit(row.id)
-        }
+            if(row){
+                saveUraianEdit(row.id)
+            }
 
+            return
+        }
         if(el.closest('.category-row') && el.tagName === 'INPUT'){
+
             e.preventDefault()
+            e.stopImmediatePropagation()
 
             const row = el.closest('.category-row')
-            if(row) saveCategoryEdit(row.id)
+            if(row){
+                saveCategoryEdit(row.id)
+            }
+
+            return
         }
-
-    })
-    document.addEventListener('keyup', function(e){
-
-        if(e.key !== 'Enter') return
-
-        const el = e.target
-
-        if(!el.classList.contains('uraian-input')) return
-
-        const row = el.closest('.uraian-row')
-        if(!row) return
-
-        saveUraianEdit(row.id)
 
     })
     function initRabEdit(){
@@ -288,99 +286,98 @@
     let draggedGroup = []
     let uraianImages = {}
     let activeUraian = null
-    const tbody = document.getElementById('rab_offerItemsBody_edit')
+    // const tbody = document.getElementById('rab_offerItemsBody_edit')
 
-    new Sortable(tbody,{
-        animation:150,
-        handle:'.drag-handle,.drag-ahsp',
-        draggable:'tr',
-        filter: '.uraian-input',
-        preventOnFilter: false,
+    // new Sortable(tbody,{
+    //     animation:150,
+    //     handle:'.drag-handle,.drag-ahsp',
+    //     draggable:'tr',
+    //     filter: '.uraian-input',
+    //     preventOnFilter: false,
 
-        onStart:function(evt){
+    //     onStart:function(evt){
 
-                const row = evt.item
-                draggedGroup = [row]
+    //             const row = evt.item
+    //             draggedGroup = [row]
 
-                if(row.classList.contains('category-row')){
+    //             if(row.classList.contains('category-row')){
 
-                    let next = row.nextElementSibling
+    //                 let next = row.nextElementSibling
 
-                    while(next && !next.classList.contains('category-row')){
-                        draggedGroup.push(next)
-                        next = next.nextElementSibling
-                    }
+    //                 while(next && !next.classList.contains('category-row')){
+    //                     draggedGroup.push(next)
+    //                     next = next.nextElementSibling
+    //                 }
 
-                }
+    //             }
 
-                if(row.classList.contains('uraian-row')){
+    //             if(row.classList.contains('uraian-row')){
 
-                    const uraianId = row.id
+    //                 const uraianId = row.id
 
-                    document.querySelectorAll(`[data-parent="${uraianId}"]`)
-                        .forEach(r=>draggedGroup.push(r))
+    //                 document.querySelectorAll(`[data-parent="${uraianId}"]`)
+    //                     .forEach(r=>draggedGroup.push(r))
 
-                }
+    //             }
 
-        },
+    //     },
 
-        onEnd:function(evt){
+    //     onEnd:function(evt){
 
-            const row = evt.item
+    //         const row = evt.item
 
-            if(draggedGroup.length > 1){
+    //         if(draggedGroup.length > 1){
 
-                let insertPoint = row.nextElementSibling
+    //             let insertPoint = row.nextElementSibling
 
-                draggedGroup.slice(1).forEach(r=>{
-                    tbody.insertBefore(r, insertPoint)
-                })
+    //             draggedGroup.slice(1).forEach(r=>{
+    //                 tbody.insertBefore(r, insertPoint)
+    //             })
 
-            }
+    //         }
 
-            renumberAll()
-            recalcAfterDrag()
-        },
-        onMove:function(evt){
+    //         renumberAll()
+    //         recalcAfterDrag()
+    //     },
+    //     onMove:function(evt){
 
-            const dragged = evt.dragged
-            const related = evt.related
+    //         const dragged = evt.dragged
+    //         const related = evt.related
 
-            if(!related) return true
+    //         if(!related) return true
 
-            // CATEGORY hanya boleh bertemu CATEGORY
-            if(dragged.classList.contains('category-row')){
-                if(!related.classList.contains('category-row')){
-                    return false
-                }
-            }
+    //         // CATEGORY hanya boleh bertemu CATEGORY
+    //         if(dragged.classList.contains('category-row')){
+    //             if(!related.classList.contains('category-row')){
+    //                 return false
+    //             }
+    //         }
 
-            // AHSP tidak boleh keluar dari uraian
-            if(dragged.classList.contains('job-row')){
-                if(!related.classList.contains('job-row') &&
-                !related.classList.contains('uraian-row')){
-                    return false
-                }
-            }
+    //         
+    //         if(dragged.classList.contains('job-row')){
+    //             if(!related.classList.contains('job-row') &&
+    //             !related.classList.contains('uraian-row')){
+    //                 return false
+    //             }
+    //         }
 
-            // URAIAN tidak boleh keluar kategori
-            if(dragged.classList.contains('uraian-row')){
+    //         if(dragged.classList.contains('uraian-row')){
 
-                const draggedCat = dragged.dataset.category
-                const relatedCat = related.dataset.category
+    //             const draggedCat = dragged.dataset.category
+    //             const relatedCat = related.dataset.category
 
-                if(draggedCat !== relatedCat){
-                    return false
-                }
+    //             if(draggedCat !== relatedCat){
+    //                 return false
+    //             }
 
-            }
-            if(related.classList.contains('no-drag')){
-                return false
-            }
+    //         }
+    //         if(related.classList.contains('no-drag')){
+    //             return false
+    //         }
 
-            return true
-        }
-    })
+    //         return true
+    //     }
+    // })
     function loadExistingRab(data){
 
         const tbody = document.getElementById('rab_offerItemsBody_edit')
@@ -435,7 +432,7 @@
             // URAIAN
             cat.uraians.forEach(uraian => {
 
-                const uraianId = uraian.uraian_key
+                const uraianId = 'ex_' + uraian.uraian_key
                 if(!uraianImages[uraianId]){
                     uraianImages[uraianId] = []
                 }
@@ -735,12 +732,12 @@
 
             if(input){
                 input.focus()
-
-                // 🔥 penting: select text biar langsung aktif
                 input.select()
-            }
 
-        },50)
+                // 🔥 trigger reflow supaya event stabil
+                input.dispatchEvent(new Event('input', { bubbles: true }))
+            }
+        },100)
         renumberUraian(catId)
 
     }
@@ -1045,10 +1042,18 @@
     }
     function removeUraianEdit(id){
         const row = document.getElementById(id)
+        if(!row) return
+
         const catId = row.dataset.category
+
         document.querySelectorAll(`[data-parent="${id}"]`).forEach(e=>e.remove())
+
         row.remove()
+
         renumberUraian(catId)
+
+        updateCategorySubtotal(catId)
+
         calculateSummary()
     }
     function removeCat(catId){
