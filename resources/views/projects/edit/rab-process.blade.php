@@ -192,8 +192,55 @@
 
 @push('js')
 <script>
+    document.addEventListener('keydown', function(e){
+
+        if(e.key !== 'Enter') return
+
+        const el = e.target
+
+        if(el.classList.contains('uraian-input')){
+            e.preventDefault()
+            e.stopPropagation()
+
+            const row = el.closest('.uraian-row')
+            if(row) saveUraianEdit(row.id)
+        }
+
+        if(el.closest('.category-row') && el.tagName === 'INPUT'){
+            e.preventDefault()
+
+            const row = el.closest('.category-row')
+            if(row) saveCategoryEdit(row.id)
+        }
+
+    })
+    document.addEventListener('keyup', function(e){
+
+        if(e.key !== 'Enter') return
+
+        const el = e.target
+
+        if(!el.classList.contains('uraian-input')) return
+
+        const row = el.closest('.uraian-row')
+        if(!row) return
+
+        saveUraianEdit(row.id)
+
+    })
     function initRabEdit(){
-        $('.select2-row').select2()   
+
+        $('.select2-row').each(function(){
+            if($(this).hasClass("select2-hidden-accessible")){
+                $(this).select2('destroy')
+            }
+        })
+
+        $('.select2-row').select2({
+            width: '100%',
+            dropdownAutoWidth: true
+        })
+
         recalcAfterDrag()
         updateHargaSemua()
     }
@@ -247,6 +294,8 @@
         animation:150,
         handle:'.drag-handle,.drag-ahsp',
         draggable:'tr',
+        filter: '.uraian-input',
+        preventOnFilter: false,
 
         onStart:function(evt){
 
@@ -583,8 +632,7 @@
 
             <td colspan="5">
                 <input type="text" class="form-control fw-bold"
-                    placeholder="Nama kategori pekerjaan"
-                    onkeydown="if(event.key==='Enter'){ event.preventDefault(); saveCategoryEdit('${catId}') }">
+                    placeholder="Nama kategori pekerjaan">
             </td>
 
             <td></td>
@@ -669,8 +717,7 @@
                     </span>
 
                 <input class="form-control uraian-input"
-                    placeholder="Uraian pekerjaan"
-                    onkeydown="if(event.key==='Enter') saveUraianEdit('${uraianId}')">
+                    placeholder="Uraian pekerjaan">
                 </div>
             </td>
 
@@ -683,6 +730,17 @@
         </tr>
 
         `)
+        setTimeout(()=>{
+            const input = document.querySelector(`#${uraianId} .uraian-input`)
+
+            if(input){
+                input.focus()
+
+                // 🔥 penting: select text biar langsung aktif
+                input.select()
+            }
+
+        },50)
         renumberUraian(catId)
 
     }
@@ -817,18 +875,22 @@
 
         </tr>
         `)
+        const select = $(`#${jobId} .job-select`)
 
-        $('.select2-row').select2()
+        select.select2({
+            width: '100%',
+            dropdownAutoWidth: true
+        })
         setTimeout(()=>{
-    const select = $(`#${jobId} .job-select`)
-    select.select2()
+        const select = $(`#${jobId} .job-select`)
+        select.select2()
 
-    select.next('.select2-container')
-        .find('.select2-selection')
-        .focus()
+        select.next('.select2-container')
+            .find('.select2-selection')
+            .focus()
 
-    select.select2('open')
-    },200)
+        select.select2('open')
+        },200)
         }
 
     function loadJobEdit(rowId, jobId){
@@ -1298,14 +1360,14 @@
 
                     e.preventDefault()
 
-                    if(needRefresh){
-                        Swal.fire({
-                            icon:'warning',
-                            title:'Harga belum disinkronkan',
-                            text:'Silakan refresh harga RAB terlebih dahulu.'
-                        })
-                        return
-                    }
+                    // if(needRefresh){
+                    //     Swal.fire({
+                    //         icon:'warning',
+                    //         title:'Harga belum disinkronkan',
+                    //         text:'Silakan refresh harga RAB terlebih dahulu.'
+                    //     })
+                    //     return
+                    // }
 
                     const items = collectItems()
 

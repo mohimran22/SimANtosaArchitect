@@ -1011,30 +1011,26 @@ document.addEventListener("DOMContentLoaded", () => {
         view.style.display = "none";
         edit.style.display = "block";
 
-        // ✅ load hanya sekali saat pertama klik
         if(!rabLoaded){
 
-            const rabId = {{ $rab->id }};
+            const rabId = {{ $rab?->id }};
 
             fetch(`/rab/${rabId}/structure`)
                 .then(res => res.json())
                 .then(data => {
 
                     loadExistingRab(data);
-
-                    // 🔥 init AFTER DOM benar-benar masuk
-                    requestAnimationFrame(() => {
+                    setTimeout(() => {
                         initRabEdit()
-                    })
+                    }, 100)
 
                     rabLoaded = true
                 });
 
         }else{
-            // kalau sudah pernah load → cukup init ulang
-            requestAnimationFrame(() => {
-                initRabEdit()
-            })
+            setTimeout(() => {
+                        initRabEdit()
+            }, 100)
         }
 
     });
