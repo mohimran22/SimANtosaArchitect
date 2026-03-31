@@ -512,7 +512,7 @@ col.just-hidden {
 /* tabel utama */
 .progress-table {
     background-color: #f8f9fa !important;
-    border-collapse: separate !important;
+    border-collapse: collapse !important;
     border-spacing: 0;
     margin: 0 !important;
     table-layout: auto;
@@ -524,9 +524,7 @@ col.just-hidden {
 }
 .progress-table th,
 .progress-table td {
-    border: 0;
-    box-shadow: inset -1px 0 0 #dee2e6,
-                inset 0 -1px 0 #dee2e6;
+    border: 1px solid #adb5bd;
     min-width: 60px;
     white-space: normal !important;
     word-break: break-word;
@@ -549,17 +547,13 @@ col.just-hidden {
 /* header freeze kolom kiri */
 .progress-table thead th.sticky-col {
     z-index: 100 !important;
-    background-color: #ffff !important;
-}
-
-.progress-table tbody td.sticky-col {
-    background-color: #f8f9fa;
+    background-color: #ffff;
 }
 
 /* sticky kolom kiri (class dari JS) */
 .sticky-col {
     position: sticky;
-    background-color: #f8f9fa ;
+    background-color: #f8f9fa !important;
     z-index: 50;
 }
 
