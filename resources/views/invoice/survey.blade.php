@@ -135,7 +135,7 @@ p {
         </small>
     </td>
     <td class="text-right">
-        {{ number_format($invoice->amount,0,',','.') }}
+        {{ number_format($invoice->amount ?? 0,0,',','.') }}
     </td>
 </tr>
 </tbody>

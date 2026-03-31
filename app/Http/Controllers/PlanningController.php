@@ -288,14 +288,4 @@ public function update(Request $request, Planning $planning)
 
     return back()->with('success', 'Rencana survei berhasil diperbarui.');
 }
-
-    public function destroy(Student $student)
-    {
-        if ($student) {
-            $student->delete();
-            return response()->json(['status' => 'success', 'message' => 'Student deleted successfully']);
-        }
-
-        return response()->json(['status' => 'failed', 'message' => 'Unable to delete']);
-    }
 }

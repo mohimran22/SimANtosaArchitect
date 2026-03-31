@@ -29,6 +29,8 @@ class Offer extends Model
         'offer_date',
         'contact_name',
         'volume',
+        'subtotal',
+        'subtotal_after_discount',
         'satuan',
         'price_meter',
         'total_price',

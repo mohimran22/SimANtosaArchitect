@@ -21,6 +21,7 @@ class Planning extends Model
         'survey_address',
         'same_address',
         'province_id',
+        'survey_fee',
         'city_id',
         'district_id',
         'sub_district_id',

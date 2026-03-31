@@ -41,6 +41,7 @@ public function store(OfferBuildRequest $request)
             'price_meter' => $rab->price_meter,
             'total_price' => $rab->volume * $rab->price_meter,
             'subtotal'       => $rab->subtotal,
+            'subtotal_after_discount'       => $rab->subtotal_after_discount,
             'discount'       => $rab->discount,
             'tax_rate'       => $rab->tax_rate,
             'total_tax'      => $rab->tax_total,
@@ -50,8 +51,6 @@ public function store(OfferBuildRequest $request)
             'notes'          => $data['notes'] ?? null,
             'created_by'     => auth()->id(),
         ]);
-
-        $rab->load('categories.uraians.items');
 
         foreach ($rab->categories as $category) {
 
@@ -89,6 +88,7 @@ public function store(OfferBuildRequest $request)
         DB::commit();
 
         $creatorUser = auth()->user();
+        $project = $offer->load('project.customer.user')->project;
 
         $event = 'offerbuild_created';
         $cfg   = config("project_events.offerbuild_created");
@@ -108,6 +108,7 @@ public function store(OfferBuildRequest $request)
 
         foreach ($targets as $key => $user) {
             if (!$user) continue;
+            $role = null;
 
             if ($user->id === $creatorUser->id) {
                 $role = 'created_self';
@@ -115,7 +116,7 @@ public function store(OfferBuildRequest $request)
                 $role = 'customer';
             }
 
-            if (!isset($cfg['message'][$role])) {
+            if (!$role || !isset($cfg['message'][$role])) {
                 continue;
             }
 
@@ -138,13 +139,15 @@ public function store(OfferBuildRequest $request)
     } catch (\Exception $e) {
 
         DB::rollBack();
-        return back()->withErrors($e->getMessage());
+
+        \Log::error($e);
+
+        return back()->withErrors('Terjadi kesalahan saat menyimpan penawaran');
     }
 }
 
 protected function generateOfferNumber(string $type): string
 {
-    return DB::transaction(function () use ($type) {
 
         $now = now();
         $yearFull  = $now->format('Y'); // 2026
@@ -173,7 +176,7 @@ protected function generateOfferNumber(string $type): string
         $nomorUrut = str_pad($next, 3, '0', STR_PAD_LEFT);
 
         return "PH/$type/$yearShort/$bulanRomawi/$nomorUrut";
-    });
+
 }
 
 

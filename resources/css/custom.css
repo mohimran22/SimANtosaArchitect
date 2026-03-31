@@ -549,13 +549,17 @@ col.just-hidden {
 /* header freeze kolom kiri */
 .progress-table thead th.sticky-col {
     z-index: 100 !important;
-    background-color: #ffff;
+    background-color: #ffff !important;
+}
+
+.progress-table tbody td.sticky-col {
+    background-color: #f8f9fa;
 }
 
 /* sticky kolom kiri (class dari JS) */
 .sticky-col {
     position: sticky;
-    background-color: #f8f9fa !important;
+    background-color: #f8f9fa ;
     z-index: 50;
 }
 

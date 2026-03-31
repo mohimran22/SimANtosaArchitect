@@ -103,7 +103,9 @@ class InvoiceController extends Controller
 
             $invoice = Invoice::where('project_id', $project->id)
                 ->where('invoice_type', Invoice::TYPE_SURVEY)
+                ->where('status', '!=', 'obsolete') // 🔥 filter invoice lama
                 ->lockForUpdate()
+                ->latest() // 🔥 ambil terbaru
                 ->first();
 
             if (!$invoice) {
@@ -112,7 +114,7 @@ class InvoiceController extends Controller
                     'invoice_type'   => Invoice::TYPE_SURVEY,
                     'invoice_number' => InvoiceNumberGenerator::generate(Invoice::TYPE_SURVEY),
                     'invoice_date'   => now(),
-                    'amount'         => $project->planning->survey_cost ?? 0,
+                    'amount' => $project->latestSurveyInvoice()?->amount ?? 0,
                     'status'         => Invoice::STATUS_WAITING,
                 ]);
             }

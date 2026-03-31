@@ -460,7 +460,7 @@ protected function notifyProjectEvent(Project $project, string $event)
 public function items($id)
 {
     $rab = RabProcess::with([
-        'categories.uraians.items.category',
+        'categories.uraians.items',
         'categories.uraians.images.image'
     ])->findOrFail($id);
 

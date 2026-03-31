@@ -1035,46 +1035,46 @@ document.addEventListener('click', function (e) {
 });
 </script>
 <script>
-let rabLoaded = false
-document.addEventListener("DOMContentLoaded", () => {
+    let rabLoaded = false
+    document.addEventListener("DOMContentLoaded", () => {
 
-    const view = document.getElementById("rab-view");
-    const edit = document.getElementById("rab-edit");
-    document.getElementById("btn-edit-rab")?.addEventListener("click", () => {
+        const view = document.getElementById("rab-view");
+        const edit = document.getElementById("rab-edit");
+        document.getElementById("btn-edit-rab")?.addEventListener("click", () => {
 
-        view.style.display = "none";
-        edit.style.display = "block";
+            view.style.display = "none";
+            edit.style.display = "block";
 
-        if(!rabLoaded){
+            if(!rabLoaded){
 
-            const rabId = @json($rab?->id);
+                const rabId = @json($rab?->id);
 
-            fetch(`/rab/${rabId}/structure`)
-                .then(res => res.json())
-                .then(data => {
+                fetch(`/rab/${rabId}/structure`)
+                    .then(res => res.json())
+                    .then(data => {
 
-                    loadExistingRab(data);
-                    setTimeout(() => {
-                        initRabEdit()
-                    }, 100)
+                        loadExistingRab(data);
+                        setTimeout(() => {
+                            initRabEdit()
+                        }, 100)
 
-                    rabLoaded = true
-                });
+                        rabLoaded = true
+                    });
 
-        }else{
-            setTimeout(() => {
-                        initRabEdit()
-            }, 100)
-        }
+            }else{
+                setTimeout(() => {
+                            initRabEdit()
+                }, 100)
+            }
+
+        });
+
+        document.getElementById("btn-cancel-rab").addEventListener("click", () => {
+            edit.style.display = "none";
+            view.style.display = "block";
+        });
 
     });
-
-    document.getElementById("btn-cancel-rab").addEventListener("click", () => {
-        edit.style.display = "none";
-        view.style.display = "block";
-    });
-
-});
 </script>
 <script>
 document.addEventListener("DOMContentLoaded", () => {

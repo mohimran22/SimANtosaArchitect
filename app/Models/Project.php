@@ -193,8 +193,9 @@ public function getEmployeeNameAttribute()
 public function latestSurveyInvoice()
 {
     return $this->invoices()
-        ->where('invoice_type', 'survey')
-        ->latest()
+        ->where('invoice_type', Invoice::TYPE_SURVEY)
+        ->where('status', '!=', 'obsolete')
+        ->latest() // by created_at
         ->first();
 }
 
