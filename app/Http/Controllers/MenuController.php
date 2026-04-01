@@ -92,7 +92,7 @@ public function index(Request $request)
 
     return redirect()
         ->route('menus.index')
-        ->with('success', 'Menu created successfully.');
+        ->with('success', 'Menu berhasil dibuat.');
 }
 
 
@@ -133,7 +133,7 @@ public function edit(Menu $menu)
 
     return redirect()
         ->route('menus.index')
-        ->with('success', 'Menu updated successfully.');
+        ->with('success', 'Menu berhasil diubah.');
 }
 
 
@@ -141,6 +141,6 @@ public function edit(Menu $menu)
     public function destroy(Menu $menu)
     {
         $menu->delete();
-        return back()->with('success', 'Menu deleted successfully.');
+        return back()->with('success', 'Menu berhasil dihapus.');
     }
 }

@@ -27,11 +27,6 @@ class AccountingAccount extends Model
         'is_active',
     ];
 
-          public function license()
-    {
-        return $this->belongsTo(License::class);
-    }
-
       public function parent()
     {
         return $this->belongsTo(self::class, 'parent_id');

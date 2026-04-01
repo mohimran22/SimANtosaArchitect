@@ -212,7 +212,7 @@
 
             return
         }
-        if(el.closest('.category-row') && el.tagName === 'INPUT'){
+        if(el.classList.contains('category-input')){
 
             e.preventDefault()
             e.stopImmediatePropagation()
@@ -628,7 +628,7 @@
             </td>
 
             <td colspan="5">
-                <input type="text" class="form-control fw-bold"
+                <input type="text" class="form-control fw-bold category-input"
                     placeholder="Nama kategori pekerjaan">
             </td>
 
@@ -652,8 +652,12 @@
     function saveCategoryEdit(catId){
 
         const row = document.getElementById(catId)
-        const input = row.querySelector('input')
-
+        const input = row.querySelector('.category-input')
+        if(!input.value.trim()){
+            alert('Nama kategori tidak boleh kosong')
+            input.focus()
+            return
+        }
         const name = input.value || 'Kategori Baru'
 
         row.dataset.name = name

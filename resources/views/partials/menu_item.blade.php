@@ -68,7 +68,6 @@
         @if($canViewParent)
             <li class="nav-item {{ $hasChildren ? 'has-dropdown' : '' }}"
                 data-title="{{ $menu['text'] }}">
-
                 <a class="nav-link {{ $isActive ? 'active' : '' }} {{ $hasChildren ? 'dropdown-toggle' : '' }}"
                 data-title="{{ $menu['text'] }}"
                 href="{{ $hasChildren ? '#' : ($menu['type'] === 'route' ? route($menu['url']) : url($menu['url'])) }}" role="button"
@@ -113,6 +112,20 @@
         @endif
     @endforeach
 
+<script>
+document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(el => {
+    el.addEventListener('click', function (e) {
+
+        const target = document.querySelector(this.getAttribute('data-bs-target'));
+
+        if(target.classList.contains('show')){
+            e.preventDefault();
+            target.classList.remove('show');
+        }
+
+    });
+});
+</script>
 <style>
 /* .navbar-nav .nav-item .nav-link {
     display: flex;

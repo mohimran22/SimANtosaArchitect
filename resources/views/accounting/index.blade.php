@@ -4,19 +4,17 @@
 <div class="container">
     <h1 class="mb-4">Daftar Akun</h1>
 
-    <a href="{{ route("accounting.create") }}" class="btn btn-primary mb-3">Tambah Akun</a>
+    <a href="{{ route("accounting.create") }}" class="btn btn-dark text-white mb-3">Tambah Akun</a>
 
-    <table class="table table-bordered">
+    <table id="tableAccounts" class="table card-table table-vcenter text-nowrap" >
         <thead>
             <tr>
-                <th>Tipe Lisensi</th>
-                <th>Nama Lisensi</th>
                 <th>Kode Akun</th>
                 <th>Nama Akun</th>
-                <th>Jenis</th>
-                <th>Debit/Kredit</th>
+                <th>Kategori</th>
+                <th>Sub Kategori</th>
                 <th>Saldo Awal</th>
-                <th>Akun Induk</th>
+                {{-- <th>Akun Induk</th> --}}
                 <th>Status</th>
                 <th>Aksi</th>
             </tr>
@@ -24,20 +22,18 @@
         <tbody>
             @forelse ($accounts as $account)
                 <tr>
-                    <td>{{ $account->license ? $account->license->license_type : '-' }}</td>
-                    <td>{{ $account->license ? $account->license->name : '-' }}</td>
                     <td>{{ $account->account_code }}</td>
                     <td>{{ $account->account_name }}</td>
-                    <td>{{ $account->account_type }}</td>
-                    <td>{{ $account->balance_type }}</td>
+                    <td>{{ $account->category }}</td>
+                    <td>{{ $account->sub_category }}</td>
                     <td>{{ number_format($account->initial_balance, 2) }}</td>
-                    <td>
+                    {{-- <td>
                         @if ($account->parent)
-                            {{ $account->parent->account_name }}
+                            {{ optional($account->parent)->account_name ?? '-' }}
                         @else
                             -
                         @endif
-                    </td>
+                    </td> --}}
                     <td>
                         @if ($account->is_active)
                             <span class="badge bg-success">Aktif</span>
@@ -46,12 +42,20 @@
                         @endif
                     </td>
                     <td>
-                        <a href="{{ route('accounting.edit', $account->id) }}" class="btn btn-sm btn-warning">Edit</a>
-                        <form action="{{ route('accounting.destroy', $account->id) }}" method="POST" style="display:inline-block;" onsubmit="return confirmDelete(event)">
-                                    @csrf
-                                    @method('DELETE')
-                                     <button class="btn btn-sm btn-danger">Hapus</button>
-                                </form>
+                        @if (auth()->user()->can('ubah akun-akuntansi')) 
+                            <a href="{{ route('accounting.edit', $account->id) }}" class="btn btn-dark btn-sm" title="Edit">
+                                <i class="ti ti-edit"></i>
+                            </a>
+                        @endif
+                        @if (auth()->user()->can('hapus akun-akuntansi')) 
+                            <form action="{{ route('accounting.destroy', $account->id) }}" method="POST" style="display:inline-block;">
+                                @csrf
+                                @method('DELETE')
+                                <button class="btn btn-dark btn-sm" onclick="return confirm('Hapus jurnal ini?')" title="Hapus">
+                                    <i class="ti ti-trash"></i>
+                                </button>
+                            </form>
+                        @endif
                     </td>
                 </tr>
             @empty
@@ -61,5 +65,34 @@
             @endforelse
         </tbody>
     </table>
+
+  
 </div>
 @endsection
+
+{{-- @push('js')
+<script>
+    $(function () {
+        $('#tableAccounts').DataTable({
+            processing: true,
+            serverSide: true,
+            ajax: '{{ route("accounting.index") }}',
+            columns: [
+                { data: 'license_type', name: 'license.license_type' },
+                { data: 'license_name', name: 'license.name' },
+                { data: 'account_code', name: 'account_code' },
+                { data: 'account_name', name: 'account_name' },
+                { data: 'account_type', name: 'account_type' },
+                { data: 'balance_type', name: 'balance_type' },
+                { data: 'initial_balance', name: 'initial_balance' },
+                { data: 'parent_name', name: 'parent.account_name', orderable: false, searchable: false },
+                { data: 'status', name: 'is_active', orderable: false, searchable: false },
+                { data: 'action', name: 'action', orderable: false, searchable: false },
+            ]
+        });
+    });
+</script> 
+@endpush --}}
+
+
+
