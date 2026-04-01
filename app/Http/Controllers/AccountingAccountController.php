@@ -10,50 +10,99 @@ use Yajra\DataTables\Facades\DataTables;
 
 class AccountingAccountController extends Controller
 {
-    public function index(Request $request)
-    {
-        $user = Auth::user();
 
-        $query = AccountingAccount::with(['parent']);
+public function index(Request $request)
+{
+    $user = Auth::user();
 
-        if ($user->hasRole('Super-Admin')) {
-            // Lihat semua akun
-        } elseif ($user->hasRole('Pemilik Lisensi')) {
+    $query = AccountingAccount::with(['parent']);
+
+    if ($user->hasRole('Super-Admin')) {
+        // semua data
+    } elseif ($user->hasRole('Pemilik Lisensi')) {
+
         $licenses = optional($user->licenses);
 
         if ($licenses?->isNotEmpty()) {
             $query->whereIn('license_id', $licenses->pluck('id'));
         } else {
             abort(403, 'Lisensi tidak ditemukan untuk pemilik lisensi.');
-        } 
-        
+        }
+
     } elseif ($user->hasRole('Akuntan')) {
-            $licenses = optional($user->employee)->licenses; // ← pakai relasi belongsToMany
 
-            if ($licenses && $licenses->count() > 0) {
-                $query->whereIn('license_id', $licenses->pluck('id'));
-            } else {
-                abort(403, 'Lisensi tidak ditemukan.');
-            }
+        $licenses = optional($user->employee)->licenses;
+
+        if ($licenses && $licenses->count() > 0) {
+            $query->whereIn('license_id', $licenses->pluck('id'));
         } else {
-            abort(403, 'Role Tidak diizinkan');
+            abort(403, 'Lisensi tidak ditemukan.');
         }
 
-        // ✅ Tambahkan filter lisensi aktif (kecuali Super Admin)
-        if (! $user->hasRole('Super-Admin')) {
-
-            if (!$activeLicenseId) {
-                abort(403, 'Silakan pilih lisensi aktif terlebih dahulu.');
-            }
-
-            $query->where('license_id', $activeLicenseId);
-        }
-
-        $accounts = $query->orderBy('account_code')->get();
-
-
-        return view('accounting.index', compact('accounts'));
+    } else {
+        abort(403, 'Role Tidak diizinkan');
     }
+
+    if (!$user->hasRole('Super-Admin')) {
+
+        $activeLicenseId = session('active_license_id'); // ⬅️ biasanya ini
+
+        if (!$activeLicenseId) {
+            abort(403, 'Silakan pilih lisensi aktif terlebih dahulu.');
+        }
+
+        $query->where('license_id', $activeLicenseId);
+    }
+
+    if ($request->ajax()) {
+
+        return DataTables::of($query)
+
+            ->addIndexColumn()
+
+            ->addColumn('parent_name', function ($row) {
+                return optional($row->parent)->account_name;
+            })
+
+            ->addColumn('is_parent', function ($row) {
+                return $row->is_parent ? 'Ya' : 'Tidak';
+            })
+
+            ->addColumn('status', function ($row) {
+                return $row->is_active ? 'Aktif' : 'Nonaktif';
+            })
+
+            ->addColumn('aksi', function ($row) {
+                $buttons = '';
+
+                if (auth()->user()->can('ubah akun-akuntansi')) {
+                    $buttons .= '<a href="' . route('accounting.edit', $row->id) . '" 
+                                class="btn btn-icon btn-sm btn-dark me-1">
+                                <i class="ti ti-edit"></i></a>';
+                }
+                //  if (auth()->user()->can('lihat data proyek')) {
+                //             $buttons .= '<a href="' . route('projects.show', $row->id) . '" class="btn btn-icon btn-sm btn-dark me-1" title="Lihat">
+                //                             <i class="ti ti-eye"></i>
+                //                         </a>';
+
+                // }
+                if (auth()->user()->can('hapus akun-akuntansi')) {
+                    $buttons .= '<button data-id="' . $row->id . '" 
+                                class="btn btn-icon btn-sm btn-dark delete-accounts">
+                                <i class="ti ti-trash"></i></button>';
+                }
+
+                return $buttons;
+            })
+
+            ->rawColumns(['aksi'])
+            ->orderColumn('account_code', 'account_code $1') // biar sorting jalan
+
+            ->make(true);
+    }
+
+    return view('accounting.index');
+}
 
 
     public function create()
@@ -61,7 +110,7 @@ class AccountingAccountController extends Controller
     $user = Auth::user();
 
     if ($user->hasRole('Super-Admin')) {
-        $licenses = License::all();
+        // $licenses = License::all();
     } elseif ($user->hasRole('Akuntan')) {
         $licenses = $user->employee?->licenses;
 
@@ -74,14 +123,13 @@ class AccountingAccountController extends Controller
 
     $parentAccounts = AccountingAccount::where('is_parent', true)->get();
 
-    return view('accounting.create', compact('licenses', 'parentAccounts'));
+    return view('accounting.create', compact('parentAccounts'));
 }
 
 
     public function store(Request $request)
     {
         $request->validate([
-            'license_id' =>   'required|exists:licenses,id',
             'account_code' => 'required|string|max:255',
             'account_name' => 'required|string|max:255',
             'category' => 'required|string|max:255',
@@ -93,7 +141,6 @@ class AccountingAccountController extends Controller
 
         AccountingAccount::create([
             'id' => Str::uuid(),
-            'license_id' => $request->license_id ?? null, // sesuaikan jika ada
             'account_code' => $request->account_code,
             'account_name' => $request->account_name,
             'category' => $request->category,
@@ -112,7 +159,7 @@ class AccountingAccountController extends Controller
         $user = Auth::user();
 
     if ($user->hasRole('Super-Admin')) {
-        $licenses = License::all();
+        // $licenses = License::all();
     } elseif ($user->hasRole('Akuntan')) {
         $licenses = $user->employee?->licenses;
 
@@ -125,7 +172,7 @@ class AccountingAccountController extends Controller
 
     $parentAccounts = AccountingAccount::where('is_parent', true)->get();
 
-        return view('accounting.edit', compact('account', 'licenses', 'parentAccounts'));
+        return view('accounting.edit', compact('account', 'parentAccounts'));
     }
 
     public function update(Request $request, AccountingAccount $account)
@@ -136,9 +183,16 @@ class AccountingAccountController extends Controller
             'category' => 'required|string|max:255',
             'sub_category' => 'required|in:Debit,Kredit',
             'initial_balance' => 'nullable|numeric',
-            'is_parent' => 'boolean',
+            'is_parent' => 'nullable|boolean',
             'parent_id' => 'nullable|uuid|exists:accounting_accounts,id',
         ]);
+
+        // 🔥 cegah parent ke diri sendiri
+        if ($request->parent_id == $account->id) {
+            return back()->withErrors([
+                'parent_id' => 'Tidak boleh memilih diri sendiri sebagai parent.'
+            ]);
+        }
 
         $account->update([
             'account_code' => $request->account_code,
@@ -146,17 +200,21 @@ class AccountingAccountController extends Controller
             'category' => $request->category,
             'sub_category' => $request->sub_category,
             'initial_balance' => $request->initial_balance,
-            'is_parent' => $request->is_parent ?? false,
+            'is_parent' => $request->boolean('is_parent'),
             'parent_id' => $request->parent_id,
         ]);
 
-        return redirect()->route('accounting.index')->with('success', 'Akun berhasil diubah.');
+        return redirect()
+            ->route('accounting.index')
+            ->with('success', 'Akun berhasil diubah.');
     }
 
-     public function destroy(AccountingAccount $account)
+    public function destroy($id)
     {
+        $account = AccountingAccount::findOrFail($id);
         $account->delete();
-        return redirect()->route('accounting.index')->with('success', 'Akun berhasil dihapus.');
+
+        return response()->json(['status' => 'success']);
     }
 
 }

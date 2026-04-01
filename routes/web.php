@@ -143,20 +143,20 @@ Route::middleware(['auth', 'permission:lihat daftar kontraktor|lihat data kontra
     Route::resource('/contractors', ContractorController::class);
 });
 
-Route::middleware(['auth', 'role:Super-Admin|Akuntan'])
-        ->resource('accounting', AccountingAccountController::class)
-         ->parameters(['accounting' => 'account']);
+Route::middleware(['role:Super-Admin|Akuntan'])->group(function () {
+    Route::resource('/accounting', AccountingAccountController::class);
+});
 
 Route::get('/journals/report', [AccountingJournalController::class, 'report'])
     ->name('journals.report')
     ->middleware(['role:Super-Admin|Akuntan']);
 
 Route::middleware(['role:Super-Admin|Akuntan'])->group(function () {
-    Route::resource('journals', AccountingJournalController::class);
+    Route::resource('/journals', AccountingJournalController::class);
 });
 
-Route::get('/periods/close', [AccountingClosingController::class, 'showCloseForm'])->name('periods.close.form');
-Route::post('/periods/close', [AccountingClosingController::class, 'close'])->name('periods.close');
+// Route::get('/periods/close', [AccountingClosingController::class, 'showCloseForm'])->name('periods.close.form');
+// Route::post('/periods/close', [AccountingClosingController::class, 'close'])->name('periods.close');
 
 Route::post('/switch-role', [RoleSwitchController::class, 'switch'])
     ->middleware('auth')
@@ -480,11 +480,11 @@ Route::delete(
 Route::post('/projects/{project}/sync-tasks',
     [\App\Http\Controllers\ProjectTaskController::class, 'syncFromOffer']
 )->name('projects.tasks.sync');
-Route::get('/survey-invoice/{invoice}/approve', [\App\Http\Controllers\SurveyInvoiceController::class, 'approve'])
-    ->name('survey.approve');
+// Route::get('/survey-invoice/{invoice}/approve', [\App\Http\Controllers\SurveyInvoiceController::class, 'approve'])
+//     ->name('survey.approve');
 
-Route::post('/survey-invoice/{invoice}/reject', [\App\Http\Controllers\SurveyInvoiceController::class, 'reject'])
-    ->name('survey.reject.form');
+// Route::post('/survey-invoice/{invoice}/reject', [\App\Http\Controllers\SurveyInvoiceController::class, 'reject'])
+//     ->name('survey.reject.form');
 
 Route::post(
     '/projects/{project}/final',

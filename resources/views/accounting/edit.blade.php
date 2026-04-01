@@ -9,13 +9,13 @@
     <form action="{{ route('accounting.update', $account->id) }}" method="POST">
         @csrf
         @method('PUT')
-
+{{-- 
         <div class="mb-3">
                 @include('components.select-license', [
                     'licenses' => $licenses,
                     'selectedLicenseId' => $account->license_id
                 ])
-        </div>
+        </div> --}}
 
         <div class="mb-3">
             <label>Kode Akun</label>

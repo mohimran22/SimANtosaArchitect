@@ -81,9 +81,9 @@
                 scrollY: '500px',
                 scrollX: true,
                 scrollCollapse: true,
-                // fixedColumns: {
-                //     leftColumns: 3
-                // },
+                fixedColumns: {
+                    leftColumns: 4
+                },
                 serverSide: true,
                 processing: true,
                 ajax: '{{ route("projects.index") }}',

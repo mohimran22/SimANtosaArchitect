@@ -111,7 +111,7 @@
             </li>
         @endif
     @endforeach
-
+@push('js')
 <script>
 document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(el => {
     el.addEventListener('click', function (e) {
@@ -126,6 +126,7 @@ document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(el => {
     });
 });
 </script>
+@endpush
 <style>
 /* .navbar-nav .nav-item .nav-link {
     display: flex;

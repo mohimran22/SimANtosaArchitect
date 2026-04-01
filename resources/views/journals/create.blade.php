@@ -28,12 +28,12 @@
         @csrf
 
         {{-- License --}}
-            <div class="mb-3">
+            {{-- <div class="mb-3">
                 @include('components.select-license', [
                     'licenses' => $licenses,
                     'selectedLicenseId' => old('license_id', $yourModel->license_id ?? null)
                 ])
-            </div>
+            </div> --}}
 
         {{-- Tanggal --}}
         <div class="mb-3">
