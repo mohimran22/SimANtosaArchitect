@@ -154,7 +154,7 @@ public function index(Request $request)
         return redirect()->route('accounting.index')->with('success', 'Akun berhasil ditambahkan.');
     }
 
-    public function edit(AccountingAccount $account)
+    public function edit(AccountingAccount $accounting)
     {
         $user = Auth::user();
 
@@ -172,7 +172,10 @@ public function index(Request $request)
 
     $parentAccounts = AccountingAccount::where('is_parent', true)->get();
 
-        return view('accounting.edit', compact('account', 'parentAccounts'));
+    return view('accounting.edit', [
+        'account' => $accounting,
+        'parentAccounts' => $parentAccounts
+    ]);
     }
 
     public function update(Request $request, AccountingAccount $account)

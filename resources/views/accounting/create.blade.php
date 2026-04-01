@@ -122,11 +122,6 @@
             </div>
         </div>
     </div>
-{{-- <div class="container">
-    <h1 class="mb-4">Tambah Akun</h1>
-
-    
-</div> --}}
 @endsection
 @push('js')
 <script>

@@ -1,68 +1,89 @@
 @extends('tablar::page')
 
-@section('title', 'Edit Akun')
-
 @section('content')
-<div class="container">
-    <h1 class="mb-4">Edit Akun</h1>
-
-    <form action="{{ route('accounting.update', $account->id) }}" method="POST">
-        @csrf
-        @method('PUT')
-{{-- 
-        <div class="mb-3">
-                @include('components.select-license', [
-                    'licenses' => $licenses,
-                    'selectedLicenseId' => $account->license_id
-                ])
-        </div> --}}
-
-        <div class="mb-3">
-            <label>Kode Akun</label>
-            <input type="text" name="account_code" value="{{ $account->account_code }}" class="form-control" required>
+    <div class="page-header d-print-none mb-4">
+        <div class="container-xl">
+            <div class="row align-items-center">
+                <div class="col d-flex align-items-center">
+                    <a href="{{ route('accounting.index') }}" class="btn btn-dark d-flex align-items-center">
+                        <i class="ti ti-arrow-left"></i>
+                    </a>      
+                        <h2 class="page-title mb-0">Edit Akun Akuntansi</h2> 
+                </div>
+            </div>
         </div>
+    </div>
+    <div class="page-body">
+        <div class="container-xl">
+            <div class="row row-deck row-cards">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <form action="{{ route('accounting.update', $account->id) }}" method="POST">
+                                @csrf
+                                @method('PUT')
 
-        <div class="mb-3">
-            <label>Nama Akun</label>
-            <input type="text" name="account_name" value="{{ $account->account_name }}" class="form-control" required>
+                                <div class="mb-3">
+                                    <label>Kode Akun</label>
+                                    <input type="text" name="account_code" value="{{ $account->account_code }}" class="form-control" required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label>Nama Akun</label>
+                                    <input type="text" name="account_name" value="{{ $account->account_name }}" class="form-control" required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label>Kategori</label>
+                                    <input type="text" name="category" value="{{ $account->category }}" class="form-control" required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label>Debit/Kredit</label>
+                                    <select name="sub_category" class="form-control" required>
+                                        <option value="Debit" {{ $account->sub_category == 'Debit' ? 'selected' : '' }}>Debit</option>
+                                        <option value="Kredit" {{ $account->sub_category == 'Kredit' ? 'selected' : '' }}>Kredit</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label>Saldo Awal</label>
+                                    <input type="number" step="0.01" name="initial_balance" value="{{ $account->initial_balance }}" class="form-control">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label>Apakah Akun Induk?</label>
+                                    <input type="checkbox" name="is_parent" value="1" {{ $account->is_parent ? 'checked' : '' }}>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label>Akun Induk</label>
+                                    <select name="parent_id" class="form-select select2">
+                                        <option value="">-- Tidak Ada --</option>
+                                        @foreach ($parentAccounts as $parent)
+                                            <option value="{{ $parent->id }}" {{ $account->parent_id == $parent->id ? 'selected' : '' }}>
+                                                {{ $parent->account_name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                <button class="btn btn-dark">Update</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div> 
         </div>
-
-        <div class="mb-3">
-            <label>Jenis Akun</label>
-            <input type="text" name="account_type" value="{{ $account->account_type }}" class="form-control" required>
-        </div>
-
-        <div class="mb-3">
-            <label>Debit/Kredit</label>
-            <select name="balance_type" class="form-control" required>
-                <option value="Debit" @if($account->balance_type == 'Debit') selected @endif>Debit</option>
-                <option value="Kredit" @if($account->balance_type == 'Kredit') selected @endif>Kredit</option>
-            </select>
-        </div>
-
-        <div class="mb-3">
-            <label>Saldo Awal</label>
-            <input type="number" step="0.01" name="initial_balance" value="{{ $account->initial_balance }}" class="form-control">
-        </div>
-
-        <div class="mb-3">
-            <label>Apakah Akun Induk?</label>
-            <input type="checkbox" name="is_parent" value="1" {{ $account->is_parent ? 'checked' : '' }}>
-        </div>
-
-        <div class="mb-3">
-            <label>Akun Induk</label>
-            <select name="parent_id" class="form-control">
-                <option value="">-- Tidak Ada --</option>
-                @foreach ($parentAccounts as $parent)
-                    <option value="{{ $parent->id }}" @if($account->parent_id == $parent->id) selected @endif>
-                        {{ $parent->account_name }}
-                    </option>
-                @endforeach
-            </select>
-        </div>
-
-        <button class="btn btn-primary">Update</button>
-    </form>
-</div>
+    </div>   
 @endsection
+@push('js')
+<script>
+    $(document).ready(function() {
+        $('.select2').select2({
+            placeholder: "-- Pilih --",
+            width: '100%'
+        });
+    });
+</script>
+@endpush

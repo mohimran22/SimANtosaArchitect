@@ -167,37 +167,34 @@ class AccountingJournalController extends Controller
     // $pusatUserId   = $pusatLicense?->pusatUser()?->id;
     // $pusatUserName = $pusatLicense?->pusatUser()?->name;
 
-    $journalCode = $activeLicenseId
-    ? $this->generateNextJournalCode($activeLicenseId)
-    : null; 
+    $journalCode = $this->generateNextJournalCode();
 
         return view('journals.create', compact('journalCode', 'activeLicenseId', 'accounts'));
 }
 
-    private function generateNextJournalCode($licenseId)
+private function generateNextJournalCode()
 {
-    $license = License::findOrFail($licenseId);
-
-     $lastJournalNumber = AccountingJournal::where('license_id', $license->id)
-        ->where('journal_code', 'LIKE', 'IJ-' . $license->license_id . '-%')
+    $lastNumber = AccountingJournal::where('journal_code', 'LIKE', 'IJ-%')
         ->selectRaw("
             MAX(
                 CAST(
-                    REGEXP_REPLACE(journal_code, '^IJ-' || ? || '-', '') AS INTEGER
+                    REGEXP_REPLACE(journal_code, '^IJ-', '') AS INTEGER
                 )
             ) as last_number
-        ", [$license->license_id])
+        ")
         ->value('last_number');
 
-        do {
-            $nextNumber = str_pad($lastJournalNumber + 1, 4, '0', STR_PAD_LEFT);
-            $journalCode = 'IJ-' . $license->license_id . '-' . $nextNumber;
+    $lastNumber = $lastNumber ?? 0;
 
-            $exists = AccountingJournal::where('journal_code', $journalCode)->exists();
-            $lastJournalNumber++;
-        } while ($exists);
+    do {
+        $nextNumber = str_pad($lastNumber + 1, 4, '0', STR_PAD_LEFT);
+        $journalCode = 'IJ-' . $nextNumber;
 
-        return $journalCode;
+        $exists = AccountingJournal::where('journal_code', $journalCode)->exists();
+        $lastNumber++;
+    } while ($exists);
+
+    return $journalCode;
 }
 
 public function getNextCode($licenseId)
