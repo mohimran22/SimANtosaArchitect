@@ -34,11 +34,11 @@ class AccountingJournalController extends Controller
                 'accounting_journals.id',
                 'accounting_journals.journal_code',
                 'accounting_journals.transaction_date',
-                // 'licenses.license_type as license_type',
-                // 'licenses.name as license_name',
-                'users.fullname as creator_name'
+                'licenses.license_type as license_type',
+                'licenses.name as license_name',
+                'users.name as creator_name'
             )
-            // ->leftJoin('licenses', 'accounting_journals.license_id', '=', 'licenses.id')
+            ->leftJoin('licenses', 'accounting_journals.license_id', '=', 'licenses.id')
             ->leftJoin('users', 'accounting_journals.created_by', '=', 'users.id')
             ->when(!$user->hasRole('Super-Admin'), function ($query) use ($user) {
                 // Filter lisensi untuk Pemilik Lisensi & Akuntan
@@ -119,9 +119,9 @@ class AccountingJournalController extends Controller
     
 
     // Tentukan daftar license_id untuk query
-    // $licenseIds = $activeLicenseId
-    //     ? [(string) $activeLicenseId]
-    //     : $licenses->pluck('id')->toArray();
+    $licenseIds = $activeLicenseId
+        ? [(string) $activeLicenseId]
+        : $licenses->pluck('id')->toArray();
 
     // Ambil akun yang disembunyikan sesuai role user
     $hiddenAccounts = [];
@@ -134,67 +134,61 @@ class AccountingJournalController extends Controller
         }
     }
 
+    // Accounts
     $accounts = AccountingAccount::where('is_parent', false)
         ->where('is_active', true)
+        ->whereIn('license_id', $licenseIds)
         ->orderBy('account_code')
         ->get();
 
-    // Students
-    // $students = Student::whereIn('license_id', $licenseIds)
-    //     ->select('id', 'fullname as name')
-    //     ->get();
-
-    // // Employees
     // $employees = Employee::whereHas('licenses', function ($q) use ($licenseIds) {
     //         $q->whereIn('employee_license.license_id', $licenseIds);
     //     })
     //     ->select('id', 'fullname as name')
     //     ->get();
 
-    // $licenseholders = User::whereHas('licenses', function ($q) use ($licenseIds) {
-    //         $q->whereIn('license_user.license_id', $licenseIds);
-    //     })
-        
-    //     ->select('id', 'name')
-    //     ->get();
+    $licenseList = License::whereIn('id', $licenseIds)
+        ->select('id', 'name')
+        ->get();
 
-    // $licenseList = License::whereIn('id', $licenseIds)
-    //     ->select('id', 'name')
-    //     ->get();
+    $pusatLicense = License::where('name', 'AHA Right Brain')->first();
 
-    // $pusatLicense = License::where('name', 'AHA Right Brain')->first();
+    $pusatUserId   = $pusatLicense?->pusatUser()?->id;
+    $pusatUserName = $pusatLicense?->pusatUser()?->name;
 
-    // $pusatUserId   = $pusatLicense?->pusatUser()?->id;
-    // $pusatUserName = $pusatLicense?->pusatUser()?->name;
+    $journalCode = $activeLicenseId
+    ? $this->generateNextJournalCode($activeLicenseId)
+    : null; 
 
-    $journalCode = $this->generateNextJournalCode();
-
-        return view('journals.create', compact('journalCode', 'activeLicenseId', 'accounts'));
+        return view('journals.create', compact(
+            'accounts', 'licenses', 'journalCode', 'activeLicenseId', 'licenseList', 'pusatUserId', 'pusatUserName'
+        ));
 }
 
-private function generateNextJournalCode()
+    private function generateNextJournalCode($licenseId)
 {
-    $lastNumber = AccountingJournal::where('journal_code', 'LIKE', 'IJ-%')
+    $license = License::findOrFail($licenseId);
+
+     $lastJournalNumber = AccountingJournal::where('license_id', $license->id)
+        ->where('journal_code', 'LIKE', 'IJ-' . $license->license_id . '-%')
         ->selectRaw("
             MAX(
                 CAST(
-                    REGEXP_REPLACE(journal_code, '^IJ-', '') AS INTEGER
+                    REGEXP_REPLACE(journal_code, '^IJ-' || ? || '-', '') AS INTEGER
                 )
             ) as last_number
-        ")
+        ", [$license->license_id])
         ->value('last_number');
 
-    $lastNumber = $lastNumber ?? 0;
+        do {
+            $nextNumber = str_pad($lastJournalNumber + 1, 4, '0', STR_PAD_LEFT);
+            $journalCode = 'IJ-' . $license->license_id . '-' . $nextNumber;
 
-    do {
-        $nextNumber = str_pad($lastNumber + 1, 4, '0', STR_PAD_LEFT);
-        $journalCode = 'IJ-' . $nextNumber;
+            $exists = AccountingJournal::where('journal_code', $journalCode)->exists();
+            $lastJournalNumber++;
+        } while ($exists);
 
-        $exists = AccountingJournal::where('journal_code', $journalCode)->exists();
-        $lastNumber++;
-    } while ($exists);
-
-    return $journalCode;
+        return $journalCode;
 }
 
 public function getNextCode($licenseId)
@@ -891,6 +885,3 @@ public function balanceSheet(Request $request)
 }
 
 }
-
-
-

@@ -22,7 +22,15 @@
                             <form action="{{ route('accounting.update', $account->id) }}" method="POST">
                                 @csrf
                                 @method('PUT')
-
+                                @if ($errors->any())
+                                            <div class="alert alert-danger">
+                                                <ul class="mb-0">
+                                                    @foreach ($errors->all() as $error)
+                                                        <li>{{ $error }}</li>
+                                                    @endforeach
+                                                </ul>
+                                            </div>
+                                        @endif
                                 <div class="mb-3">
                                     <label>Kode Akun</label>
                                     <input type="text" name="account_code" value="{{ $account->account_code }}" class="form-control" required>
@@ -39,11 +47,8 @@
                                 </div>
 
                                 <div class="mb-3">
-                                    <label>Debit/Kredit</label>
-                                    <select name="sub_category" class="form-control" required>
-                                        <option value="Debit" {{ $account->sub_category == 'Debit' ? 'selected' : '' }}>Debit</option>
-                                        <option value="Kredit" {{ $account->sub_category == 'Kredit' ? 'selected' : '' }}>Kredit</option>
-                                    </select>
+                                    <label>Kategori</label>
+                                    <input type="text" name="sub_category" value="{{ $account->sub_category }}" class="form-control" required>
                                 </div>
 
                                 <div class="mb-3">
@@ -68,7 +73,11 @@
                                     </select>
                                 </div>
 
-                                <button class="btn btn-dark">Update</button>
+                                <div class="text-end mt-5">
+                                            <button type="submit" class="btn btn-dark px-4">
+                                                <i class="ti ti-device-floppy me-1"></i>Simpan Perubahan
+                                            </button>
+                                </div>
                             </form>
                         </div>
                     </div>

@@ -143,6 +143,7 @@ Route::middleware(['auth', 'permission:lihat daftar kontraktor|lihat data kontra
     Route::resource('/contractors', ContractorController::class);
 });
 
+Route::get('/accounting/generate-code', [AccountingAccountController::class, 'generateCode']);
 Route::middleware(['role:Super-Admin|Akuntan'])->group(function () {
     Route::resource('/accounting', AccountingAccountController::class);
 });

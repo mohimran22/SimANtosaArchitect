@@ -16,13 +16,12 @@ class AccountingAccount extends Model
 
     
     protected $fillable = [
-       'license_id',
         'account_code',
         'account_name',
-        'account_type',
+        'category',
         'is_parent',
         'parent_id',
-        'balance_type',
+        'sub_category',
         'initial_balance',
         'is_active',
     ];

@@ -111,6 +111,11 @@ public function bank()
         return $this->belongsToMany(ProjectLevel::class, 'project_level_employee');
     }
 
+        public function licenses()
+    {
+        return $this->belongsToMany(License::class, 'employee_license', 'employee_id', 'license_id');
+    }
+
      public function getMarriedDateFormattedAttribute()
     {
         return $this->married_date ? Carbon::parse($this->married_date)->format('d/m/Y') : '-';

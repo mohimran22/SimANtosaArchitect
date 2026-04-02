@@ -49,7 +49,7 @@
                                         <th>Kategori</th>
                                         <th>Sub Kategori</th>
                                         <th>Saldo Awal</th>
-                                        <th>Akun Induk</th>
+                                        {{-- <th>Akun Induk</th> --}}
                                         <th>Status</th>
                                         <th>Aksi</th>
                                     </tr>
@@ -79,8 +79,9 @@
                 { data: 'account_name', name: 'account_name' },
                 { data: 'category', name: 'category' },
                 { data: 'sub_category', name: 'sub_category' },
-                { data: 'parent_name', name: 'parent.account_name', defaultContent: '-' },
-                { data: 'is_parent', name: 'is_parent' },
+                { data: 'initial_balance', name: 'initial_balance' },
+                // { data: 'parent_name', name: 'parent.account_name', defaultContent: '-' },
+                // { data: 'is_parent', name: 'is_parent' },
                 { data: 'status', name: 'is_active' },
                 { data: 'aksi', name: 'aksi', orderable: false, searchable: false }
             ],

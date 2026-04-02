@@ -46,7 +46,7 @@
                                                 <label for="license_id" class="form-label required">Filter Lisensi</label>
                                                 <select name="license_id" id="license_id" class="form-select select2" required>
                                                     <option value="">-- Pilih Lisensi --</option>
-                                                    {{-- @foreach ($licenses as $license)
+                                                    @foreach ($licenses as $license)
                                                         <option value="{{ $license->id }}" 
                                                             {{ $activeLicenseId == $license->id ? 'selected' : '' }}>
                                                             {{ $license->name }}
@@ -164,14 +164,11 @@
 
 <script>
 $(document).ready(function () {
-    /** 🔹 Inisialisasi Select2 global */
+
     $('.select2').select2({ placeholder: "-- Pilih --", width: '100%' });
 
     let accountsData = [];
 
-    /** ======================================================
-     *  1. Ambil akun & kode jurnal berdasarkan lisensi aktif
-     * ====================================================== */
     function loadAccountsByLicense(licenseId) {
         if (!licenseId) return;
 
@@ -197,9 +194,6 @@ $(document).ready(function () {
             });
     }
 
-    /** ======================================================
-     *  2. Render akun ke dropdown
-     * ====================================================== */
     function renderAccountOptions($select) {
         $select.empty().append('<option value="">-- Pilih Akun --</option>');
 
@@ -216,9 +210,6 @@ $(document).ready(function () {
         $select.select2({ placeholder: "-- Pilih Akun --", width: '100%' });
     }
 
-    /** ======================================================
-     *  3. Render dropdown user sesuai person_type
-     * ====================================================== */
     const userCache = {};
 
     function renderUserOptions($select, type) {
@@ -255,9 +246,6 @@ $(document).ready(function () {
         }
     }
 
-    /** ======================================================
-     *  4. Select2 user dengan fitur input manual
-     * ====================================================== */
     function initSelect2WithCreate($select, type) {
         if ($select.hasClass("select2-hidden-accessible")) return;
         
@@ -287,26 +275,17 @@ $(document).ready(function () {
         });
     }
 
-    /** ======================================================
-     *  5. Saat ganti lisensi → refresh akun & kode jurnal
-     * ====================================================== */
     $('#license_id').on('change', function () {
         const licenseId = $(this).val();
         $('#activeLicenseId').val(licenseId);
         loadAccountsByLicense(licenseId);
     });
 
-    /** ======================================================
-     *  6. Load awal saat halaman dibuka
-     * ====================================================== */
     const selectedLicense = $('#license_id').length
         ? $('#license_id').val()
         : $('#activeLicenseId').val();
     loadAccountsByLicense(selectedLicense);
 
-    /** ======================================================
-     *  7. Tambah baris baru
-     * ====================================================== */
     $('#add-row').click(function () {
         console.log("Tambah baris dipanggil");
         const rowCount = $('#detail-rows tr').length;
@@ -344,17 +323,11 @@ $(document).ready(function () {
         initSelect2WithCreate($newUserSelect, null);
     });
 
-    /** ======================================================
-     *  8. Hapus baris
-     * ====================================================== */
     $(document).on('click', '.remove-row', function () {
         $(this).closest('tr').remove();
         calculateSubtotals();
     });
 
-    /** ======================================================
-     *  9. Daftar akun debit & kredit only
-     * ====================================================== */
     const debitOnlyAccounts = new Set([
         "151","152","153","154","155","121","122","123","124","110",
         "131","132","141","142","144","304","305"
@@ -364,9 +337,6 @@ $(document).ready(function () {
         "301","302","303","161","162","163"
     ]);
 
-    /** ======================================================
-     * 10. Saat ganti akun → render user + disable debit/kredit
-     * ====================================================== */
     $(document).on('change', '.account-select', function () {
         const $row = $(this).closest('tr');
         const personType = $(this).find(':selected').data('person-type');
@@ -396,9 +366,6 @@ $(document).ready(function () {
         }
     });
 
-    /** ======================================================
-     * 11. Hitung subtotal otomatis
-     * ====================================================== */
     function calculateSubtotals() {
         let totalDebit = 0, totalCredit = 0;
 
@@ -420,9 +387,6 @@ $(document).ready(function () {
         }
     }
 
-    /** ======================================================
-     * 12. Event listener input debit/kredit
-     * ====================================================== */
     $(document).on('input', '.debit-input, .credit-input', function() {
         let val = parseFloat($(this).val()) || 0;
         $(this).val(Math.abs(val));
@@ -437,9 +401,6 @@ $(document).ready(function () {
         calculateSubtotals();
     });
 
-    /** ======================================================
-     * 13. Validasi submit form
-     * ====================================================== */
     $('form').on('submit', function (e) {
         let totalDebit = 0, totalCredit = 0;
 
