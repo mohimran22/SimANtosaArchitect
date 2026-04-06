@@ -802,7 +802,7 @@ $(document).ready(function () {
             { data: 'sku_code', name: 'products.sku_code' },
             { data: 'selling_prices', name: 'product_supplier.selling_prices' },
             { data: 'stock', name: 'product_supplier.stock' },
-            // { data: 'aksi', orderable: false, searchable: false }
+            { data: 'aksi', orderable: false, searchable: false }
         ],
 
         pageLength: 10,
