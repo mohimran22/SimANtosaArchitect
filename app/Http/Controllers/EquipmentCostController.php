@@ -30,7 +30,7 @@ public function index(Request $request)
 
             ->addColumn('action', function ($row) {
                 $buttons = '';
-                    if (auth()->user()->can('ubah data menu')) {
+                    if (auth()->user()->can('ubah data alat')) {
                         $buttons .= '<a href="' . route('equipment_costs.edit', $row->id) . '" class="btn btn-icon btn-sm btn-dark me-1" title="Ubah">
                                         <i class="ti ti-edit"></i>
                                     </a>';
@@ -41,7 +41,7 @@ public function index(Request $request)
                     //                 </a>';
 
                     // }
-                    if (auth()->user()->can('hapus data menu')) {
+                    if (auth()->user()->can('hapus data alat')) {
                         $buttons .= '<button data-id="' . $row->id . '" class="btn btn-icon btn-sm btn-dark btn-delete" title="Hapus">
                                         <i class="ti ti-trash"></i>
                                     </button>';
