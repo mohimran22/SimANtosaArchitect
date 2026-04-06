@@ -25,6 +25,7 @@ class StoreAccountingJournalRequest extends FormRequest
             'details.*.credit' => 'nullable|numeric|min:0',
             'details.*.description' => 'nullable|string',
             'details.*.person' => 'nullable|string',
+            'enclosure' => 'nullable|file|mimes:jpg,jpeg,png,pdf',
         ];
     }
 

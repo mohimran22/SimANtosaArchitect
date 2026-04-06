@@ -23,28 +23,30 @@ class UpdateAccountingJournalRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'license_id' => [
-                'sometimes',
-                'exists:licenses,id',
-                function ($attribute, $value, $fail) {
-                    $user = Auth::user();
-                    if ($user->hasRole('Akuntan')) {
-                        $licenses = $user->employee?->licenses;
-                        if (!$licenses || $licenses->isEmpty()) {
-                            return $fail('Lisensi tidak ditemukan.');
-                        }
-                        if (!$licenses->pluck('id')->contains($value)) {
-                            return $fail('Lisensi tidak valid.');
-                        }
-                    }
-                }
-            ],
+            // 'license_id' => [
+            //     'sometimes',
+            //     'exists:licenses,id',
+            //     function ($attribute, $value, $fail) {
+            //         $user = Auth::user();
+            //         if ($user->hasRole('Akuntan')) {
+            //             $licenses = $user->employee?->licenses;
+            //             if (!$licenses || $licenses->isEmpty()) {
+            //                 return $fail('Lisensi tidak ditemukan.');
+            //             }
+            //             if (!$licenses->pluck('id')->contains($value)) {
+            //                 return $fail('Lisensi tidak valid.');
+            //             }
+            //         }
+            //     }
+            // ],
             'transaction_date' => 'required|date',
             'description' => 'nullable|string',
             'details' => 'required|array',
             'details.*.account_id' => 'required|uuid|exists:accounting_accounts,id',
             'details.*.debit' => 'nullable|numeric',
             'details.*.credit' => 'nullable|numeric',
+            'details.*.person' => 'nullable|string',
+            'enclosure' => 'nullable|file|mimes:jpg,jpeg,png,pdf',
         ];
     }
 }

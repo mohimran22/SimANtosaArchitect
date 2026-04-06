@@ -37,9 +37,14 @@ class AjaxController extends Controller
 
     public function getEmployees()
     {
-        $employees = Employee::join('users', 'employees.user_id', '=', 'users.id')
-            ->select('employees.id', 'users.fullname as name')
-            ->get();
+        $employees = Employee::with('user')
+            ->get()
+            ->map(function ($emp) {
+                return [
+                    'id'   => $emp->id,
+                    'name' => $emp->user?->fullname ?? '-',
+                ];
+            });
 
         return response()->json($employees);
     }

@@ -155,6 +155,9 @@ Route::get('/journals/report', [AccountingJournalController::class, 'report'])
     ->name('journals.report')
     ->middleware(['role:Super-Admin|Akuntan']);
 
+Route::get('/journals/{journal}/print', [AccountingJournalController::class, 'print'])
+    ->name('journals.print');
+
 Route::middleware(['role:Super-Admin|Akuntan'])->group(function () {
     Route::resource('/journals', AccountingJournalController::class);
 });
@@ -596,6 +599,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/ajax/journals/next-code', [AccountingJournalController::class, 'getNextCode']);
 });
 
+Route::get('/journals/{journal}/export', [JournalExportController::class, 'export'])
+    ->name('journals.export');
 Route::get('/api/cities/{province_id}', function ($province_id) {
     return \App\Models\City::where('province_id', $province_id)->select('id', 'name')->get();
 });

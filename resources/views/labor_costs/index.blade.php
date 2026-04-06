@@ -52,7 +52,7 @@
                                         <th>Satuan</th>
                                         <th>harga Satuan Dasar (Rp.)</th>
                                         <th>Keterangan</th>
-                                        <th width="120">Action</th>
+                                        <th width="120">Aksi</th>
                                     </tr>
                                 </thead>
                                 {{-- <tbody>

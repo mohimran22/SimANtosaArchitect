@@ -58,7 +58,7 @@
                                                    name="permissions[]" 
                                                    id="perm-{{ $perm->id }}" 
                                                    value="{{ $perm->name }}"
-                                                   {{ $role->hasPermissionTo($perm->name) ? 'checked' : '' }}>
+                                                   {{ $role->permissions->contains('id', $perm->id) }}>
                                             <label class="form-check-label" for="perm-{{ $perm->id }}">
                                                 {{ ucfirst($perm->name) }}
                                             </label>

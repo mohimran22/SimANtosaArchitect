@@ -102,7 +102,7 @@ $(function () {
             }
     });
 
-    $('#journals-table').on('click', '.delete-journal', function () {
+        $('#journals-table').on('click', '.delete-journal', function () {
             const journalId = $(this).data('id');
 
             Swal.fire({
@@ -120,7 +120,7 @@ $(function () {
                 if (result.isConfirmed) {
                     $.ajax({
 
-                        url: `https://asm.aharightbrain.com/journals/${journalId}`,
+                        url: `/journals/${journalId}`,
                         method: 'DELETE',
                         data: {
                             _token: '{{ csrf_token() }}',
@@ -131,7 +131,7 @@ $(function () {
                                 Swal.fire({
                                     icon: 'success',
                                     title: 'Berhasil!',
-                                    text: 'Pemilik telah dihapus.',
+                                    text: 'Jurnal berhasil dihapus.',
                                     timer: 2000,
                                     showConfirmButton: false
                             });
@@ -151,7 +151,7 @@ $(function () {
                     });
                 }
             });
-            });
+        });
 });
 </script>
 

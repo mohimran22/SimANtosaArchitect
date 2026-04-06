@@ -18,6 +18,7 @@ class AccountingJournal extends Model
         'journal_code',
         'transaction_date',
         'description',
+        'enclosure',
         'created_by',
     ];
 

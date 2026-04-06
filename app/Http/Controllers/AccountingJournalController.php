@@ -204,129 +204,70 @@ public function store(StoreAccountingJournalRequest $request)
         ->with('success', 'Jurnal berhasil dibuat.');
 }
 
-    public function show(Request $request, AccountingJournal $journal)
-    {
-        $user = Auth::user();
-
-        if ($user->hasRole('Super-Admin')) {
-            $licenses = License::all();
-            $activeLicenseId = $request->get('license_id'); // Ambil dari filter form
-        } else {
-            $licenses = $user->hasRole('Pemilik Lisensi')
-                ? $user->licenses
-                : $user->employee?->licenses;
-
-            if (!$licenses || $licenses->isEmpty()) {
-                abort(403, 'License tidak ditemukan untuk user ini.');
-            }
-
-            $activeLicenseId = session('active_license_id');
-        }
-
-        $journal->load(['details.account', 'creator']);
-        return view('journals.show', compact('journal', 'licenses', 'activeLicenseId'));
+public function show(AccountingJournal $journal)
+{
+    if ($journal->license_id !== config('app.license_id')) {
+        abort(403);
     }
 
-    public function edit(AccountingJournal $journal)
- {
-    $user = Auth::user();
-    $activeLicenseId = null;
+    $journal->load(['details.account', 'creator']);
 
-    if ($user->hasRole('Super-Admin')) {
-        $licenses = License::all();
-    } else {
-        $licenses = $user->hasRole('Pemilik Lisensi')
-            ? $user->licenses
-            : $user->employee?->licenses;
+    return view('journals.show', compact('journal'));
+}
 
-        if (!$licenses || $licenses->isEmpty()) {
-            abort(403, 'Lisensi tidak ditemukan.');
-        }
+public function edit(AccountingJournal $journal)
+{
+    // 🔒 optional security (kalau masih pakai license di DB)
+    if ($journal->license_id !== config('app.license_id')) {
+        abort(403);
+    }
 
-        // Cek: jurnal ini milik lisensi user?
-        if (!$licenses->pluck('id')->contains($journal->license_id)) {
-            abort(403, 'Anda tidak punya akses ke jurnal ini.');
-        }
-
-        $activeLicenseId = session('active_license_id');
-    } 
-    
-    $licenseIds = $activeLicenseId
-        ? [(string) $activeLicenseId]
-        : $licenses->pluck('id')->toArray();
-
+    // akun
     $accounts = AccountingAccount::where('is_active', true)
-        ->when($activeLicenseId, fn($q) => $q->where('license_id', $activeLicenseId))
-        ->when(!$user->hasRole('Super-Admin'), fn($q) => $q->whereIn('license_id', $licenseIds))
         ->orderBy('account_code')
         ->get();
 
-    // $students = Student::whereIn('license_id', array_merge($licenseIds, [$journal->license_id]))
-    //     ->select('id', 'fullname as name')
-    //     ->orderBy('fullname')
-    //     ->get();
-    
-    // $employees = Employee::whereHas('licenses', function ($q) use ($licenseIds, $journal) {
-    //         $q->whereIn('employee_license.license_id', array_merge($licenseIds, [$journal->license_id]));
-    //     })
-    //     ->select('id', 'fullname as name')
-    //     ->orderBy('fullname')
-    //     ->get();
-        
-    // $licenseholders = User::whereHas('licenses', function ($q) use ($licenseIds, $journal) {
-    //         $q->whereIn('license_user.license_id', array_merge($licenseIds, [$journal->license_id]));
-    //     })
-    //     ->select('id', 'name')
-    //     ->orderBy('name')
-    //     ->get();
+    // employee saja (kalau masih dipakai)
+    $employees = Employee::with('user')
+        ->get()
+        ->map(fn($emp) => [
+            'id'   => $emp->id,
+            'name' => $emp->user?->fullname ?? '-',
+        ]);
 
-    // $licenseList = License::where(function ($q) use ($licenseIds, $journal) {
-    //         $q->whereIn('id', $licenseIds)
-    //           ->orWhere('id', $journal->license_id);
-    //     })
-    //     ->select('id', 'name')
-    //     ->get();
+    $journal->load(['details.account']);
 
-    $journal->load('details');
-
-    return view('journals.edit', compact('journal', 'activeLicenseId', 'licenses', 'accounts'));
-    }
+    return view('journals.edit', compact('journal', 'accounts', 'employees'));
+}
 
 
-    public function update(UpdateAccountingJournalRequest $request, AccountingJournal $journal)
+public function update(UpdateAccountingJournalRequest $request, AccountingJournal $journal)
 {
-      $user = Auth::user();
-
-    if ($user->hasRole('Super-Admin')) {
-        // Boleh ganti license_id
-        $journal->license_id = $request->license_id;
-    } else {
-        $licenses = $user->hasRole('Pemilik Lisensi')
-            ? $user->licenses
-            : $user->employee?->licenses;
-
-        if (!$licenses || $licenses->isEmpty()) {
-            abort(403, 'Lisensi tidak ditemukan.');
-        }
-
-        // Harus punya lisensi yang cocok dengan jurnal
-        if (!$licenses->pluck('id')->contains($journal->license_id)) {
-            abort(403, 'Anda tidak punya akses untuk jurnal ini.');
-        }
-
-        // Akuntan tidak boleh ganti license_id, hanya data lain
+    // 🔐 Optional: lock ke license config
+    if ($journal->license_id !== config('app.license_id')) {
+        abort(403, 'Akses tidak valid.');
     }
 
-    $enclosurePath = $journal->enclosure; // default: tetap file lama
-    if ($request->hasFile('enclosure')) {
-        $file = $request->file('enclosure');
+    // ✅ Validasi balance
+    $totalDebit = collect($request->details)->sum('debit');
+    $totalCredit = collect($request->details)->sum('credit');
 
-        // Hapus file lama kalau ada
+    if ($totalDebit != $totalCredit) {
+        return back()->withErrors([
+            'details' => 'Debit dan kredit harus seimbang.'
+        ]);
+    }
+
+    // 📎 File
+    $enclosurePath = $journal->enclosure;
+
+    if ($request->hasFile('enclosure')) {
         if ($journal->enclosure && Storage::disk('public')->exists($journal->enclosure)) {
             Storage::disk('public')->delete($journal->enclosure);
         }
 
-        // Simpan file baru
+        $file = $request->file('enclosure');
+
         $enclosurePath = $file->storeAs(
             'attachments',
             Str::uuid().'.'.$file->getClientOriginalExtension(),
@@ -334,26 +275,28 @@ public function store(StoreAccountingJournalRequest $request)
         );
     }
 
-    $journal->transaction_date = $request->transaction_date;
-    $journal->description = $request->description;
-    $journal->enclosure = $enclosurePath;
-    $journal->save();
+    // 🔹 Update jurnal
+    $journal->update([
+        'transaction_date' => $request->transaction_date,
+        'description' => $request->description,
+        'enclosure' => $enclosurePath,
+    ]);
 
-    // Hapus semua detail lama
+    // 🔹 Reset detail
     $journal->details()->delete();
 
-    // Buat detail baru
     foreach ($request->details as $detail) {
         $journal->details()->create([
             'account_id' => $detail['account_id'],
+            'person' => $detail['person'] ?? null,
             'debit' => $detail['debit'] ?? 0,
             'credit' => $detail['credit'] ?? 0,
             'description' => $detail['description'] ?? null,
         ]);
     }
 
-    return redirect()->route('journals.index')->with('success', 'Jurnal berhasil diperbarui.');
-
+    return redirect()->route('journals.index')
+        ->with('success', 'Jurnal berhasil diperbarui.');
 }
 
     public function destroy($id)
@@ -365,7 +308,9 @@ public function store(StoreAccountingJournalRequest $request)
         $journal->details()->delete();
         $journal->delete();
 
-        return redirect()->route('journals.index')->with('success', 'Jurnal berhasil dihapus.');
+        return response()->json([
+            'status' => 'success'
+        ]);
     }
 
 
