@@ -36,7 +36,7 @@
                     <th>Debit</th>
                     <th>Kredit</th>
                     <th>Keterangan</th>
-                    <th><button type="button" id="add-row" class="btn btn-sm btn-success">Tambah</button></th>
+                    <th><button type="button" id="add-row" class="btn btn-sm btn-dark">Tambah</button></th>
                 </tr>
             </thead>
             <tbody id="details-table-body">
@@ -65,14 +65,18 @@
                                    class="form-control" value="{{ $detail->description }}">
                         </td>
                         <td>
-                            <button type="button" class="btn btn-sm btn-danger remove-row">Hapus</button>
+                            <button type="button" class="btn btn-sm btn-dark remove-row">Hapus</button>
                         </td>
                     </tr>
                 @endforeach
             </tbody>
         </table>
 
-        <button type="submit" class="btn btn-primary">Update</button>
+        <div class="text-end mt-5">
+                                            <button type="submit" class="btn btn-dark px-4">
+                                                <i class="ti ti-device-floppy me-1"></i>Simpan Perubahan
+                                            </button>
+                                </div>
     </form>
 </div>
 

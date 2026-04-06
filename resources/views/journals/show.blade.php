@@ -55,6 +55,6 @@
     </table>
 
     <a href="{{ route('journals.index') }}" class="btn btn-secondary">Kembali</a>
-    <a href="{{ route('journals.edit', $journal->id) }}" class="btn btn-primary">Edit Jurnal</a>
+    <a href="{{ route('journals.edit', $journal->id) }}" class="btn btn-dark">Edit Jurnal</a>
 </div>
 @endsection

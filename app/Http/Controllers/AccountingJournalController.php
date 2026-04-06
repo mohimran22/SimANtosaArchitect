@@ -26,47 +26,34 @@ class AccountingJournalController extends Controller
 {
     public function index(Request $request)
 {
-    $user = Auth::user();
-
     if ($request->ajax()) {
+
+        $licenseId = config('app.license_id');
+
         $journals = AccountingJournal::query()
             ->select(
                 'accounting_journals.id',
                 'accounting_journals.journal_code',
                 'accounting_journals.transaction_date',
-                'licenses.license_type as license_type',
-                'licenses.name as license_name',
-                'users.name as creator_name'
+                'users.fullname as creator_name'
             )
-            ->leftJoin('licenses', 'accounting_journals.license_id', '=', 'licenses.id')
             ->leftJoin('users', 'accounting_journals.created_by', '=', 'users.id')
-            ->when(!$user->hasRole('Super-Admin'), function ($query) use ($user) {
-                // Filter lisensi untuk Pemilik Lisensi & Akuntan
-                $licenses = $user->hasRole('Pemilik Lisensi')
-                    ? $user->licenses
-                    : $user->employee?->licenses;
-
-                if ($licenses && $licenses->isNotEmpty()) {
-                    $query->whereIn('accounting_journals.license_id', $licenses->pluck('id'));
-                } else {
-                    $query->whereNull('accounting_journals.license_id'); // Biar aman
-                }
-            })
-            ->when(session()->has('active_license_id'), function ($query) {
-                $query->where('accounting_journals.license_id', session('active_license_id'));
-            })
+            ->where('accounting_journals.license_id', $licenseId)
             ->orderByDesc('accounting_journals.transaction_date');
 
         return DataTables::of($journals)
             ->addIndexColumn()
+
             ->editColumn('transaction_date', function ($row) {
                 return \Carbon\Carbon::parse($row->transaction_date)->format('d/m/Y');
             })
+
             ->addColumn('journal_code', function ($row) {
                 return '<a href="' . route('journals.show', $row->id) . '" 
                         class="fw-bold text-primary">'
                         . $row->journal_code . '</a>';
             })
+
             ->addColumn('creator', function ($row) {
                 return $row->creator_name 
                     ? e($row->creator_name)
@@ -74,24 +61,29 @@ class AccountingJournalController extends Controller
             })
 
             ->addColumn('action', function ($journal) {
-                    $buttons = '';
-                    if (auth()->user()->can('jurnal.ubah')) {
-                        $buttons .= '<a href="' . route('journals.edit', $journal->id) . '" class="btn btn-icon btn-sm btn-warning me-1" title="Ubah">
-                                        <i class="ti ti-edit"></i>
-                                    </a>';
-                    }
-                    if (auth()->user()->can('jurnal.lihat')) {
-                        $buttons .= '<a href="' . route('journals.show', $journal->id) . '" class="btn btn-icon btn-sm btn-info me-1" title="Lihat">
-                                        <i class="ti ti-eye"></i>
-                                    </a>';
-                    }
-                    if (auth()->user()->can('jurnal.hapus')) {
-                        $buttons .= '<button data-id="' . $journal->id . '" class="btn btn-icon btn-sm btn-danger delete-journal" title="Hapus">
-                                        <i class="ti ti-trash"></i>
-                                    </button>';
-                    }
-                    return $buttons;
+                $buttons = '';
+
+                if (auth()->user()->can('ubah jurnal')) {
+                    $buttons .= '<a href="' . route('journals.edit', $journal->id) . '" class="btn btn-sm btn-dark me-1">
+                                    <i class="ti ti-edit"></i>
+                                </a>';
+                }
+
+                if (auth()->user()->can('lihat jurnal')) {
+                    $buttons .= '<a href="' . route('journals.show', $journal->id) . '" class="btn btn-sm btn-dark me-1">
+                                    <i class="ti ti-eye"></i>
+                                </a>';
+                }
+
+                if (auth()->user()->can('hapus jurnal')) {
+                    $buttons .= '<button data-id="' . $journal->id . '" class="btn btn-sm btn-dark delete-journal">
+                                    <i class="ti ti-trash"></i>
+                                </button>';
+                }
+
+                return $buttons;
             })
+
             ->rawColumns(['journal_code', 'creator', 'action'])
             ->make(true);
     }
@@ -99,151 +91,117 @@ class AccountingJournalController extends Controller
     return view('journals.index');
 }
 
-    public function create(Request $request)
+public function create()
 {
-    $user = Auth::user();
-
-    if ($user->hasRole('Super-Admin')) {
-        // $licenses = License::all();
-    } else {
-        $licenses = $user->hasRole('Pemilik Lisensi')
-            ? $user->licenses
-            : $user->employee?->licenses;
-
-        if (!$licenses || $licenses->isEmpty()) {
-            abort(403, 'License tidak ditemukan untuk user ini.');
-        }
-    }
-
-    $activeLicenseId = $request->get('license_id') ?? session('active_license_id');
-    
-
-    // Tentukan daftar license_id untuk query
-    $licenseIds = $activeLicenseId
-        ? [(string) $activeLicenseId]
-        : $licenses->pluck('id')->toArray();
-
-    // Ambil akun yang disembunyikan sesuai role user
-    $hiddenAccounts = [];
-    foreach ($user->getRoleNames() as $role) {
-        if (isset(config('accounting.hidden_accounts')[$role])) {
-            $hiddenAccounts = array_merge(
-                $hiddenAccounts,
-                config('accounting.hidden_accounts')[$role]
-            );
-        }
-    }
+    $licenseId = config('app.license_id');
 
     // Accounts
     $accounts = AccountingAccount::where('is_parent', false)
         ->where('is_active', true)
-        ->whereIn('license_id', $licenseIds)
+        ->where('license_id', $licenseId)
         ->orderBy('account_code')
         ->get();
 
-    // $employees = Employee::whereHas('licenses', function ($q) use ($licenseIds) {
-    //         $q->whereIn('employee_license.license_id', $licenseIds);
-    //     })
-    //     ->select('id', 'fullname as name')
-    //     ->get();
+    // Employees
+    $employees = User::select('id', 'fullname as name')->get();
 
-    $licenseList = License::whereIn('id', $licenseIds)
-        ->select('id', 'name')
-        ->get();
 
-    $pusatLicense = License::where('name', 'AHA Right Brain')->first();
+    $journalCode = $this->generateNextJournalCode();
 
-    $pusatUserId   = $pusatLicense?->pusatUser()?->id;
-    $pusatUserName = $pusatLicense?->pusatUser()?->name;
-
-    $journalCode = $activeLicenseId
-    ? $this->generateNextJournalCode($activeLicenseId)
-    : null; 
-
-        return view('journals.create', compact(
-            'accounts', 'licenses', 'journalCode', 'activeLicenseId', 'licenseList', 'pusatUserId', 'pusatUserName'
-        ));
+    return view('journals.create', compact(
+        'accounts',
+        'employees',
+        'journalCode'
+    ));
 }
 
-    private function generateNextJournalCode($licenseId)
+private function generateNextJournalCode()
 {
-    $license = License::findOrFail($licenseId);
+    $licenseId = config('app.license_id');
 
-     $lastJournalNumber = AccountingJournal::where('license_id', $license->id)
-        ->where('journal_code', 'LIKE', 'IJ-' . $license->license_id . '-%')
+    $lastJournalNumber = AccountingJournal::where('license_id', $licenseId)
+        ->where('journal_code', 'LIKE', 'IJ-%')
         ->selectRaw("
             MAX(
                 CAST(
-                    REGEXP_REPLACE(journal_code, '^IJ-' || ? || '-', '') AS INTEGER
+                    REGEXP_REPLACE(journal_code, '^.*-', '') AS INTEGER
                 )
             ) as last_number
-        ", [$license->license_id])
+        ")
         ->value('last_number');
 
-        do {
-            $nextNumber = str_pad($lastJournalNumber + 1, 4, '0', STR_PAD_LEFT);
-            $journalCode = 'IJ-' . $license->license_id . '-' . $nextNumber;
+    $lastJournalNumber = $lastJournalNumber ?? 0;
 
-            $exists = AccountingJournal::where('journal_code', $journalCode)->exists();
-            $lastJournalNumber++;
-        } while ($exists);
+    do {
+        $nextNumber = str_pad($lastJournalNumber + 1, 4, '0', STR_PAD_LEFT);
+        $journalCode = 'IJ-' . $nextNumber;
 
-        return $journalCode;
+        $exists = AccountingJournal::where('journal_code', $journalCode)->exists();
+        $lastJournalNumber++;
+    } while ($exists);
+
+    return $journalCode;
 }
 
-public function getNextCode($licenseId)
+public function getNextCode()
 {
-    $nextCode = $this->generateNextJournalCode($licenseId);
+    $nextCode = $this->generateNextJournalCode();
 
     return response()->json([
-        'next_code'  => $nextCode,
-        'license_id' => $licenseId,
+        'next_code' => $nextCode,
     ]);
 }
 
 public function store(StoreAccountingJournalRequest $request)
 {
     $user = Auth::user();
-    $licenseId = $request->license_id;
+    $licenseId = config('app.license_id');
 
-    $cabangLicense = License::find($licenseId);
-
-    // Hitung total debit/credit (kalau mau validasi balance)
-    $totalDebit = collect($request->details)->sum('debit');
+    // ✅ Validasi balance
+    $totalDebit  = collect($request->details)->sum('debit');
     $totalCredit = collect($request->details)->sum('credit');
 
+    if ($totalDebit != $totalCredit) {
+        return back()->withErrors('Debit dan Credit harus balance.');
+    }
+
+    // Upload file
     $enclosurePath = null;
     if ($request->hasFile('enclosure')) {
         $file = $request->file('enclosure');
         $enclosurePath = $file->storeAs(
-            'attachments',  // 📌 bisa ganti "photos" → "attachments" biar general (karena bisa pdf/img/doc)
+            'attachments',
             Str::uuid().'.'.$file->getClientOriginalExtension(),
             'public'
         );
     }
 
-    // 1. Simpan jurnal di CABANG
+    // ✅ Pakai auto generate (tidak dari request)
+    $journalCode = $this->generateNextJournalCode();
+
+    // Simpan jurnal
     $journal = AccountingJournal::create([
-        'license_id' => $licenseId,
-        'journal_code' => $request->journal_code,
+        'license_id'       => $licenseId,
+        'journal_code'     => $journalCode,
         'transaction_date' => $request->transaction_date,
-        'description' => $request->description,
-        'created_by' => $user->id,
-        'enclosure' => $enclosurePath,
+        'description'      => $request->description,
+        'created_by'       => $user->id,
+        'enclosure'        => $enclosurePath,
     ]);
 
     foreach ($request->details as $detail) {
         AccountingJournalDetail::create([
-            'journal_id' => $journal->id,
-            'account_id' => $detail['account_id'],
-            'person' => $detail['person'] ?? null,
-            'debit' => $detail['debit'] ?? 0,
-            'credit' => $detail['credit'] ?? 0,
+            'journal_id'  => $journal->id,
+            'account_id'  => $detail['account_id'],
+            'person'      => $detail['person'] ?? null,
+            'debit'       => $detail['debit'] ?? 0,
+            'credit'      => $detail['credit'] ?? 0,
             'description' => $detail['description'] ?? null,
         ]);
     }
 
-    return redirect()->route('journals.index')->with('success', 'Jurnal berhasil dibuat.');
+    return redirect()->route('journals.index')
+        ->with('success', 'Jurnal berhasil dibuat.');
 }
 
     public function show(Request $request, AccountingJournal $journal)
@@ -303,36 +261,36 @@ public function store(StoreAccountingJournalRequest $request)
         ->orderBy('account_code')
         ->get();
 
-    $students = Student::whereIn('license_id', array_merge($licenseIds, [$journal->license_id]))
-        ->select('id', 'fullname as name')
-        ->orderBy('fullname')
-        ->get();
+    // $students = Student::whereIn('license_id', array_merge($licenseIds, [$journal->license_id]))
+    //     ->select('id', 'fullname as name')
+    //     ->orderBy('fullname')
+    //     ->get();
     
-    $employees = Employee::whereHas('licenses', function ($q) use ($licenseIds, $journal) {
-            $q->whereIn('employee_license.license_id', array_merge($licenseIds, [$journal->license_id]));
-        })
-        ->select('id', 'fullname as name')
-        ->orderBy('fullname')
-        ->get();
+    // $employees = Employee::whereHas('licenses', function ($q) use ($licenseIds, $journal) {
+    //         $q->whereIn('employee_license.license_id', array_merge($licenseIds, [$journal->license_id]));
+    //     })
+    //     ->select('id', 'fullname as name')
+    //     ->orderBy('fullname')
+    //     ->get();
         
-    $licenseholders = User::whereHas('licenses', function ($q) use ($licenseIds, $journal) {
-            $q->whereIn('license_user.license_id', array_merge($licenseIds, [$journal->license_id]));
-        })
-        ->select('id', 'name')
-        ->orderBy('name')
-        ->get();
+    // $licenseholders = User::whereHas('licenses', function ($q) use ($licenseIds, $journal) {
+    //         $q->whereIn('license_user.license_id', array_merge($licenseIds, [$journal->license_id]));
+    //     })
+    //     ->select('id', 'name')
+    //     ->orderBy('name')
+    //     ->get();
 
-    $licenseList = License::where(function ($q) use ($licenseIds, $journal) {
-            $q->whereIn('id', $licenseIds)
-              ->orWhere('id', $journal->license_id);
-        })
-        ->select('id', 'name')
-        ->get();
+    // $licenseList = License::where(function ($q) use ($licenseIds, $journal) {
+    //         $q->whereIn('id', $licenseIds)
+    //           ->orWhere('id', $journal->license_id);
+    //     })
+    //     ->select('id', 'name')
+    //     ->get();
 
     $journal->load('details');
 
-    return view('journals.edit', compact('journal', 'activeLicenseId', 'licenses', 'accounts', 'students', 'employees', 'licenseholders', 'licenseList'));
-}
+    return view('journals.edit', compact('journal', 'activeLicenseId', 'licenses', 'accounts'));
+    }
 
 
     public function update(UpdateAccountingJournalRequest $request, AccountingJournal $journal)
@@ -885,3 +843,6 @@ public function balanceSheet(Request $request)
 }
 
 }
+
+
+

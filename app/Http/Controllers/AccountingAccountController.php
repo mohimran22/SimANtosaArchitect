@@ -211,7 +211,6 @@ public function store(Request $request)
             'parent_id' => 'nullable|uuid|exists:accounting_accounts,id',
         ]);
 
-        // 🔥 cegah parent ke diri sendiri
         if ($request->parent_id == $account->id) {
             return back()->withErrors([
                 'parent_id' => 'Tidak boleh memilih diri sendiri sebagai parent.'

@@ -37,6 +37,9 @@ use App\Http\Controllers\BuildProcessItemController;
 use App\Http\Controllers\BuildDailyController;
 use App\Http\Controllers\BuildWeeklyController;
 use App\Http\Controllers\BuildWeeklyPlanController;
+use App\Http\Controllers\AjaxController;
+use App\Http\Controllers\Api\JournalApiController;
+use App\Http\Controllers\Api\LicenseSessionController;
 
 
 Route::get('/', function () {
@@ -582,6 +585,16 @@ Route::middleware(['auth', 'permission:kelola akun'])->group(function () {
 // Route::middleware(['auth', 'permission:lihat daftar dokumen'])->group(function () {
 //     route::resource('/documents', DocumentController::class);
 // });
+Route::middleware(['auth'])->group(function () {
+    // sinkronisasi lisensi aktif dari navbar (POST dari form/navbar)
+    Route::post('/active-license', [LicenseSessionController::class, 'set'])->name('active-license.set');
+
+    // data untuk form jurnal
+    Route::get('/get-accounts', [AjaxController::class, 'getAccounts']);
+    Route::get('/get-employees', [AjaxController::class, 'getEmployees']);
+
+    Route::get('/ajax/journals/next-code', [AccountingJournalController::class, 'getNextCode']);
+});
 
 Route::get('/api/cities/{province_id}', function ($province_id) {
     return \App\Models\City::where('province_id', $province_id)->select('id', 'name')->get();

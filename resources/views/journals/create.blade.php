@@ -46,7 +46,7 @@
                                                 <label for="license_id" class="form-label required">Filter Lisensi</label>
                                                 <select name="license_id" id="license_id" class="form-select select2" required>
                                                     <option value="">-- Pilih Lisensi --</option>
-                                                    @foreach ($licenses as $license)
+                                                    {{-- @foreach ($licenses as $license)
                                                         <option value="{{ $license->id }}" 
                                                             {{ $activeLicenseId == $license->id ? 'selected' : '' }}>
                                                             {{ $license->name }}
@@ -58,7 +58,10 @@
                                             
                                             <input type="hidden" name="license_id" value="{{ $activeLicenseId }}">
                                         @endif --}}
-
+                                        {{-- <input type="hidden" 
+                                            name="license_id" 
+                                            id="activeLicenseId" 
+                                            value="{{ $activeLicenseId }}"> --}}
                                         <div class="col-md-4 mb-3">
                                             <label for="journal_code" class="required">No Transaksi</label>
                                             <input type="text" id="journal_code" name="journal_code" 
@@ -68,9 +71,7 @@
                                         {{-- Tanggal Transaksi --}}
                                         <div class="col-md-4 mb-3">
                                             <label for="transaction_date" class="required">Tanggal Transaksi</label>
-                                            <input type="date" name="transaction_date"
-                                                value="{{ date('Y-m-d') }}"
-                                                class="form-control" required>
+                                            <input type="date" name="transaction_date" class="form-control" required>
                                         </div>
                                     </div>
                         
@@ -161,7 +162,6 @@
 @endsection
 
 @push('js')
-
 <script>
 $(document).ready(function () {
 
@@ -169,22 +169,19 @@ $(document).ready(function () {
 
     let accountsData = [];
 
-    function loadAccountsByLicense(licenseId) {
-        if (!licenseId) return;
-
-        // Ambil akun
-        $.get(`/get-accounts-by-license/${licenseId}`, function (data) {
+    // ✅ Load accounts sekali saja (tanpa license)
+    function loadAccounts() {
+        $.get(`/get-accounts`, function (data) {
             accountsData = data;
 
-            // Update semua dropdown akun yang sudah ada
             $('.account-select').each(function () {
                 renderAccountOptions($(this));
             });
         });
 
-        // Ambil kode jurnal terbaru
+        // ✅ Ambil kode jurnal (tanpa license)
         $('#journal_code').val('Loading...');
-        $.get(`/journals/next-code/${licenseId}`)
+        $.get(`/ajax/journals/next-code`)
             .done(function (res) {
                 $('#journal_code').val(res.next_code);
             })
@@ -213,6 +210,7 @@ $(document).ready(function () {
     const userCache = {};
 
     function renderUserOptions($select, type) {
+
         if ($select.hasClass("select2-hidden-accessible")) {
             $select.select2("destroy");
         }
@@ -220,92 +218,60 @@ $(document).ready(function () {
         $select.empty().append('<option value="">-- Pilih User --</option>');
 
         let url = '';
-        if (type === "student") url = '/get-students';
-        else if (type === "employee") url = '/get-employees';
-        else if (type === "licenseholder") url = '/get-licenseholders';
-        else if (type === "license") url = '/get-licenses';
+        if (type === "employee") url = '/get-employees';
 
         if (url) {
             if (userCache[type]) {
-                // Pakai cache kalau sudah ada
-                $.each(userCache[type], function (_, user) {
-                    $select.append(`<option value="${user.id}">${user.name}</option>`);
-                });
-                initSelect2WithCreate($select, type);
+                appendUsers($select, userCache[type]);
+                initSelect2WithCreate($select);
             } else {
                 $.get(url, function (data) {
                     userCache[type] = data;
-                    $.each(data, function (_, user) {
-                        $select.append(`<option value="${user.id}">${user.name}</option>`);
-                    });
-                    initSelect2WithCreate($select, type);
+                    appendUsers($select, data);
+                    initSelect2WithCreate($select);
                 });
             }
         } else {
-            initSelect2WithCreate($select, type);
+            initSelect2WithCreate($select);
         }
     }
 
-    function initSelect2WithCreate($select, type) {
+    function appendUsers($select, data) {
+        $.each(data, function (_, user) {
+            $select.append(`<option value="${user.id}">${user.name}</option>`);
+        });
+    }
+
+    function initSelect2WithCreate($select) {
         if ($select.hasClass("select2-hidden-accessible")) return;
-        
+
         $select.select2({
             placeholder: "-- Input manual jika tidak ada User --",
             width: '100%',
             tags: true,
-            createTag: function (params) {
-                let term = $.trim(params.term);
-                if (term === '') return null;
-                return { id: term, text: term, newOption: true };
-            },
-            templateResult: function (data) {
-                let $result = $("<span></span>").text(data.text);
-                if (data.newOption) {
-                    $result.append(" <em>(tekan Enter)</em>");
-                }
-                return $result;
-            }
-        });
-
-        $select.on('select2:select', function (e) {
-            let data = e.params.data;
-            if (data.newOption) {
-                console.log("Input manual user:", data.text);
-            }
         });
     }
 
-    $('#license_id').on('change', function () {
-        const licenseId = $(this).val();
-        $('#activeLicenseId').val(licenseId);
-        loadAccountsByLicense(licenseId);
-    });
-
-    const selectedLicense = $('#license_id').length
-        ? $('#license_id').val()
-        : $('#activeLicenseId').val();
-    loadAccountsByLicense(selectedLicense);
+    loadAccounts();
 
     $('#add-row').click(function () {
-        console.log("Tambah baris dipanggil");
         const rowCount = $('#detail-rows tr').length;
+
         const newRow = `
             <tr>
                 <td>
                     <select name="details[${rowCount}][account_id]" 
-                            class="form-select account-select" 
-                            data-row="${rowCount}" required></select>
+                            class="form-select account-select" required></select>
                 </td>
                 <td><input type="text" name="details[${rowCount}][description]" class="form-control"></td>
                 <td>
                     <select name="details[${rowCount}][person]" 
-                            class="form-select user-select" 
-                            data-row="${rowCount}"></select>
+                            class="form-select user-select"></select>
                 </td>
                 <td><input type="number" step="0.01" name="details[${rowCount}][debit]" class="form-control debit-input"></td>
                 <td><input type="number" step="0.01" name="details[${rowCount}][credit]" class="form-control credit-input"></td>
                 <td>
-                    <button type="button" class="btn btn-sm btn-dark remove-row" title="Hapus">
+                    <button type="button" class="btn btn-sm btn-dark remove-row">
                         <i class="ti ti-trash"></i>
                     </button>
                 </td>
@@ -314,13 +280,8 @@ $(document).ready(function () {
 
         $('#detail-rows').append(newRow);
 
-        // Render opsi akun
-        const $newAccountSelect = $('#detail-rows tr:last .account-select');
-        renderAccountOptions($newAccountSelect);
-
-        // Siapkan select user manual
-        const $newUserSelect = $('#detail-rows tr:last .user-select');
-        initSelect2WithCreate($newUserSelect, null);
+        renderAccountOptions($('#detail-rows tr:last .account-select'));
+        initSelect2WithCreate($('#detail-rows tr:last .user-select'));
     });
 
     $(document).on('click', '.remove-row', function () {
@@ -328,41 +289,45 @@ $(document).ready(function () {
         calculateSubtotals();
     });
 
-    const debitOnlyAccounts = new Set([
-        "151","152","153","154","155","121","122","123","124","110",
-        "131","132","141","142","144","304","305"
-    ]);
-
-    const creditOnlyAccounts = new Set([
-        "301","302","303","161","162","163"
-    ]);
-
     $(document).on('change', '.account-select', function () {
         const $row = $(this).closest('tr');
-        const personType = $(this).find(':selected').data('person-type');
-        const accountCode = String($(this).find(':selected').data('code') || "");
 
-        // Render user sesuai type
-        renderUserOptions($row.find('.user-select'), personType);
+        const selected = $(this).find(':selected');
+        const personType = selected.data('person-type');
+        const accountCode = String(selected.data('code') || "");
 
-        // Reset input debit & kredit
-        const $debit = $row.find('.debit-input');
+        const $debit  = $row.find('.debit-input');
         const $credit = $row.find('.credit-input');
+
+        // reset
         $debit.prop('disabled', false).val('');
         $credit.prop('disabled', false).val('');
 
-        if (debitOnlyAccounts.has(accountCode)) {
+        // render user
+        renderUserOptions($row.find('.user-select'), personType);
+
+        // 🔥 RULE AKUNTANSI DASAR
+        const firstDigit = accountCode.charAt(0);
+
+        if (firstDigit === "1" || firstDigit === "5" || firstDigit === "6") {
+            // Aset + Beban → normal di DEBIT
             $credit.prop('disabled', true).val('');
-        } else if (creditOnlyAccounts.has(accountCode)) {
+        } 
+        else if (firstDigit === "2" || firstDigit === "3" || firstDigit === "4") {
+            // Hutang + Modal + Pendapatan → normal di KREDIT
             $debit.prop('disabled', true).val('');
+        }
+
+        if ($credit.is(':disabled')) {
+            $credit.addClass('bg-light');
         } else {
-            // Fallback by digit pertama
-            const firstDigit = accountCode.charAt(0);
-            if (firstDigit === "2" || firstDigit === "4") {
-                $debit.prop('disabled', true).val('');
-            } else if (firstDigit === "5" || firstDigit === "6") {
-                $credit.prop('disabled', true).val('');
-            }
+            $credit.removeClass('bg-light');
+        }
+
+        if ($debit.is(':disabled')) {
+            $debit.addClass('bg-light');
+        } else {
+            $debit.removeClass('bg-light');
         }
     });
 
@@ -370,11 +335,8 @@ $(document).ready(function () {
         let totalDebit = 0, totalCredit = 0;
 
         $('#detail-rows tr').each(function() {
-            const debit  = parseFloat($(this).find('.debit-input').val()) || 0;
-            const credit = parseFloat($(this).find('.credit-input').val()) || 0;
-
-            totalDebit  += debit;
-            totalCredit += credit;
+            totalDebit  += parseFloat($(this).find('.debit-input').val()) || 0;
+            totalCredit += parseFloat($(this).find('.credit-input').val()) || 0;
         });
 
         $('#subtotal-debit').text(totalDebit.toLocaleString('id-ID'));
@@ -391,7 +353,6 @@ $(document).ready(function () {
         let val = parseFloat($(this).val()) || 0;
         $(this).val(Math.abs(val));
 
-        // Pastikan hanya satu kolom terisi
         if ($(this).hasClass('debit-input')) {
             $(this).closest('tr').find('.credit-input').val('');
         } else {
@@ -411,10 +372,10 @@ $(document).ready(function () {
 
         if (totalDebit !== totalCredit) {
             e.preventDefault();
-            alert('Transaksi tidak seimbang! Jumlah Debit dan Kredit harus sama.');
+            alert('Transaksi tidak seimbang!');
         }
     });
+
 });
 </script>
-
 @endpush
