@@ -89,77 +89,107 @@
     </div>
 
     <div class="modal fade" id="modalDelete" tabindex="-1">
-    <div class="modal-dialog">
-        <form method="POST" id="formDelete">
-            @csrf
-            @method('DELETE')
+        <div class="modal-dialog">
+            <form method="POST" id="formDelete">
+                @csrf
+                @method('DELETE')
 
-            <div class="modal-content">
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title">Konfirmasi Hapus</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
+                <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">Konfirmasi Hapus</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
 
-            <div class="modal-body">
-                <p>Anda yakin mau menghapus data ini?</p>
-            </div>
+                <div class="modal-body">
+                    <p>Anda yakin mau menghapus data ini?</p>
+                </div>
 
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                <button type="submit" class="btn btn-danger">Ya, Hapus</button>
-            </div>
-            </div>
-        </form>
-    </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-danger">Ya, Hapus</button>
+                </div>
+                </div>
+            </form>
+        </div>
     </div>
 @endsection
 
 @push('js')
 <script>
-$(function () {
-$('#laborCostTable').DataTable({
-    processing: true,
-    serverSide: true,
-    ajax: "{{ route('labor_costs.index') }}",
+    $(function () {
+        $('#laborCostTable').DataTable({
+            processing: true,
+            serverSide: true,
+            ajax: "{{ route('labor_costs.index') }}",
 
-    columns: [
-        { data: 'DT_RowIndex', orderable:false, searchable:false },
-        { data: 'code' },
-        { data: 'description' },
-        { data: 'unit' },
-        { data: 'base_unit_price' },
-        { data: 'notes' },
-        { data: 'action', orderable:false, searchable:false },
-    ],
-                language: {
-                    search: "",
-                    searchPlaceholder: "Cari tukang...",
-                    lengthMenu: "Tampilkan _MENU_ data",
-                    info: "Menampilkan _START_ - _END_ dari _TOTAL_ data",
-                    infoEmpty: "Tidak ada data",
-                    infoFiltered: "(difilter dari _MAX_ total data)",
-                    zeroRecords: "Data tidak ditemukan",
-                    paginate: {
-                        first: "Awal",
-                        last: "Akhir",
-                        next: "›",
-                        previous: "‹"
+            columns: [
+                { data: 'DT_RowIndex', orderable:false, searchable:false },
+                { data: 'code' },
+                { data: 'description' },
+                { data: 'unit' },
+                {
+                    data: 'base_unit_price',
+                    render: function(data, type) {
+                        if (type === 'display') {
+                            return 'Rp ' + parseInt(data).toLocaleString('id-ID');
+                        }
+                        return data; // untuk sorting tetap angka
                     }
                 },
+                { data: 'notes' },
+                { data: 'action', orderable:false, searchable:false },
+            ],
+                        language: {
+                            search: "",
+                            searchPlaceholder: "Cari tukang...",
+                            lengthMenu: "Tampilkan _MENU_ data",
+                            info: "Menampilkan _START_ - _END_ dari _TOTAL_ data",
+                            infoEmpty: "Tidak ada data",
+                            infoFiltered: "(difilter dari _MAX_ total data)",
+                            zeroRecords: "Data tidak ditemukan",
+                            paginate: {
+                                first: "Awal",
+                                last: "Akhir",
+                                next: "›",
+                                previous: "‹"
+                            }
+                        },
 
-                initComplete: function () {
-                    const input = $('.dt-search input');
-                    input.removeClass('form-control-sm')
-                        .addClass('form-control');
+                        initComplete: function () {
+                            const input = $('.dt-search input');
+                            input.removeClass('form-control-sm')
+                                .addClass('form-control');
+                        }
+        });
+
+                // modal delete
+        $(document).on('click', '.btn-delete', function() {
+            const url = $(this).data('url');
+            $('#formDelete').attr('action', url);
+            $('#modalDelete').modal('show');
+        });
+
+        $(document).on('click', '.btn-duplicate', function() {
+            let id = $(this).data('id');
+
+            if (!confirm('Duplikat data ini?')) return;
+
+            $.ajax({
+                url: `/labor_costs/${id}/duplicate`,
+                type: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}'
+                },
+                success: function(res) {
+                    if (res.success) {
+                        $('#laborCostTable').DataTable().ajax.reload(null, false);
+
+                        // notifikasi ringan
+                        alert(res.message);
+                    }
                 }
-});
-
-        // modal delete
-$(document).on('click', '.btn-delete', function() {
-    const url = $(this).data('url');
-    $('#formDelete').attr('action', url);
-    $('#modalDelete').modal('show');
-});
+            });
+        });
 
     });
 </script>

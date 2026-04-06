@@ -13,50 +13,79 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Yajra\DataTables\Facades\DataTables;
-use DB;
 
 class JobCategoryController extends Controller
 {
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $jobs = JobCategory::select('*')
-                ->orderByRaw("
-                    lower(split_part(kode_urut, '.', 1)),
-                    (
-                        SELECT array_agg(val::int)
-                        FROM regexp_split_to_table(
-                            trim(trailing '.' from kode_urut),
-                            '\\.'
-                        ) AS val
-                        WHERE val ~ '^[0-9]+$'
-                    )
-                ");
+            $jobs = JobCategory::select('*');
 
             return DataTables::of($jobs)
                 ->addIndexColumn() // untuk kolom No
                 ->editColumn('grand_total', function ($row) {
                     return 'Rp ' . number_format($row->grand_total ?? 0, 0, ',', '.');
                 })
+                // ->addColumn('aksi', function ($row) {
+                //     return '
+                //         <a href="'.route('job-categories.edit', $row->id).'" 
+                //         class="btn btn-sm btn-dark">
+                //             <i class="ti ti-edit"></i>
+                //         </a>
+
+                //         <form action="'.route('job-categories.destroy', $row->id).'"
+                //             method="POST" class="d-inline"
+                //             onsubmit="return confirm(\'Hapus data ini?\')">
+                //             '.csrf_field().method_field('DELETE').'
+                //             <button class="btn btn-sm btn-dark">
+                //                 <i class="ti ti-trash"></i>
+                //             </button>
+                //         </form>
+                //     ';
+                // })
                 ->addColumn('aksi', function ($row) {
-                    return '
-                        <a href="'.route('job-categories.edit', $row->id).'" 
+                    $buttons = '';
+                        if (auth()->user()->can('ubah data alat')) {
+                            $buttons .= '<a href="'.route('job-categories.edit', $row->id).'" 
                         class="btn btn-sm btn-dark">
                             <i class="ti ti-edit"></i>
-                        </a>
+                        </a>';
+                        }
+                        if (auth()->user()->can('lihat data alat')) {
+                            $buttons .= '<button data-id="' . $row->id . '" class="btn btn-icon btn-sm btn-dark btn-duplicate" title="Duplikat">
+                                            <i class="ti ti-copy"></i>
+                                        </button>';
 
-                        <form action="'.route('job-categories.destroy', $row->id).'"
-                            method="POST" class="d-inline"
-                            onsubmit="return confirm(\'Hapus data ini?\')">
-                            '.csrf_field().method_field('DELETE').'
-                            <button class="btn btn-sm btn-dark">
-                                <i class="ti ti-trash"></i>
-                            </button>
-                        </form>
-                    ';
+                        }
+                        if (auth()->user()->can('hapus data alat')) {
+                            $buttons .= '<button 
+                                                data-url="' . route('job-categories.destroy', $row->id) . '" 
+                                                class="btn btn-icon btn-sm btn-dark btn-delete">
+                                                <i class="ti ti-trash"></i>
+                                        </button>';
+                        }
+                        return '
+                                <div class="d-flex gap-1">
+                                    ' . $buttons . '
+                                </div>
+                            ';
                 })
-                ->rawColumns(['aksi']) // penting!
+                ->orderColumn('kode_urut', function ($query, $order) {
+                    $query->orderByRaw("
+                        lower(split_part(kode_urut, '.', 1)) $order,
+                        (
+                            SELECT array_agg(val::int)
+                            FROM regexp_split_to_table(
+                                trim(trailing '.' from kode_urut),
+                                '\\.'
+                            ) AS val
+                            WHERE val ~ '^[0-9]+$'
+                        )
+                    ");
+                })
+                ->rawColumns(['aksi'])
                 ->make(true);
         }
 
@@ -361,5 +390,40 @@ public function getSuppliersByProduct($productId)
             'harga' => $job->grand_total,
         ]);
     }
+    public function duplicate($id)
+    {
+        DB::beginTransaction();
 
+        try {
+            $category = JobCategory::with('items')->findOrFail($id);
+
+            // 1. Clone parent
+            $newCategory = $category->replicate();
+            $newCategory->kode_urut = $category->kode_urut . '-copy';
+            $newCategory->nama_pekerjaan = $category->nama_pekerjaan . ' (Copy)';
+            $newCategory->save(); // pakai save saja (lebih jelas)
+
+            // 2. Clone children
+            foreach ($category->items as $item) {
+                $newItem = $item->replicate();
+                $newItem->job_category_id = $newCategory->id;
+                $newItem->save();
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Data + item berhasil diduplikat'
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal duplikat: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

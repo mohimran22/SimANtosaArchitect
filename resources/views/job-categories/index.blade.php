@@ -75,6 +75,27 @@ $(function () {
                         .addClass('form-control');
                 }
     });
+    $(document).on('click', '.btn-duplicate', function() {
+        let id = $(this).data('id');
+
+        if (!confirm('Duplikat data ini?')) return;
+
+        $.ajax({
+            url: `/job-categories/${id}/duplicate`,
+            type: 'POST',
+            data: {
+                _token: '{{ csrf_token() }}'
+            },
+            success: function(res) {
+                if (res.success) {
+                    $('#jobTable').DataTable().ajax.reload(null, false);
+
+                    // notifikasi ringan
+                    alert(res.message);
+                }
+            }
+        });
+    });
 });
 </script>
 @endpush

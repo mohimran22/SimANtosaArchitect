@@ -12,61 +12,59 @@ use Yajra\DataTables\Facades\DataTables;
 
 class LaborCostController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-public function index(Request $request)
-{
-    if ($request->ajax()) {
 
-        $query = LaborCost::query()->orderBy('id','asc');
+    public function index(Request $request)
+    {
+        if ($request->ajax()) {
 
-        return DataTables::of($query)
-            ->addIndexColumn()
+            $query = LaborCost::query();
 
-            ->editColumn('base_unit_price', function ($row) {
-                return 'Rp ' . number_format($row->base_unit_price, 0, ',', '.');
-            })
+            return DataTables::of($query)
+                ->addIndexColumn()
 
-            ->addColumn('action', function ($row) {
-                $buttons = '';
-                    if (auth()->user()->can('ubah data tenaga')) {
-                        $buttons .= '<a href="' . route('labor_costs.edit', $row->id) . '" class="btn btn-icon btn-sm btn-dark me-1" title="Ubah">
-                                        <i class="ti ti-edit"></i>
-                                    </a>';
-                    }
-                    // if (auth()->user()->can('lihat data menu')) {
-                    //     $buttons .= '<a href="' . route('menus.show', $menu->id) . '" class="btn btn-icon btn-sm btn-dark me-1" title="Lihat">
-                    //                     <i class="ti ti-eye"></i>
-                    //                 </a>';
+                ->editColumn('base_unit_price', function ($row) {
+                    return $row->base_unit_price;
+                })
 
-                    // }
-                    if (auth()->user()->can('hapus data tenaga')) {
-                        $buttons .= '<button data-id="' . $row->id . '" class="btn btn-icon btn-sm btn-dark btn-delete" title="Hapus">
-                                        <i class="ti ti-trash"></i>
-                                    </button>';
-                    }
-                    return $buttons;
-            })
+                ->addColumn('action', function ($row) {
+                    $buttons = '';
+                        if (auth()->user()->can('ubah data tenaga')) {
+                            $buttons .= '<a href="' . route('labor_costs.edit', $row->id) . '" class="btn btn-icon btn-sm btn-dark" title="Ubah">
+                                            <i class="ti ti-edit"></i>
+                                        </a>';
+                        }
+                        if (auth()->user()->can('lihat data tenaga')) {
+                            $buttons .= '<button data-id="' . $row->id . '" class="btn btn-icon btn-sm btn-dark btn-duplicate" title="Duplikat">
+                                            <i class="ti ti-copy"></i>
+                                        </button>';
 
-            ->rawColumns(['action'])
-            ->make(true);
+                        }
+                        if (auth()->user()->can('hapus data tenaga')) {
+                            $buttons .= '<button 
+                                            data-url="' . route('labor_costs.destroy', $row->id) . '" 
+                                            class="btn btn-icon btn-sm btn-dark btn-delete">
+                                            <i class="ti ti-trash"></i>
+                                        </button>';
+                        }
+                        return '
+                            <div class="d-flex gap-1">
+                                ' . $buttons . '
+                            </div>
+                        ';
+                })
+
+                ->rawColumns(['action'])
+                ->make(true);
+        }
+
+        return view('labor_costs.index');
     }
 
-    return view('labor_costs.index');
-}
-
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         return view('labor_costs.create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         $request->validate([
@@ -83,17 +81,11 @@ public function index(Request $request)
             ->with('success', 'Labor cost created successfully.');
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(LaborCost $labor_cost)
     {
         return view('labor_costs.edit', compact('labor_cost'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, LaborCost $laborCost)
     {
         $request->validate([
@@ -121,9 +113,6 @@ public function index(Request $request)
             ->with('success', 'Labor cost updated successfully.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(LaborCost $laborCost)
     {
         $laborCost->delete();
@@ -131,4 +120,21 @@ public function index(Request $request)
         return redirect()->route('labor_costs.index')
             ->with('success', 'Labor cost deleted successfully.');
     }
+
+    public function duplicate($id)
+{
+    $data = LaborCost::findOrFail($id);
+
+    $new = $data->replicate();
+
+    $new->code = $data->code . '-copy';
+    $new->description = $data->description . '-copy';
+
+    $new->save();
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Data berhasil diduplikat'
+    ]);
+}
 }

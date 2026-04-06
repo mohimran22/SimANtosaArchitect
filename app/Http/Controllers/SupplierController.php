@@ -497,8 +497,8 @@ public function datatableProducts(Request $request, Supplier $supplier)
 
         ->addColumn('aksi', function ($row) {
             return '
-                <button class="btn btn-sm btn-warning">
-                    <i class="ti ti-pencil"></i>
+                <button class="btn btn-icon btn-sm btn-dark btn-duplicate" title="Duplikat">
+                    <i class="ti ti-copy"></i>
                 </button>
             ';
         })
@@ -532,7 +532,7 @@ public function datatableProducts(Request $request, Supplier $supplier)
             </div>
             ';
         })
-->rawColumns(['selling_prices'])
+->rawColumns(['aksi', 'selling_prices'])
         ->make(true);
 }
 

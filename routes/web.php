@@ -210,13 +210,15 @@ Route::middleware(['auth', 'permission:lihat daftar proyek|lihat data proyek'])-
     ->name('projects.pdf');
 });
 
-Route::middleware(['auth', 'permission:lihat daftar proyek|lihat data proyek'])->group(function () {
-
+Route::middleware(['auth', 'permission:lihat data tenaga'])->group(function () {
+    Route::post('/labor_costs/{id}/duplicate', [\App\Http\Controllers\LaborCostController::class, 'duplicate'])
+        ->name('labor_costs.duplicate');
     Route::resource('/labor_costs', \App\Http\Controllers\LaborCostController::class);
 });
 
-Route::middleware(['auth', 'permission:lihat daftar proyek|lihat data proyek'])->group(function () {
-
+Route::middleware(['auth', 'permission:lihat data alat'])->group(function () {
+    Route::post('/tools/{id}/duplicate', [\App\Http\Controllers\EquipmentCostController::class, 'duplicate'])
+        ->name('tools.duplicate');
     Route::resource('/equipment_costs', \App\Http\Controllers\EquipmentCostController::class);
 });
 
@@ -260,7 +262,8 @@ Route::get('rab-packages/json/{id}',
 // Route::post('/job-categories/import-upah', [\App\Http\Controllers\UpahImportController::class, 'importUpah'])
 //     ->middleware('auth')
 //     ->name('job-categories.import-upah');
-
+Route::post('/job-categories/{id}/duplicate', [JobCategoryController::class, 'duplicate'])
+    ->name('job-categories.duplicate');
 Route::resource('/job-categories', JobCategoryController::class)
     ->except(['show']);
 Route::post('job-categories/{jobCategory}/items',

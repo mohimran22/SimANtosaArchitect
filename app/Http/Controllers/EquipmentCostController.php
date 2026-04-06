@@ -12,41 +12,45 @@ use Yajra\DataTables\Facades\DataTables;
 
 class EquipmentCostController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+
 public function index(Request $request)
 {
     if ($request->ajax()) {
 
-        $query = EquipmentCost::query()->orderBy('id','asc');
+        $query = EquipmentCost::query();
 
         return DataTables::of($query)
             ->addIndexColumn()
 
             ->editColumn('base_unit_price', function ($row) {
-                return 'Rp ' . number_format($row->base_unit_price, 0, ',', '.');
+                return $row->base_unit_price;
             })
 
             ->addColumn('action', function ($row) {
                 $buttons = '';
                     if (auth()->user()->can('ubah data alat')) {
-                        $buttons .= '<a href="' . route('equipment_costs.edit', $row->id) . '" class="btn btn-icon btn-sm btn-dark me-1" title="Ubah">
+                        $buttons .= '<a href="' . route('equipment_costs.edit', $row->id) . '" class="btn btn-icon btn-sm btn-dark" title="Ubah">
                                         <i class="ti ti-edit"></i>
                                     </a>';
                     }
-                    // if (auth()->user()->can('lihat data menu')) {
-                    //     $buttons .= '<a href="' . route('menus.show', $menu->id) . '" class="btn btn-icon btn-sm btn-dark me-1" title="Lihat">
-                    //                     <i class="ti ti-eye"></i>
-                    //                 </a>';
+                    if (auth()->user()->can('lihat data alat')) {
+                        $buttons .= '<button data-id="' . $row->id . '" class="btn btn-icon btn-sm btn-dark btn-duplicate" title="Duplikat">
+                                        <i class="ti ti-copy"></i>
+                                    </button>';
 
-                    // }
+                    }
                     if (auth()->user()->can('hapus data alat')) {
-                        $buttons .= '<button data-id="' . $row->id . '" class="btn btn-icon btn-sm btn-dark btn-delete" title="Hapus">
-                                        <i class="ti ti-trash"></i>
+                        $buttons .= '<button 
+                                            data-url="' . route('equipment_costs.destroy', $row->id) . '" 
+                                            class="btn btn-icon btn-sm btn-dark btn-delete">
+                                            <i class="ti ti-trash"></i>
                                     </button>';
                     }
-                    return $buttons;
+                    return '
+                            <div class="d-flex gap-1">
+                                ' . $buttons . '
+                            </div>
+                        ';
             })
 
             ->rawColumns(['action'])
@@ -56,18 +60,11 @@ public function index(Request $request)
     return view('tools.index');
 }
 
-
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         return view('tools.create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         $request->validate([
@@ -84,17 +81,11 @@ public function index(Request $request)
             ->with('success', 'Data Peralatan berhasil dibuat.');
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(EquipmentCost $equipment_cost)
     {
         return view('tools.edit', compact('equipment_cost'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, EquipmentCost $equipment_cost)
     {
         $request->validate([
@@ -120,14 +111,28 @@ public function index(Request $request)
             ->with('success', 'Data Peralatan berhasil diperbarui.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(EquipmentCost $equipment_cost)
     {
         $equipment_cost->delete();
 
         return redirect()->route('equipment_costs.index')
             ->with('success', 'Data Peralatan berhasil dihapus.');
+    }
+
+    public function duplicate($id)
+    {
+        $data = EquipmentCost::findOrFail($id);
+
+        $new = $data->replicate();
+
+        $new->code = $data->code . '-copy';
+        $new->description = $data->description . '-copy';
+
+        $new->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Data berhasil diduplikat'
+        ]);
     }
 }

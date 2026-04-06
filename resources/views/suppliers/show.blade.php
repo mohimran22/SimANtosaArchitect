@@ -297,11 +297,11 @@
                             <thead>
                             <tr>
                                 <th>No.</th>
-                                <th>Nama</th>
-                                <th>SKU</th>
+                                <th>Nama Produk</th>
+                                <th>Kode SKU</th>
                                 <th>Harga</th>
                                 <th>Stok</th>
-                                {{-- <th>Aksi</th> --}}
+                                <th>Aksi</th>
                             </tr>
                             </thead>
                             <tbody>

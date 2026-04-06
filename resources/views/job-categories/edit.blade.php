@@ -84,7 +84,7 @@
                     <div class="row g-4">
                         <div class="col-md-2">
                             <label class="form-label">Kategori</label>
-                            <select name="category" id="categorySelect" class="form-select" required>
+                            <select name="category" id="categorySelect" class="form-select select2" required>
                                 <option value="">-- Pilih --</option>
                                 <option value="product">Produk</option>
                                 <option value="labor">Tenaga</option>

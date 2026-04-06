@@ -54,7 +54,7 @@
                                         <th>Satuan</th>
                                         <th>harga Satuan Dasar (Rp.)</th>
                                         <th>Keterangan</th>
-                                        <th width="120">Action</th>
+                                        <th width="120">Aksi</th>
                                     </tr>
                                 </thead>
                                 {{-- <tbody>
@@ -123,50 +123,81 @@
 @push('js')
 
 <script>
-$(function () {
-$('#toolsTable').DataTable({
-    processing: true,
-    serverSide: true,
-    ajax: "{{ route('equipment_costs.index') }}",
+    $(function () {
+        $('#toolsTable').DataTable({
+            processing: true,
+            serverSide: true,
+            ajax: "{{ route('equipment_costs.index') }}",
 
-    columns: [
-        { data: 'DT_RowIndex', orderable:false, searchable:false },
-        { data: 'code' },
-        { data: 'description' },
-        { data: 'unit' },
-        { data: 'base_unit_price' },
-        { data: 'notes' },
-        { data: 'action', orderable:false, searchable:false },
-    ],
-                language: {
-                    search: "",
-                    searchPlaceholder: "Cari alat...",
-                    lengthMenu: "Tampilkan _MENU_ data",
-                    info: "Menampilkan _START_ - _END_ dari _TOTAL_ data",
-                    infoEmpty: "Tidak ada data",
-                    infoFiltered: "(difilter dari _MAX_ total data)",
-                    zeroRecords: "Data tidak ditemukan",
-                    paginate: {
-                        first: "Awal",
-                        last: "Akhir",
-                        next: "›",
-                        previous: "‹"
+            columns: [
+                { data: 'DT_RowIndex', orderable:false, searchable:false },
+                { data: 'code' },
+                { data: 'description' },
+                { data: 'unit' },
+                {
+                    data: 'base_unit_price',
+                    render: function(data, type) {
+                        if (type === 'display') {
+                            return 'Rp ' + parseInt(data).toLocaleString('id-ID');
+                        }
+                        return data; // untuk sorting tetap angka
                     }
                 },
+                { data: 'notes' },
+                { data: 'action', orderable:false, searchable:false },
+            ],
+            order: [[0, 'desc']], 
+                        language: {
+                            search: "",
+                            searchPlaceholder: "Cari alat...",
+                            lengthMenu: "Tampilkan _MENU_ data",
+                            info: "Menampilkan _START_ - _END_ dari _TOTAL_ data",
+                            infoEmpty: "Tidak ada data",
+                            infoFiltered: "(difilter dari _MAX_ total data)",
+                            zeroRecords: "Data tidak ditemukan",
+                            paginate: {
+                                first: "Awal",
+                                last: "Akhir",
+                                next: "›",
+                                previous: "‹"
+                            }
+                        },
 
-                initComplete: function () {
-                    const input = $('.dt-search input');
-                    input.removeClass('form-control-sm')
-                        .addClass('form-control');
-                }
-});
+                        initComplete: function () {
+                            const input = $('.dt-search input');
+                            input.removeClass('form-control-sm')
+                                .addClass('form-control');
+                        }
+        });
 
         // modal delete
-$(document).on('click', '.btn-delete', function() {
-    const url = $(this).data('url');
-    $('#formDelete').attr('action', url);
-    $('#modalDelete').modal('show');
-});
+        $(document).on('click', '.btn-delete', function() {
+            const url = $(this).data('url');
+            $('#formDelete').attr('action', url);
+            $('#modalDelete').modal('show');
+        });
+
+        $(document).on('click', '.btn-duplicate', function() {
+            let id = $(this).data('id');
+
+            if (!confirm('Duplikat data ini?')) return;
+
+            $.ajax({
+                url: `/tools/${id}/duplicate`,
+                type: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}'
+                },
+                success: function(res) {
+                    if (res.success) {
+                        $('#toolsTable').DataTable().ajax.reload(null, false);
+
+                        // notifikasi ringan
+                        alert(res.message);
+                    }
+                }
+            });
+        });
 
     });
 </script>
