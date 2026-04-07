@@ -29,7 +29,7 @@
                         <div class="col-md-6 mb-4">
                             <label class="form-label fw-bold">Nama Grup</label>
 
-                            <select name="nama_group" class="form-select" required>
+                            <select name="nama_group" class="form-select select2" required>
                             @foreach($groups as $bidang => $items)
                                 
                                     @foreach($items as $g)

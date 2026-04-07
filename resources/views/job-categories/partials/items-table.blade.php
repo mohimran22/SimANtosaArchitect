@@ -48,7 +48,79 @@
     data-total="{{ $item->total_price }}">
 
             <td class="text-center">{{ $no++ }}</td>
-            <td>{{ $item->name }}</td>
+            {{-- <td>{{ $item->name }}</td> --}}
+            {{-- <td>
+                <select class="form-select select2 item-change"
+                    data-item-id="{{ $item->id }}"
+                    data-category="{{ $item->category }}">
+
+                    <option value="">-- Pilih --</option>
+
+                    @if($item->category == 'labor')
+                        @foreach($laborCosts as $l)
+                            <option value="{{ $l->id }}" @selected($item->reference_id == $l->id)>
+                                {{ $l->description }}
+                            </option>
+                        @endforeach
+                    @endif
+
+                    @if($item->category == 'product')
+                        @foreach($products as $p)
+                            <option value="{{ $p->id }}" @selected($item->product_id == $p->id)>
+                                {{ $p->name }}
+                            </option>
+                        @endforeach
+                    @endif
+
+                    @if($item->category == 'equipment')
+                        @foreach($equipments as $e)
+                            <option value="{{ $e->id }}" @selected($item->equipment_id == $e->id)>
+                                {{ $e->name }}
+                            </option>
+                        @endforeach
+                    @endif
+
+                </select>
+            </td> --}}
+            <td>
+                <select class="form-select select2 uraian-change"
+                        data-item-id="{{ $item->id }}"
+                        data-category="{{ $item->category }}">
+
+                    {{-- TENAGA --}}
+                    @if($item->category == 'labor')
+                        @foreach($laborCosts as $lab)
+                            <option value="labor_{{ $lab->id }}"
+                                @selected($item->labor_cost_id == $lab->id)>
+                                {{ $lab->description }}
+                            </option>
+                        @endforeach
+                    @endif
+
+                    {{-- BAHAN --}}
+                    @if($item->category == 'product')
+                        @foreach($products as $prod)
+                            <option value="product_{{ $prod->pivot->id }}"
+                                @selected($item->pivot_id == $prod->pivot->id)>
+                                
+                                {{ $prod->name }} 
+                                - Rp {{ number_format($prod->pivot->selling_prices) }}
+                            </option>
+                        @endforeach
+                    @endif
+
+                    {{-- ALAT --}}
+                    @if($item->category == 'equipment')
+                        @foreach($equipments as $eq)
+                            <option value="equipment_{{ $eq->id }}"
+                                @selected($item->equipment_id == $eq->id)>
+                                {{ $eq->name }}
+                            </option>
+                        @endforeach
+                    @endif
+
+                </select>
+            </td>
             <td>
                 @if($item->product_id)
                 <select class="form-select select2 supplier-change"
@@ -67,12 +139,12 @@
             <td class="text-center">{{ $item->code }}</td>
             <td class="text-center">{{ $item->unit }}</td>
             <td class="text-end">{{ number_format($item->coefisien, 4) }}</td>
-<td class="text-end" id="unit_price_{{ $item->id }}">
-    Rp {{ number_format($item->base_unit_price, 0, ',', '.') }}
-</td>
-<td class="text-end" id="total_price_{{ $item->id }}">
-    Rp {{ number_format($item->total_price, 0, ',', '.') }}
-</td>
+            <td class="text-end" id="unit_price_{{ $item->id }}">
+                Rp {{ number_format($item->base_unit_price, 0, ',', '.') }}
+            </td>
+            <td class="text-end" id="total_price_{{ $item->id }}">
+                Rp {{ number_format($item->total_price, 0, ',', '.') }}
+            </td>
             <td class="text-center">
                 <form action="{{ route('job-categories.items.delete', $item->id) }}"
                       method="POST"

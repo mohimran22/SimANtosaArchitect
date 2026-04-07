@@ -116,22 +116,23 @@ class SupplierCatalogController extends Controller
 public function updatePrice(Request $request)
 {
     $request->validate([
-        'supplier_id' => 'required',
-        'product_id'  => 'required',
+        // 'supplier_id' => 'required',
+        // 'product_id'  => 'required',
+        'pivot_id' => 'required',
         'price'       => 'required|numeric|min:0',
     ]);
 
     DB::transaction(function () use ($request) {
 
         DB::table('product_supplier')
-            ->where('supplier_id', $request->supplier_id)
-            ->where('product_id', $request->product_id)
+            // ->where('supplier_id', $request->supplier_id)
+            // ->where('product_id', $request->product_id)
+            ->where('id', $request->pivot_id)
             ->update([
                 'selling_prices' => $request->price,
                 'updated_at'    => now()
             ]);
 
-        // 🔥 PAKSA UPDATE SEMUA RAB YANG PAKAI PRODUCT INI
         RabRecalculator::recalcByProduct($request->product_id);
         Cache::put('job_category_last_updated', now()->timestamp);
     });
@@ -141,4 +142,5 @@ public function updatePrice(Request $request)
         'price'   => number_format($request->price)
     ]);
 }
+
 }

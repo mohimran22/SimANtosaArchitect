@@ -5,7 +5,7 @@
 
     {{-- 🔹 Header --}}
     <div class="d-flex justify-content-between align-items-center mb-3 mt-4">
-        <h2 class="page-title">Detail supplier</h2>
+        <h2 class="page-title">Detail Supplier</h2>
         <a href="{{ route('suppliers.index') }}" class="btn btn-outline-secondary">
             <i class="ti ti-arrow-left"></i> Kembali
         </a>
@@ -250,6 +250,7 @@
                                             <div class="price-wrapper"
                                                 data-supplier="{{ $supplier->id }}"
                                                 data-product="{{ $product->id }}"
+                                                data-pivot="{{ $product->pivot->id }}"
                                                 data-url="{{ route('supplier-product.update-price') }}">
 
                                                 {{-- MODE TAMPIL --}}
@@ -819,7 +820,7 @@ $(document).ready(function () {
 <script>
 
 $(document).on('click', '.btn-edit-price', function () {
-    console.log('EDIT CLICKED'); 
+    
     let wrapper = $(this).closest('.price-wrapper');
 
     wrapper.find('.price-text').addClass('d-none');
@@ -840,7 +841,8 @@ $(document).on('click', '.btn-save-price', function () {
 
     let productId = wrapper.data('product');
     let supplierId = wrapper.data('supplier');
-    let newPrice = wrapper.find('.price-input').val();
+    let pivotId   = wrapper.data('pivot');
+    let newPrice  = wrapper.find('.price-input').val();
 
     btn.prop('disabled', true);
 
@@ -852,8 +854,7 @@ $(document).on('click', '.btn-save-price', function () {
             'Accept': 'application/json'
         },
         body: JSON.stringify({
-            supplier_id: supplierId,
-            product_id: productId,
+            pivot_id: pivotId,
             price: newPrice
         })
     })
@@ -869,6 +870,39 @@ $(document).on('click', '.btn-save-price', function () {
     })
     .finally(() => {
         btn.prop('disabled', false);
+    });
+});
+$(document).on('click', '.btn-duplicate', function() {
+    let url = $(this).data('url');
+
+    $.post(url, {
+        _token: '{{ csrf_token() }}'
+    }, function(res) {
+
+        let table = $('#productTable').DataTable();
+
+        table.ajax.reload(function() {
+
+            if (res.highlight) {
+
+                // cari row yang ada "-copy"
+                $('#productTable tbody tr').each(function() {
+                    let text = $(this).text();
+
+                    if (text.includes('-copy')) {
+                        $(this).addClass('table-success');
+
+                        // efek glow sebentar
+                        setTimeout(() => {
+                            $(this).removeClass('table-success');
+                        }, 3000);
+                    }
+                });
+
+            }
+
+        }, false);
+
     });
 });
 </script>

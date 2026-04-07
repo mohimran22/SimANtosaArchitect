@@ -96,6 +96,9 @@ Route::middleware(['auth', 'permission:lihat daftar supplier|lihat data supplier
     ->name('supplier.products.datatable');
 
     Route::resource('/suppliers', SupplierController::class);
+    Route::post('/suppliers/{supplier}/duplicate-product/{product}', 
+    [SupplierController::class, 'duplicateProduct']
+)->name('suppliers.duplicateProduct');
 });
 
 // Supplier Catalog

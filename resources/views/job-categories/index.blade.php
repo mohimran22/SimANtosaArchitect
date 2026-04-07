@@ -75,24 +75,79 @@ $(function () {
                         .addClass('form-control');
                 }
     });
+    $(document).on('click', '.btn-delete', function() {
+        let url = $(this).data('url');
+
+        Swal.fire({
+            title: 'Yakin hapus?',
+            text: "Data tidak bisa dikembalikan!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Ya, hapus!',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: url,
+                    type: 'POST',
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        _method: 'DELETE'
+                    },
+                    success: function(res) {
+                        $('#jobTable').DataTable().ajax.reload(null, false);
+
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil!',
+                            text: res.message ?? 'Data berhasil dihapus',
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+                    },
+                    error: function(xhr) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal!',
+                            text: 'Data tidak bisa dihapus'
+                        });
+                        console.log(xhr.responseText);
+                    }
+                });
+            }
+        });
+    });
     $(document).on('click', '.btn-duplicate', function() {
         let id = $(this).data('id');
 
-        if (!confirm('Duplikat data ini?')) return;
+        Swal.fire({
+            title: 'Duplikat data?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, duplikat!',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: `/job-categories/${id}/duplicate`,
+                    type: 'POST',
+                    data: {
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function(res) {
+                        $('#jobTable').DataTable().ajax.reload(null, false);
 
-        $.ajax({
-            url: `/job-categories/${id}/duplicate`,
-            type: 'POST',
-            data: {
-                _token: '{{ csrf_token() }}'
-            },
-            success: function(res) {
-                if (res.success) {
-                    $('#jobTable').DataTable().ajax.reload(null, false);
-
-                    // notifikasi ringan
-                    alert(res.message);
-                }
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil!',
+                            text: res.message,
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+                    }
+                });
             }
         });
     });

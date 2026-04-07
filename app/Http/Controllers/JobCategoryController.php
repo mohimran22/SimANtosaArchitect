@@ -124,14 +124,18 @@ class JobCategoryController extends Controller
     public function edit(JobCategory $jobCategory)
     {
         $groups = JobCategory::select('bidang','nama_group')
-        ->distinct()
-        ->orderBy('bidang')
-        ->get()
-        ->groupBy('bidang');
+            ->distinct()
+            ->orderBy('bidang')
+            ->get()
+            ->groupBy('bidang');
+
+        $laborCosts = LaborCost::all();
+        $products = Product::with('suppliers')->get(); // 🔥 pivot
+        $equipments = EquipmentCost::all();
 
         return view(
             'job-categories.edit',
-            compact('jobCategory', 'groups')
+            compact('jobCategory', 'groups', 'laborCosts', 'products', 'equipments')
         );
     }
 

@@ -33,7 +33,7 @@ public function suppliers()
 {
     return $this->belongsToMany(Supplier::class, 'product_supplier')
                 ->using(ProductSupplier::class)
-                ->withPivot(['selling_prices', 'discount', 'tax_percentage', 'stock'])
+                ->withPivot(['id', 'selling_prices', 'discount', 'tax_percentage', 'stock'])
                 ->withTimestamps();
 }
 

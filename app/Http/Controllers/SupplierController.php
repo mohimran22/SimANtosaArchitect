@@ -488,16 +488,19 @@ public function datatableProducts(Request $request, Supplier $supplier)
             'products.id',
             'products.name',
             'products.sku_code',
+            'product_supplier.id as pivot_id',
             'product_supplier.selling_prices',
             'product_supplier.stock'
         ]);
 
     return DataTables::of($query)
         ->addIndexColumn()
-
-        ->addColumn('aksi', function ($row) {
+        ->addColumn('aksi', function ($row) use ($supplier) {
             return '
-                <button class="btn btn-icon btn-sm btn-dark btn-duplicate" title="Duplikat">
+                <button 
+                    class="btn btn-icon btn-sm btn-dark btn-duplicate"
+                    data-url="'.route('suppliers.duplicateProduct', [$supplier->id, $row->id]).'"
+                >
                     <i class="ti ti-copy"></i>
                 </button>
             ';
@@ -508,6 +511,7 @@ public function datatableProducts(Request $request, Supplier $supplier)
             <div class="price-wrapper"
                 data-product="'.$row->id.'"
                 data-supplier="'.$supplier->id.'"
+                data-pivot="'.$row->pivot_id.'"
                 data-url="'.route('supplier-product.update-price').'">
 
                 <span class="price-text">
@@ -532,7 +536,7 @@ public function datatableProducts(Request $request, Supplier $supplier)
             </div>
             ';
         })
-->rawColumns(['aksi', 'selling_prices'])
+        ->rawColumns(['aksi', 'selling_prices'])
         ->make(true);
 }
 
@@ -557,4 +561,67 @@ public function updatePrice(Request $request)
     ]);
 }
 
+    public function duplicateProduct($supplierId, $productId)
+{
+    DB::transaction(function () use ($supplierId, $productId) {
+
+        $supplier = Supplier::findOrFail($supplierId);
+
+        $product = $supplier->products()
+            ->where('product_id', $productId)
+            ->firstOrFail();
+
+        // ambil semua pivot field
+        $pivotData = [
+            'buying_prices'  => $product->pivot->buying_prices,
+            'selling_prices' => $product->pivot->selling_prices,
+            'special_prices' => $product->pivot->special_prices,
+            'stock'          => $product->pivot->stock,
+        ];
+
+        // insert ulang ke pivot
+        $supplier->products()->attach($productId, $pivotData);
+    });
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Produk berhasil diduplikat',
+        'highlight' => true
+    ]);
+}
+// public function duplicateProduct($supplierId, $productId)
+// {
+//     DB::transaction(function () use ($supplierId, $productId) {
+
+//         $supplier = Supplier::findOrFail($supplierId);
+
+//         $product = Product::findOrFail($productId);
+
+//         // 🔥 1. Clone product
+//         $newProduct = $product->replicate();
+//         $newProduct->name = $product->name . ' - copy';
+//         $newProduct->sku_code = $product->sku_code . '-copy';
+//         $newProduct->save();
+
+//         // 🔥 2. ambil pivot lama
+//         $pivot = $supplier->products()
+//             ->where('product_id', $productId)
+//             ->firstOrFail()
+//             ->pivot;
+
+//         // 🔥 3. attach ke supplier
+//         $supplier->products()->attach($newProduct->id, [
+//             'buying_prices'  => $pivot->buying_prices,
+//             'selling_prices' => $pivot->selling_prices,
+//             'special_prices' => $pivot->special_prices,
+//             'stock'          => $pivot->stock,
+//         ]);
+//     });
+
+//     return response()->json([
+//         'success' => true,
+//         'message' => 'Produk berhasil diduplikat',
+//         'highlight' => true // 🔥 tanda untuk frontend
+//     ]);
+// }
 }
