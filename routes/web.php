@@ -120,6 +120,9 @@ Route::put('/supplier-product/update-price',
     [SupplierCatalogController::class, 'updatePrice']
 )->name('supplier-product.update-price');
 
+Route::delete('/supplier-product/{pivot}', [SupplierCatalogController::class, 'destroy'])
+    ->name('supplier-product.destroy');
+
 Route::get('/catalog/supplier', [ProductCatalogController::class, 'supplierCatalog'])
     ->name('catalog.supplier');
 
@@ -291,6 +294,9 @@ Route::get('/ajax/product/{productId}/supplier/{supplierId}', [JobCategoryContro
 Route::get('/job-categories/{id}/simple', [JobCategoryController::class, 'simple']);
 
 Route::post('/job-items/{item}/change-supplier', [\App\Http\Controllers\JobCategoryItemController::class, 'changeSupplier']);
+Route::post('/job-items/{item}/change-uraian', 
+    [\App\Http\Controllers\JobCategoryItemController::class, 'changeUraian']
+)->name('job-items.change-uraian');
 Route::post('/notifications/{id}/read', function ($id) {
     auth()->user()->notifications()
         ->where('id', $id)

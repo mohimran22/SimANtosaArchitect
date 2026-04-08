@@ -87,7 +87,6 @@
                         data-item-id="{{ $item->id }}"
                         data-category="{{ $item->category }}">
 
-                    {{-- TENAGA --}}
                     @if($item->category == 'labor')
                         @foreach($laborCosts as $lab)
                             <option value="labor_{{ $lab->id }}"
@@ -97,19 +96,22 @@
                         @endforeach
                     @endif
 
-                    {{-- BAHAN --}}
                     @if($item->category == 'product')
-                        @foreach($products as $prod)
-                            <option value="product_{{ $prod->pivot->id }}"
-                                @selected($item->pivot_id == $prod->pivot->id)>
-                                
-                                {{ $prod->name }} 
-                                - Rp {{ number_format($prod->pivot->selling_prices) }}
+                        @foreach($productSuppliers as $ps)
+                            <option value="product_{{ $ps->id }}"
+                                @selected($item->product_supplier_id == $ps->id)>
+
+                                {{ $ps->product->name }}
+                                - Rp {{ number_format($ps->selling_prices) }}
+
+                                @if($ps->label)
+                                    ({{ $ps->label }})
+                                @endif
+
                             </option>
                         @endforeach
                     @endif
 
-                    {{-- ALAT --}}
                     @if($item->category == 'equipment')
                         @foreach($equipments as $eq)
                             <option value="equipment_{{ $eq->id }}"
@@ -372,10 +374,42 @@ $(document).ready(function () {
             document.getElementById('overhead_value').innerText = formatRp(data.summary.overhead_value);
             document.getElementById('profit_value').innerText = formatRp(data.summary.profit_value);
             document.getElementById('grand_total').innerText = formatRp(data.summary.grand_total);
-        });
-    
-});
+        });   
+    });
+    $(document).on('change', '.uraian-change', function () {
 
+        let el = $(this);
+        let itemId = el.data('item-id');
+        let value = el.val();
+
+        fetch(`/job-items/${itemId}/change-uraian`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                value: value
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+
+            if (!data.success) return;
+
+            // 🔥 update harga per row
+            $('#unit_price_' + itemId).text(formatRp(data.item.base_unit_price));
+            $('#total_price_' + itemId).text(formatRp(data.item.total_price));
+
+            // 🔥 update summary bawah
+            $('#subtotal').text(formatRp(data.summary.subtotal));
+            $('#overhead_value').text(formatRp(data.summary.overhead_value));
+            $('#profit_value').text(formatRp(data.summary.profit_value));
+            $('#grand_total').text(formatRp(data.summary.grand_total));
+
+        });
+
+    });
 });
 </script>
 @endpush

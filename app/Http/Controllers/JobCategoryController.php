@@ -130,12 +130,12 @@ class JobCategoryController extends Controller
             ->groupBy('bidang');
 
         $laborCosts = LaborCost::all();
-        $products = Product::with('suppliers')->get(); // 🔥 pivot
+        $productSuppliers = ProductSupplier::with('product')->get();
         $equipments = EquipmentCost::all();
 
         return view(
             'job-categories.edit',
-            compact('jobCategory', 'groups', 'laborCosts', 'products', 'equipments')
+            compact('jobCategory', 'groups', 'laborCosts', 'productSuppliers', 'equipments')
         );
     }
 

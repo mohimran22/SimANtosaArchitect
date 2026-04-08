@@ -92,48 +92,45 @@ class SupplierCatalogController extends Controller
         ]);
     }
 
-// public function updatePrice(Request $request)
-// {
-//     $request->validate([
-//         'supplier_id' => 'required',
-//         'product_id'  => 'required',
-//         'price'       => 'required|numeric|min:0',
-//     ]);
+    public function destroy($pivotId)
+{
+    DB::table('product_supplier')
+        ->where('id', $pivotId)
+        ->delete();
 
-//     DB::table('product_supplier')
-//         ->where('supplier_id', $request->supplier_id)
-//         ->where('product_id', $request->product_id)
-//         ->update([
-//             'selling_prices' => $request->price,
-//             'updated_at'    => now()
-//         ]);
+    return response()->json([
+        'success' => true
+    ]);
+}
 
-//     return response()->json([
-//         'success' => true,
-//         'price'   => number_format($request->price)
-//     ]);
-// }
 public function updatePrice(Request $request)
 {
     $request->validate([
-        // 'supplier_id' => 'required',
-        // 'product_id'  => 'required',
         'pivot_id' => 'required',
-        'price'       => 'required|numeric|min:0',
+        'price'    => 'required|numeric|min:0',
     ]);
 
     DB::transaction(function () use ($request) {
 
+        $pivot = DB::table('product_supplier')
+            ->where('id', $request->pivot_id)
+            ->first();
+
+        // safety check (optional tapi bagus)
+        if (!$pivot) {
+            abort(404, 'Pivot tidak ditemukan');
+        }
+
         DB::table('product_supplier')
-            // ->where('supplier_id', $request->supplier_id)
-            // ->where('product_id', $request->product_id)
             ->where('id', $request->pivot_id)
             ->update([
                 'selling_prices' => $request->price,
-                'updated_at'    => now()
+                'updated_at'     => now()
             ]);
 
-        RabRecalculator::recalcByProduct($request->product_id);
+        // RabRecalculator::recalcByProduct($pivot->product_id);
+        RabRecalculator::recalcByPivot($request->pivot_id);
+
         Cache::put('job_category_last_updated', now()->timestamp);
     });
 

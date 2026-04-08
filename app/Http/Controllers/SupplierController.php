@@ -490,11 +490,20 @@ public function datatableProducts(Request $request, Supplier $supplier)
             'products.sku_code',
             'product_supplier.id as pivot_id',
             'product_supplier.selling_prices',
-            'product_supplier.stock'
+            'product_supplier.stock',
+            'product_supplier.label',
         ]);
 
     return DataTables::of($query)
         ->addIndexColumn()
+        ->addColumn('name_with_label', function ($row) {
+
+            if ($row->label == 'copy') {
+                return $row->name . ' <span class="badge bg-warning">Copy</span>';
+            }
+
+            return $row->name;
+        })
         ->addColumn('aksi', function ($row) use ($supplier) {
             return '
                 <button 
@@ -536,7 +545,7 @@ public function datatableProducts(Request $request, Supplier $supplier)
             </div>
             ';
         })
-        ->rawColumns(['aksi', 'selling_prices'])
+        ->rawColumns(['aksi', 'selling_prices', 'name_with_label'])
         ->make(true);
 }
 
@@ -577,6 +586,7 @@ public function updatePrice(Request $request)
             'selling_prices' => $product->pivot->selling_prices,
             'special_prices' => $product->pivot->special_prices,
             'stock'          => $product->pivot->stock,
+            'label'          => 'copy',
         ];
 
         // insert ulang ke pivot

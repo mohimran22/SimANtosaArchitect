@@ -19,6 +19,7 @@ class ProductSupplier extends Pivot
         'selling_prices',
         'tax_percentage',
         'discount',
+        'label'
     ];
 
     public function product()

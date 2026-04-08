@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use App\Models\ProductSupplier;
+use App\Models\LaborCost;
+use App\Models\EquipmentCost;
 use App\Models\JobCategoryItem;
 
 
@@ -83,6 +85,81 @@ class JobCategoryItemController extends Controller
             ]
         ]);
     }
+
+    public function changeUraian(Request $request, JobCategoryItem $item)
+{
+    $value = $request->value; // contoh: product_12
+
+    [$type, $id] = explode('_', $value);
+
+    DB::transaction(function () use ($item, $type, $id) {
+
+        if ($type === 'product') {
+
+            $pivot = ProductSupplier::with('product')->findOrFail($id);
+
+            $item->update([
+                'product_id'           => $pivot->product_id,
+                'product_supplier_id'  => $pivot->id,
+                'labor_cost_id'        => null,
+                'equipment_cost_id'    => null,
+
+                'name' => $pivot->product->name,
+                'code' => $pivot->product->sku_code,
+                'unit' => $pivot->product->unit ?? '-',
+            ]);
+
+        } elseif ($type === 'labor') {
+
+            $labor = LaborCost::findOrFail($id);
+
+            $item->update([
+                'labor_cost_id'        => $labor->id,
+                'product_id'           => null,
+                'product_supplier_id'  => null,
+                'equipment_cost_id'    => null,
+
+                'name' => $labor->description,
+                'code' => $labor->code ?? '-',
+                'unit' => $labor->unit,
+            ]);
+
+        } elseif ($type === 'equipment') {
+
+            $eq = EquipmentCost::findOrFail($id);
+
+            $item->update([
+                'equipment_cost_id'    => $eq->id,
+                'product_id'           => null,
+                'product_supplier_id'  => null,
+                'labor_cost_id'        => null,
+
+                'name' => $eq->name,
+                'code' => $eq->code ?? '-',
+                'unit' => $eq->unit,
+            ]);
+        }
+
+        // 🔥 RECALC
+        \App\Services\RabRecalculator::recalcItemAndParent($item);
+    });
+
+    $item->refresh();
+
+    return response()->json([
+        'success' => true,
+        'item' => [
+            'base_unit_price' => $item->base_unit_price,
+            'total_price'     => $item->total_price,
+        ],
+        'summary' => [
+            'subtotal'       => $item->jobCategory->subtotal,
+            'overhead_value' => $item->jobCategory->overhead_value,
+            'profit_value'   => $item->jobCategory->profit_value,
+            'grand_total'    => $item->jobCategory->grand_total,
+        ]
+    ]);
+}
 
 }
 

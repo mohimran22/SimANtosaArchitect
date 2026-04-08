@@ -213,7 +213,7 @@
 
                                         <div class="product-hover-action">
 
-                                            <form class="form-delete" data-id="{{ $product->id }}">
+                                            <form class="form-delete" data-id="{{ $product->pivot->id }}">
                                                 @csrf
                                                 <button type="button" class="btn btn-sm btn-danger btn-delete">
                                                     <i class="ti ti-trash"></i>
@@ -226,7 +226,12 @@
                                     <div class="card-body">
 
                                         {{-- NAMA PRODUK --}}
-                                        <h2 class="fw-bold">{{ $product->name }}</h2>
+                                        <h2 class="fw-bold">
+                                            {{ $product->name }}
+                                                    @if($product->pivot->label)
+                                                        <span class="badge bg-warning text-dark ms-2">copy</span>
+                                                    @endif
+                                        </h2>
 
                                         @if($product->sku_code)
                                             <small class="text-muted">SKU: {{ $product->sku_code }}</small>
@@ -302,6 +307,7 @@
                                 <th>Kode SKU</th>
                                 <th>Harga</th>
                                 <th>Stok</th>
+                                <th>Label</th>
                                 <th>Aksi</th>
                             </tr>
                             </thead>
@@ -803,6 +809,7 @@ $(document).ready(function () {
             { data: 'sku_code', name: 'products.sku_code' },
             { data: 'selling_prices', name: 'product_supplier.selling_prices' },
             { data: 'stock', name: 'product_supplier.stock' },
+            { data: 'name_with_label', name: 'products.name' },
             { data: 'aksi', orderable: false, searchable: false }
         ],
 
@@ -913,12 +920,12 @@ $(document).on('click', '.btn-duplicate', function() {
 $(document).on("click", ".btn-delete", function(){
 
     let card = $(this).closest(".product-card");
-    let id = $(this).closest("form").data("id");
+    let pivotId = $(this).closest("form").data("id");
 
     if(!confirm("Hapus produk ini?")) return;
 
     $.ajax({
-        url: "/products/" + id,
+        url: "/supplier-product/" + pivotId,
         type: "DELETE",
         data: {
             _token: "{{ csrf_token() }}"

@@ -424,7 +424,7 @@ public function show(Product $product)
 }
 
 
-    public function destroy(product $product) 
+    public function destroy(Product $product) 
     {
     
         if ($product) {

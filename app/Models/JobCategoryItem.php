@@ -14,11 +14,11 @@ protected $fillable = [
     'product_id',
     'labor_cost_id',
     'equipment_cost_id',
-
-    'name',        // ✅ INI KUNCI
+    'product_supplier_id',
+    'name',     
     'code',
     'unit',
-
+    'supplier_id',
     'coefisien',
     'base_unit_price',
     'total_price',

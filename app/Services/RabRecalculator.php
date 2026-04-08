@@ -42,12 +42,20 @@ class RabRecalculator
         elseif ($item->equipment_cost_id) {
             $price = EquipmentCost::where('id', $item->equipment_cost_id)->value('base_unit_price');
         }
-        elseif ($item->product_id) {
-            $price = ProductSupplier::where('product_id', $item->product_id)
-                ->orderBy('selling_prices')
+        elseif ($item->product_supplier_id) {
+            $price = ProductSupplier::where('id', $item->product_supplier_id)
                 ->value('selling_prices');
         }
-
+        // elseif ($item->product_id) {
+        //     $price = ProductSupplier::where('product_id', $item->product_id)
+        //         ->orderBy('selling_prices')
+        //         ->value('selling_prices');
+        // }
+        // elseif ($item->product_id) {
+        //     $price = ProductSupplier::where('product_id', $item->product_id)
+        //         ->orderByDesc('id')
+        //         ->value('selling_prices');
+        // }
         if ($price === null) {
             $price = $item->base_unit_price;
         }
@@ -59,11 +67,11 @@ class RabRecalculator
         ]);
     }
 
-    public static function recalcItemAndParent(JobCategoryItem $item)
-{
-    self::recalcItem($item);
-    self::recalcCategory($item->jobCategory);
-}
+//     public static function recalcItemAndParent(JobCategoryItem $item)
+// {
+//     self::recalcItem($item);
+//     self::recalcCategory($item->jobCategory);
+// }
 
 
 public static function recalcByLabor($laborId)
@@ -95,7 +103,7 @@ public static function recalcByEquipment($laborId)
 }
 
 
-public static function recalcByproduct($laborId)
+public static function recalcByProduct($laborId)
 {
     JobCategoryItem::where('product_id', $laborId)
         ->with('jobCategory')
@@ -107,6 +115,46 @@ public static function recalcByproduct($laborId)
             }
             self::recalcCategory($items->first()->jobCategory);
         });
+}
+
+// public static function recalcByProduct($productId)
+// {
+//     JobCategoryItem::where('product_id', $productId)
+//         ->with('jobCategory')
+//         ->get()
+//         ->groupBy('job_category_id')
+//         ->each(function ($items) {
+//             foreach ($items as $item) {
+//                 self::recalcItem($item);
+//             }
+//             self::recalcCategory($items->first()->jobCategory);
+//         });
+// }
+
+public static function recalcByPivot($pivotId)
+{
+    JobCategoryItem::where('product_supplier_id', $pivotId)
+        ->with('jobCategory')
+        ->get()
+        ->groupBy('job_category_id')
+        ->each(function ($items) {
+            foreach ($items as $item) {
+                self::recalcItem($item);
+            }
+            self::recalcCategory($items->first()->jobCategory);
+        });
+}
+
+public static function recalcItemAndParent(JobCategoryItem $item)
+{
+    // hitung ulang item
+    self::recalcItem($item);
+
+    // reload relasi parent
+    $item->load('jobCategory');
+
+    // hitung ulang total category
+    self::recalcCategory($item->jobCategory);
 }
 
     public static function recalcAll()
