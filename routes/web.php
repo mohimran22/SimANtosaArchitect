@@ -5,6 +5,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AccountingAccountController;
 use App\Http\Controllers\AccountingJournalController;
+use App\Http\Controllers\AccountingReportController;
 use App\Http\Controllers\UsersController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\AccountController;
@@ -656,8 +657,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/ajax/journals/next-code', [AccountingJournalController::class, 'getNextCode']);
 });
 
-Route::get('/journals/{journal}/export', [JournalExportController::class, 'export'])
-    ->name('journals.export');
+Route::get('/kas/export/excel', [KasController::class, 'exportExcel'])->name('kas.export.excel');
 Route::get('/api/cities/{province_id}', function ($province_id) {
     return \App\Models\City::where('province_id', $province_id)->select('id', 'name')->get();
 });

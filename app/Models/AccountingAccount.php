@@ -10,6 +10,15 @@ class AccountingAccount extends Model
     use HasUuid;
 
     protected $table = 'accounting_accounts';
+    protected $casts = [
+        'category' => 'string',
+        'sub_category' => 'string',
+        'is_active' => 'boolean',
+        'is_parent' => 'boolean',
+        'initial_balance' => 'decimal:2',
+        'person_type' => 'string',
+    ];
+    
     public $incrementing = false;
     protected $keyType = 'string';
     public $timestamps = false;
@@ -24,6 +33,7 @@ class AccountingAccount extends Model
         'sub_category',
         'initial_balance',
         'is_active',
+        'person_type',
     ];
 
       public function parent()
@@ -34,5 +44,10 @@ class AccountingAccount extends Model
     public function children()
     {
         return $this->hasMany(self::class, 'parent_id');
+    }
+
+               public function details()
+    {
+        return $this->hasMany(AccountingJournalDetail::class, 'account_id');
     }
 }

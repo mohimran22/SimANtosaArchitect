@@ -49,8 +49,7 @@
 
 <body>
     <div class="header">
-        <h2 style="text-align:center;">CV AHA Right Brain</h2>
-        <h4 style="text-align:center;">Buku Besar Lisensi {{ $licenseName }}</h4>
+        <h2 style="text-align:center;">Antosa Architect</h2>
         <p>Periode: {{ \Carbon\Carbon::parse($startDate)->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($endDate)->format('d/m/Y') }}</p>
     </div>
 

@@ -103,8 +103,8 @@ class JournalExportController extends Controller
     $sheet->setCellValue('B3', $request->start_date ? \Carbon\Carbon::parse($request->start_date)->format('d/m/Y') : '-');
     $sheet->setCellValue('A4', 'Sampai');
     $sheet->setCellValue('B4', $request->end_date ? \Carbon\Carbon::parse($request->end_date)->format('d/m/Y') : '-');
-    $sheet->setCellValue('A5', 'Lisensi');
-    $sheet->setCellValue('B5', $request->license_id ? License::find($request->license_id)->name : 'Semua Lisensi');
+    // $sheet->setCellValue('A5', 'Lisensi');
+    // $sheet->setCellValue('B5', $request->license_id ? License::find($request->license_id)->name : 'Semua Lisensi');
 
     // Header tabel
     $sheet->setCellValue('A7', 'Tanggal');
@@ -120,7 +120,7 @@ class JournalExportController extends Controller
     $journals = AccountingJournal::with(['details.account', 'license'])
         ->when($request->start_date, fn($q) => $q->whereDate('transaction_date', '>=', $request->start_date))
         ->when($request->end_date, fn($q) => $q->whereDate('transaction_date', '<=', $request->end_date))
-        ->when($request->license_id, fn($q) => $q->where('license_id', $request->license_id))
+        // ->when($request->license_id, fn($q) => $q->where('license_id', $request->license_id))
         ->orderBy('transaction_date')
         ->get();
 
@@ -169,13 +169,11 @@ public function exportLedger(Request $request)
     // Ambil data akun dan transaksi ledger
     $startDate = $request->start_date;
     $endDate = $request->end_date;
-    $licenseId = $request->license_id;
 
     // Ambil jurnal detail dengan relasi akun & jurnal
     $ledger = \App\Models\AccountingJournalDetail::with(['account', 'journal'])
         ->when($startDate, fn($q) => $q->whereHas('journal', fn($q2) => $q2->whereDate('transaction_date', '>=', $startDate)))
         ->when($endDate, fn($q) => $q->whereHas('journal', fn($q2) => $q2->whereDate('transaction_date', '<=', $endDate)))
-        ->when($licenseId, fn($q) => $q->whereHas('journal', fn($q2) => $q2->where('license_id', $licenseId)))
         ->join('accounting_accounts', 'accounting_accounts.id', '=', 'accounting_journal_details.account_id')
         ->orderBy('accounting_accounts.account_code', 'asc') // ✅ urut berdasarkan kode akun
         ->orderBy('journal_id', 'asc')
@@ -197,8 +195,6 @@ public function exportLedger(Request $request)
     $sheet->setCellValue('B3', $startDate ? \Carbon\Carbon::parse($startDate)->format('d/m/Y') : '-');
     $sheet->setCellValue('A4', 'Sampai');
     $sheet->setCellValue('B4', $endDate ? \Carbon\Carbon::parse($endDate)->format('d/m/Y') : '-');
-    $sheet->setCellValue('A5', 'Lisensi');
-    $sheet->setCellValue('B5', $licenseId ? \App\Models\License::find($licenseId)->name : 'Semua Lisensi');
 
     $row = 7;
 

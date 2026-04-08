@@ -315,6 +315,84 @@ return redirect()
     }
 
 
+    public function report23(Request $request)
+{
+    $user = Auth::user();
+    
+    $accountId = $request->input('account_id');
+    $startDate = $request->input('start_date');
+    $endDate = $request->input('end_date');
+    // $licenseFilterId = $request->input('license_id');
+
+    
+    // $licenses = collect();
+    // if ($user->hasRole('Super-Admin')) {
+    //     $licenses = License::all();
+    // } elseif ($user->hasRole('Pemilik Lisensi')) {
+    //     $licenses = $user->licenses ?? collect();
+    //     if ($licenses->isEmpty()) {
+    //         abort(403, 'Lisensi tidak ditemukan.');
+    //     }
+    // } elseif ($user->hasRole('Akuntan')) {
+    //     $licenses = $user->employee?->licenses ?? collect();
+    //     if ($licenses->isEmpty()) {
+    //         abort(403, 'Lisensi tidak ditemukan.');
+    //     }
+    // } else {
+    //     abort(403, 'Role tidak diizinkan.');
+    // }
+
+    // Filter akun
+    $accountsQuery = AccountingAccount::where('is_parent', false)->where('is_active', true);
+    // if ($licenseFilterId) {
+    //     $accountsQuery->where('license_id', $licenseFilterId);
+    // } else {
+    //     $accountsQuery->whereIn('license_id', $licenses->pluck('id'));
+    // }
+    $accounts = $accountsQuery->orderBy('account_code')->get();
+
+    $journalsQuery = AccountingJournal::query()
+        ->with([
+            'creator',
+            'details' => function ($q) use ($accountId) {
+                $q->select('id','account_id','journal_id','debit','credit','description');
+
+                if ($accountId) {
+                    $q->where('account_id', $accountId);
+                }
+
+                $q->with('account:id,account_code,account_name');
+            }
+        ])
+        ->when($startDate, fn($q) => $q->whereDate('transaction_date', '>=', $startDate))
+        ->when($endDate, fn($q) => $q->whereDate('transaction_date', '<=', $endDate))
+        ->when($accountId, fn($q) => $q->whereHas('details', fn($q2) => $q2->where('account_id', $accountId)));
+
+
+    // if ($licenseFilterId) {
+    //     if (
+    //         $user->hasRole('Super-Admin') ||
+    //         ($user->hasRole('Pemilik Lisensi') && $licenses->pluck('id')->contains($licenseFilterId)) ||
+    //         ($user->hasRole('Akuntan') && $licenses->pluck('id')->contains($licenseFilterId))
+    //     ) {
+    //         $journalsQuery->where('license_id', $licenseFilterId);
+    //     } else {
+    //         abort(403, 'Lisensi tidak valid.');
+    //     }
+    // } else {
+    //     $journalsQuery->whereIn('license_id', $licenses->pluck('id'));
+    // }
+
+    $journals = $journalsQuery->orderBy('transaction_date')->paginate(20);
+
+    return view('journals.report', compact(
+        'accounts',
+        'journals',
+        'accountId',
+        'startDate',
+        'endDate'
+    ));
+}
     public function report(Request $request)
 {
     $user = Auth::user();
@@ -352,9 +430,8 @@ return redirect()
     $accounts = $accountsQuery->orderBy('account_code')->get();
 
     $journalsQuery = AccountingJournal::query()
-        ->with('creator')
+        ->with('creator:id,fullname')
         ->with(['details' => function ($q) use ($accountId) {
-            // jika ada filter akun, eager-load hanya details untuk account tersebut
             if ($accountId) {
                 $q->where('account_id', $accountId)->with('account');
             } else {
@@ -363,6 +440,7 @@ return redirect()
         }])
         ->when($startDate, fn($q) => $q->whereDate('transaction_date', '>=', $startDate))
         ->when($endDate, fn($q) => $q->whereDate('transaction_date', '<=', $endDate))
+        // pastikan jurnal memiliki detail yang sesuai (biar jurnal tanpa akun itu tidak muncul)
         ->when($accountId, fn($q) => $q->whereHas('details', fn($q2) => $q2->where('account_id', $accountId)));
 
 
@@ -380,7 +458,7 @@ return redirect()
     //     $journalsQuery->whereIn('license_id', $licenses->pluck('id'));
     // }
 
-    $journals = $journalsQuery->orderBy('transaction_date')->get();
+    $journals = $journalsQuery->orderBy('transaction_date')->paginate(20);
 
     return view('journals.report', compact(
         'accounts',
@@ -390,7 +468,6 @@ return redirect()
         'endDate'
     ));
 }
-
    public function generalJournal(Request $request)
 {
     $user = Auth::user();
@@ -477,50 +554,49 @@ public function ledger(Request $request)
     $startDate = $request->start_date ?? now()->startOfMonth()->toDateString();
     $endDate   = $request->end_date ?? now()->endOfMonth()->toDateString();
 
-    if ($user->hasRole('Super-Admin')) {
-        $licenses = License::all();
-    } else {
-        $licenses = $user->hasRole('Pemilik Lisensi')
-            ? $user->licenses
-            : $user->employee?->licenses;
+    // if ($user->hasRole('Super-Admin')) {
+    //     $licenses = License::all();
+    // } else {
+    //     $licenses = $user->hasRole('Pemilik Lisensi')
+    //         ? $user->licenses
+    //         : $user->employee?->licenses;
 
-        abort_if(!$licenses || $licenses->isEmpty(), 403, 'Lisensi tidak ditemukan.');
-    }
+    //     abort_if(!$licenses || $licenses->isEmpty(), 403, 'Lisensi tidak ditemukan.');
+    // }
 
-    $activeLicenseId = $request->get('license_id') ?? session('active_license_id');
+    // $activeLicenseId = $request->get('license_id') ?? session('active_license_id');
 
-    [$ledger, $licenses] = $this->getLedgerData($startDate, $endDate, $licenses, $activeLicenseId);
+    [$ledger] = $this->getLedgerData($startDate, $endDate);
 
     return view('journals.ledger', compact(
-        'ledger', 'licenses', 'activeLicenseId', 'startDate', 'endDate'
+        'ledger', 'startDate', 'endDate'
     ));
 }
 
-private function getLedgerData($startDate, $endDate, $licenses, $licenseId = null)
+private function getLedgerData($startDate, $endDate)
 {
     $query = AccountingJournalDetail::with(['journal', 'account']);
     $user = Auth::user();
 
-    // 🔹 Filter lisensi
-    if ($user->hasRole('Super-Admin')) {
-        if ($licenseId) {
-            $licenses = License::where('id', $licenseId)->get();
-        } else {
-            $licenses = License::all();
-        }
-    } else {
-        if ($user->hasRole('Pemilik Lisensi')) {
-            $licenses = $user->licenses;
-        } elseif ($user->employee) {
-            $licenses = $user->employee->licenses;
-        } else {
-            $licenses = collect();
-        }
+    // if ($user->hasRole('Super-Admin')) {
+    //     if ($licenseId) {
+    //         $licenses = License::where('id', $licenseId)->get();
+    //     } else {
+    //         $licenses = License::all();
+    //     }
+    // } else {
+    //     if ($user->hasRole('Pemilik Lisensi')) {
+    //         $licenses = $user->licenses;
+    //     } elseif ($user->employee) {
+    //         $licenses = $user->employee->licenses;
+    //     } else {
+    //         $licenses = collect();
+    //     }
 
-        if ($licenseId) {
-            $licenses = $licenses->where('id', $licenseId);
-        }
-    }
+    //     if ($licenseId) {
+    //         $licenses = $licenses->where('id', $licenseId);
+    //     }
+    // }
 
     // 🔹 Filter periode
     $query->whereHas('journal', function ($q) use ($startDate, $endDate) {
@@ -528,15 +604,19 @@ private function getLedgerData($startDate, $endDate, $licenses, $licenseId = nul
     });
 
     // 🔹 Filter lisensi
-    if ($licenses->isNotEmpty()) {
-        $query->whereHas('journal', function ($q) use ($licenses) {
-            $q->whereIn('license_id', $licenses->pluck('id'));
-        });
-    }
+    // if ($licenses->isNotEmpty()) {
+    //     $query->whereHas('journal', function ($q) use ($licenses) {
+    //         $q->whereIn('license_id', $licenses->pluck('id'));
+    //     });
+    // }
 
     $details = $query
         ->join('accounting_accounts', 'accounting_accounts.id', '=', 'accounting_journal_details.account_id')
-        ->orderByRaw('CAST(accounting_accounts.account_code AS INTEGER) ASC')
+        ->orderByRaw("
+            SPLIT_PART(accounting_accounts.account_code, '-', 1)::INT,
+            SPLIT_PART(accounting_accounts.account_code, '-', 2)::INT,
+            SPLIT_PART(accounting_accounts.account_code, '-', 3)::INT
+        ")
         ->orderBy(
             AccountingJournal::select('transaction_date')
                 ->whereColumn('id', 'accounting_journal_details.journal_id')
@@ -570,46 +650,25 @@ private function getLedgerData($startDate, $endDate, $licenses, $licenseId = nul
         ];
     }
 
-    return [$ledger, $licenses];
+    return [$ledger];
 }
 
 public function exportLedgerPdf(Request $request)
 {
     $startDate = $request->get('start_date');
     $endDate   = $request->get('end_date');
-    $licenseId = $request->get('license_id');
 
     $user = auth()->user();
 
-    // 🔹 Tentukan nama lisensi
-    if ($user->hasRole('Super-Admin')) {
-        if ($licenseId) {
-            $license = License::find($licenseId);
-            $licenseName = $license?->name ?? '-';
-        } else {
-            $licenseName = 'Semua Lisensi';
-        }
-    } else {
-        if ($user->hasRole('Pemilik Lisensi')) {
-            $licenseName = $user->licenses->pluck('name')->join(', ');
-        } elseif ($user->employee) {
-            $licenseName = $user->employee->licenses->pluck('name')->join(', ');
-        } else {
-            $licenseName = '-';
-        }
-    }
-
     // 🔹 Ambil data ledger sesuai filter
-    [$ledger, $licenses] = $this->getLedgerData(
+    [$ledger] = $this->getLedgerData(
         $startDate,
         $endDate,
-        $user->hasRole('Super-Admin') ? License::all() : ($user->hasRole('Pemilik Lisensi') ? $user->licenses : $user->employee?->licenses),
-        $licenseId
     );
 
     // 🔹 Load view PDF
     $pdf = Pdf::loadView('journals.ledgerpdf', compact(
-        'ledger', 'licenseName', 'startDate', 'endDate'
+        'ledger', 'startDate', 'endDate'
     ))->setPaper('a4', 'landscape');
 
     return $pdf->stream('ledger_'.$startDate.'_to_'.$endDate.'.pdf');
@@ -657,12 +716,12 @@ public function trialBalance(Request $request)
 /**
  * Ambil akun + group berdasarkan kategori dan sub-kategori
  */
-    private function getGroupedAccounts($startDate, $endDate, $licenseId)
+    private function getGroupedAccounts($startDate, $endDate)
 {
-    $accounts = AccountingAccount::where('license_id', $licenseId)
-        ->with(['details.journal' => function ($q) use ($startDate, $endDate, $licenseId) {
-                $q->whereBetween('transaction_date', [$startDate, $endDate])
-                   ->where('license_id', $licenseId);
+    $accounts = AccountingAccount::where('parent_id')
+        ->with(['details.journal' => function ($q) use ($startDate, $endDate) {
+                $q->whereBetween('transaction_date', [$startDate, $endDate]);
+                //    ->where('license_id', $licenseId);
         }])
         ->get()
         ->map(function ($account) {
@@ -754,19 +813,19 @@ public function balanceSheet(Request $request)
     $startDate = $request->start_date ?? now()->startOfMonth()->toDateString();
     $endDate   = $request->end_date ?? now()->endOfMonth()->toDateString();
 
-    if ($user->hasRole('Super-Admin')) {
-        $licenses = License::all();
-    } elseif ($user->hasRole('Pemilik Lisensi')) {
-        $licenses = $user->licenses;
-    } else {
-        $licenses = $user->employee?->licenses ?? collect();
-    }
+    // if ($user->hasRole('Super-Admin')) {
+    //     $licenses = License::all();
+    // } elseif ($user->hasRole('Pemilik Lisensi')) {
+    //     $licenses = $user->licenses;
+    // } else {
+    //     $licenses = $user->employee?->licenses ?? collect();
+    // }
 
-    $activeLicenseId = $request->get('license_id') ?? session('active_license_id');
+    // $activeLicenseId = $request->get('license_id') ?? session('active_license_id');
 
     $viewType = $request->get('view', 'default'); // 🔹 default | skontro
 
-    $groupedAccounts = $this->getGroupedAccounts($startDate, $endDate, $activeLicenseId);
+    $groupedAccounts = $this->getGroupedAccounts($startDate, $endDate);
 
     $totals = ReportService::calculateBalanceSheet($groupedAccounts);
 
@@ -776,8 +835,6 @@ public function balanceSheet(Request $request)
     return view('reports.balance_sheet', array_merge([
         'startDate'       => $startDate,
         'endDate'         => $endDate,
-        'licenses'        => $licenses,
-        'activeLicenseId' => $activeLicenseId,
         'groupedAccounts' => $groupedAccounts,
         'viewType'        => $viewType,
         'totalDebit'      => $totalDebit,
