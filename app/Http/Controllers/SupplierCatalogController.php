@@ -139,5 +139,23 @@ public function updatePrice(Request $request)
         'price'   => number_format($request->price)
     ]);
 }
+public function updateLabel(Request $request)
+{
+    $request->validate([
+        'pivot_id' => 'required',
+        'label'    => 'nullable|string|max:50',
+    ]);
 
+    DB::table('product_supplier')
+        ->where('id', $request->pivot_id)
+        ->update([
+            'label' => $request->label,
+            'updated_at' => now()
+        ]);
+
+    return response()->json([
+        'success' => true,
+        'label'   => $request->label
+    ]);
+}
 }

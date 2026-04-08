@@ -19,7 +19,7 @@
                                 <line x1="12" y1="5" x2="12" y2="19"/>
                                 <line x1="5" y1="12" x2="19" y2="12"/>
                             </svg>
-                            Tambah Data suppliers
+                            Tambah Data Suppliers
                         </a>
                  </span>
                  @endcan
@@ -37,7 +37,7 @@
                     <div class="card">
                         <div class="card-header">
                             <p class="text-center mb-4" style="font-size: 1.5rem; font-weight: 400; font-family: 'Poppins', sans-serif;">
-                                 Daftar suppliers
+                                 Daftar Suppliers
                             </p>
                         </div>
                         <div class="table-responsive">

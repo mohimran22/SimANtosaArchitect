@@ -4,11 +4,12 @@
 <div class="container-xl">
 
     {{-- 🔹 Header --}}
-    <div class="d-flex justify-content-between align-items-center mb-3 mt-4">
-        <h2 class="page-title">Detail Supplier</h2>
-        <a href="{{ route('suppliers.index') }}" class="btn btn-outline-secondary">
-            <i class="ti ti-arrow-left"></i> Kembali
-        </a>
+    {{-- <div class="d-flex justify-content-between align-items-center mb-3 mt-4"> --}}
+    <div class="col d-flex align-items-center mb-3 mt-4">
+                <a href="{{ route('suppliers.index') }}" class="btn btn-dark d-flex align-items-center">
+                    <i class="ti ti-arrow-left"></i>
+                </a>
+                        <h2 class="page-title">Detail Supplier</h2>
     </div>
 
     {{-- 🔹 Tabs --}}
@@ -869,7 +870,7 @@ $(document).on('click', '.btn-save-price', function () {
     .then(res => {
 
         if (res.success) {
-            wrapper.find('.price-label').text('Rp ' + res.price);
+            wrapper.find('.price-label').text(res.price);
         }
 
         wrapper.find('.price-edit').addClass('d-none');
@@ -911,6 +912,59 @@ $(document).on('click', '.btn-duplicate', function() {
         }, false);
 
     });
+});
+// buka edit
+$(document).on('click', '.btn-edit-label', function () {
+    let wrapper = $(this).closest('.label-wrapper');
+
+    wrapper.find('.label-text').addClass('d-none');
+    wrapper.find('.label-edit').removeClass('d-none');
+});
+
+// cancel
+$(document).on('click', '.btn-cancel-label', function () {
+    let wrapper = $(this).closest('.label-wrapper');
+
+    wrapper.find('.label-edit').addClass('d-none');
+    wrapper.find('.label-text').removeClass('d-none');
+});
+
+// save
+$(document).on('click', '.btn-save-label', function () {
+
+    let wrapper = $(this).closest('.label-wrapper');
+    let pivotId = wrapper.data('pivot');
+    let newLabel = wrapper.find('.label-input').val();
+
+    fetch(wrapper.data('url'), {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+            pivot_id: pivotId,
+            label: newLabel
+        })
+    })
+    .then(res => res.json())
+    .then(res => {
+
+        if (res.success) {
+            wrapper.find('.label-text').html(
+                (res.label || '-') + `
+                <button class="btn btn-sm btn-warning ms-1 btn-edit-label">
+                    <i class="ti ti-pencil"></i>
+                </button>
+                `
+            );
+        }
+
+        wrapper.find('.label-edit').addClass('d-none');
+        wrapper.find('.label-text').removeClass('d-none');
+    });
+
 });
 </script>
 

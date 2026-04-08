@@ -106,7 +106,9 @@ class JobCategoryItemController extends Controller
 
                 'name' => $pivot->product->name,
                 'code' => $pivot->product->sku_code,
-                'unit' => $pivot->product->unit ?? '-',
+                'unit' => $pivot->product->unit_1_name
+                    ?: $item->unit
+                    ?: 'pcs',
             ]);
 
         } elseif ($type === 'labor') {
@@ -134,7 +136,7 @@ class JobCategoryItemController extends Controller
                 'product_supplier_id'  => null,
                 'labor_cost_id'        => null,
 
-                'name' => $eq->name,
+                'name' => $eq->description,
                 'code' => $eq->code ?? '-',
                 'unit' => $eq->unit,
             ]);

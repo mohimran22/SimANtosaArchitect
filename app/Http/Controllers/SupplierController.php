@@ -496,13 +496,42 @@ public function datatableProducts(Request $request, Supplier $supplier)
 
     return DataTables::of($query)
         ->addIndexColumn()
-        ->addColumn('name_with_label', function ($row) {
+        ->addColumn('name_with_label', function ($row) use ($supplier) {
 
-            if ($row->label == 'copy') {
-                return $row->name . ' <span class="badge bg-warning">Copy</span>';
+            $badge = '';
+            if ($row->label === 'copy') {
+                $badge = ' <span class="badge bg-warning">Copy</span>';
             }
 
-            return $row->name;
+            return '
+            <div class="label-wrapper"
+                data-pivot="'.$row->pivot_id.'"
+                data-url="'.route('supplier-product.update-label').'">
+
+                <span class="label-text">
+                    '.$row->name.' '.$badge.' 
+                    <small class="text-muted">'.($row->label ?? '').'</small>
+
+                    <button class="btn btn-sm btn-warning ms-1 btn-edit-label">
+                        <i class="ti ti-pencil"></i>
+                    </button>
+                </span>
+
+                <span class="label-edit d-none">
+                    <input type="text" class="form-control form-control-sm label-input"
+                        value="'.($row->label ?? '').'" 
+                        style="width:120px;display:inline-block">
+
+                    <button class="btn btn-sm btn-success btn-save-label">
+                        <i class="ti ti-check"></i>
+                    </button>
+
+                    <button class="btn btn-sm btn-danger btn-cancel-label">
+                        <i class="ti ti-x"></i>
+                    </button>
+                </span>
+            </div>
+            ';
         })
         ->addColumn('aksi', function ($row) use ($supplier) {
             return '
@@ -549,27 +578,6 @@ public function datatableProducts(Request $request, Supplier $supplier)
         ->make(true);
 }
 
-public function updatePrice(Request $request)
-{
-    $request->validate([
-        'supplier_id' => 'required|exists:suppliers,id',
-        'product_id'  => 'required|exists:products,id',
-        'price' => 'required|numeric|min:0'
-    ]);
-
-    DB::table('product_supplier')
-        ->where('supplier_id', $request->supplier_id)
-        ->where('product_id', $request->product_id)
-        ->update([
-            'selling_prices' => $request->price
-        ]);
-
-    return response()->json([
-        'success' => true,
-        'price' => number_format($request->price)
-    ]);
-}
-
     public function duplicateProduct($supplierId, $productId)
 {
     DB::transaction(function () use ($supplierId, $productId) {
@@ -579,14 +587,34 @@ public function updatePrice(Request $request)
         $product = $supplier->products()
             ->where('product_id', $productId)
             ->firstOrFail();
+        $existingLabels = DB::table('product_supplier')
+            ->where('product_id', $productId)
+            ->where('supplier_id', $supplierId)
+            ->pluck('label')
+            ->filter()
+            ->toArray();
 
+        // 🔥 cari angka terakhir
+        $max = 0;
+
+        foreach ($existingLabels as $label) {
+            if (preg_match('/copy-(\d+)/', $label, $match)) {
+                $num = (int) $match[1];
+                if ($num > $max) {
+                    $max = $num;
+                }
+            }
+        }
+
+        $nextNumber = $max + 1;
+        $newLabel = 'copy-' . $nextNumber;
         // ambil semua pivot field
         $pivotData = [
             'buying_prices'  => $product->pivot->buying_prices,
             'selling_prices' => $product->pivot->selling_prices,
             'special_prices' => $product->pivot->special_prices,
             'stock'          => $product->pivot->stock,
-            'label'          => 'copy',
+            'label'          => $newLabel,
         ];
 
         // insert ulang ke pivot

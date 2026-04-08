@@ -123,6 +123,9 @@ Route::put('/supplier-product/update-price',
 Route::delete('/supplier-product/{pivot}', [SupplierCatalogController::class, 'destroy'])
     ->name('supplier-product.destroy');
 
+Route::put('/supplier-product/update-label', [SupplierCatalogController::class, 'updateLabel'])
+    ->name('supplier-product.update-label');
+
 Route::get('/catalog/supplier', [ProductCatalogController::class, 'supplierCatalog'])
     ->name('catalog.supplier');
 

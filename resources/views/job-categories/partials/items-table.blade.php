@@ -102,7 +102,7 @@
                                 @selected($item->product_supplier_id == $ps->id)>
 
                                 {{ $ps->product->name }}
-                                - Rp {{ number_format($ps->selling_prices) }}
+                                {{-- - Rp {{ number_format($ps->selling_prices) }} --}}
 
                                 @if($ps->label)
                                     ({{ $ps->label }})
@@ -116,7 +116,7 @@
                         @foreach($equipments as $eq)
                             <option value="equipment_{{ $eq->id }}"
                                 @selected($item->equipment_id == $eq->id)>
-                                {{ $eq->name }}
+                                {{ $eq->description }}
                             </option>
                         @endforeach
                     @endif

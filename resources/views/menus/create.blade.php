@@ -1,13 +1,11 @@
 @extends('tablar::page')
 
-@section('title', 'Create Menu')
-
 @section('content')
 <div class="container-xl">
     <div class="page-header d-print-none">
         <div class="row align-items-center">
             <div class="col">
-                <h2 class="page-title">Create Menu</h2>
+                <h2 class="page-title">Tambah Menu</h2>
                 <div class="text-muted mt-1">Kelola struktur navigasi sistem Antosa Architect</div>
             </div>
         </div>

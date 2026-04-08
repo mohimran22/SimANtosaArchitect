@@ -12,150 +12,104 @@ use Illuminate\Support\Facades\DB;
 class RabRecalculator
 {
     public static function recalcCategory(JobCategory $category)
-{
-    $items = $category->items;
-
-    $totalLabor = $items->where('category', 'labor')->sum('total_price');
-    $totalProduct = $items->where('category', 'product')->sum('total_price');
-    $totalEquipment = $items->where('category', 'equipment')->sum('total_price');
-
-    $subTotal = $totalLabor + $totalProduct + $totalEquipment;
-
-    $overheadValue = $subTotal * ($category->overhead_percent / 100);
-    $profitValue   = $subTotal * ($category->profit_percent / 100);
-    $grandTotal    = $subTotal + $overheadValue + $profitValue;
-
-    $category->update([
-        'subtotal' => $subTotal,
-        'overhead_value' => $overheadValue,
-        'profit_value' => $profitValue,
-        'grand_total' => $grandTotal,
-    ]);
-}
-    public static function recalcItem(JobCategoryItem $item)
     {
-        $price = null;
-        
-        if ($item->labor_cost_id) {
-            $price = LaborCost::where('id', $item->labor_cost_id)->value('base_unit_price');
-        }
-        elseif ($item->equipment_cost_id) {
-            $price = EquipmentCost::where('id', $item->equipment_cost_id)->value('base_unit_price');
-        }
-        elseif ($item->product_supplier_id) {
-            $price = ProductSupplier::where('id', $item->product_supplier_id)
-                ->value('selling_prices');
-        }
-        // elseif ($item->product_id) {
-        //     $price = ProductSupplier::where('product_id', $item->product_id)
-        //         ->orderBy('selling_prices')
-        //         ->value('selling_prices');
-        // }
-        // elseif ($item->product_id) {
-        //     $price = ProductSupplier::where('product_id', $item->product_id)
-        //         ->orderByDesc('id')
-        //         ->value('selling_prices');
-        // }
-        if ($price === null) {
-            $price = $item->base_unit_price;
-        }
+        $items = $category->items;
 
+        $totalLabor = $items->where('category', 'labor')->sum('total_price');
+        $totalProduct = $items->where('category', 'product')->sum('total_price');
+        $totalEquipment = $items->where('category', 'equipment')->sum('total_price');
 
-        $item->update([
-            'base_unit_price' => $price,
-            'total_price' => $item->coefisien * $price,
+        $subTotal = $totalLabor + $totalProduct + $totalEquipment;
+
+        $overheadValue = $subTotal * ($category->overhead_percent / 100);
+        $profitValue   = $subTotal * ($category->profit_percent / 100);
+        $grandTotal    = $subTotal + $overheadValue + $profitValue;
+
+        $category->update([
+            'subtotal' => $subTotal,
+            'overhead_value' => $overheadValue,
+            'profit_value' => $profitValue,
+            'grand_total' => $grandTotal,
         ]);
     }
-
-//     public static function recalcItemAndParent(JobCategoryItem $item)
-// {
-//     self::recalcItem($item);
-//     self::recalcCategory($item->jobCategory);
-// }
-
-
-public static function recalcByLabor($laborId)
-{
-    JobCategoryItem::where('labor_cost_id', $laborId)
-        ->with('jobCategory')
-        ->get()
-        ->groupBy('job_category_id')
-        ->each(function ($items) {
-            foreach ($items as $item) {
-                self::recalcItem($item);
+        public static function recalcItem(JobCategoryItem $item)
+        {
+            $price = null;
+            
+            if ($item->labor_cost_id) {
+                $price = LaborCost::where('id', $item->labor_cost_id)->value('base_unit_price');
             }
-            self::recalcCategory($items->first()->jobCategory);
-        });
-}
-
-public static function recalcByEquipment($laborId)
-{
-    JobCategoryItem::where('equipment_cost_id', $laborId)
-        ->with('jobCategory')
-        ->get()
-        ->groupBy('job_category_id')
-        ->each(function ($items) {
-            foreach ($items as $item) {
-                self::recalcItem($item);
+            elseif ($item->equipment_cost_id) {
+                $price = EquipmentCost::where('id', $item->equipment_cost_id)->value('base_unit_price');
             }
-            self::recalcCategory($items->first()->jobCategory);
-        });
-}
-
-
-public static function recalcByProduct($laborId)
-{
-    JobCategoryItem::where('product_id', $laborId)
-        ->with('jobCategory')
-        ->get()
-        ->groupBy('job_category_id')
-        ->each(function ($items) {
-            foreach ($items as $item) {
-                self::recalcItem($item);
+            elseif ($item->product_supplier_id) {
+                $price = ProductSupplier::where('id', $item->product_supplier_id)
+                    ->value('selling_prices');
             }
-            self::recalcCategory($items->first()->jobCategory);
-        });
-}
 
-// public static function recalcByProduct($productId)
-// {
-//     JobCategoryItem::where('product_id', $productId)
-//         ->with('jobCategory')
-//         ->get()
-//         ->groupBy('job_category_id')
-//         ->each(function ($items) {
-//             foreach ($items as $item) {
-//                 self::recalcItem($item);
-//             }
-//             self::recalcCategory($items->first()->jobCategory);
-//         });
-// }
-
-public static function recalcByPivot($pivotId)
-{
-    JobCategoryItem::where('product_supplier_id', $pivotId)
-        ->with('jobCategory')
-        ->get()
-        ->groupBy('job_category_id')
-        ->each(function ($items) {
-            foreach ($items as $item) {
-                self::recalcItem($item);
+            if ($price === null) {
+                $price = $item->base_unit_price;
             }
-            self::recalcCategory($items->first()->jobCategory);
-        });
-}
 
-public static function recalcItemAndParent(JobCategoryItem $item)
-{
-    // hitung ulang item
-    self::recalcItem($item);
 
-    // reload relasi parent
-    $item->load('jobCategory');
+            $item->update([
+                'base_unit_price' => $price,
+                'total_price' => $item->coefisien * $price,
+            ]);
+        }
 
-    // hitung ulang total category
-    self::recalcCategory($item->jobCategory);
-}
+
+    public static function recalcByLabor($laborId)
+    {
+        JobCategoryItem::where('labor_cost_id', $laborId)
+            ->with('jobCategory')
+            ->get()
+            ->groupBy('job_category_id')
+            ->each(function ($items) {
+                foreach ($items as $item) {
+                    self::recalcItem($item);
+                }
+                self::recalcCategory($items->first()->jobCategory);
+            });
+    }
+
+    public static function recalcByEquipment($laborId)
+    {
+        JobCategoryItem::where('equipment_cost_id', $laborId)
+            ->with('jobCategory')
+            ->get()
+            ->groupBy('job_category_id')
+            ->each(function ($items) {
+                foreach ($items as $item) {
+                    self::recalcItem($item);
+                }
+                self::recalcCategory($items->first()->jobCategory);
+            });
+    }
+
+    public static function recalcByPivot($pivotId)
+    {
+        JobCategoryItem::where('product_supplier_id', $pivotId)
+            ->with('jobCategory')
+            ->get()
+            ->groupBy('job_category_id')
+            ->each(function ($items) {
+                foreach ($items as $item) {
+                    self::recalcItem($item);
+                }
+                self::recalcCategory($items->first()->jobCategory);
+            });
+    }
+
+    public static function recalcItemAndParent(JobCategoryItem $item)
+    {
+
+        self::recalcItem($item);
+
+        $item->load('jobCategory');
+
+        self::recalcCategory($item->jobCategory);
+    }
 
     public static function recalcAll()
     {

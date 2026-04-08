@@ -9,6 +9,7 @@ use App\Models\EquipmentCost;
 use App\Models\Supplier;
 use App\Models\Product;
 use App\Models\ProductSupplier;
+use App\Services\RabRecalculator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
@@ -170,23 +171,54 @@ class JobCategoryController extends Controller
         $data = $request->validate([
             'category'          => 'required|in:product,labor,equipment',
             'coefisien'         => 'required|numeric|min:0',
-            'base_unit_price'   => 'required|numeric|min:0',
 
-            'product_id'        => 'nullable|exists:products,id',
+            'product_supplier_id' => 'nullable|exists:product_supplier,id',
             'labor_cost_id'     => 'nullable|exists:labor_costs,id',
             'equipment_cost_id' => 'nullable|exists:equipment_costs,id',
-            'supplier_id'        => 'nullable|exists:suppliers,id',
+
             'code'              => 'nullable|string|max:50',
             'unit'              => 'nullable|string|max:50',
             'name'              => 'required|string|max:255',
         ]);
+
+        if ($data['category'] === 'product' && $request->product_supplier_id) {
+
+            $pivot = ProductSupplier::with('product')->findOrFail($request->product_supplier_id);
+
+            $data['product_id'] = $pivot->product_id;
+            $data['product_supplier_id'] = $pivot->id;
+
+            $data['name'] = $pivot->product->name;
+            $data['code'] = $pivot->product->sku_code;
+            $data['unit'] = $pivot->product->unit_1_name ?: 'pcs';
+
+            $data['base_unit_price'] = $pivot->selling_prices;
+        }
+
+        if ($data['category'] === 'labor' && $request->labor_cost_id) {
+            $lab = LaborCost::findOrFail($request->labor_cost_id);
+
+            $data['name'] = $lab->description;
+            $data['code'] = $lab->code ?? '-';
+            $data['unit'] = $lab->unit;
+            $data['base_unit_price'] = $lab->base_unit_price;
+        }
+
+        if ($data['category'] === 'equipment' && $request->equipment_cost_id) {
+            $eq = EquipmentCost::findOrFail($request->equipment_cost_id);
+
+            $data['name'] = $eq->name;
+            $data['code'] = $eq->code ?? '-';
+            $data['unit'] = $eq->unit;
+            $data['base_unit_price'] = $eq->base_unit_price;
+        }
 
         $data['job_category_id'] = $jobCategory->id;
         $data['total_price']     = $data['coefisien'] * $data['base_unit_price'];
 
         JobCategoryItem::create($data);
 
-        $this->recalcJobCategory($jobCategory);
+        RabRecalculator::recalcCategory($jobCategory);
 
         return back()->with('success', 'Item pekerjaan berhasil ditambahkan.');
     }
@@ -196,22 +228,14 @@ class JobCategoryController extends Controller
         $data = $request->validate([
             'overhead_percent' => 'nullable|numeric|min:0',
             'profit_percent'   => 'nullable|numeric|min:0',
-            'overhead_value' => 'nullable|numeric|min:0',
-            'profit_value'   => 'nullable|numeric|min:0',
-            'subtotal' => 'nullable|numeric|min:0',
-            'grand_total'   => 'nullable|numeric|min:0',
         ]);
 
         $jobCategory->update([
             'overhead_percent' => $data['overhead_percent'] ?? 0,
             'profit_percent'   => $data['profit_percent'] ?? 0,
-            'overhead_value' => $data['overhead_value'] ?? 0,
-            'profit_value'   => $data['profit_value'] ?? 0,
-            'subtotal' => $data['subtotal'] ?? 0,
-            'grand_total'   => $data['grand_total'] ?? 0,
         ]);
 
-        $this->recalcJobCategory($jobCategory);
+        RabRecalculator::recalcCategory($jobCategory);
 
         return response()->json([
             'success' => true
@@ -239,8 +263,7 @@ class JobCategoryController extends Controller
 
         $item->delete();
 
-        // 🔥 AUTO RECALC
-        $this->recalcJobCategory($jobCategory);
+        RabRecalculator::recalcCategory($jobCategory);
 
         return back()->with('success', 'Item berhasil dihapus.');
     }
