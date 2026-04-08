@@ -39,7 +39,7 @@ use App\Http\Controllers\BuildWeeklyController;
 use App\Http\Controllers\BuildWeeklyPlanController;
 use App\Http\Controllers\AjaxController;
 use App\Http\Controllers\Api\JournalApiController;
-use App\Http\Controllers\Api\LicenseSessionController;
+use App\Http\Controllers\JournalExportController;
 
 
 Route::get('/', function () {
@@ -160,16 +160,58 @@ Route::middleware(['role:Super-Admin|Akuntan'])->group(function () {
     Route::resource('/accounting', AccountingAccountController::class);
 });
 
-Route::get('/journals/report', [AccountingJournalController::class, 'report'])
-    ->name('journals.report')
-    ->middleware(['role:Super-Admin|Akuntan']);
-
 Route::get('/journals/{journal}/print', [AccountingJournalController::class, 'print'])
     ->name('journals.print');
+
+
+Route::get('/journals/report', [AccountingJournalController::class, 'report'])
+    ->name('journals.report')
+    ->middleware(['role:Super-Admin|Akuntan|Pemilik Lisensi']);
+
+Route::get('/journals/general', [AccountingJournalController::class, 'generalJournal'])
+    ->name('journals.general')
+    ->middleware(['role:Super-Admin|Akuntan|Pemilik Lisensi']);
+Route::get('/journals/export/pdf', [AccountingJournalController::class, 'exportPDF'])->name('journals.export.pdf');
+
+Route::get('/journals/ledger', [AccountingJournalController::class, 'ledger'])
+    ->name('journals.ledger')
+    ->middleware(['role:Super-Admin|Akuntan|Pemilik Lisensi']);
+Route::get('/journals/ledgerpdf', [AccountingJournalController::class, 'exportLedgerPdf'])->name('ledgerpdf');
+
+Route::get('/journals/export/trial-pdf', [AccountingJournalController::class, 'exportTrial'])
+    ->name('journals.trial.pdf');
+
+Route::get('/journals/income/pdf', [AccountingJournalController::class, 'exportIncome'])
+    ->name('journals.income.pdf');
 
 Route::middleware(['role:Super-Admin|Akuntan'])->group(function () {
     Route::resource('/journals', AccountingJournalController::class);
 });
+
+Route::get('/reports/balance_sheet', [AccountingJournalController::class, 'balanceSheet'])
+    ->name('reports.balance_sheet')
+    ->middleware(['role:Super-Admin|Akuntan|Pemilik Lisensi']);
+
+Route::get('/reports/income-statement', [AccountingReportController::class, 'incomeStatement'])
+    ->name('reports.income_statement');
+Route::get('/reports/income-statement/pdf', [AccountingReportController::class, 'exportPdf'])
+    ->name('reports.income_statement.pdf');
+
+Route::get('/reports/income-statement/excel', [AccountingReportController::class, 'exportExcel'])
+    ->name('reports.income_statement.excel');
+
+Route::get('/journals/{journal}/export', [JournalExportController::class, 'export'])
+    ->name('journals.export');
+
+Route::get('/journals/export/general', [JournalExportController::class, 'exportGeneral'])
+    ->name('general.export');
+
+Route::get('/ledger/export', [JournalExportController::class, 'exportLedger'])
+    ->name('ledger.export');
+
+Route::get('/trial/export', [JournalExportController::class, 'exportTrialBalance'])
+    ->name('trial.export');
+
 
 // Route::get('/periods/close', [AccountingClosingController::class, 'showCloseForm'])->name('periods.close.form');
 // Route::post('/periods/close', [AccountingClosingController::class, 'close'])->name('periods.close');

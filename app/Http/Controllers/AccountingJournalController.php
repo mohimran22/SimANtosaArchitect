@@ -295,8 +295,9 @@ public function update(UpdateAccountingJournalRequest $request, AccountingJourna
         ]);
     }
 
-    return redirect()->route('journals.index')
-        ->with('success', 'Jurnal berhasil diperbarui.');
+return redirect()
+    ->route('journals.show', $journal)
+    ->with('success', 'Jurnal berhasil diperbarui.');
 }
 
     public function destroy($id)
@@ -321,33 +322,33 @@ public function update(UpdateAccountingJournalRequest $request, AccountingJourna
     $accountId = $request->input('account_id');
     $startDate = $request->input('start_date');
     $endDate = $request->input('end_date');
-    $licenseFilterId = $request->input('license_id');
+    // $licenseFilterId = $request->input('license_id');
 
     
-    $licenses = collect();
-    if ($user->hasRole('Super-Admin')) {
-        $licenses = License::all();
-    } elseif ($user->hasRole('Pemilik Lisensi')) {
-        $licenses = $user->licenses ?? collect();
-        if ($licenses->isEmpty()) {
-            abort(403, 'Lisensi tidak ditemukan.');
-        }
-    } elseif ($user->hasRole('Akuntan')) {
-        $licenses = $user->employee?->licenses ?? collect();
-        if ($licenses->isEmpty()) {
-            abort(403, 'Lisensi tidak ditemukan.');
-        }
-    } else {
-        abort(403, 'Role tidak diizinkan.');
-    }
+    // $licenses = collect();
+    // if ($user->hasRole('Super-Admin')) {
+    //     $licenses = License::all();
+    // } elseif ($user->hasRole('Pemilik Lisensi')) {
+    //     $licenses = $user->licenses ?? collect();
+    //     if ($licenses->isEmpty()) {
+    //         abort(403, 'Lisensi tidak ditemukan.');
+    //     }
+    // } elseif ($user->hasRole('Akuntan')) {
+    //     $licenses = $user->employee?->licenses ?? collect();
+    //     if ($licenses->isEmpty()) {
+    //         abort(403, 'Lisensi tidak ditemukan.');
+    //     }
+    // } else {
+    //     abort(403, 'Role tidak diizinkan.');
+    // }
 
     // Filter akun
     $accountsQuery = AccountingAccount::where('is_parent', false)->where('is_active', true);
-    if ($licenseFilterId) {
-        $accountsQuery->where('license_id', $licenseFilterId);
-    } else {
-        $accountsQuery->whereIn('license_id', $licenses->pluck('id'));
-    }
+    // if ($licenseFilterId) {
+    //     $accountsQuery->where('license_id', $licenseFilterId);
+    // } else {
+    //     $accountsQuery->whereIn('license_id', $licenses->pluck('id'));
+    // }
     $accounts = $accountsQuery->orderBy('account_code')->get();
 
     $journalsQuery = AccountingJournal::query()
@@ -362,31 +363,28 @@ public function update(UpdateAccountingJournalRequest $request, AccountingJourna
         }])
         ->when($startDate, fn($q) => $q->whereDate('transaction_date', '>=', $startDate))
         ->when($endDate, fn($q) => $q->whereDate('transaction_date', '<=', $endDate))
-        // pastikan jurnal memiliki detail yang sesuai (biar jurnal tanpa akun itu tidak muncul)
         ->when($accountId, fn($q) => $q->whereHas('details', fn($q2) => $q2->where('account_id', $accountId)));
 
 
-    if ($licenseFilterId) {
-        if (
-            $user->hasRole('Super-Admin') ||
-            ($user->hasRole('Pemilik Lisensi') && $licenses->pluck('id')->contains($licenseFilterId)) ||
-            ($user->hasRole('Akuntan') && $licenses->pluck('id')->contains($licenseFilterId))
-        ) {
-            $journalsQuery->where('license_id', $licenseFilterId);
-        } else {
-            abort(403, 'Lisensi tidak valid.');
-        }
-    } else {
-        $journalsQuery->whereIn('license_id', $licenses->pluck('id'));
-    }
+    // if ($licenseFilterId) {
+    //     if (
+    //         $user->hasRole('Super-Admin') ||
+    //         ($user->hasRole('Pemilik Lisensi') && $licenses->pluck('id')->contains($licenseFilterId)) ||
+    //         ($user->hasRole('Akuntan') && $licenses->pluck('id')->contains($licenseFilterId))
+    //     ) {
+    //         $journalsQuery->where('license_id', $licenseFilterId);
+    //     } else {
+    //         abort(403, 'Lisensi tidak valid.');
+    //     }
+    // } else {
+    //     $journalsQuery->whereIn('license_id', $licenses->pluck('id'));
+    // }
 
     $journals = $journalsQuery->orderBy('transaction_date')->get();
 
     return view('journals.report', compact(
         'accounts',
         'journals',
-        'licenses',
-        'licenseFilterId',
         'accountId',
         'startDate',
         'endDate'
@@ -405,23 +403,23 @@ public function update(UpdateAccountingJournalRequest $request, AccountingJourna
     $journals = AccountingJournal::with(['details.account']);
 
     // 🔹 Filter role user
-    if ($user->hasRole('Super-Admin')) {
-        $licenses = License::all();
-    } else {     
-        $licenses = $user->hasRole('Pemilik Lisensi')
-            ? $user->licenses
-            : $user->employee?->licenses;
+    // if ($user->hasRole('Super-Admin')) {
+    //     $licenses = License::all();
+    // } else {     
+    //     $licenses = $user->hasRole('Pemilik Lisensi')
+    //         ? $user->licenses
+    //         : $user->employee?->licenses;
 
-        abort_if(!$licenses || $licenses->isEmpty(), 403, 'Lisensi tidak ditemukan.');
-    }
+    //     abort_if(!$licenses || $licenses->isEmpty(), 403, 'Lisensi tidak ditemukan.');
+    // }
 
-    $activeLicenseId = $request->get('license_id') ?? session('active_license_id');
+    // $activeLicenseId = $request->get('license_id') ?? session('active_license_id');
 
-    if ($activeLicenseId) {
-        $journals->where('license_id', $activeLicenseId);
-    } else {
-        $journals->whereIn('license_id', $licenses->pluck('id'));
-    }
+    // if ($activeLicenseId) {
+    //     $journals->where('license_id', $activeLicenseId);
+    // } else {
+    //     $journals->whereIn('license_id', $licenses->pluck('id'));
+    // }
 
     // 🔹 Filter tanggal
     $journals = $journals->whereBetween('transaction_date', [$startDate, $endDate])
@@ -439,7 +437,7 @@ public function update(UpdateAccountingJournalRequest $request, AccountingJourna
         }
     }
 
-    return view('journals.general', compact('journals', 'licenses', 'activeLicenseId', 'startDate', 'endDate', 'totalDebit', 'totalCredit'));
+    return view('journals.general', compact('journals', 'startDate', 'endDate', 'totalDebit', 'totalCredit'));
 }
 
 public function exportPDF(Request $request)
@@ -451,7 +449,7 @@ public function exportPDF(Request $request)
     // Ambil data sesuai filter
     $journals = AccountingJournal::with(['details.account'])
         ->whereBetween('transaction_date', [$startDate, $endDate])
-        ->where('license_id', $activeLicenseId)
+        // ->where('license_id', $activeLicenseId)
         ->orderBy('transaction_date', 'asc')
         ->get();
 

@@ -7,7 +7,7 @@
    {{-- Filter --}}
     <form action="{{ route('journals.report') }}" method="GET" class="card p-4 mb-4">
         <div class="row">
-            @if (auth()->user()->hasRole('Super-Admin') || auth()->user()->hasRole('Pemilik Lisensi'))
+            {{-- @if (auth()->user()->hasRole('Super-Admin') || auth()->user()->hasRole('Pemilik Lisensi'))
                 <div class="col-md-4">
                     <label for="license_id" class="form-label">Lisensi</label>
                     <select name="license_id" id="license_id" class="form-select">
@@ -19,7 +19,7 @@
                         @endforeach
                     </select>
                 </div>
-            @endif
+            @endif --}}
 
             <div class="col-md-4">
                 <label for="account_id" class="form-label">Akun</label>
