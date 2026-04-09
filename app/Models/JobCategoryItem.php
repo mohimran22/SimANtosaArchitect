@@ -7,27 +7,30 @@ use Illuminate\Database\Eloquent\Model;
 class JobCategoryItem extends Model
 {
     protected $table = 'job_category_items';
-protected $fillable = [
-    'job_category_id',
-    'category',
+    protected $casts = [
+        'product_supplier_id' => 'string',
+    ];
+    protected $fillable = [
+        'job_category_id',
+        'category',
 
-    'product_id',
-    'labor_cost_id',
-    'equipment_cost_id',
-    'product_supplier_id',
-    'name',     
-    'code',
-    'unit',
-    'supplier_id',
-    'coefisien',
-    'base_unit_price',
-    'total_price',
+        'product_id',
+        'labor_cost_id',
+        'equipment_cost_id',
+        'product_supplier_id',
+        'name',     
+        'code',
+        'unit',
+        'supplier_id',
+        'coefisien',
+        'base_unit_price',
+        'total_price',
 
-    'overhead',
-    'profit',
-    'subtotal',
-    'grand_total',
-];
+        'overhead',
+        'profit',
+        'subtotal',
+        'grand_total',
+    ];
 
 
     public function jobCategory()

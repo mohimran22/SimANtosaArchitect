@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
 class ProductSupplier extends Pivot
 {
     protected $table = 'product_supplier';
+    protected $keyType = 'string';
+    public $incrementing = false;
 
     protected $fillable = [
         'supplier_id',
