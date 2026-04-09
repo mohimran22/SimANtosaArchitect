@@ -9,7 +9,7 @@
                     <div class="btn-list">
                  @can('tambah data karyawan')       
                   <span class="d-none d-sm-inline">
-                        <a href="{{ route("labor_costs.create") }}" class="btn btn-dark d-none d-sm-inline-block" >
+                        <a href="{{ route("tools.create") }}" class="btn btn-dark d-none d-sm-inline-block" >
                             <!-- Download SVG icon from http://tabler-icons.io/i/plus -->
                             <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24"
                                  viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
@@ -57,30 +57,6 @@
                                         <th width="120">Aksi</th>
                                     </tr>
                                 </thead>
-                                {{-- <tbody>
-                                    @foreach($tools as $key => $item)
-                                    <tr>
-                                        <td>{{ $loop->iteration }}</td>
-                                        <td>{{ $item->code }}</td>
-                                        <td>{{ $item->description }}</td>
-                                        <td>{{ $item->unit }}</td>
-                                        <td>Rp {{ number_format($item->base_unit_price, 0, ',', '.') }}</td>
-                                        <td>{{ $item->notes }}</td>
-                                        <td>
-                                            <a href="{{ route('labor_costs.edit', $item->id) }}" 
-                                            class="btn btn-dark btn-sm">
-                                                Edit
-                                            </a>
-
-                                            <button class="btn btn-dark btn-sm btn-delete"
-                                                data-id="{{ $item->id }}"
-                                                data-url="{{ route('labor_costs.destroy', $item->id) }}">
-                                                Delete
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    @endforeach
-                                </tbody> --}}
                             </table>
                         </div>
                         

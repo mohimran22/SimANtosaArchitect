@@ -68,11 +68,10 @@
                                 @foreach($survey->images as $img)
                                     <div class="col-6 col-md-3">
                                         <div class="border rounded shadow-sm p-1">
-                                            <a href="{{ asset('storage/surveys'.$img->file_path) }}" target="_blank">
-                                                <img src="{{ asset('storage/'.$img->file_path) }}"
-                                                    class="img-fluid rounded"
-                                                    style="height:150px; object-fit:cover;">
-                                            </a>
+                                    <img src="{{ asset('storage/'.$img->file_path) }}"
+                                        data-src="{{ asset('storage/'.$img->file_path) }}"
+                                        class="img-fluid rounded preview-image"
+                                        style="height:150px; object-fit:cover; cursor:pointer;">
                                         </div>
                                     </div>
                                 @endforeach
@@ -131,11 +130,10 @@
                         @foreach($survey->documentations as $doc)
                             <div class="col-6 col-md-3">
                                 <div class="border rounded shadow-sm p-1">
-                                    <a href="{{ asset('storage/surveys'.$doc->file_path) }}" target="_blank">
-                                        <img src="{{ asset('storage/'.$doc->file_path) }}"
-                                            class="img-fluid rounded"
-                                            style="height:150px; object-fit:cover;">
-                                    </a>
+                                    <img src="{{ asset('storage/'.$img->file_path) }}"
+                                        data-src="{{ asset('storage/'.$img->file_path) }}"
+                                        class="img-fluid rounded preview-image"
+                                        style="height:150px; object-fit:cover; cursor:pointer;">
                                 </div>
                             </div>
                         @endforeach
@@ -165,5 +163,10 @@
         </div>
     </div>
 </div>
+<div id="imageModal" style="display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.8); justify-content:center; align-items:center;">
+    <span id="closeModal" style="position:absolute; top:20px; right:30px; color:white; font-size:30px; cursor:pointer;">&times;</span>
+    <img id="modalImage" style="max-width:90%; max-height:90%;">
+</div>
+
 @endif
 @endcan

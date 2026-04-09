@@ -9,7 +9,7 @@
                 <div class="col-12 col-md-auto ms-auto d-print-none">
                     <div class="btn-list">
                   
-                        <a href=" {{ route("labor_costs.index") }} " class="btn btn-dark d-none d-sm-inline-block" >
+                        <a href=" {{ route("equipment_costs.index") }} " class="btn btn-dark d-none d-sm-inline-block" >
                             Kembali
                         </a>
                         
@@ -32,7 +32,7 @@
                         </div>
 
                         <div class="card-body">
-                            <form action="{{ route('labor_costs.store', ) }}" method="POST">
+                            <form action="{{ route('equipment_costs.store', ) }}" method="POST">
                                 @csrf
 
                                 <div class="mb-3">

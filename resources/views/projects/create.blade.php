@@ -1194,40 +1194,18 @@ document.addEventListener('DOMContentLoaded', function () {
 </script>
 
 
-// <script>
-// document.addEventListener("DOMContentLoaded", () => {
+<script>
+document.querySelectorAll('.preview-image').forEach(img => {
+    img.addEventListener('click', function () {
+        document.getElementById('imageModal').style.display = 'flex';
+        document.getElementById('modalImage').src = this.dataset.src;
+    });
+});
 
-//     document.querySelectorAll('.btn-toggle-rab').forEach(btn => {
-//         btn.addEventListener('click', () => {
-//             const viewId = btn.dataset.view;
-//             const editId = btn.dataset.edit;
-
-//             const view = document.getElementById(viewId);
-//             const edit = document.getElementById(editId);
-
-//             if (!view || !edit) return;
-
-//             view.style.display = 'none';
-//             edit.style.display = 'block';
-//         });
-//     });
-//     document.querySelectorAll('.btn-cancel-rab').forEach(btn => {
-//         btn.addEventListener('click', () => {
-//             const viewId = btn.dataset.view;
-//             const editId = btn.dataset.edit;
-
-//             const view = document.getElementById(viewId);
-//             const edit = document.getElementById(editId);
-
-//             if (!view || !edit) return;
-
-//             edit.style.display = 'none';
-//             view.style.display = 'block';
-//         });
-//     });
-
-// });
-// </script>
+document.getElementById('closeModal').onclick = function () {
+    document.getElementById('imageModal').style.display = 'none';
+};
+</script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {

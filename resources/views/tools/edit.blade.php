@@ -10,7 +10,7 @@
                 <div class="col-12 col-md-auto ms-auto d-print-none">
                     <div class="btn-list">
                   
-                        <a href=" {{ route("labor_costs.index") }} " class="btn btn-primary d-none d-sm-inline-block" >
+                        <a href=" {{ route("equipment_costs.index") }} " class="btn btn-primary d-none d-sm-inline-block" >
                             Kembali
                         </a>
                         
@@ -33,33 +33,33 @@
                         </div>
 
                         <div class="card-body">
-                            <form action="{{ route('labor_costs.update', $labor_cost->id) }}" method="POST">
+                            <form action="{{ route('equipment_costs.update', $equipment_cost->id) }}" method="POST">
                                 @csrf
                                 @method('put')
 
                                 <div class="mb-3">
                                     <label class="form-label">Kode</label>
-                                    <input type="text" class="form-control" name="code" value="{{ old('code', $labor_cost->code) }}">
+                                    <input type="text" class="form-control" name="code" value="{{ old('code', $equipment_cost->code) }}">
                                 </div>
 
                                 <div class="mb-3">
                                     <label class="form-label">Jenis Pekerjaan</label>
-                                    <input type="text" name="description" class="form-control" value="{{ old('description', $labor_cost->description) }}" required>
+                                    <input type="text" name="description" class="form-control" value="{{ old('description', $equipment_cost->description) }}" required>
                                 </div>
 
                                 <div class="mb-3">
                                     <label class="form-label">Unit</label>
-                                    <input type="text" name="unit" class="form-control" value="{{ old('unit', $labor_cost->unit) }}">
+                                    <input type="text" name="unit" class="form-control" value="{{ old('unit', $equipment_cost->unit) }}">
                                 </div>
 
                                  <div class="mb-3">
                                     <label class="form-label">Harga dasar</label>
-                                    <input type="number" name="base_unit_price" class="form-control" value="{{ old('base_unit_price', $labor_cost->base_unit_price) }}">
+                                    <input type="number" name="base_unit_price" class="form-control" value="{{ old('base_unit_price', $equipment_cost->base_unit_price) }}">
                                 </div>
 
                                  <div class="mb-3">
                                     <label class="form-label">Keterangan</label>
-                                    <input type="text" name="notes" class="form-control" value="{{ old('notes', $labor_cost->notes) }}">
+                                    <input type="text" name="notes" class="form-control" value="{{ old('notes', $equipment_cost->notes) }}">
                                 </div>
                                 <div class="d-flex justify-content-between">
                                     <button type="submit" class="btn btn-success">Simpan Perubahan</button>

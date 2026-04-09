@@ -153,6 +153,8 @@ class JobCategoryItemController extends Controller
         'item' => [
             'base_unit_price' => $item->base_unit_price,
             'total_price'     => $item->total_price,
+            'code'            => $item->code,
+            'unit'            => $item->unit,
         ],
         'summary' => [
             'subtotal'       => $item->jobCategory->subtotal,

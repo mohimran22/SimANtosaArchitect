@@ -89,11 +89,10 @@
                         @foreach($consultation->documentations as $doc)
                             <div class="col-6 col-md-3">
                                 <div class="border rounded shadow-sm p-1">
-                                    <a href="{{ asset('storage/consultations'.$doc->file_path) }}" target="_blank">
                                         <img src="{{ asset('storage/'.$doc->file_path) }}"
-                                            class="img-fluid rounded"
-                                            style="height:150px; object-fit:cover;">
-                                    </a>
+                                            data-src="{{ asset('storage/'.$doc->file_path) }}"
+                                            class="img-fluid rounded preview-image"
+                                            style="height:150px; object-fit:cover; cursor:pointer;">
                                 </div>
                             </div>
                         @endforeach

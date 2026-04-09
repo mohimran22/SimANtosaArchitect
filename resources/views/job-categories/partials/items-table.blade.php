@@ -48,40 +48,6 @@
     data-total="{{ $item->total_price }}">
 
             <td class="text-center">{{ $no++ }}</td>
-            {{-- <td>{{ $item->name }}</td> --}}
-            {{-- <td>
-                <select class="form-select select2 item-change"
-                    data-item-id="{{ $item->id }}"
-                    data-category="{{ $item->category }}">
-
-                    <option value="">-- Pilih --</option>
-
-                    @if($item->category == 'labor')
-                        @foreach($laborCosts as $l)
-                            <option value="{{ $l->id }}" @selected($item->reference_id == $l->id)>
-                                {{ $l->description }}
-                            </option>
-                        @endforeach
-                    @endif
-
-                    @if($item->category == 'product')
-                        @foreach($products as $p)
-                            <option value="{{ $p->id }}" @selected($item->product_id == $p->id)>
-                                {{ $p->name }}
-                            </option>
-                        @endforeach
-                    @endif
-
-                    @if($item->category == 'equipment')
-                        @foreach($equipments as $e)
-                            <option value="{{ $e->id }}" @selected($item->equipment_id == $e->id)>
-                                {{ $e->name }}
-                            </option>
-                        @endforeach
-                    @endif
-
-                </select>
-            </td> --}}
             <td>
                 <select class="form-select select2 uraian-change"
                         data-item-id="{{ $item->id }}"
@@ -138,8 +104,12 @@
                 @endif
             </td>
 
-            <td class="text-center">{{ $item->code }}</td>
-            <td class="text-center">{{ $item->unit }}</td>
+            <td class="text-center" id="code_{{ $item->id }}">
+                {{ $item->code }}
+            </td>
+            <td class="text-center" id="unit_{{ $item->id }}">
+                {{ $item->unit }}
+            </td>
             <td class="text-end">{{ number_format($item->coefisien, 4) }}</td>
             <td class="text-end" id="unit_price_{{ $item->id }}">
                 Rp {{ number_format($item->base_unit_price, 0, ',', '.') }}
@@ -397,11 +367,10 @@ $(document).ready(function () {
 
             if (!data.success) return;
 
-            // 🔥 update harga per row
             $('#unit_price_' + itemId).text(formatRp(data.item.base_unit_price));
             $('#total_price_' + itemId).text(formatRp(data.item.total_price));
-
-            // 🔥 update summary bawah
+            $('#code_' + itemId).text(data.item.code);
+            $('#unit_' + itemId).text(data.item.unit);
             $('#subtotal').text(formatRp(data.summary.subtotal));
             $('#overhead_value').text(formatRp(data.summary.overhead_value));
             $('#profit_value').text(formatRp(data.summary.profit_value));
