@@ -512,7 +512,7 @@ public function datatableProducts(Request $request, Supplier $supplier)
                     '.$row->name.' '.$badge.' 
                     <small class="text-muted">'.($row->label ?? '').'</small>
 
-                    <button class="btn btn-sm btn-warning ms-1 btn-edit-label">
+                    <button class="btn btn-sm btn-dark ms-1 btn-edit-label">
                         <i class="ti ti-pencil"></i>
                     </button>
                 </span>
@@ -541,6 +541,12 @@ public function datatableProducts(Request $request, Supplier $supplier)
                 >
                     <i class="ti ti-copy"></i>
                 </button>
+                <button 
+                        data-pivot="'.$row->pivot_id.'"
+                        data-url="' . route('supplier-product.destroy', $row->pivot_id) . '" 
+                        class="btn btn-icon btn-sm btn-dark btn-delete">
+                        <i class="ti ti-trash"></i>
+                </button>
             ';
         })
         ->editColumn('selling_prices', function ($row) use ($supplier) {
@@ -554,7 +560,7 @@ public function datatableProducts(Request $request, Supplier $supplier)
 
                 <span class="price-text">
                     Rp <span class="price-label">'.number_format($row->selling_prices).'</span>
-                    <button class="btn btn-sm btn-warning ms-1 btn-edit-price">
+                    <button class="btn btn-sm btn-dark ms-1 btn-edit-price">
                         <i class="ti ti-pencil"></i>
                     </button>
                 </span>

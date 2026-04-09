@@ -172,45 +172,46 @@ class JobCategoryController extends Controller
             'category'          => 'required|in:product,labor,equipment',
             'coefisien'         => 'required|numeric|min:0',
 
-            'product_supplier_id' => 'nullable|exists:product_supplier,id',
-            'labor_cost_id'     => 'nullable|exists:labor_costs,id',
-            'equipment_cost_id' => 'nullable|exists:equipment_costs,id',
+            'product_supplier_id' => 'required_if:category,product|nullable|exists:product_supplier,id',
+            'labor_cost_id' => 'required_if:category,labor|nullable|exists:labor_costs,id',
+            'equipment_cost_id' => 'required_if:category,equipment|nullable|exists:equipment_costs,id',
 
             'code'              => 'nullable|string|max:50',
             'unit'              => 'nullable|string|max:50',
             'name'              => 'required|string|max:255',
         ]);
 
-        if ($data['category'] === 'product' && $request->product_supplier_id) {
+        switch ($data['category']) {
 
-            $pivot = ProductSupplier::with('product')->findOrFail($request->product_supplier_id);
+            case 'product':
+                $pivot = ProductSupplier::with('product')
+                    ->findOrFail($request->product_supplier_id);
 
-            $data['product_id'] = $pivot->product_id;
-            $data['product_supplier_id'] = $pivot->id;
+                $data['product_id'] = $pivot->product_id;
+                $data['product_supplier_id'] = $pivot->id;
+                $data['name'] = $pivot->product->name;
+                $data['code'] = $pivot->product->sku_code;
+                $data['unit'] = $pivot->product->unit_1_name ?: 'pcs';
+                $data['base_unit_price'] = $pivot->selling_prices;
+                break;
 
-            $data['name'] = $pivot->product->name;
-            $data['code'] = $pivot->product->sku_code;
-            $data['unit'] = $pivot->product->unit_1_name ?: 'pcs';
+            case 'labor':
+                $lab = LaborCost::findOrFail($request->labor_cost_id);
 
-            $data['base_unit_price'] = $pivot->selling_prices;
-        }
+                $data['name'] = $lab->description;
+                $data['code'] = $lab->code ?? '-';
+                $data['unit'] = $lab->unit;
+                $data['base_unit_price'] = $lab->base_unit_price;
+                break;
 
-        if ($data['category'] === 'labor' && $request->labor_cost_id) {
-            $lab = LaborCost::findOrFail($request->labor_cost_id);
+            case 'equipment':
+                $eq = EquipmentCost::findOrFail($request->equipment_cost_id);
 
-            $data['name'] = $lab->description;
-            $data['code'] = $lab->code ?? '-';
-            $data['unit'] = $lab->unit;
-            $data['base_unit_price'] = $lab->base_unit_price;
-        }
-
-        if ($data['category'] === 'equipment' && $request->equipment_cost_id) {
-            $eq = EquipmentCost::findOrFail($request->equipment_cost_id);
-
-            $data['name'] = $eq->name;
-            $data['code'] = $eq->code ?? '-';
-            $data['unit'] = $eq->unit;
-            $data['base_unit_price'] = $eq->base_unit_price;
+                $data['name'] = $eq->name;
+                $data['code'] = $eq->code ?? '-';
+                $data['unit'] = $eq->unit;
+                $data['base_unit_price'] = $eq->base_unit_price;
+                break;
         }
 
         $data['job_category_id'] = $jobCategory->id;
@@ -393,12 +394,10 @@ public function getSuppliersByProduct($productId)
         $pivot = $supplier->pivot;
 
         return [
-            'id'   => $product->id,
-            'name' => $product->name,
-            'code' => $product->sku_code,
-            'unit' => $product->unit_1_name,
-
-            // 🔥 ambil dari pivot
+            'id'   => $pivot->id,
+            'name' => $pivot->product->name,
+            'code' => $pivot->product->sku_code,
+            'unit' => $pivot->product->unit_1_name,
             'price' => $pivot->selling_prices,
         ];
     }

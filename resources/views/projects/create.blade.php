@@ -1079,6 +1079,24 @@ document.addEventListener('click', function (e) {
 <script>
 document.addEventListener("DOMContentLoaded", () => {
 
+    const view = document.getElementById("project-view");
+    const edit = document.getElementById("project-edit");
+
+    document.getElementById("btn-edit-project").addEventListener("click", () => {
+        view.style.display = "none";
+        edit.style.display = "block";
+    });
+
+    document.getElementById("btn-cancel-project").addEventListener("click", () => {
+        edit.style.display = "none";
+        view.style.display = "block";
+    });
+
+});
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
     const view = document.getElementById("consultation-view");
     const edit = document.getElementById("consultation-edit");
 
@@ -1176,40 +1194,40 @@ document.addEventListener('DOMContentLoaded', function () {
 </script>
 
 
-<script>
-document.addEventListener("DOMContentLoaded", () => {
+// <script>
+// document.addEventListener("DOMContentLoaded", () => {
 
-    document.querySelectorAll('.btn-toggle-rab').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const viewId = btn.dataset.view;
-            const editId = btn.dataset.edit;
+//     document.querySelectorAll('.btn-toggle-rab').forEach(btn => {
+//         btn.addEventListener('click', () => {
+//             const viewId = btn.dataset.view;
+//             const editId = btn.dataset.edit;
 
-            const view = document.getElementById(viewId);
-            const edit = document.getElementById(editId);
+//             const view = document.getElementById(viewId);
+//             const edit = document.getElementById(editId);
 
-            if (!view || !edit) return;
+//             if (!view || !edit) return;
 
-            view.style.display = 'none';
-            edit.style.display = 'block';
-        });
-    });
-    document.querySelectorAll('.btn-cancel-rab').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const viewId = btn.dataset.view;
-            const editId = btn.dataset.edit;
+//             view.style.display = 'none';
+//             edit.style.display = 'block';
+//         });
+//     });
+//     document.querySelectorAll('.btn-cancel-rab').forEach(btn => {
+//         btn.addEventListener('click', () => {
+//             const viewId = btn.dataset.view;
+//             const editId = btn.dataset.edit;
 
-            const view = document.getElementById(viewId);
-            const edit = document.getElementById(editId);
+//             const view = document.getElementById(viewId);
+//             const edit = document.getElementById(editId);
 
-            if (!view || !edit) return;
+//             if (!view || !edit) return;
 
-            edit.style.display = 'none';
-            view.style.display = 'block';
-        });
-    });
+//             edit.style.display = 'none';
+//             view.style.display = 'block';
+//         });
+//     });
 
-});
-</script>
+// });
+// </script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {

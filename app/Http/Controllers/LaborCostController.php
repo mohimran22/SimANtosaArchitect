@@ -78,7 +78,7 @@ class LaborCostController extends Controller
         LaborCost::create($request->all());
 
         return redirect()->route('labor_costs.index')
-            ->with('success', 'Labor cost created successfully.');
+            ->with('success', 'Data upah tenaga berhasil ditambahkan.');
     }
 
     public function edit(LaborCost $labor_cost)
@@ -110,7 +110,7 @@ class LaborCostController extends Controller
         Cache::put('job_category_last_updated', now()->timestamp);
 
         return redirect()->route('labor_costs.index')
-            ->with('success', 'Labor cost updated successfully.');
+            ->with('success', 'Data upah tenaga berhasil diubah.');
     }
 
     public function destroy(LaborCost $laborCost)

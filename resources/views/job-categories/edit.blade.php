@@ -82,6 +82,7 @@
                     @csrf
 
                     <div class="row g-4">
+                        
                         <div class="col-md-2">
                             <label class="form-label">Kategori</label>
                             <select name="category" id="categorySelect" class="form-select select2" required>
@@ -100,6 +101,7 @@
                             <input type="hidden" name="product_id" id="product_id">
                             <input type="hidden" name="labor_cost_id" id="labor_cost_id">
                             <input type="hidden" name="equipment_cost_id" id="equipment_cost_id">
+                            <input type="hidden" name="product_supplier_id" id="product_supplier_id">
                             <input type="hidden" name="name" id="item_name">
                         </div>
 
@@ -175,25 +177,7 @@ $(document).ready(function() {
         placeholder: "-- Pilih --",
         width: '100%'
     });
-updatePriceFromMaster();
 });
-
-function updatePriceFromMaster() {
-    const productId  = $('#itemSelect').val();
-    const supplierId = $('#supplierSelect').val();
-    if (!productId || !supplierId) return;
-
-    fetch(`/ajax/product/${productId}/supplier/${supplierId}`)
-        .then(res => res.json())
-        .then(item => {
-            $('#price_raw').val(item.price);
-            $('#price').val(formatRp(item.price));
-            hitungTotal();
-        });
-}
-
-// panggil ini setiap kali supplier atau item diganti
-$('#itemSelect, #supplierSelect').on('change', updatePriceFromMaster);
 
 $('#categorySelect').on('change', function () {
     const type = this.value;
@@ -205,6 +189,7 @@ $('#categorySelect').on('change', function () {
 
     $('#price, #price_raw, #code, #unit, #item_name').val('');
     $('#total_price').val('');
+    $('#product_supplier_id').val('');
 
     if (!type) return;
 
@@ -214,25 +199,21 @@ $('#categorySelect').on('change', function () {
             data.forEach(item => {
                 itemSelect.append(new Option(item.name, item.id));
             });
-            itemSelect.prop('disabled', false).trigger('change');
+            itemSelect.prop('disabled', false);
         });
 });
 
-/* ==============================
-   KETIKA PILIH ITEM
-============================== */
 $('#itemSelect').on('change', function () {
     const type = $('#categorySelect').val();
     const id = this.value;
 
     if (!id) return;
 
-    // reset FK
     $('#product_id, #labor_cost_id, #equipment_cost_id').val('');
+    $('#product_supplier_id').val('');
 
     if (type === 'product') {
 
-        // 🔥 load supplier khusus product ini
         fetch(`/ajax/product/${id}/suppliers`)
             .then(res => res.json())
             .then(data => {
@@ -243,14 +224,14 @@ $('#itemSelect').on('change', function () {
                     supplierSelect.append(new Option(s.name, s.id));
                 });
 
-                supplierSelect.prop('disabled', false).trigger('change');
+                supplierSelect.prop('disabled', false);
             });
 
         $('#product_id').val(id);
         return;
     }
 
-    // === selain product (labor, equipment) ===
+    // selain product
     fetch(`/ajax/item-detail/${type}/${id}`)
         .then(res => res.json())
         .then(item => {
@@ -268,9 +249,6 @@ $('#itemSelect').on('change', function () {
         });
 });
 
-/* ==============================
-   KETIKA PILIH SUPPLIER
-============================== */
 $('#supplierSelect').on('change', function () {
     const productId  = $('#itemSelect').val();
     const supplierId = this.value;
@@ -281,6 +259,8 @@ $('#supplierSelect').on('change', function () {
         .then(res => res.json())
         .then(item => {
 
+            $('#product_supplier_id').val(item.id); // 🔥 PENTING
+            console.log(item.id);
             $('#price_raw').val(item.price);
             $('#price').val(formatRp(item.price));
             $('#code').val(item.code);
@@ -291,9 +271,6 @@ $('#supplierSelect').on('change', function () {
         });
 });
 
-/* ==============================
-   UTIL
-============================== */
 function formatRp(num) {
     return new Intl.NumberFormat('id-ID', {
         style: 'currency',
@@ -306,12 +283,9 @@ function hitungTotal() {
     const coef  = parseFloat($('#coefisien').val()) || 0;
     const price = parseFloat($('#price_raw').val()) || 0;
 
-    const total = coef * price;
-
-    $('#total_price').val(formatRp(total));
+    $('#total_price').val(formatRp(coef * price));
 }
 
 $('#coefisien').on('input', hitungTotal);
-
 </script>
 @endpush

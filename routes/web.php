@@ -41,6 +41,7 @@ use App\Http\Controllers\BuildWeeklyPlanController;
 use App\Http\Controllers\AjaxController;
 use App\Http\Controllers\Api\JournalApiController;
 use App\Http\Controllers\JournalExportController;
+use App\Http\Controllers\KasController;
 
 
 Route::get('/', function () {
@@ -123,6 +124,7 @@ Route::put('/supplier-product/update-price',
 
 Route::delete('/supplier-product/{pivot}', [SupplierCatalogController::class, 'destroy'])
     ->name('supplier-product.destroy');
+Route::post('/supplier-product/restore/{id}', [SupplierCatalogController::class, 'restore']);
 
 Route::put('/supplier-product/update-label', [SupplierCatalogController::class, 'updateLabel'])
     ->name('supplier-product.update-label');

@@ -214,9 +214,11 @@
 
                                         <div class="product-hover-action">
 
-                                            <form class="form-delete" data-id="{{ $product->pivot->id }}">
+                                            <form class="form-delete">
                                                 @csrf
-                                                <button type="button" class="btn btn-sm btn-danger btn-delete">
+                                                <button type="button" 
+                                                    data-pivot="{{ $product->pivot->id }}"
+                                                    class="btn btn-sm btn-danger btn-delete">
                                                     <i class="ti ti-trash"></i>
                                                 </button>
                                             </form>
@@ -813,15 +815,27 @@ $(document).ready(function () {
             { data: 'name_with_label', name: 'products.name' },
             { data: 'aksi', orderable: false, searchable: false }
         ],
+                language: {
+                    search: "",
+                    searchPlaceholder: "Cari produk...",
+                    lengthMenu: "Tampilkan _MENU_ data",
+                    info: "Menampilkan _START_ - _END_ dari _TOTAL_ data",
+                    infoEmpty: "Tidak ada data",
+                    infoFiltered: "(difilter dari _MAX_ total data)",
+                    zeroRecords: "Data tidak ditemukan",
+                    paginate: {
+                        first: "Awal",
+                        last: "Akhir",
+                        next: "›",
+                        previous: "‹"
+                    }
+                },
 
-        pageLength: 10,
-        lengthChange: false,
-
-        language: {
-            search: "Cari:",
-            zeroRecords: "Produk tidak ditemukan",
-            processing: "Loading..."
-        }
+                initComplete: function () {
+                    const input = $('.dt-search input');
+                    input.removeClass('form-control-sm')
+                        .addClass('form-control');
+                }
     });
 });
 </script>
@@ -970,23 +984,98 @@ $(document).on('click', '.btn-save-label', function () {
 
 
 <script>
+let lastDeleted = null;
 
 $(document).on("click", ".btn-delete", function(){
 
-    let card = $(this).closest(".product-card");
-    let pivotId = $(this).closest("form").data("id");
+    let btn = $(this);
+    let pivotId = btn.data("pivot");
 
-    if(!confirm("Hapus produk ini?")) return;
+    let row = btn.closest("tr");
+    let card = btn.closest(".product-card");
 
-    $.ajax({
-        url: "/supplier-product/" + pivotId,
-        type: "DELETE",
-        data: {
-            _token: "{{ csrf_token() }}"
-        },
-        success: function(res){
+    if(!pivotId){
+        Swal.fire("Error", "ID tidak ditemukan", "error");
+        return;
+    }
+
+    Swal.fire({
+        title: "Hapus produk?",
+        text: "Data yang dihapus tidak bisa dikembalikan",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Ya, hapus",
+        cancelButtonText: "Batal",
+        reverseButtons: true
+    }).then((result) => {
+
+        if (!result.isConfirmed) return;
+
+        // 🔥 simpan untuk undo
+        lastDeleted = {
+            pivotId,
+            row: row.clone(),
+            card: card.clone()
+        };
+
+        // 🔥 hapus dari UI dulu (optimistic UI)
+        if(row.length && window.productDataTable){
+            window.productDataTable.row(row).remove().draw();
+        }
+
+        if(card.length){
             card.remove();
         }
+
+        // 🔥 request delete
+        $.ajax({
+            url: "/supplier-product/" + pivotId,
+            type: "DELETE",
+            data: {
+                _token: "{{ csrf_token() }}"
+            },
+            success: function(res){
+
+                // 🔥 toast undo
+                Swal.fire({
+                    icon: 'success',
+                            title: 'Berhasil!',
+                            text: res.message ?? 'Data berhasil dihapus',
+                            timer: 1500,
+                            showConfirmButton: false
+                }).then((undo) => {
+
+                    if (undo.isConfirmed && lastDeleted) {
+
+                        // 🔥 restore UI
+                        if(lastDeleted.row && window.productDataTable){
+                            window.productDataTable.row.add(lastDeleted.row).draw();
+                        }
+
+                        if(lastDeleted.card){
+                            $("#productCardContainer").append(lastDeleted.card);
+                        }
+
+                        // 🔥 optional: kirim request restore ke backend
+                        // $.post("/supplier-product/restore/" + pivotId, {
+                        //     _token: "{{ csrf_token() }}"
+                        // });
+
+                        // lastDeleted = null;
+                    }
+                });
+
+            },
+            error: function(xhr) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal!',
+                            text: 'Data tidak bisa dihapus'
+                        });
+                        console.log(xhr.responseText);
+                    }
+        });
+
     });
 
 });

@@ -28,22 +28,6 @@
                     <input type="date" name="end_date" id="end_date" class="form-control"
                         value="{{ $endDate }}">
                 </div>
-                @if(auth()->user()->hasRole('Super-Admin'))
-                    <div class="col-md-3">
-                        <label for="license_id" class="form-label">Lisensi</label>
-                        <select name="license_id" class="form-select select2">
-                            <option value="">-- Semua Lisensi --</option>
-                            @foreach($licenses as $license)
-                                <option value="{{ $license->id }}" 
-                                    {{ request('license_id') == $license->id ? 'selected' : '' }}>
-                                    {{ $license->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                @else
-                    <input type="hidden" name="license_id" value="{{ $activeLicenseId }}">
-                @endif
 
                 <div class="col-md-2">
                     <label for="view" class="form-label">Tampilan</label>

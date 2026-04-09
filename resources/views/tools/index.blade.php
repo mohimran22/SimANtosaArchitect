@@ -180,25 +180,35 @@
         $(document).on('click', '.btn-duplicate', function() {
             let id = $(this).data('id');
 
-            if (!confirm('Duplikat data ini?')) return;
+            Swal.fire({
+                title: 'Duplikat data?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, duplikat!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: `/tools/${id}/duplicate`,
+                        type: 'POST',
+                        data: {
+                            _token: '{{ csrf_token() }}'
+                        },
+                        success: function(res) {
+                            $('#jobTable').DataTable().ajax.reload(null, false);
 
-            $.ajax({
-                url: `/tools/${id}/duplicate`,
-                type: 'POST',
-                data: {
-                    _token: '{{ csrf_token() }}'
-                },
-                success: function(res) {
-                    if (res.success) {
-                        $('#toolsTable').DataTable().ajax.reload(null, false);
-
-                        // notifikasi ringan
-                        alert(res.message);
-                    }
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Berhasil!',
+                                text: res.message,
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+                        }
+                    });
                 }
             });
         });
-
     });
 </script>
 @endpush

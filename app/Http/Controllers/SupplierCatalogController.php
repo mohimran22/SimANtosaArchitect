@@ -99,10 +99,19 @@ class SupplierCatalogController extends Controller
         ->delete();
 
     return response()->json([
-        'success' => true
+        'success' => true,
+        'message' => 'Produk supplier berhasil dihapus'
     ]);
 }
 
+public function restore($id)
+{
+    DB::table('product_supplier')
+        ->where('id', $id)
+        ->update(['deleted_at' => null]);
+
+    return response()->json(['success' => true]);
+}
 public function updatePrice(Request $request)
 {
     $request->validate([

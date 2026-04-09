@@ -6,9 +6,6 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
 
 class ProductSupplier extends Pivot
 {
-    public $incrementing = false;
-    public $timestamps = true;
-
     protected $table = 'product_supplier';
 
     protected $fillable = [

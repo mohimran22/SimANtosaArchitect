@@ -55,6 +55,11 @@ protected $fillable = [
         return $this->belongsTo(Supplier::class, 'supplier_id');
     }
 
+    public function productSupplier()
+{
+    return $this->belongsTo(ProductSupplier::class, 'product_supplier_id');
+}
+
     public function getSupplierNameAttribute()
 {
     if (!$this->product_id) return null;
