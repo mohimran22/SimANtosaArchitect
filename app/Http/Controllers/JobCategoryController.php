@@ -383,23 +383,26 @@ public function getSuppliersByProduct($productId)
 
 
 
-        public function getProductSupplierDetail($productId, $supplierId)
+    public function getProductSupplierDetail($productId, $supplierId)
     {
-        $product = Product::with(['suppliers' => function ($q) use ($supplierId) {
-            $q->where('suppliers.id', $supplierId);
-        }])->findOrFail($productId);
+        $pivot = ProductSupplier::with('product')
+            ->where('product_id', $productId)
+            ->where('supplier_id', $supplierId)
+            ->first();
 
-        $supplier = $product->suppliers->firstOrFail();
+        if (!$pivot) {
+            return response()->json([
+                'error' => 'Data tidak ditemukan'
+            ], 404);
+        }
 
-        $pivot = $supplier->pivot;
-
-        return [
-            'id'   => $pivot->id,
-            'name' => $pivot->product->name,
-            'code' => $pivot->product->sku_code,
-            'unit' => $pivot->product->unit_1_name,
+        return response()->json([
+            'id'    => $pivot->id,
+            'name'  => $pivot->product->name,
+            'code'  => $pivot->product->sku_code,
+            'unit'  => $pivot->product->unit_1_name ?? '-',
             'price' => $pivot->selling_prices,
-        ];
+        ]);
     }
 
 

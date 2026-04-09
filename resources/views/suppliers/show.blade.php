@@ -276,7 +276,7 @@
                                                 {{-- MODE EDIT --}}
                                                 <div class="price-edit d-none">
                                                     <input type="number"
-                                                        class="form-control form-control-sm price-input"
+                                                        class="form-control price-input"
                                                         value="{{ $product->pivot->selling_prices }}">
 
                                                     <div class="mt-1 d-flex gap-1">
@@ -1084,14 +1084,15 @@ $(document).on("click", ".btn-delete", function(){
 document.getElementById('searchCatalogueProduct').addEventListener('keyup', function () {
     let keyword = this.value.toLowerCase();
 
-    if (!document.getElementById('productTableContainer').classList.contains('d-none')) {
-        window.productDataTable.search(keyword).draw();
+    let isTableMode = !document.getElementById('productTableContainer').classList.contains('d-none');
+
+    if (isTableMode) {
         return;
     }
 
     document.querySelectorAll('.product-card').forEach(function(card) {
-        let name = card.dataset.name || '';
-        let sku  = card.dataset.sku || '';
+        let name = (card.dataset.name || '').toLowerCase();
+        let sku  = (card.dataset.sku || '').toLowerCase();
 
         if (name.includes(keyword) || sku.includes(keyword)) {
             card.style.display = '';
