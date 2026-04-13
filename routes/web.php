@@ -337,7 +337,7 @@ Route::post(
 Route::get('/ajax/items/{type}', [JobCategoryController::class, 'getItems']);
 Route::get('/ajax/item-detail/{type}/{id}', [JobCategoryController::class, 'getItemDetail']);
 Route::get('/ajax/product/{id}/suppliers', [JobCategoryController::class, 'getSuppliersByProduct']);
-Route::get('/ajax/product/{productId}/supplier/{supplierId}', [JobCategoryController::class, 'getProductSupplierDetail']);
+Route::get('/ajax/product-supplier/{supplierId}', [JobCategoryController::class, 'getProductSupplierById']);
 
 Route::get('/job-categories/{id}/simple', [JobCategoryController::class, 'simple']);
 

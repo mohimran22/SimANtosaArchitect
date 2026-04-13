@@ -566,7 +566,7 @@ public function datatableProducts(Request $request, Supplier $supplier)
                 </span>
 
                 <span class="price-edit d-none">
-                    <input type="number" class="form-control form-control-sm price-input"
+                    <input type="text" class="form-control form-control-sm price-input"
                         value="'.$row->selling_prices.'" style="width:120px;display:inline-block">
 
                     <button class="btn btn-sm btn-success btn-save-price">

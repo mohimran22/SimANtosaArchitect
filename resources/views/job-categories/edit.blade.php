@@ -105,12 +105,12 @@
                             <input type="hidden" name="name" id="item_name">
                         </div>
 
-                        <div class="col-md-3">
+                        {{-- <div class="col-md-3">
                             <label class="form-label">Mitra Supplier</label>
                             <select id="supplierSelect" class="form-select select2" disabled>
                                 <option value="">-- Pilih Mitra --</option>
                             </select>
-                        </div>
+                        </div> --}}
 
                         <div class="col-md-2">
                             <label class="form-label">Kode</label>
@@ -205,7 +205,7 @@ $('#categorySelect').on('change', function () {
 
 $('#itemSelect').on('change', function () {
     const type = $('#categorySelect').val();
-    const id = this.value;
+    const pivotId = this.value;
 
     if (!id) return;
 
@@ -214,21 +214,35 @@ $('#itemSelect').on('change', function () {
 
     if (type === 'product') {
 
-        fetch(`/ajax/product/${id}/suppliers`)
-            .then(res => res.json())
-            .then(data => {
-                const supplierSelect = $('#supplierSelect');
-                supplierSelect.empty().append('<option value="">-- Pilih Mitra --</option>');
+        // fetch(`/ajax/product/${id}/suppliers`)
+        //     .then(res => res.json())
+        //     .then(data => {
+        //         const supplierSelect = $('#supplierSelect');
+        //         supplierSelect.empty().append('<option value="">-- Pilih Mitra --</option>');
 
-                data.forEach(s => {
-                    supplierSelect.append(new Option(s.name, s.id));
-                });
+        //         data.forEach(s => {
+        //             supplierSelect.append(new Option(s.name, s.id));
+        //         });
 
-                supplierSelect.prop('disabled', false);
-            });
+        //         supplierSelect.prop('disabled', false);
+        //     });
 
-        $('#product_id').val(id);
-        return;
+        // $('#product_id').val(id);
+        // return;
+        fetch(`/ajax/product-supplier/${pivotId}`)
+        .then(res => res.json())
+        .then(item => {
+
+            $('#product_supplier_id').val(item.id);
+
+            $('#price_raw').val(item.price);
+            $('#price').val(formatRp(item.price));
+            $('#code').val(item.code);
+            $('#unit').val(item.unit);
+            $('#item_name').val(item.name);
+
+            hitungTotal();
+        });
     }
 
     // selain product
@@ -249,27 +263,27 @@ $('#itemSelect').on('change', function () {
         });
 });
 
-$('#supplierSelect').on('change', function () {
-    const productId  = $('#itemSelect').val();
-    const supplierId = this.value;
+// $('#supplierSelect').on('change', function () {
+//     const productId  = $('#itemSelect').val();
+//     const pivotId = this.value;
 
-    if (!productId || !supplierId) return;
+//     if (!productId || !pivotId) return;
 
-    fetch(`/ajax/product/${productId}/supplier/${supplierId}`)
-        .then(res => res.json())
-        .then(item => {
+//     fetch(`/ajax/product-supplier/${pivotId}`)
+//         .then(res => res.json())
+//         .then(item => {
 
-            $('#product_supplier_id').val(item.id); // 🔥 PENTING
-            console.log(item.id);
-            $('#price_raw').val(item.price);
-            $('#price').val(formatRp(item.price));
-            $('#code').val(item.code);
-            $('#unit').val(item.unit);
-            $('#item_name').val(item.name);
+//             $('#product_supplier_id').val(item.id); 
+//             console.log(item.id);
+//             $('#price_raw').val(item.price);
+//             $('#price').val(formatRp(item.price));
+//             $('#code').val(item.code);
+//             $('#unit').val(item.unit);
+//             $('#item_name').val(item.name);
 
-            hitungTotal();
-        });
-});
+//             hitungTotal();
+//         });
+// });
 
 function formatRp(num) {
     return new Intl.NumberFormat('id-ID', {

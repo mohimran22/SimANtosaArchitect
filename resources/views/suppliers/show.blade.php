@@ -275,7 +275,7 @@
 
                                                 {{-- MODE EDIT --}}
                                                 <div class="price-edit d-none">
-                                                    <input type="number"
+                                                    <input type="text"
                                                         class="form-control price-input"
                                                         value="{{ $product->pivot->selling_prices }}">
 
@@ -723,9 +723,17 @@ $(document).ready(function () {
 
 <script>
 
-    function formatRupiah(angka) {
-        return new Intl.NumberFormat('id-ID').format(angka);
-    }
+function formatRupiah(angka) {
+    angka = Number(angka);
+
+    if (isNaN(angka)) return 'Rp 0';
+
+    return new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        minimumFractionDigits: 0
+    }).format(angka);
+}
 function cleanNumber(value) {
     return parseFloat(value.replace(/[^\d]/g, '')) || 0;
 }
@@ -845,8 +853,21 @@ $(document).on('click', '.btn-edit-price', function () {
     
     let wrapper = $(this).closest('.price-wrapper');
 
+    let input = wrapper.find('.price-input');
+
+    // ambil angka asli dari text (misal: Rp 10.000 → 10000)
+    let raw = cleanNumber(wrapper.find('.price-label').text());
+
+    // set ke input dalam format Rp
+    input.val(formatRupiah(raw));
+
     wrapper.find('.price-text').addClass('d-none');
     wrapper.find('.price-edit').removeClass('d-none');
+});
+
+$(document).on('input', '.price-input', function () {
+    let val = cleanNumber($(this).val());
+    $(this).val(formatRupiah(val));
 });
 
 $(document).on('click', '.btn-cancel-price', function () {
@@ -864,7 +885,8 @@ $(document).on('click', '.btn-save-price', function () {
     let productId = wrapper.data('product');
     let supplierId = wrapper.data('supplier');
     let pivotId   = wrapper.data('pivot');
-    let newPrice  = wrapper.find('.price-input').val();
+
+    let newPrice  = cleanNumber(wrapper.find('.price-input').val());
 
     btn.prop('disabled', true);
 
@@ -884,7 +906,8 @@ $(document).on('click', '.btn-save-price', function () {
     .then(res => {
 
         if (res.success) {
-            wrapper.find('.price-label').text(res.price);
+            // wrapper.find('.price-label').text(res.price);
+            wrapper.find('.price-label').text(formatRupiah(res.price));
         }
 
         wrapper.find('.price-edit').addClass('d-none');

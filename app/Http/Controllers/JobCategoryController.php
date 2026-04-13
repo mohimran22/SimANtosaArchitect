@@ -294,7 +294,18 @@ class JobCategoryController extends Controller
     public function getItems($type)
     {
         return match ($type) {
-            'product' => Product::select('id', 'name')->get(),
+            // 'product' => Product::select('id', 'name')->get(),
+            'product' => ProductSupplier::with(['product','supplier'])
+                ->orderByDesc('id')
+                ->get()
+                ->map(function ($ps) {
+                    return [
+                        'id'   => $ps->id, // 🔥 pivot_id
+                        'name' => $ps->product->name
+                            . ' - ' . ($ps->supplier->name ?? '-')
+                            . ($ps->label ? " ({$ps->label})" : ''),
+                    ];
+                }),
 
             'labor' => LaborCost::selectRaw(
                 'id, description as name'
@@ -354,36 +365,23 @@ class JobCategoryController extends Controller
     //     ];
     // }
 
-public function getSuppliersByProduct($productId)
+    public function getSuppliersByProduct($productId)
 {
-    return Supplier::whereHas('products', function ($q) use ($productId) {
-            $q->where('products.id', $productId);
-        })
-        ->with(['products' => function ($q) use ($productId) {
-            $q->where('products.id', $productId);
-        }])
+    return ProductSupplier::with('supplier')
+        ->where('product_id', $productId)
+        ->orderByDesc('id') // biar copy muncul atas
         ->get()
-        ->map(function ($supplier) {
-            $pivot = $supplier->products->first()->pivot;
-
+        ->map(function ($ps) {
             return [
-                'id'    => $supplier->id,
-                'name'  => $supplier->name,
-                'price' => $pivot->selling_prices,
+                'id'    => $ps->id, // 🔥 pivot id (bukan supplier_id)
+                'name'  => ($ps->supplier->name ?? '-')
+                            . ($ps->label ? " ({$ps->label})" : ''),
+                'price' => $ps->selling_prices,
             ];
         });
 }
 
-// public function getSuppliersByProduct($productId)
-// {
-//     return Supplier::whereHas('products', function ($q) use ($productId) {
-//         $q->where('products.id', $productId);
-//     })->select('id','name')->get();
-// }
-
-
-
-    public function getProductSupplierDetail($productId, $supplierId)
+public function getProductSupplierDetail($productId, $supplierId)
     {
         $pivot = ProductSupplier::with('product')
             ->where('product_id', $productId)
@@ -404,7 +402,18 @@ public function getSuppliersByProduct($productId)
             'price' => $pivot->selling_prices,
         ]);
     }
+public function getProductSupplierById($id)
+{
+    $ps = ProductSupplier::with('product')->findOrFail($id);
 
+    return response()->json([
+        'id'    => $ps->id,
+        'name'  => $ps->product->name,
+        'code'  => $ps->product->sku_code,
+        'unit'  => $ps->product->unit_1_name ?? '-',
+        'price' => $ps->selling_prices,
+    ]);
+}
 
     public function simple($id)
     {
