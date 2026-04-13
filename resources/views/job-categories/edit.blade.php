@@ -93,7 +93,7 @@
                             </select>
                         </div>
 
-                        <div class="col-md-3">
+                        <div class="col-md-4">
                             <label class="form-label">Item</label>
                             <select id="itemSelect" class="form-select select2" disabled>
                                 <option value="">-- Pilih Item --</option>
@@ -117,11 +117,12 @@
                             <input type="text" name="code" id="code" class="form-control" readonly>
                         </div>
 
-                        <div class="col-md-1">
+                        <div class="col-md-2">
                             <label class="form-label">Satuan</label>
                             <input type="text" name="unit" id="unit" class="form-control" readonly>
                         </div>
-
+                    </div>
+                    <div class="row g-4 mt-2">
                         <div class="col-md-2">
                             <label class="form-label">Koefisien</label>
                             <input type="number"

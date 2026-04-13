@@ -148,9 +148,9 @@
                                     <button type="submit" class="btn btn-dark text-white">Simpan</button>
                                 </div>
 
-                                @if(!auth()->user()->hasRole('Super-Admin'))
+                                {{-- @if(!auth()->user()->hasRole('Super-Admin'))
                                     <input type="hidden" id="activeLicenseId" value="{{ $activeLicenseId }}">
-                                @endif
+                                @endif --}}
 
                             </form>
                         </div>

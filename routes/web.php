@@ -6,6 +6,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AccountingAccountController;
 use App\Http\Controllers\AccountingJournalController;
 use App\Http\Controllers\AccountingReportController;
+use App\Http\Controllers\AccountingPeriodController;
 use App\Http\Controllers\UsersController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\AccountController;
@@ -216,8 +217,9 @@ Route::get('/trial/export', [JournalExportController::class, 'exportTrialBalance
     ->name('trial.export');
 
 
-// Route::get('/periods/close', [AccountingClosingController::class, 'showCloseForm'])->name('periods.close.form');
-// Route::post('/periods/close', [AccountingClosingController::class, 'close'])->name('periods.close');
+    Route::get('/periods', [AccountingPeriodController::class, 'index'])->name('periods.index');
+    Route::post('/periods/close', [AccountingPeriodController::class, 'close'])->name('periods.close');
+    Route::post('/periods/reopen', [AccountingPeriodController::class, 'reopen'])->name('periods.reopen');
 
 Route::post('/switch-role', [RoleSwitchController::class, 'switch'])
     ->middleware('auth')

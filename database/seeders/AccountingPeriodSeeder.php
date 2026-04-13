@@ -3,44 +3,34 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use App\Models\AccountingPeriod;
-use App\Models\User;
-use App\Models\License;
 
 class AccountingPeriodSeeder extends Seeder
 {
     public function run(): void
     {
-        $licenseId = License::first()->id ?? Str::uuid();
-        $userId = User::first()->id ?? Str::uuid();
+        $licenseId = config('app.license_id');
 
-        $periods = [
-            [
-                'id' => Str::uuid(),
-                'license_id' => $licenseId,
-                'period_name' => '202507',
-                'is_closed' => false,
-                'closed_by' => $userId,
-            ],
-            [
-                'id' => Str::uuid(),
-                'period_name' => '202506',
-                'is_closed' => true,
-                'closed_by' => $userId, // contoh user id
-            ],
-        ];
+        $startYear = 2025; // bebas
+        $endYear   = date('Y') + 5; // auto sampai 5 tahun ke depan
 
-        foreach ($periods as $period) {
-            AccountingPeriod::updateOrCreate(
-                ['period_name' => $period['period_name']],
-                [
-                    'id' => $period['id'],
-                    'license_id' => $period['license_id'],
-                    'is_closed' => $period['is_closed'],
-                    'closed_by' => $period['closed_by'],
-                ]
-            );
-        }
+            for ($year = $startYear; $year <= $endYear; $year++) {
+
+                DB::table('accounting_periods')->updateOrInsert(
+                    [
+                        'license_id' => $licenseId,
+                        'year' => $year,
+                    ],
+                    [
+                        'id'         => Str::uuid(),
+                        'start_date' => "$year-01-01",
+                        'end_date'   => "$year-12-31",
+                        'is_closed'  => false,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]
+                );
+            }
     }
 }

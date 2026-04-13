@@ -9,12 +9,19 @@ use App\Models\AccountingPeriod;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use DB;
 
-class AccountingClosingController extends Controller
+class AccountingPeriodController extends Controller
 {
-    public function showCloseForm()
+    public function index()
     {
-        return view('accounting.periods.close');
+        $licenseId = auth()->user()->license_id;
+
+        $periods = DB::table('accounting_periods')
+            ->orderByDesc('year')
+            ->get();
+
+        return view('accounting.periods.index', compact('periods'));
     }
 
     public function close(Request $request)
