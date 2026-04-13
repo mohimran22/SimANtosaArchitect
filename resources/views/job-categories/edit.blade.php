@@ -206,7 +206,7 @@ $('#categorySelect').on('change', function () {
 
 $('#itemSelect').on('change', function () {
     const type = $('#categorySelect').val();
-    const pivotId = this.value;
+    const id = $(this).val();
 
     if (!id) return;
 
@@ -215,22 +215,7 @@ $('#itemSelect').on('change', function () {
 
     if (type === 'product') {
 
-        // fetch(`/ajax/product/${id}/suppliers`)
-        //     .then(res => res.json())
-        //     .then(data => {
-        //         const supplierSelect = $('#supplierSelect');
-        //         supplierSelect.empty().append('<option value="">-- Pilih Mitra --</option>');
-
-        //         data.forEach(s => {
-        //             supplierSelect.append(new Option(s.name, s.id));
-        //         });
-
-        //         supplierSelect.prop('disabled', false);
-        //     });
-
-        // $('#product_id').val(id);
-        // return;
-        fetch(`/ajax/product-supplier/${pivotId}`)
+        fetch(`/ajax/product-supplier/${id}`)
         .then(res => res.json())
         .then(item => {
 
@@ -244,9 +229,10 @@ $('#itemSelect').on('change', function () {
 
             hitungTotal();
         });
+
+        return; // 🔥 WAJIB STOP DI SINI
     }
 
-    // selain product
     fetch(`/ajax/item-detail/${type}/${id}`)
         .then(res => res.json())
         .then(item => {
