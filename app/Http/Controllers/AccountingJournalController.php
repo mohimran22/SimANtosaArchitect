@@ -20,6 +20,7 @@ use App\Services\ReportService;
 use Illuminate\Support\Facades\Storage;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Yajra\DataTables\Facades\DataTables;
+use DB;
 
 
 class AccountingJournalController extends Controller
@@ -107,11 +108,15 @@ public function create()
 
 
     $journalCode = $this->generateNextJournalCode();
+    $lastClosedDate = DB::table('accounting_periods')
+        ->where('is_closed', true)
+        ->max('end_date');
 
     return view('journals.create', compact(
         'accounts',
         'employees',
-        'journalCode'
+        'journalCode',
+        'lastClosedDate'
     ));
 }
 
@@ -156,6 +161,19 @@ public function store(StoreAccountingJournalRequest $request)
 {
     $user = Auth::user();
     $licenseId = config('app.license_id');
+    $year = date('Y', strtotime($request->transaction_date));
+
+    $isClosed = DB::table('accounting_periods')
+        ->where('license_id', $licenseId)
+        ->where('year', $year)
+        ->where('is_closed', true)
+        ->exists();
+
+    if ($isClosed) {
+        return back()->withErrors([
+            'transaction_date' => "Tahun $year sudah ditutup"
+        ]);
+    }
 
     // ✅ Validasi balance
     $totalDebit  = collect($request->details)->sum('debit');
@@ -503,7 +521,6 @@ return redirect()
         ->orderBy('transaction_date')
         ->get();
 
-    // 🔹 Hitung total debit & kredit
     $totalDebit = 0;
     $totalCredit = 0;
 
@@ -523,10 +540,8 @@ public function exportPDF(Request $request)
     $endDate = $request->end_date ?? now()->endOfMonth()->toDateString();
     $activeLicenseId = $request->license_id ?? auth()->user()->license_id;
 
-    // Ambil data sesuai filter
     $journals = AccountingJournal::with(['details.account'])
         ->whereBetween('transaction_date', [$startDate, $endDate])
-        // ->where('license_id', $activeLicenseId)
         ->orderBy('transaction_date', 'asc')
         ->get();
 
@@ -550,21 +565,8 @@ public function ledger(Request $request)
 {
     $user = Auth::user();
 
-    // 🔹 Default filter tanggal: bulan berjalan
     $startDate = $request->start_date ?? now()->startOfMonth()->toDateString();
     $endDate   = $request->end_date ?? now()->endOfMonth()->toDateString();
-
-    // if ($user->hasRole('Super-Admin')) {
-    //     $licenses = License::all();
-    // } else {
-    //     $licenses = $user->hasRole('Pemilik Lisensi')
-    //         ? $user->licenses
-    //         : $user->employee?->licenses;
-
-    //     abort_if(!$licenses || $licenses->isEmpty(), 403, 'Lisensi tidak ditemukan.');
-    // }
-
-    // $activeLicenseId = $request->get('license_id') ?? session('active_license_id');
 
     [$ledger] = $this->getLedgerData($startDate, $endDate);
 
@@ -578,37 +580,9 @@ private function getLedgerData($startDate, $endDate)
     $query = AccountingJournalDetail::with(['journal', 'account']);
     $user = Auth::user();
 
-    // if ($user->hasRole('Super-Admin')) {
-    //     if ($licenseId) {
-    //         $licenses = License::where('id', $licenseId)->get();
-    //     } else {
-    //         $licenses = License::all();
-    //     }
-    // } else {
-    //     if ($user->hasRole('Pemilik Lisensi')) {
-    //         $licenses = $user->licenses;
-    //     } elseif ($user->employee) {
-    //         $licenses = $user->employee->licenses;
-    //     } else {
-    //         $licenses = collect();
-    //     }
-
-    //     if ($licenseId) {
-    //         $licenses = $licenses->where('id', $licenseId);
-    //     }
-    // }
-
-    // 🔹 Filter periode
     $query->whereHas('journal', function ($q) use ($startDate, $endDate) {
         $q->whereBetween('transaction_date', [$startDate, $endDate]);
     });
-
-    // 🔹 Filter lisensi
-    // if ($licenses->isNotEmpty()) {
-    //     $query->whereHas('journal', function ($q) use ($licenses) {
-    //         $q->whereIn('license_id', $licenses->pluck('id'));
-    //     });
-    // }
 
     $details = $query
         ->join('accounting_accounts', 'accounting_accounts.id', '=', 'accounting_journal_details.account_id')

@@ -2,22 +2,33 @@
 
 @section('content')
 <div class="container-fluid mt-3">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3 class="mb-3">Neraca</h3>
+    <div class="d-flex justify-content-between align-items-center mb-4 mt-3">
+        <div>
+            <h2 class="fw-bold mb-0">Neraca Saldo</h2>
+            <div class="text-muted small">Laporan per akun dengan saldo berjalan</div>
+        </div>
+        <div class="d-flex gap-2">
             <a href="{{ route('trial.export', [
                     'start_date' => request('start_date'),
                     'end_date' => request('end_date'),
-                    'license_id' => request('license_id')
                 ]) }}" 
-                class="btn btn-success text white" target="_blank">
+                class="btn btn-dark text white" target="_blank">
                 <i class="ti ti-file-export"></i>Ekspor Excel
             </a> 
+            <a href="{{ route('journals.trial.pdf', [
+                    'start_date' => request('start_date'),
+                    'end_date' => request('end_date'),
+                ]) }}" 
+                class="btn btn-outline-dark" target="_blank">
+                <i class="ti ti-printer"></i>Cetak
+            </a>
+        </div>
     </div>
 
     {{-- 🔹 Filter --}}
     <div class="card shadow-sm border-0 mb-3">
         <div class="card-body">
-            <form method="GET" class="row g-2 align-items-center">
+            <form method="GET" class="row g-2 align-items-end">
                 <div class="col-md-3">
                     <label for="start_date" class="form-label">Dari Tanggal</label>
                     <input type="date" name="start_date" id="start_date" class="form-control"
@@ -38,7 +49,7 @@
                 </div>
                 
                 <div class="col-md-2">
-                    <button type="submit" class="btn btn-primary text-white">
+                    <button type="submit" class="btn btn-primary text-white w-100">
                         <i class="ti ti-filter"></i> Filter
                     </button>
                 </div>
@@ -107,17 +118,6 @@
                     Kredit: Rp {{ number_format($totalCredit, 2, ',', '.') }}
                 </div>
             @endif
-
-                <div class="d-flex justify-content-start gap-2 mt-3">
-                    <a href="{{ route('journals.trial.pdf', [
-                            'start_date' => request('start_date'),
-                            'end_date' => request('end_date'),
-                            'license_id' => request('license_id')
-                        ]) }}" 
-                        class="btn btn-danger" target="_blank">
-                        <i class="ti ti-printer"></i>Cetak
-                    </a>
-                </div>
         </div>
     </div>
 </div>

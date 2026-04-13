@@ -9,13 +9,12 @@ use App\Models\AccountingPeriod;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
-use DB;
+use Illuminate\Support\Facades\DB;
 
 class AccountingPeriodController extends Controller
 {
     public function index()
     {
-        $licenseId = auth()->user()->license_id;
 
         $periods = DB::table('accounting_periods')
             ->orderByDesc('year')
@@ -27,48 +26,98 @@ class AccountingPeriodController extends Controller
     public function close(Request $request)
     {
         $request->validate([
-            'period' => 'required|string|size:6', // format YYYYMM
+            'year' => 'required|integer'
         ]);
 
-        $period = $request->period;
-        $userId = Auth::id();
+        $year = $request->year;
 
-        $existing = AccountingPeriod::where('period_name', $period)->first();
+        $period = DB::table('accounting_periods')
+            ->where('year', $year)
+            ->first();
 
-        if (!$existing) {
-            return back()->with('error', 'Periode tidak ditemukan.');
+        if (!$period) {
+            return back()->with('error', 'Periode tidak ditemukan');
         }
 
-        if ($existing->is_closed) {
-            return back()->with('info', 'Periode sudah ditutup.');
+        if ($period->is_closed) {
+            return back()->with('error', 'Periode sudah ditutup');
         }
 
-        $accounts = AccountingAccount::where('is_active', true)->get();
+        DB::transaction(function () use ($year) {
 
-        foreach ($accounts as $account) {
-            $debit = AccountingJournalDetail::whereHas('journal', function ($q) use ($period) {
-                $q->where('transaction_date', 'like', "{$period}%");
-            })->where('account_id', $account->id)->sum('debit');
+            $balances = DB::table('accounting_journal_details as d')
+                ->join('accounting_journals as j', 'j.id', '=', 'd.journal_id')
+                ->join('accounting_accounts as a', 'a.id', '=', 'd.account_id')
+                ->select(
+                    'd.account_id',
+                    DB::raw('SUM(d.debit) as total_debit'),
+                    DB::raw('SUM(d.credit) as total_credit')
+                )
+                ->whereYear('j.transaction_date', $year)
+                ->whereNotIn('a.category', ['PENDAPATAN', 'BEBAN'])
+                ->groupBy('d.account_id')
+                ->get();
 
-            $credit = AccountingJournalDetail::whereHas('journal', function ($q) use ($period) {
-                $q->where('transaction_date', 'like', "{$period}%");
-            })->where('account_id', $account->id)->sum('credit');
+            $nextYear = $year + 1;
 
-            $closingBalance = $debit - $credit;
+            foreach ($balances as $b) {
 
-            AccountingClosingBalance::create([
-                'id' => Str::uuid(),
-                'account_id' => $account->id,
-                'period' => $period,
-                'closing_balance' => $closingBalance,
+                $net = $b->total_debit - $b->total_credit;
+
+                DB::table('opening_balances')->updateOrInsert(
+                    [
+                        'account_id' => $b->account_id,
+                        'year'       => $nextYear,
+                    ],
+                    [
+
+                        'debit'  => $net > 0 ? $net : 0,
+                        'credit' => $net < 0 ? abs($net) : 0,
+                        'updated_at' => now(),
+                    ]
+                );
+            }
+
+            DB::table('accounting_periods')
+                ->where('year', $year)
+                ->update([
+                    'is_closed' => true,
+                    'closed_at' => now(),
+                    'closed_by' => auth()->id()
+                ]);
+
+            DB::table('accounting_periods')->updateOrInsert(
+                [
+                    'year' => $nextYear
+                ],
+                [
+                    'id' => Str::uuid(),
+                    'start_date' => "$nextYear-01-01",
+                    'end_date' => "$nextYear-12-31",
+                    'is_closed' => false,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]
+            );
+        });
+
+        return back()->with('success', "Tahun $year berhasil ditutup");
+    }
+
+    public function reopen(Request $request)
+    {
+        $request->validate([
+            'year' => 'required|integer'
+        ]);
+
+        DB::table('accounting_periods')
+            ->where('year', $request->year)
+            ->update([
+                'is_closed' => false,
+                'closed_at' => null,
+                'closed_by' => null
             ]);
-        }
 
-        $existing->update([
-            'is_closed' => true,
-            'closed_by' => $userId,
-        ]);
-
-        return redirect()->route('periods.close.form')->with('success', "Periode {$period} berhasil ditutup.");
+        return back()->with('success', "Tahun {$request->year} dibuka kembali");
     }
 }
