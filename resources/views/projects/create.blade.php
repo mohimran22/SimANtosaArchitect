@@ -140,7 +140,7 @@
                             <div id="planning-view">
                                 @include('projects.details.planning')
                             </div>
-                            @if(!$surveyWaiting && !$surveyApproved)
+                            @if(!$surveyWaiting || !$surveyApproved)
                                 <div id="planning-edit" style="display:none;">
                                     @include('projects.edit.planning-form')
                                 </div>

@@ -251,9 +251,11 @@ public function update(Request $request, Planning $planning)
 
         Invoice::where('project_id', $project->id)
             ->where('invoice_type', 'survey')
-            ->whereIn('status', ['waiting_approval', 'rejected'])
+            ->whereIn('status', ['waiting_approval', 'approved', 'rejected'])
             ->update([
                 'status' => 'obsolete',
+                'approved_at' => null,
+                'approval_token' => null,
             ]);
         if ($amount > 0) {
         Invoice::create([
@@ -286,6 +288,6 @@ public function update(Request $request, Planning $planning)
 
     });
 
-    return back()->with('success', 'Rencana survei berhasil diperbarui.');
+    return back()->with('warning', 'Rencana survei berhasil diperbarui. Approval customer harus dilakukan ulang.');
 }
 }
