@@ -250,17 +250,23 @@
         return Number(
             value
             .toString()
-            .replace(/[^0-9]/g,'')
+            .replace(/\./g,'')
+            .replace(',', '.')
         )
+
     }
 
     function formatRupiah(number){
 
         number = Number(number) || 0
 
-        return 'Rp ' + number.toLocaleString('id-ID')
+        return 'Rp ' + number.toLocaleString('id-ID', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        })
 
     }
+
     function rupiahInput(el){
 
         let number = parseRupiah(el.value)
@@ -268,6 +274,18 @@
         el.dataset.value = number
 
         el.value = formatRupiah(number)
+
+    }
+    function parsePercent(value){
+
+        if(!value) return 0
+
+        return Number(
+            value
+            .toString()
+            .replace(',', '.')
+            .replace('%','')
+        )
 
     }
     function numberToLetters(num){
@@ -547,7 +565,7 @@
                         <td>
                             <input class="form-control harga"
                                 data-value="${job.base_price}"
-                                value="${formatRupiah(job.price)}"
+                                value="${formatRupiah(job.base_price)}"
                                 readonly>
                         </td>
 
@@ -1391,6 +1409,19 @@
         calculateSummary();
     });
 
+    function normalizeNumber(val){
+
+        if(!val) return 0
+
+        return Number(
+            val
+            .toString()
+            .replace(/\./g,'')
+            .replace(',', '.')
+        )
+
+    }
+
     function collectItems(){
 
         let items = []
@@ -1400,7 +1431,10 @@
             const jobSelect = row.querySelector('.job-select')
             if(!jobSelect || !jobSelect.value) return
 
-            const volume = Number(row.querySelector('.vol')?.value || 0)
+            const volume = Number(
+                row.querySelector('.vol')?.value
+                    ?.replace(',', '.') || 0
+            )
 
             const satuan = row.querySelector('.sat')?.innerText || ''
 
@@ -1408,37 +1442,38 @@
 
             const hargaInput = row.querySelector('.harga')
 
-            const basePrice = Number(hargaInput?.dataset.value || 0)
+            const basePrice = Number(
+                hargaInput?.dataset.value || 0
+            )
 
-            const price = parseRupiah(hargaInput?.value || 0)
+            const price = Number(
+                hargaInput?.dataset.value || 0
+            )
 
-            const total = volume * price
-
-            const id = row.dataset.id && row.dataset.id !== '' ? row.dataset.id : null
-
-            // ambil mapping uraian dan category
-            const uraianKey = row.dataset.parent
-            const categoryKey = row.dataset.category
-
-            const uraianRow = document.getElementById(uraianKey)
-            const uraianName = uraianRow?.dataset.name || ''
-            const categoryRow = document.getElementById(categoryKey)
-            const categoryName = categoryRow?.dataset.name || categoryRow?.innerText?.trim() || 'Kategori'
+            const total = Number(volume) * Number(price)
 
             items.push({
-                id: id,
+
+                id: row.dataset.id || null,
+
                 job_category_id: jobSelect.value,
                 job_name: jobName,
                 satuan: satuan,
+
                 volume: volume,
                 base_price: basePrice,
                 price: price,
                 total: total,
 
-                uraian_key: uraianKey,
-                category_key: categoryKey,
-                uraian_name: uraianName,
-                category_name: categoryName
+                uraian_key: row.dataset.parent,
+                category_key: row.dataset.category,
+
+                uraian_name:
+                    document.getElementById(row.dataset.parent)?.dataset.name || '',
+
+                category_name:
+                    document.getElementById(row.dataset.category)?.dataset.name || 'Kategori'
+
             })
 
         })
@@ -1484,12 +1519,11 @@
                     formData.append('job_location', document.querySelector('[name=job_location]').value)
                     formData.append('job_duration', document.querySelector('[name=job_duration]').value)
 
-                    formData.append('profit', document.getElementById('rab_profit_display_edit').value)
-                    formData.append('overhead', document.getElementById('rab_overhead_display_edit').value)
-
-                    formData.append('discount', document.getElementById('rab_discount_edit').value)
-                    formData.append('tax_rate', document.getElementById('rab_tax_rate_edit').value)
-                    formData.append('shipping', document.getElementById('rab_shipping_edit').value)
+                    formData.append('profit', parsePercent(document.getElementById('rab_profit_display_edit').value))
+                    formData.append('overhead', parsePercent(document.getElementById('rab_overhead_display_edit').value))
+                    formData.append('discount', parseRupiah(document.getElementById('rab_discount_edit').value))
+                    formData.append('tax_rate', parsePercent(document.getElementById('rab_tax_rate_edit').value))
+                    formData.append('shipping', parseRupiah(document.getElementById('rab_shipping_edit').value))
 
                     items.forEach((item,i)=>{
                         if(item.id !== null){
@@ -1526,19 +1560,41 @@
                         },
                         body:formData
                     })
-                    .then(res=>{
-                        if(!res.ok) throw new Error('HTTP '+res.status)
+                    .then(async res => {
+
+                        if(!res.ok){
+
+                            const error = await res.json()
+
+                            console.log("VALIDATION ERROR:", error)
+
+                            Swal.fire({
+                                icon:'error',
+                                title:'Validation error',
+                                text: JSON.stringify(error.errors ?? error.message)
+                            })
+
+                            throw new Error('HTTP '+res.status)
+                        }
+
                         return res.json()
                     })
                     .then(res=>{
                         location.reload()
                     })
-                        .catch(err=>{
+                        .catch(async err=>{
+
                             console.error(err)
+
+                            const res = await err.response?.json?.()
+
+                            console.log(res)
+
                             Swal.fire({
                                 icon:'error',
                                 title:'Terjadi error saat menyimpan'
                             })
+
                         })
                 })
             }
