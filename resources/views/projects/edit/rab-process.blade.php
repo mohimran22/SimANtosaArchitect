@@ -226,6 +226,7 @@
         }
 
     })
+
     function initRabEdit(){
 
         $('.select2-row').each(function(){
@@ -1430,10 +1431,6 @@
 
             const jobSelect = row.querySelector('.job-select')
             if(!jobSelect || !jobSelect.value) return
-
-            const volume = parseFloat(
-                row.querySelector('.vol')?.value || 0
-            ).toFixed(2)
 
             const volume = Number(
                 parseFloat(
