@@ -302,7 +302,7 @@ public static function generateNikAjax()
         $religions = Religion::all();
         $provinces = Province::all();
         $roles = Role::all();
-        $internalRoles = Role::where('group', 'Internal')
+        $internalRoles = Role::where('role_group', 'Internal')
             ->orderBy('name')
             ->pluck('name');
         // $selectedRoles = $user->roles->pluck('name')->toArray();
