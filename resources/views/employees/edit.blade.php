@@ -290,13 +290,25 @@
                                         </div>
                             <div class="col-md-12">
                                 <label class="form-label required" for="role">Role:</label>
-                                        <select class="form-control select2" name="role[]" multiple required>
+                                        {{-- <select class="form-control select2" name="role[]" multiple required>
                                             @foreach (config('employee_roles.roles') as $role)
                                                 <option value="{{ $role }}" 
                                                     {{ in_array($role, $selectedRoles ?? []) ? 'selected' : '' }}>
                                                     {{ ucfirst($role) }}
                                                 </option>
                                             @endforeach
+                                        </select> --}}
+                                        <select class="form-control select2" name="role[]" multiple required>
+
+                                            @foreach ($internalRoles as $role)
+
+                                                <option value="{{ $role }}"
+                                                    {{ in_array($role, $employee->position ?? []) ? 'selected' : '' }}>
+                                                    {{ $role }}
+                                                </option>
+
+                                            @endforeach
+
                                         </select>
                             </div>
 

@@ -302,14 +302,17 @@ public static function generateNikAjax()
         $religions = Religion::all();
         $provinces = Province::all();
         $roles = Role::all();
-        $selectedRoles = $user->roles->pluck('name')->toArray();
+        $internalRoles = Role::where('group', 'Internal')
+            ->orderBy('name')
+            ->pluck('name');
+        // $selectedRoles = $user->roles->pluck('name')->toArray();
         $cities = City::where('province_id', $user->province_id)->get();
         $districts = District::where('city_id', $user->city_id)->get();
         $subDistricts = SubDistrict::where('district_id', $user->district_id)->get();
         $postalCodes = PostalCode::where('sub_district_id', $user->sub_district_id)->get();
         
 
-        return view('employees.edit', compact('user', 'roles', 'selectedRoles', 'employee',
+        return view('employees.edit', compact('user', 'roles', 'internalRoles', 'employee',
         'religions', 'provinces', 'cities', 'districts', 'subDistricts', 'postalCodes'));
     }
 

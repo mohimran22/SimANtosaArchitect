@@ -120,26 +120,26 @@ class RoleController extends Controller
         return redirect()->route('roles.index')->with('success', 'Role diperbarui.');
     }
 
-    public function destroy(Role $role, Request $request)
+    public function destroy(Role $role)
     {
         try {
-        // Kalau perlu, detach dulu user-role
-        \DB::table('model_has_roles')->where('role_id', $role->id)->delete();
 
-        $role->delete();
+            \DB::table('model_has_roles')
+                ->where('role_id', $role->id)
+                ->delete();
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Role berhasil dihapus.'
-        ]);
-    } catch (\Exception $e) {
-        return response()->json([
-            'status' => 'error',
-            'message' => 'Terjadi kesalahan saat menghapus.'
-        ], 500);
-    }
+            $role->delete();
 
+            return redirect()
+                ->route('roles.index')
+                ->with('success', 'Role berhasil dihapus.');
 
+        } catch (\Exception $e) {
 
+            return redirect()
+                ->route('roles.index')
+                ->with('error', 'Terjadi kesalahan saat menghapus.');
+
+        }
     }
 }
