@@ -726,14 +726,13 @@ $(document).ready(function () {
 function formatRupiah(angka) {
     angka = Number(angka);
 
-    if (isNaN(angka)) return 'Rp 0';
+    if (isNaN(angka)) return '0';
 
     return new Intl.NumberFormat('id-ID', {
-        style: 'currency',
-        currency: 'IDR',
         minimumFractionDigits: 0
     }).format(angka);
 }
+
 function cleanNumber(value) {
     return parseFloat(value.replace(/[^\d]/g, '')) || 0;
 }

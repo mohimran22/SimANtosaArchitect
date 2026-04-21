@@ -70,7 +70,7 @@ if (
             4 => 'Selesai'
         ];
 
-        return DataTables::of($projects)
+        return DataTables::of($query)
         ->addIndexColumn()
 
         ->addColumn('province_name', fn($row) => $row->province->name ?? '-')

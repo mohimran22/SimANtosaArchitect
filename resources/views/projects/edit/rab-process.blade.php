@@ -243,13 +243,13 @@
         updateHargaSemua()
     }
 
-    function parseRupiah(value){
+    function parseRupiah(val){
 
-        if(!value) return 0
+        if(!val) return 0
 
         return Number(
-            value
-            .toString()
+            val
+            .replace(/[^\d,]/g,'')
             .replace(/\./g,'')
             .replace(',', '.')
         )
@@ -1107,7 +1107,7 @@
         document.getElementById('rab_subtotalDisplay_edit').innerText = formatRupiah(subtotal)
 
         // discount
-        let discount = Number(document.getElementById('rab_discount_edit').value || 0)
+        let discount = Number(document.getElementById('rab_discount_display_edit').value || 0)
 
         let subAfterDiscount = subtotal - discount
 
@@ -1123,7 +1123,7 @@
         document.getElementById('rab_totalTaxDisplay_edit').innerText = formatRupiah(taxTotal)
 
         // shipping
-        let shipping = Number(document.getElementById('rab_shipping_edit').value || 0)
+        let shipping = Number(document.getElementById('rab_shipping_display_edit').value || 0)
 
         // grand total
         let grand = subAfterDiscount + taxTotal + shipping
@@ -1431,9 +1431,14 @@
             const jobSelect = row.querySelector('.job-select')
             if(!jobSelect || !jobSelect.value) return
 
+            const volume = parseFloat(
+                row.querySelector('.vol')?.value || 0
+            ).toFixed(2)
+
             const volume = Number(
-                row.querySelector('.vol')?.value
-                    ?.replace(',', '.') || 0
+                parseFloat(
+                    row.querySelector('.vol')?.value || 0
+                ).toFixed(2)
             )
 
             const satuan = row.querySelector('.sat')?.innerText || ''
@@ -1446,8 +1451,8 @@
                 hargaInput?.dataset.value || 0
             )
 
-            const price = Number(
-                hargaInput?.dataset.value || 0
+            const price = parseRupiah(
+                hargaInput?.value || 0
             )
 
             const total = Number(volume) * Number(price)
