@@ -207,7 +207,7 @@ class JobCategoryController extends Controller
             case 'equipment':
                 $eq = EquipmentCost::findOrFail($request->equipment_cost_id);
 
-                $data['name'] = $eq->name;
+                $data['name'] = $eq->description;
                 $data['code'] = $eq->code ?? '-';
                 $data['unit'] = $eq->unit;
                 $data['base_unit_price'] = $eq->base_unit_price;
