@@ -400,7 +400,8 @@
             tbody.insertAdjacentHTML('beforeend',`
             <tr class="table-secondary fw-bold category-row"
                 id="${catId}"
-                data-category="${catId}">
+                data-category="${catId}"
+                data-name="${cat.name}">
 
                 <td>
                     <span class="drag-handle me-2">
@@ -410,7 +411,12 @@
                 </td>
 
                 <td colspan="4" class="form-input fw-bold">
-                    ${cat.name}
+                    <span class="category-text"
+                        onclick="editCategory('${catId}')">
+
+                        ${cat.name}
+
+                    </span>
                 </td>
 
                 <td>
@@ -439,7 +445,7 @@
 
                 if(uraian.images){
                     uraian.images.forEach(img=>{
-                        uraianImages[uraian.uraian_key].push({
+                        uraianImages[uraianId].push({
                             id: img.id,
                             url: img.image.url
                         })
@@ -465,7 +471,12 @@
                                 <i class="ti ti-grip-vertical"></i>
                             </span>
 
-                            <span>${uraian.name}</span>
+                            <span class="uraian-text"
+                                onclick="editUraian('${uraianId}')">
+
+                                ${uraian.name}
+
+                            </span>
 
                             <button type="button" class="btn btn-sm btn-gambar-edit"
                                 onclick="openUraianGalleryEdit('${uraianId}','${uraian.name}')">
@@ -653,12 +664,21 @@
 
         const row = document.getElementById(catId)
         const input = row.querySelector('.category-input')
-        if(!input.value.trim()){
+
+        let name
+
+        if(input){
+            name = input.value.trim()
+        }else{
+            // mode edit ulang
+            input = row.querySelector('.category-text')
+            name = input.innerText.trim()
+        }
+
+        if(!name){
             alert('Nama kategori tidak boleh kosong')
-            input.focus()
             return
         }
-        const name = input.value || 'Kategori Baru'
 
         row.dataset.name = name
 
@@ -673,8 +693,16 @@
                 ${letter}
             </td>
 
+
             <td colspan="4" class="fw-bold">
-                ${name}
+
+                <span class="category-text"
+                    onclick="editCategory('${catId}')">
+
+                    ${name}
+
+                </span>
+
             </td>
 
             <td>
@@ -692,6 +720,39 @@
                 </button>
             </td>
         `
+    }
+
+    function editCategory(catId){
+
+        const row = document.getElementById(catId)
+
+        const name = row.dataset.name || ''
+
+        const letter = row.cells[0].innerText.trim()
+
+        row.innerHTML = `
+            <td>
+                <span class="drag-handle me-2">
+                    <i class="ti ti-grip-vertical"></i>
+                </span>
+                ${letter}
+            </td>
+
+            <td colspan="5">
+
+                <input type="text"
+                    class="form-control fw-bold category-input"
+                    value="${name}">
+
+            </td>
+
+            <td></td>
+        `
+
+        setTimeout(()=>{
+            row.querySelector('.category-input').focus()
+        },50)
+
     }
 
     function addUraianEdit(catId){
@@ -749,7 +810,6 @@
     function saveUraianEdit(uraianId){
 
         const row = document.getElementById(uraianId)
-        if(!row) return
 
         const input = row.querySelector('.uraian-input')
 
@@ -767,7 +827,12 @@
                     <i class="ti ti-grip-vertical"></i>
                 </span>
 
-                <span>${name}</span>
+                <span class="uraian-text"
+                    onclick="editUraian('${uraianId}')">
+
+                    ${name}
+
+                </span>
 
                 <button type="button"
                     class="btn btn-sm btn-gambar-edit"
@@ -788,6 +853,31 @@
                 addJobRowEdit(uraianId)
             },50)
         }
+
+    }
+    function editUraian(uraianId){
+
+        const row = document.getElementById(uraianId)
+
+        const name = row.dataset.name || ''
+
+        row.cells[1].innerHTML = `
+            <div class="d-flex align-items-center gap-2">
+
+                <span class="drag-handle">
+                    <i class="ti ti-grip-vertical"></i>
+                </span>
+
+                <input
+                    class="form-control uraian-input"
+                    value="${name}">
+
+            </div>
+        `
+
+        setTimeout(()=>{
+            row.querySelector('.uraian-input').focus()
+        },50)
 
     }
 
@@ -1333,7 +1423,7 @@
             const uraianRow = document.getElementById(uraianKey)
             const uraianName = uraianRow?.dataset.name || ''
             const categoryRow = document.getElementById(categoryKey)
-            const categoryName = categoryRow?.dataset.name|| 'Kategori'
+            const categoryName = categoryRow?.dataset.name || categoryRow?.innerText?.trim() || 'Kategori'
 
             items.push({
                 id: id,
