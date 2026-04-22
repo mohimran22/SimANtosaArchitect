@@ -108,9 +108,11 @@ public static function generateNic()
     public function getReadableLoyaltyLevelAttribute()
     {
     return [
-        1 => 'Silver',
-        2 => 'Gold',
-        3 => 'Platinum',
+        1 => 'Lead',
+        2 => 'New Customer',
+        3 => 'Silver',
+        4 => 'Gold',
+        5 => 'Platinum',
     ][$this->loyalty_level] ?? 'Tidak diketahui';
     }
 

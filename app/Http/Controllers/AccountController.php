@@ -140,7 +140,7 @@ class AccountController extends Controller
         $user->load('roles');
 
         $internalRoles = $user->roles
-            ->where('group', 'Internal');
+            ->where('role_group', 'Internal');
 
         if ($internalRoles->isNotEmpty()) {
 
@@ -172,7 +172,7 @@ class AccountController extends Controller
 
         }
 
-        foreach ($user->roles->where('group', 'Eksternal') as $role) {
+        foreach ($user->roles->where('role_group', 'Eksternal') as $role) {
 
             if (!$role->external_model) {
                 continue;

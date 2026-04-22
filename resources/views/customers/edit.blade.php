@@ -82,7 +82,7 @@
                                 </div>
                                 <div class="col-md-2">
                                     <label class="form-label required">Jenis Kelamin</label>
-                                    <select name="gender" class="form-select" value="{{ old('gender') }}" required>
+                                    <select name="gender" class="form-select select2" value="{{ old('gender') }}" required>
                                         <option value="">-- Pilih --</option>
                                         <option value="1" {{ old('gender', $user->gender) == 1 ? 'selected' : '' }}>Laki-laki</option>
                                         <option value="2" {{ old('gender', $user->gender) == 2 ? 'selected' : '' }}>Perempuan</option>
@@ -264,7 +264,7 @@
 
                             <div class="col-md-4">
                                 <label class="form-label">Kategori</label>
-                                <select name="category" class="form-select">
+                                <select name="category" class="form-select select2">
                                     <option value="">-- Pilih --</option>
                                     <option value="1" {{ old('category', $customer->category) == 1 ? 'selected' : '' }}>Individu</option>
                                     <option value="2" {{ old('category', $customer->category) == 2 ? 'selected' : '' }}>Perusahaan</option>
@@ -274,10 +274,12 @@
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label">Loyalty Level</label>
-                                <select name="loyalty_level" class="form-select">
-                                    <option value="1" {{ old('loyalty_level', $customer->loyalty_level) == 1 ? 'selected' : '' }}>Silver</option>
-                                    <option value="2" {{ old('loyalty_level', $customer->loyalty_level) == 2 ? 'selected' : '' }}>Gold</option>
-                                    <option value="3" {{ old('loyalty_level', $customer->loyalty_level) == 3 ? 'selected' : '' }}>Platinum</option>
+                                <select name="loyalty_level" class="form-select select2">
+                                    <option value="1" {{ old('loyalty_level', $customer->loyalty_level) == 1 ? 'selected' : '' }}>Lead</option>
+                                    <option value="2" {{ old('loyalty_level', $customer->loyalty_level) == 2 ? 'selected' : '' }}>New Customer</option>
+                                    <option value="3" {{ old('loyalty_level', $customer->loyalty_level) == 3 ? 'selected' : '' }}>Silver</option>
+                                    <option value="4" {{ old('loyalty_level', $customer->loyalty_level) == 4 ? 'selected' : '' }}>Gold</option>
+                                    <option value="5" {{ old('loyalty_level', $customer->loyalty_level) == 5 ? 'selected' : '' }}>Platinum</option>
                                 </select>
                             </div>
                             

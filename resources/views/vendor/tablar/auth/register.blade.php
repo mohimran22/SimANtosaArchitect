@@ -90,6 +90,21 @@
             </div>
 
             <div class="mb-3">
+                <label class="form-label">No HP</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-transparent border-end-0">
+                        <i class="ti ti-user"></i>
+                    </span>
+                    <input id="fullname" type="number" name="phone"
+                           class="form-control border-start-0 @error('fullname') is-invalid @enderror"
+                           placeholder="Masukkan nomor HP Anda" autofocus>
+                </div>
+                @error('fullname')
+                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                @enderror
+            </div>
+
+            <div class="mb-3">
                 <label for="email" class="form-label">Alamat Email</label>
                 <div class="input-group">
                     <span class="input-group-text bg-transparent border-end-0">
@@ -152,18 +167,18 @@
         </form>
     </div>
     <script>
-    // Toggle password show/hide
-    const togglePassword = document.getElementById('togglePassword');
-    const passwordInput = document.getElementById('password');
+        // Toggle password show/hide
+        const togglePassword = document.getElementById('togglePassword');
+        const passwordInput = document.getElementById('password');
 
-    togglePassword.addEventListener('click', function () {
-        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-        passwordInput.setAttribute('type', type);
-        this.innerHTML = type === 'password' 
-            ? '<i class="ti ti-eye"></i>' 
-            : '<i class="ti ti-eye-off"></i>';
-    });
-</script>
+        togglePassword.addEventListener('click', function () {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            this.innerHTML = type === 'password' 
+                ? '<i class="ti ti-eye"></i>' 
+                : '<i class="ti ti-eye-off"></i>';
+        });
+    </script>
 @endsection
         
                  
