@@ -42,7 +42,10 @@ class RoleController extends Controller
 
     public function index()
     {
-        $roles = Role::withCount('permissions')->get();
+        $roles = Role::withCount('permissions')
+            ->orderByRaw("CASE WHEN name = 'Super-Admin' THEN 0 ELSE 1 END")
+            ->orderBy('name')
+            ->get();
         $permissions = Permission::all();
 
         return view('roles.index', compact('roles', 'permissions'));
@@ -136,11 +139,11 @@ class RoleController extends Controller
             'external_model' => 'nullable|string'
         ]);
 
-        if ($request->role_group === 'Eksternal' && !$request->external_model) {
-            return back()
-                ->withErrors(['external_model' => 'External model wajib dipilih untuk role Eksternal'])
-                ->withInput();
-        }
+        // if ($request->role_group === 'Eksternal' && !$request->external_model) {
+        //     return back()
+        //         ->withErrors(['external_model' => 'External model wajib dipilih untuk role Eksternal'])
+        //         ->withInput();
+        // }
 
         if ($request->role_group === 'Internal') {
             $request->merge([

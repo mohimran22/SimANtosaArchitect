@@ -125,7 +125,7 @@ private function generateNextJournalCode()
     $licenseId = config('app.license_id');
 
     $lastJournalNumber = AccountingJournal::where('license_id', $licenseId)
-        ->where('journal_code', 'LIKE', 'IJ-%')
+        ->where('journal_code', 'ILIKE', 'IJ-%')
         ->selectRaw("
             MAX(
                 CAST(
