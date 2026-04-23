@@ -15,7 +15,6 @@ class AccountingPeriodController extends Controller
 {
     public function index()
     {
-
         $periods = DB::table('accounting_periods')
             ->orderByDesc('year')
             ->get();
@@ -120,4 +119,34 @@ class AccountingPeriodController extends Controller
 
         return back()->with('success', "Tahun {$request->year} dibuka kembali");
     }
+    public function destroy($id)
+{
+    $period = DB::table('accounting_periods')->where('id', $id)->first();
+
+    if (!$period) {
+        return back()->with('error', 'Periode tidak ditemukan');
+    }
+    if ($period->is_closed) {
+        return back()->with('error', 'Periode yang sudah closed tidak boleh dihapus');
+    }
+
+    // contoh validasi keamanan
+    $hasJournal = DB::table('accounting_journals')
+        ->whereYear('transaction_date', $period->year)
+        ->exists();
+
+    if ($hasJournal) {
+        return back()->with('error', 'Periode tidak bisa dihapus karena sudah ada transaksi');
+    }
+
+    DB::transaction(function () use ($period) {
+
+        // hapus periode
+        DB::table('accounting_periods')
+            ->where('id', $period->id)
+            ->delete();
+    });
+
+    return back()->with('success', 'Periode berhasil dihapus');
+}
 }

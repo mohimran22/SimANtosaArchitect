@@ -106,9 +106,9 @@ public function create()
     // Employees
     $employees = User::select('id', 'fullname as name')->get();
 
-
     $journalCode = $this->generateNextJournalCode();
     $lastClosedDate = DB::table('accounting_periods')
+        ->where('license_id', $licenseId)
         ->where('is_closed', true)
         ->max('end_date');
 
@@ -166,8 +166,8 @@ public function store(StoreAccountingJournalRequest $request)
     $isClosed = DB::table('accounting_periods')
         ->where('license_id', $licenseId)
         ->where('year', $year)
-        ->where('is_closed', true)
-        ->exists();
+        ->orderByDesc('id')
+        ->value('is_closed');
 
     if ($isClosed) {
         return back()->withErrors([
@@ -220,6 +220,20 @@ public function store(StoreAccountingJournalRequest $request)
 
     return redirect()->route('journals.index')
         ->with('success', 'Jurnal berhasil dibuat.');
+}
+public function checkPeriod(Request $request)
+{
+    $licenseId = config('app.license_id');
+
+    $isClosed = DB::table('accounting_periods')
+        ->where('license_id', $licenseId)
+        ->whereDate('start_date', '<=', $request->date)
+        ->whereDate('end_date', '>=', $request->date)
+        ->value('is_closed');
+
+    return response()->json([
+        'closed' => (bool) $isClosed
+    ]);
 }
 
 public function show(AccountingJournal $journal)

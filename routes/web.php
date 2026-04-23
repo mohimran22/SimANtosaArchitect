@@ -187,6 +187,7 @@ Route::get('/journals/export/trial-pdf', [AccountingJournalController::class, 'e
 
 Route::get('/journals/income/pdf', [AccountingJournalController::class, 'exportIncome'])
     ->name('journals.income.pdf');
+Route::get('/check-period', [AccountingJournalController::class, 'checkPeriod']);
 
 Route::middleware(['role:Super-Admin|Akuntan'])->group(function () {
     Route::resource('/journals', AccountingJournalController::class);
@@ -220,6 +221,8 @@ Route::get('/trial/export', [JournalExportController::class, 'exportTrialBalance
     Route::get('/periods', [AccountingPeriodController::class, 'index'])->name('periods.index');
     Route::post('/periods/close', [AccountingPeriodController::class, 'close'])->name('periods.close');
     Route::post('/periods/reopen', [AccountingPeriodController::class, 'reopen'])->name('periods.reopen');
+    Route::delete('/periods/{period}', [AccountingPeriodController::class, 'destroy'])
+    ->name('periods.destroy');
 
 Route::post('/switch-role', [RoleSwitchController::class, 'switch'])
     ->middleware('auth')

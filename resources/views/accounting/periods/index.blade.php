@@ -42,8 +42,9 @@
                                 <form action="{{ route('periods.close') }}" method="POST" style="display:inline">
                                     @csrf
                                     <input type="hidden" name="year" value="{{ $p->year }}">
-                                    <button class="btn btn-sm btn-danger"
-                                        onclick="return confirm('Yakin tutup buku tahun {{ $p->year }}?')">
+                                    <button type="button"
+                                        class="btn btn-sm btn-danger btn-close-period"
+                                        data-year="{{ $p->year }}">
                                         Tutup Buku
                                     </button>
                                 </form>
@@ -51,18 +52,133 @@
                                 <form action="{{ route('periods.reopen') }}" method="POST" style="display:inline">
                                     @csrf
                                     <input type="hidden" name="year" value="{{ $p->year }}">
-                                    <button class="btn btn-sm btn-warning"
-                                        onclick="return confirm('Buka kembali tahun {{ $p->year }}?')">
+                                    <button type="button"
+                                        class="btn btn-sm btn-warning btn-reopen-period"
+                                        data-year="{{ $p->year }}">
                                         Reopen
                                     </button>
                                 </form>
                             @endif
+                                <form action="{{ route('periods.destroy', $p->id) }}" method="POST" style="display:inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="button"
+                                        class="btn btn-sm btn-outline-dark btn-delete-period"
+                                        data-id="{{ $p->id }}"
+                                        data-year="{{ $p->year }}">
+                                        Hapus
+                                    </button>
+                                </form>
                         </td>
                     </tr>
                 @endforeach
             </tbody>
         </table>
+        <form id="closeForm" method="POST" action="{{ route('periods.close') }}">
+            @csrf
+            <input type="hidden" name="year" id="closeYear">
+        </form>
 
+        <form id="reopenForm" method="POST" action="{{ route('periods.reopen') }}">
+            @csrf
+            <input type="hidden" name="year" id="reopenYear">
+        </form>
+
+        <form id="deleteForm" method="POST">
+            @csrf
+            @method('DELETE')
+        </form>
     </div>
 </div>
 @endsection
+@push('js')
+<script>
+    document.querySelectorAll('.btn-close-period').forEach(btn => {
+
+        btn.addEventListener('click', function() {
+
+            let year = this.dataset.year;
+
+            Swal.fire({
+                title: 'Tutup Buku?',
+                text: 'Yakin tutup buku tahun ' + year + '?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Tutup',
+                cancelButtonText: 'Batal'
+            }).then(result => {
+
+                if (result.isConfirmed) {
+
+                    document.getElementById('closeYear').value = year;
+                    document.getElementById('closeForm').submit();
+
+                }
+
+            });
+
+        });
+
+    });
+
+    document.querySelectorAll('.btn-reopen-period').forEach(btn => {
+
+        btn.addEventListener('click', function() {
+
+            let year = this.dataset.year;
+
+            Swal.fire({
+                title: 'Reopen Periode?',
+                text: 'Buka kembali tahun ' + year + '?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Reopen',
+                cancelButtonText: 'Batal'
+            }).then(result => {
+
+                if (result.isConfirmed) {
+
+                    document.getElementById('reopenYear').value = year;
+                    document.getElementById('reopenForm').submit();
+
+                }
+
+            });
+
+        });
+
+    });
+
+    document.querySelectorAll('.btn-delete-period').forEach(btn => {
+
+        btn.addEventListener('click', function() {
+
+            let id = this.dataset.id;
+            let year = this.dataset.year;
+
+            Swal.fire({
+                title: 'Hapus Periode?',
+                text: 'Periode tahun ' + year + ' akan dihapus!',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Hapus',
+                cancelButtonText: 'Batal'
+            }).then(result => {
+
+                if (result.isConfirmed) {
+
+                    let form = document.getElementById('deleteForm');
+
+                    form.action = '/periods/' + id;
+
+                    form.submit();
+
+                }
+
+            });
+
+        });
+
+    });
+</script>
+@endpush

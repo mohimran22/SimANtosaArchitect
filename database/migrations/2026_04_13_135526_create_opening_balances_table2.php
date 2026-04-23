@@ -14,7 +14,6 @@ return new class extends Migration
     {
         Schema::create('opening_balances', function (Blueprint $table) {
             $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
-            $table->uuid('license_id');
             $table->uuid('account_id');
 
             $table->year('year'); // tahun tujuan (misal 2027)
@@ -24,7 +23,7 @@ return new class extends Migration
 
             $table->timestamps();
 
-            $table->unique(['license_id', 'account_id', 'year']);
+            $table->unique(['account_id', 'year']);
         });
     }
 
