@@ -12,7 +12,7 @@ use App\Models\SubDistrict;
 use App\Models\PostalCode;
 use Illuminate\Support\Carbon;
 use App\Models\User;
-use Spatie\Permission\Models\Role;
+use App\Models\Role;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -107,7 +107,9 @@ class EmployeeController extends Controller
         $user = auth()->user();
         $religions = Religion::all();
         $provinces = Province::all();
-        $roles = Role::all();
+        $roles = Role::internal()
+            ->orderBy('name')
+            ->get();
         return view('employees.create', compact('user', 'roles', 'religions', 'provinces'));
     }
 

@@ -282,14 +282,19 @@
                                         </div>
                             
                             <div class="col-md-12">
-                                <label class="form-label required" for="role">Posisi :</label>
+                                <label class="form-label required">Posisi :</label>
+
                                 <select class="form-select select2" name="role[]" multiple required>
-                                    @foreach (config('employee_roles.roles') as $role)
-                                        <option value="{{ $role }}" 
-                                            {{ in_array($role, old('role', [])) ? 'selected' : '' }}>
-                                            {{ ucfirst($role) }}
+
+                                    @foreach ($roles as $role)
+                                        <option value="{{ $role->name }}"
+                                            {{ in_array($role->name, old('role', [])) ? 'selected' : '' }}>
+
+                                            {{ $role->name }}
+
                                         </option>
                                     @endforeach
+
                                 </select>
                             </div>
                             <div class="section-block mb-5"> 
