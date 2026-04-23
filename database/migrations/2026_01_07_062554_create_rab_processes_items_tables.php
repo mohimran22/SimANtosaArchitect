@@ -25,7 +25,7 @@ return new class extends Migration
     $table->string('job_name');
     $table->string('satuan');
 
-    $table->decimal('volume', 15, 2);
+    $table->decimal('volume', 15, 8);
     $table->decimal('price', 15, 2);
     $table->decimal('total', 15, 2);
 

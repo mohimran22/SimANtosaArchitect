@@ -1435,7 +1435,7 @@
             const volume = Number(
                 parseFloat(
                     row.querySelector('.vol')?.value || 0
-                ).toFixed(2)
+                ).toFixed(5)
             )
 
             const satuan = row.querySelector('.sat')?.innerText || ''

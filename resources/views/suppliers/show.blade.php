@@ -268,7 +268,7 @@
                                                     </strong>
 
                                                     <button type="button"
-                                                            class="btn btn-xs btn-warning ms-2 btn-edit-price">
+                                                            class="btn btn-sm btn-dark ms-2 btn-edit-price">
                                                         <i class="ti ti-pencil"></i>
                                                     </button>
                                                 </p>
@@ -990,7 +990,7 @@ $(document).on('click', '.btn-save-label', function () {
         if (res.success) {
             wrapper.find('.label-text').html(
                 (res.label || '-') + `
-                <button class="btn btn-sm btn-warning ms-1 btn-edit-label">
+                <button class="btn btn-sm btn-dark ms-1 btn-edit-label">
                     <i class="ti ti-pencil"></i>
                 </button>
                 `
