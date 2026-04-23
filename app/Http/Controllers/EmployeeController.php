@@ -305,7 +305,7 @@ public static function generateNikAjax()
         $internalRoles = Role::where('role_group', 'Internal')
             ->orderBy('name')
             ->pluck('name');
-        // $selectedRoles = $user->roles->pluck('name')->toArray();
+        $selectedRoles = $user->roles->pluck('name')->toArray();
         $cities = City::where('province_id', $user->province_id)->get();
         $districts = District::where('city_id', $user->city_id)->get();
         $subDistricts = SubDistrict::where('district_id', $user->district_id)->get();
@@ -313,7 +313,7 @@ public static function generateNikAjax()
         
 
         return view('employees.edit', compact('user', 'roles', 'internalRoles', 'employee',
-        'religions', 'provinces', 'cities', 'districts', 'subDistricts', 'postalCodes'));
+        'religions', 'provinces', 'cities', 'districts', 'subDistricts', 'postalCodes', 'selectedRoles'));
     }
 
     public function update(Request $request, Employee $employee)

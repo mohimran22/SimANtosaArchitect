@@ -15,13 +15,36 @@
         <div class="card-body">
             <form action="{{ route('roles.store') }}" method="POST">
                 @csrf
+                @if ($errors->any())
+                        <div class="alert alert-danger">
+                            <ul class="mb-0">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                @endif
+                <div class="row g-4">
+                    <div class="col-md">
+                        <label class="form-label fw-bold text-secondary">Nama Role</label>
+                        <input type="text" name="name" class="form-control form-control shadow-sm" required>
+                        @error('name')
+                            <div class="text-danger mt-1">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="col-md">
+                        <label class="form-label fw-bold text-secondary">Group Role</label>
 
-                <div class="mb-4">
-                    <label for="name" class="form-label fw-bold text-secondary">Nama Role</label>
-                    <input type="text" name="name" class="form-control form-control-lg shadow-sm" placeholder="Contoh: admin, guru" required>
-                    @error('name')
-                        <div class="text-danger mt-1">{{ $message }}</div>
-                    @enderror
+                        <select name="role_group" class="form-select select2" required>
+                            <option value="">-- Pilih Group --</option>
+                            <option value="Internal">Internal</option>
+                            <option value="Eksternal">Eksternal</option>
+                        </select>
+
+                        @error('role_group')
+                            <div class="text-danger mt-1">{{ $message }}</div>
+                        @enderror
+                    </div>
                 </div>
 
                 <hr class="my-4">
@@ -80,6 +103,14 @@
 @endsection
 
 @push('js')
+<script>
+    $(document).ready(function() {
+        $('.select2').select2({
+            placeholder: "-- Pilih --",
+            width: '100%'
+        });
+    });
+</script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.btn-select-module').forEach(btn => {

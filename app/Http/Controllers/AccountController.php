@@ -168,7 +168,15 @@ class AccountController extends Controller
 
         } else {
 
-            $user->employee()?->delete();
+            if ($user->employee) {
+
+                if (!$user->employee->projects()->exists()) {
+
+                    $user->employee->delete();
+
+                }
+
+            }
 
         }
 
@@ -190,7 +198,7 @@ class AccountController extends Controller
             );
         }
 
-        $externalModels = \Spatie\Permission\Models\Role::whereNotNull('external_model')
+        $externalModels = \App\Models\Role::whereNotNull('external_model')
             ->pluck('external_model');
 
         foreach ($externalModels as $modelClass) {

@@ -15,8 +15,23 @@ class Role extends SpatieRole
 
         public function getRouteKeyName()
     {
-        return 'id'; // default, tapi id-nya UUID string
+        return 'id'; 
     }
 
-    protected $guarded = [];
+    protected $fillable = [
+        'name',
+        'guard_name',
+        'role_group',
+        'external_model',
+    ];
+
+        public function scopeInternal($query)
+    {
+        return $query->where('role_group', 'Internal');
+    }
+
+    public function scopeExternal($query)
+    {
+        return $query->where('role_group', 'Eksternal');
+    }
 }

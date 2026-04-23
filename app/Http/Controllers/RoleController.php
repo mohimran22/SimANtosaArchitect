@@ -99,8 +99,23 @@ class RoleController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate(['name' => 'required|unique:roles,name']);
-        $role = Role::create(['name' => $request->name]);
+        $request->validate([
+            'name' => 'required|string|unique:roles,name',
+            'role_group' => 'required|in:Internal,Eksternal',
+            'external_model' => 'nullable|string'
+        ]);
+        if ($request->role_group === 'Eksternal' && !$request->external_model) {
+            return back()
+                ->withErrors(['external_model' => 'External model wajib dipilih untuk role Eksternal'])
+                ->withInput();
+        }
+
+        $role = Role::create([
+            'name' => $request->name,
+            'role_group' => $request->role_group,
+            'external_model' => $request->external_model,
+            'guard_name' => 'web'
+        ]);
         $role->syncPermissions($request->permissions ?? []);
         return redirect()->route('roles.index')->with('success', 'Role berhasil dibuat.');
     }
@@ -115,9 +130,35 @@ class RoleController extends Controller
 
     public function update(Request $request, Role $role)
     {
-        $role->update(['name' => $request->name]);
+        $request->validate([
+            'name' => 'required|string|unique:roles,name,' . $role->id,
+            'role_group' => 'required|in:Internal,Eksternal',
+            'external_model' => 'nullable|string'
+        ]);
+
+        if ($request->role_group === 'Eksternal' && !$request->external_model) {
+            return back()
+                ->withErrors(['external_model' => 'External model wajib dipilih untuk role Eksternal'])
+                ->withInput();
+        }
+
+        if ($request->role_group === 'Internal') {
+            $request->merge([
+                'external_model' => null
+            ]);
+        }
+
+        $role->update([
+            'name' => $request->name,
+            'role_group' => $request->role_group,
+            'external_model' => $request->external_model
+        ]);
+
         $role->syncPermissions($request->permissions ?? []);
-        return redirect()->route('roles.index')->with('success', 'Role diperbarui.');
+
+        return redirect()
+            ->route('roles.index')
+            ->with('success', 'Role diperbarui.');
     }
 
     public function destroy(Role $role)
