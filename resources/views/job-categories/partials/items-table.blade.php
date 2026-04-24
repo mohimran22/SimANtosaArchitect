@@ -136,7 +136,7 @@
             JUMLAH {{ strtoupper(str_replace('.', '', $label)) }}
         </td>
         <td class="text-end">
-            Rp {{ number_format($subtotal, 0, ',', '.') }}
+            Rp {{ number_format($subtotal, 2, ',', '.') }}
         </td>
         <td></td>
     </tr>
