@@ -112,10 +112,10 @@
             </td>
             <td class="text-end">{{ number_format($item->coefisien, 4) }}</td>
             <td class="text-end" id="unit_price_{{ $item->id }}">
-                Rp {{ number_format($item->base_unit_price, 0, ',', '.') }}
+                Rp {{ number_format($item->base_unit_price, 2, ',', '.') }}
             </td>
             <td class="text-end" id="total_price_{{ $item->id }}">
-                Rp {{ number_format($item->total_price, 0, ',', '.') }}
+                Rp {{ number_format($item->total_price, 2, ',', '.') }}
             </td>
             <td class="text-center">
                 <form action="{{ route('job-categories.items.delete', $item->id) }}"

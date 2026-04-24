@@ -52,7 +52,7 @@
                                         <th>Kode</th>
                                         <th>Uraian Peralatan</th>
                                         <th>Satuan</th>
-                                        <th>harga Satuan Dasar (Rp.)</th>
+                                        <th>Harga Satuan Dasar (Rp.)</th>
                                         <th>Keterangan</th>
                                         <th width="120">Aksi</th>
                                     </tr>

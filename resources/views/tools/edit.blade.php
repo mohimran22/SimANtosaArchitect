@@ -43,7 +43,7 @@
                                 </div>
 
                                 <div class="mb-3">
-                                    <label class="form-label">Jenis Pekerjaan</label>
+                                    <label class="form-label">Jenis Peralatan</label>
                                     <input type="text" name="description" class="form-control" value="{{ old('description', $equipment_cost->description) }}" required>
                                 </div>
 
