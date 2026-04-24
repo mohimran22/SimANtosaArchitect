@@ -192,6 +192,7 @@
 
 @push('js')
 <script>
+
     document.addEventListener('keydown', function(e){
 
         if(e.key !== 'Enter') return
@@ -261,10 +262,7 @@
 
         number = Number(number) || 0
 
-        return 'Rp ' + number.toLocaleString('id-ID', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        })
+        return 'Rp ' + number.toLocaleString('id-ID')
 
     }
 
@@ -272,9 +270,13 @@
 
         let number = parseRupiah(el.value)
 
+        if(isNaN(number)) number = 0
+
         el.dataset.value = number
 
-        el.value = formatRupiah(number)
+        el.value = number
+            ? formatRupiah(number)
+            : ''
 
     }
     function parsePercent(value){
@@ -632,7 +634,7 @@
         $('.select2-row').select2()
 
         setTimeout(()=>{
-            recalcAfterDrag()
+            syncDiscountShipping()
             calculateSummary()
         },300)
 
@@ -1108,7 +1110,7 @@
         document.getElementById('rab_subtotalDisplay_edit').innerText = formatRupiah(subtotal)
 
         // discount
-        let discount = Number(document.getElementById('rab_discount_display_edit').value || 0)
+        let discount = Number(document.getElementById('rab_discount_edit').value || 0)
 
         let subAfterDiscount = subtotal - discount
 
@@ -1124,7 +1126,7 @@
         document.getElementById('rab_totalTaxDisplay_edit').innerText = formatRupiah(taxTotal)
 
         // shipping
-        let shipping = Number(document.getElementById('rab_shipping_display_edit').value || 0)
+        let shipping = Number(document.getElementById('rab_shipping_edit').value || 0)
 
         // grand total
         let grand = subAfterDiscount + taxTotal + shipping
@@ -1481,6 +1483,29 @@
         })
 
         return items
+    }
+    function syncDiscountShipping(){
+
+        const discountDisplay =
+            document.getElementById('rab_discount_display_edit')
+
+        const shippingDisplay =
+            document.getElementById('rab_shipping_display_edit')
+
+        if(discountDisplay){
+
+            document.getElementById('rab_discount_edit').value =
+                parseRupiah(discountDisplay.value)
+
+        }
+
+        if(shippingDisplay){
+
+            document.getElementById('rab_shipping_edit').value =
+                parseRupiah(shippingDisplay.value)
+
+        }
+
     }
 </script>
 <script>
