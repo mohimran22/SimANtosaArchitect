@@ -464,4 +464,18 @@ public function getProductSupplierById($id)
             ], 500);
         }
     }
+    public function updateEffective(Request $request, $id)
+{
+    $job = JobCategory::findOrFail($id);
+
+    $job->update([
+        'effective_labor'     => $request->effective_labor ?: null,
+        'effective_product'   => $request->effective_product ?: null,
+        'effective_equipment' => $request->effective_equipment ?: null,
+    ]);
+    $job->refresh();
+    RabRecalculator::recalcCategory($job);
+
+    return response()->json(['success' => true]);
+}
 }

@@ -345,6 +345,9 @@ Route::get('/ajax/product/{id}/suppliers', [JobCategoryController::class, 'getSu
 Route::get('/ajax/product-supplier/{supplierId}', [JobCategoryController::class, 'getProductSupplierById']);
 
 Route::get('/job-categories/{id}/simple', [JobCategoryController::class, 'simple']);
+Route::post('/job-categories/update-effective/{id}', 
+    [JobCategoryController::class, 'updateEffective']
+)->name('job-categories.update-effective');
 
 Route::post('/job-items/{item}/change-supplier', [\App\Http\Controllers\JobCategoryItemController::class, 'changeSupplier']);
 Route::post('/job-items/{item}/change-uraian', 

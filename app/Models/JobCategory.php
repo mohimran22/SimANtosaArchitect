@@ -23,7 +23,10 @@ class JobCategory extends Model
         'grand_total',
         'subtotal_labor',
         'subtotal_material',
-        'subtotal_equipment'
+        'subtotal_equipment',
+        'effective_labor',
+        'effective_product',
+        'effective_equipment'
     ];
 
     public function items()

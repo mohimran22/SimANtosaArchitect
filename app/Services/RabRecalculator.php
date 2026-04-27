@@ -21,9 +21,18 @@ class RabRecalculator
             ")
             ->first();
 
-        $subTotal = ($totals->total_labor ?? 0)
-                  + ($totals->total_product ?? 0)
-                  + ($totals->total_equipment ?? 0);
+        // $subTotal = ($totals->total_labor ?? 0)
+        //           + ($totals->total_product ?? 0)
+        //           + ($totals->total_equipment ?? 0);
+        $totalLabor     = $totals->total_labor ?? 0;
+        $totalProduct   = $totals->total_product ?? 0;
+        $totalEquipment = $totals->total_equipment ?? 0;
+
+        $effectiveLabor     = $category->effective_labor ?? $totalLabor;
+        $effectiveProduct   = $category->effective_product ?? $totalProduct;
+        $effectiveEquipment = $category->effective_equipment ?? $totalEquipment;
+
+        $subTotal = $effectiveLabor + $effectiveProduct + $effectiveEquipment;
 
         $overheadValue = $subTotal * ($category->overhead_percent / 100);
         $profitValue   = $subTotal * ($category->profit_percent / 100);
