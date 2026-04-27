@@ -192,6 +192,9 @@
 
 @push('js')
 <script>
+    window.currentRabId = "{{ $rab->id ?? '' }}";
+</script>
+<script>
 
     document.addEventListener('keydown', function(e){
 
@@ -227,7 +230,65 @@
         }
 
     })
+    let autosaveTimer = null
 
+    function triggerAutosave(){
+
+        clearTimeout(autosaveTimer)
+
+        autosaveTimer = setTimeout(() => {
+            autoSaveToServer()
+        }, 800) // delay biar gak spam server
+    }
+    function autoSaveToServer(){
+        if(!window.currentRabId){
+            console.warn('Autosave skip: currentRabId belum ada')
+            return
+        }
+
+        fetch(`/rab/autosave/${window.currentRabId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify({
+                categories: collectCategories(),
+                items: collectItems(),
+                profit: globalProfit,
+                overhead: globalOverhead
+            })
+        })
+    }
+    function collectCategories(){
+
+        let data = []
+
+        document.querySelectorAll('.category-row').forEach(cat => {
+
+            const catId = cat.id
+
+            let catData = {
+                id: catId,
+                name: cat.dataset.name || '',
+                uraians: []
+            }
+
+            document.querySelectorAll(`.uraian-row[data-category="${catId}"]`)
+            .forEach(uraian => {
+
+                catData.uraians.push({
+                    id: uraian.id,
+                    name: uraian.dataset.name || ''
+                })
+
+            })
+
+            data.push(catData)
+        })
+
+        return data
+    }
     function initRabEdit(){
 
         $('.select2-row').each(function(){
@@ -679,6 +740,7 @@
         `)
 
         categoryIndex++
+        triggerAutosave()
     }
 
     function saveCategoryEdit(catId){
@@ -741,6 +803,7 @@
                 </button>
             </td>
         `
+        triggerAutosave()
     }
 
     function editCategory(catId){
@@ -825,7 +888,7 @@
             }
         },100)
         renumberUraian(catId)
-
+        triggerAutosave()
     }
 
     function saveUraianEdit(uraianId){
@@ -874,7 +937,7 @@
                 addJobRowEdit(uraianId)
             },50)
         }
-
+        triggerAutosave()
     }
     function editUraian(uraianId){
 
@@ -899,7 +962,6 @@
         setTimeout(()=>{
             row.querySelector('.uraian-input').focus()
         },50)
-
     }
 
     function addJobRowEdit(uraianId){
@@ -1003,7 +1065,8 @@
 
         select.select2('open')
         },200)
-        }
+        triggerAutosave()
+    }
 
     function loadJobEdit(rowId, jobId){
 
@@ -1072,6 +1135,7 @@
         updateCategorySubtotal(row.dataset.category)
 
         calculateSummary()
+        triggerAutosave()
     }
     function updateCategorySubtotal(catId){
 
@@ -1153,7 +1217,7 @@
         }
 
         calculateSummary()
-
+        triggerAutosave()
     }
     function removeUraianEdit(id){
         const row = document.getElementById(id)
@@ -1170,6 +1234,7 @@
         updateCategorySubtotal(catId)
 
         calculateSummary()
+        triggerAutosave()
     }
     function removeCat(catId){
         const catRow = document.getElementById(catId)
@@ -1201,6 +1266,7 @@
 
         // hitung ulang
         calculateSummary()
+        triggerAutosave()
     }
     function renumberCategory(){
 
@@ -1380,11 +1446,13 @@
             document.getElementById('rab_profit_display_edit').addEventListener('input', function(){
                 globalProfit = Number(this.value) || 0
                 updateHargaSemua()
+                triggerAutosave()
             })
 
             document.getElementById('rab_overhead_display_edit').addEventListener('input', function(){
                 globalOverhead = Number(this.value) || 0
                 updateHargaSemua()
+                triggerAutosave()
             })
     document.getElementById('rab_discount_display_edit').addEventListener('input',function(){
 
@@ -1507,6 +1575,23 @@
         }
 
     }
+    function loadDraft(){
+        if(!window.currentRabId){
+            console.warn('Load draft skip: currentRabId belum ada')
+            return
+        }
+
+        fetch(`/rab/autosave/${window.currentRabId}`)
+        .then(res => res.json())
+        .then(data => {
+
+            if(!data || !data.categories?.length) return
+
+            loadExistingRab(data)
+        })
+    }
+
+    document.addEventListener('DOMContentLoaded', loadDraft)
 </script>
 <script>
 

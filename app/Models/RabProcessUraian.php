@@ -9,7 +9,6 @@ class RabProcessUraian extends Model
 
     protected $fillable = [
         'rab_process_id',
-        'job_category_id',
         'category_id',
         'name',
         'sort',

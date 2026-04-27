@@ -312,7 +312,7 @@ public function update(Request $request, Project $project, RabProcess $rab)
 
                 $uraian = RabProcessUraian::create([
                     'rab_process_id' => $rab->id,
-                    'job_category_id' => $item['job_category_id'],
+                    // 'job_category_id' => $item['job_category_id'],
                     'category_id' => $categoryId,
                     'uraian_key' => $key,
                     'name' => $item['uraian_name'],
@@ -538,5 +538,165 @@ public function structure($id)
         ],
         'categories' => $rab->categories
     ]);
+}
+public function autosave(Request $request, RabProcess $rab)
+{
+    abort_if(auth()->user()->cannot('ubah data proyek'), 403);
+
+    DB::transaction(function () use ($request, $rab) {
+
+        RabProcessItem::where('rab_process_id', $rab->id)
+            ->where('is_draft', true)
+            ->delete();
+
+        RabProcessUraian::where('rab_process_id', $rab->id)
+            ->where('is_draft', true)
+            ->delete();
+
+        RabProcessCategory::where('rab_process_id', $rab->id)
+            ->where('is_draft', true)
+            ->delete();
+
+        $categoryMap = [];
+
+        foreach ($request->categories ?? [] as $i => $cat) {
+
+            if(empty($cat['name'])) continue;
+
+            $category = RabProcessCategory::create([
+                'rab_process_id' => $rab->id,
+                'name' => $cat['name'],
+                'order_no' => $i,
+                'is_draft' => true
+            ]);
+
+            $categoryMap[$cat['id']] = $category->id;
+        }
+
+        $uraianMap = [];
+
+        foreach ($request->categories ?? [] as $cat) {
+
+            foreach ($cat['uraians'] ?? [] as $j => $uraian) {
+
+                if(empty($uraian['name'])) continue;
+
+                $categoryId = $categoryMap[$cat['id']] ?? null;
+                if(!$categoryId) continue;
+
+                $u = RabProcessUraian::create([
+                    'rab_process_id' => $rab->id,
+                    'category_id' => $categoryId,
+                    'name' => $uraian['name'],
+                    'uraian_key' => $uraian['id'],
+                    'sort' => $j,
+                    'is_draft' => true
+                ]);
+
+                $uraianMap[$uraian['id']] = $u->id;
+            }
+        }
+
+        foreach ($request->items ?? [] as $item) {
+
+            if(empty($item['job_category_id'])) continue;
+
+            $uraianId = $uraianMap[$item['uraian_key']] ?? null;
+            if(!$uraianId) continue;
+
+            RabProcessItem::create([
+                'rab_process_id' => $rab->id,
+                'uraian_id' => $uraianId,
+
+                'job_category_id' => $item['job_category_id'],
+                'job_name' => $item['job_name'] ?? '',
+
+                'base_price' => $item['base_price'] ?? 0,
+                'satuan' => $item['satuan'] ?? '',
+                'volume' => $item['volume'] ?? 0,
+
+                'price' => $item['price'] ?? 0,
+                'total' => $item['total'] ?? 0,
+
+                'is_draft' => true
+            ]);
+        }
+
+        $rab->update([
+            'profit' => $request->profit ?? 0,
+            'overhead' => $request->overhead ?? 0,
+        ]);
+
+    });
+
+    return response()->json([
+        'status' => 'saved'
+    ]);
+}
+public function loadDraft(RabProcess $rab)
+{
+    $hasDraft = RabProcessCategory::where('rab_process_id', $rab->id)
+        ->where('is_draft', true)
+        ->exists();
+
+    $isDraft = $hasDraft;
+
+    $categories = RabProcessCategory::where('rab_process_id', $rab->id)
+        ->where('is_draft', $isDraft)
+        ->orderBy('order_no')
+        ->get();
+
+    $uraians = RabProcessUraian::where('rab_process_id', $rab->id)
+        ->where('is_draft', $isDraft)
+        ->get()
+        ->groupBy('category_id');
+
+    $items = RabProcessItem::where('rab_process_id', $rab->id)
+        ->where('is_draft', $isDraft)
+        ->get()
+        ->groupBy('uraian_id');
+
+    $result = [
+        'meta' => [
+            'profit' => $rab->profit,
+            'overhead' => $rab->overhead,
+        ],
+        'categories' => []
+    ];
+
+    foreach ($categories as $cat) {
+
+        $catData = [
+            'name' => $cat->name,
+            'uraians' => []
+        ];
+
+        foreach ($uraians[$cat->id] ?? [] as $u) {
+
+            $uData = [
+                'uraian_key' => $u->uraian_key,
+                'name' => $u->name,
+                'items' => []
+            ];
+
+            foreach ($items[$u->id] ?? [] as $it) {
+
+                $uData['items'][] = [
+                    'job_category_id' => $it->job_category_id,
+                    'satuan' => $it->satuan,
+                    'volume' => $it->volume,
+                    'base_price' => $it->base_price,
+                    'price' => $it->price,
+                    'total' => $it->total,
+                ];
+            }
+
+            $catData['uraians'][] = $uData;
+        }
+
+        $result['categories'][] = $catData;
+    }
+
+    return response()->json($result);
 }
 }
