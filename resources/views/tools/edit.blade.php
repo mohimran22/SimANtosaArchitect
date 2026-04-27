@@ -54,7 +54,7 @@
 
                                  <div class="mb-3">
                                     <label class="form-label">Harga dasar</label>
-                                    <input type="number" name="base_unit_price" class="form-control" value="{{ old('base_unit_price', $equipment_cost->base_unit_price) }}">
+                                    <input type="number" name="base_unit_price" step="0.01" class="form-control" value="{{ old('base_unit_price', $equipment_cost->base_unit_price) }}">
                                 </div>
 
                                  <div class="mb-3">
