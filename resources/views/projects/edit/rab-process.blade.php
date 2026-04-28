@@ -230,6 +230,11 @@
         }
 
     })
+    document.addEventListener('mousedown', function(e){
+        if(e.target.closest('input,textarea,select')){
+            e.stopPropagation()
+        }
+    })
     let autosaveTimer = null
 
     function triggerAutosave(){
@@ -463,7 +468,9 @@
             if(related.classList.contains('no-drag')){
                 return false
             }
-
+            if(dragged.classList.contains('editing') || related?.classList.contains('editing')){
+                return false
+            }
             return true
         }
     })
@@ -755,6 +762,8 @@
         const row = document.getElementById(catId)
         const input = row.querySelector('.category-input')
 
+        row.classList.remove('editing')
+
         let name
 
         if(input){
@@ -816,9 +825,9 @@
     function editCategory(catId){
 
         const row = document.getElementById(catId)
+        row.classList.add('editing')
 
         const name = row.dataset.name || ''
-
         const letter = row.cells[0].innerText.trim()
 
         row.innerHTML = `
