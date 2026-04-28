@@ -415,9 +415,8 @@
                 draggedGroup.slice(1).forEach(r=>{
                     tbody.insertBefore(r, insertPoint)
                 })
-
             }
-
+            draggedGroup = []
             renumberAll()
             recalcAfterDrag()
         },
