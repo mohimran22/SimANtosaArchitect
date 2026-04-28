@@ -67,7 +67,15 @@
   
     <div class="row mb-4 mt-3">
         <h4 class="fw-bold mb-3">Rincian Pekerjaan</h4>
+        <div class="mb-2 d-flex gap-2">
+            <button type="button" id="btnEditMode" class="btn btn-primary btn-sm">
+                ✏️ Mode Edit
+            </button>
 
+            <button type="button" id="btnDragMode" class="btn btn-outline-secondary btn-sm">
+                🔀 Urutkan Daftar Pekerjaan
+            </button>
+        </div>
         <table class="table table-bordered align-middle" id="offerItemsTable">
             <colgroup>
                 <col><col><col><col><col><col><col>
@@ -195,41 +203,38 @@
     window.currentRabId = "{{ $rab->id ?? '' }}";
 </script>
 <script>
+    let currentMode = 'edit'
+    let sortableInstance = null
 
     document.addEventListener('keydown', function(e){
 
         if(e.key !== 'Enter') return
 
         const el = e.target
-
         if(!el || el.disabled) return
 
         if(el.classList.contains('uraian-input')){
-
             e.preventDefault()
-            e.stopImmediatePropagation()
 
             const row = el.closest('.uraian-row')
             if(row){
                 saveUraianEdit(row.id)
             }
-
             return
         }
-        if(el.classList.contains('category-input')){
 
+        if(el.classList.contains('category-input')){
             e.preventDefault()
-            e.stopImmediatePropagation()
 
             const row = el.closest('.category-row')
             if(row){
                 saveCategoryEdit(row.id)
             }
-
             return
         }
 
     })
+    
     document.addEventListener('mousedown', function(e){
         if(e.target.closest('input,textarea,select')){
             e.stopPropagation()
@@ -239,11 +244,17 @@
 
     function triggerAutosave(){
 
+        if(currentMode === 'drag') return
+
+        if(document.querySelector('.editing')){
+            return
+        }
+
         clearTimeout(autosaveTimer)
 
         autosaveTimer = setTimeout(() => {
             autoSaveToServer()
-        }, 800) // delay biar gak spam server
+        }, 1000)
     }
     function autoSaveToServer(){
         if(!window.currentRabId){
@@ -381,99 +392,101 @@
     let draggedGroup = []
     let uraianImages = {}
     let activeUraian = null
-    const tbody = document.getElementById('rab_offerItemsBody_edit')
 
-    new Sortable(tbody,{
-        animation:150,
-        handle:'.drag-handle,.drag-ahsp',
-        draggable:'.category-row, .uraian-row, .job-row',
-        filter: 'input,select,textarea',
-        preventOnFilter: true,
+    function setMode(mode){
 
-        onStart:function(evt){
+        currentMode = mode
+
+        if(mode === 'edit'){
+
+            // ENABLE INPUT
+            document.querySelectorAll('input, select, textarea').forEach(el=>{
+                el.disabled = false
+            })
+
+            // DESTROY SORTABLE
+            if(sortableInstance){
+                sortableInstance.destroy()
+                sortableInstance = null
+            }
+
+            // UI tombol
+            document.getElementById('btnEditMode').classList.add('btn-primary')
+            document.getElementById('btnEditMode').classList.remove('btn-outline-primary')
+
+            document.getElementById('btnDragMode').classList.add('btn-outline-secondary')
+            document.getElementById('btnDragMode').classList.remove('btn-secondary')
+
+        }
+
+        if(mode === 'drag'){
+
+            // DISABLE INPUT
+            // document.querySelectorAll('input, select, textarea').forEach(el=>{
+            //     el.disabled = true
+            // })
+            document.body.classList.toggle('drag-mode', mode === 'drag')
+
+            initSortable()
+
+            // UI tombol
+            document.getElementById('btnDragMode').classList.add('btn-secondary')
+            document.getElementById('btnDragMode').classList.remove('btn-outline-secondary')
+
+            document.getElementById('btnEditMode').classList.add('btn-outline-primary')
+            document.getElementById('btnEditMode').classList.remove('btn-primary')
+
+        }
+    }
+    function initSortable(){
+
+        const tbody = document.getElementById('rab_offerItemsBody_edit')
+
+        sortableInstance = new Sortable(tbody,{
+            animation:150,
+            handle:'.drag-handle,.drag-ahsp',
+            draggable:'.category-row, .uraian-row, .job-row',
+
+            onStart:function(evt){
 
                 const row = evt.item
                 draggedGroup = [row]
 
                 if(row.classList.contains('category-row')){
-
                     let next = row.nextElementSibling
-
                     while(next && !next.classList.contains('category-row')){
                         draggedGroup.push(next)
                         next = next.nextElementSibling
                     }
-
                 }
 
                 if(row.classList.contains('uraian-row')){
-
                     const uraianId = row.id
-
                     document.querySelectorAll(`[data-parent="${uraianId}"]`)
                         .forEach(r=>draggedGroup.push(r))
+                }
+            },
 
+            onEnd:function(evt){
+
+                const row = evt.item
+
+                if(draggedGroup.length > 1){
+                    let insertPoint = row.nextElementSibling
+                    draggedGroup.slice(1).forEach(r=>{
+                        tbody.insertBefore(r, insertPoint)
+                    })
                 }
 
-        },
-
-        onEnd:function(evt){
-
-            const row = evt.item
-
-            if(draggedGroup.length > 1){
-
-                let insertPoint = row.nextElementSibling
-
-                draggedGroup.slice(1).forEach(r=>{
-                    tbody.insertBefore(r, insertPoint)
-                })
+                draggedGroup = []
+                renumberAll()
+                recalcAfterDrag()
             }
-            draggedGroup = []
-            renumberAll()
-            recalcAfterDrag()
-        },
-        onMove:function(evt){
-
-            const dragged = evt.dragged
-            const related = evt.related
-
-            if(!related) return true
-
-            // CATEGORY hanya boleh bertemu CATEGORY
-            if(dragged.classList.contains('category-row')){
-                if(!related.classList.contains('category-row')){
-                    return false
-                }
-            }
-
-            
-            if(dragged.classList.contains('job-row')){
-                if(!related.classList.contains('job-row') &&
-                !related.classList.contains('uraian-row')){
-                    return false
-                }
-            }
-
-            if(dragged.classList.contains('uraian-row')){
-
-                const draggedCat = dragged.dataset.category
-                const relatedCat = related.dataset.category
-
-                if(draggedCat !== relatedCat){
-                    return false
-                }
-
-            }
-            if(related.classList.contains('no-drag')){
-                return false
-            }
-            if(dragged.classList.contains('editing') || related?.classList.contains('editing')){
-                return false
-            }
-            return true
-        }
-    })
+        })
+    }
+    function isDragMode(){
+        return currentMode === 'drag'
+    }
     function loadExistingRab(data){
 
         const tbody = document.getElementById('rab_offerItemsBody_edit')
@@ -716,7 +729,7 @@
     }
 
     function addCategoryEdit(){
-
+        if(isDragMode()) return
         const tbody = document.getElementById('rab_offerItemsBody_edit')
 
         let letter = String.fromCharCode(65 + categoryIndex)
@@ -726,7 +739,7 @@
 
         tbody.insertAdjacentHTML('beforeend',`
 
-        <tr class="table-secondary fw-bold category-row" id="${catId}" data-category="${catId}">
+        <tr class="table-secondary fw-bold category-row editing" id="${catId}" data-category="${catId}">
             <td>
                 <span class="drag-handle me-2" style="cursor:move">
                     <i class="ti ti-grip-vertical"></i>
@@ -754,7 +767,6 @@
         `)
 
         categoryIndex++
-        triggerAutosave()
     }
 
     function saveCategoryEdit(catId){
@@ -823,7 +835,7 @@
     }
 
     function editCategory(catId){
-
+        if(isDragMode()) return
         const row = document.getElementById(catId)
         row.classList.add('editing')
 
@@ -856,7 +868,7 @@
     }
 
     function addUraianEdit(catId){
-
+        if(isDragMode()) return
         const addRow = document.getElementById('addUraianEdit_'+catId)
         if(!addRow){
             console.error('addRow tidak ditemukan:', 'addUraianEdit_'+catId)
@@ -956,7 +968,7 @@
         triggerAutosave()
     }
     function editUraian(uraianId){
-
+        if(isDragMode()) return
         const row = document.getElementById(uraianId)
 
         const name = row.dataset.name || ''
@@ -981,7 +993,7 @@
     }
 
     function addJobRowEdit(uraianId){
-
+        if(isDragMode()) return
         const originalSelect = document.getElementById('jobCategorySelectEdit')
         const options = originalSelect.innerHTML
 
@@ -1498,19 +1510,6 @@
         calculateSummary();
     });
 
-    function normalizeNumber(val){
-
-        if(!val) return 0
-
-        return Number(
-            val
-            .toString()
-            .replace(/\./g,'')
-            .replace(',', '.')
-        )
-
-    }
-
     function collectItems(){
 
         let items = []
@@ -1610,6 +1609,23 @@
     }
 
     document.addEventListener('DOMContentLoaded', loadDraft)
+    document.getElementById('btnEditMode').addEventListener('click',()=>{
+        setMode('edit')
+    })
+
+    document.getElementById('btnDragMode').addEventListener('click',()=>{
+        setMode('drag')
+    })
+    document.addEventListener('keydown', function(e){
+        if(e.key === 'Escape'){
+            setMode('edit')
+        }
+
+        if(e.key === 'd' && e.ctrlKey){
+            e.preventDefault()
+            setMode('drag')
+        }
+    })
 </script>
 <script>
 

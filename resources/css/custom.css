@@ -742,3 +742,26 @@ input[type=number]::-webkit-outer-spin-button {
 input[type=number] {
     -moz-appearance: textfield;
 } */
+ .drag-mode input,
+.drag-mode textarea {
+    pointer-events: none;
+    background: #f5f5f5;
+}
+
+.drag-mode .select2-container {
+    pointer-events: none;
+}
+
+.drag-mode select {
+    pointer-events: none;
+}
+.drag-mode .drag-handle,
+.drag-mode .drag-ahsp {
+    cursor: grab;
+    opacity: 1;
+}
+
+.drag-handle,
+.drag-ahsp {
+    opacity: 0.3;
+}
