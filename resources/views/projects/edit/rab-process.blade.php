@@ -1309,7 +1309,7 @@
             calculate(row.id, false)
         })
         calculateSummary()
-        triggerAutoSave()
+        triggerAutosave()
     }
     function openUraianGalleryEdit(uraianId, uraianName){
   
