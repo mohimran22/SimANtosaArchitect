@@ -258,7 +258,15 @@
                 profit: globalProfit,
                 overhead: globalOverhead
             })
-        })
+        })    .then(res => {
+        if(!res.ok){
+            console.error('Autosave gagal', res.status)
+            return
+        }
+    })
+    .catch(err => {
+        console.error('Autosave error:', err)
+    })
     }
     function collectCategories(){
 
