@@ -368,98 +368,98 @@
     let draggedGroup = []
     let uraianImages = {}
     let activeUraian = null
-    // const tbody = document.getElementById('rab_offerItemsBody_edit')
+    const tbody = document.getElementById('rab_offerItemsBody_edit')
 
-    // new Sortable(tbody,{
-    //     animation:150,
-    //     handle:'.drag-handle,.drag-ahsp',
-    //     draggable:'tr',
-    //     filter: '.uraian-input',
-    //     preventOnFilter: false,
+    new Sortable(tbody,{
+        animation:150,
+        handle:'.drag-handle,.drag-ahsp',
+        draggable:'.category-row, .uraian-row, .job-row',
+        filter: 'input,select,textarea',
+        preventOnFilter: true,
 
-    //     onStart:function(evt){
+        onStart:function(evt){
 
-    //             const row = evt.item
-    //             draggedGroup = [row]
+                const row = evt.item
+                draggedGroup = [row]
 
-    //             if(row.classList.contains('category-row')){
+                if(row.classList.contains('category-row')){
 
-    //                 let next = row.nextElementSibling
+                    let next = row.nextElementSibling
 
-    //                 while(next && !next.classList.contains('category-row')){
-    //                     draggedGroup.push(next)
-    //                     next = next.nextElementSibling
-    //                 }
+                    while(next && !next.classList.contains('category-row')){
+                        draggedGroup.push(next)
+                        next = next.nextElementSibling
+                    }
 
-    //             }
+                }
 
-    //             if(row.classList.contains('uraian-row')){
+                if(row.classList.contains('uraian-row')){
 
-    //                 const uraianId = row.id
+                    const uraianId = row.id
 
-    //                 document.querySelectorAll(`[data-parent="${uraianId}"]`)
-    //                     .forEach(r=>draggedGroup.push(r))
+                    document.querySelectorAll(`[data-parent="${uraianId}"]`)
+                        .forEach(r=>draggedGroup.push(r))
 
-    //             }
+                }
 
-    //     },
+        },
 
-    //     onEnd:function(evt){
+        onEnd:function(evt){
 
-    //         const row = evt.item
+            const row = evt.item
 
-    //         if(draggedGroup.length > 1){
+            if(draggedGroup.length > 1){
 
-    //             let insertPoint = row.nextElementSibling
+                let insertPoint = row.nextElementSibling
 
-    //             draggedGroup.slice(1).forEach(r=>{
-    //                 tbody.insertBefore(r, insertPoint)
-    //             })
+                draggedGroup.slice(1).forEach(r=>{
+                    tbody.insertBefore(r, insertPoint)
+                })
 
-    //         }
+            }
 
-    //         renumberAll()
-    //         recalcAfterDrag()
-    //     },
-    //     onMove:function(evt){
+            renumberAll()
+            recalcAfterDrag()
+        },
+        onMove:function(evt){
 
-    //         const dragged = evt.dragged
-    //         const related = evt.related
+            const dragged = evt.dragged
+            const related = evt.related
 
-    //         if(!related) return true
+            if(!related) return true
 
-    //         // CATEGORY hanya boleh bertemu CATEGORY
-    //         if(dragged.classList.contains('category-row')){
-    //             if(!related.classList.contains('category-row')){
-    //                 return false
-    //             }
-    //         }
+            // CATEGORY hanya boleh bertemu CATEGORY
+            if(dragged.classList.contains('category-row')){
+                if(!related.classList.contains('category-row')){
+                    return false
+                }
+            }
 
-    //         
-    //         if(dragged.classList.contains('job-row')){
-    //             if(!related.classList.contains('job-row') &&
-    //             !related.classList.contains('uraian-row')){
-    //                 return false
-    //             }
-    //         }
+            
+            if(dragged.classList.contains('job-row')){
+                if(!related.classList.contains('job-row') &&
+                !related.classList.contains('uraian-row')){
+                    return false
+                }
+            }
 
-    //         if(dragged.classList.contains('uraian-row')){
+            if(dragged.classList.contains('uraian-row')){
 
-    //             const draggedCat = dragged.dataset.category
-    //             const relatedCat = related.dataset.category
+                const draggedCat = dragged.dataset.category
+                const relatedCat = related.dataset.category
 
-    //             if(draggedCat !== relatedCat){
-    //                 return false
-    //             }
+                if(draggedCat !== relatedCat){
+                    return false
+                }
 
-    //         }
-    //         if(related.classList.contains('no-drag')){
-    //             return false
-    //         }
+            }
+            if(related.classList.contains('no-drag')){
+                return false
+            }
 
-    //         return true
-    //     }
-    // })
+            return true
+        }
+    })
     function loadExistingRab(data){
 
         const tbody = document.getElementById('rab_offerItemsBody_edit')
@@ -1100,7 +1100,7 @@
         })
     }
 
-    function calculate(rowId){
+    function calculate(rowId, triggerSave = true){
 
         const row = document.getElementById(rowId)
 
@@ -1133,9 +1133,10 @@
         }
 
         updateCategorySubtotal(row.dataset.category)
-
-        calculateSummary()
-        triggerAutosave()
+        if(triggerSave){
+            calculateSummary()
+            triggerAutosave()
+        }
     }
     function updateCategorySubtotal(catId){
 
@@ -1174,7 +1175,7 @@
         document.getElementById('rab_subtotalDisplay_edit').innerText = formatRupiah(subtotal)
 
         // discount
-        let discount = Number(document.getElementById('rab_discount_edit').value || 0)
+        let discount = parseRupiah(document.getElementById('rab_discount_edit').value)
 
         let subAfterDiscount = subtotal - discount
 
@@ -1190,7 +1191,7 @@
         document.getElementById('rab_totalTaxDisplay_edit').innerText = formatRupiah(taxTotal)
 
         // shipping
-        let shipping = Number(document.getElementById('rab_shipping_edit').value || 0)
+        let shipping = parseRupiah(document.getElementById('rab_shipping_edit').value)
 
         // grand total
         let grand = subAfterDiscount + taxTotal + shipping
@@ -1306,9 +1307,10 @@
     function recalcAfterDrag(){
 
         document.querySelectorAll('.job-row').forEach(row=>{
-            calculate(row.id)
+            calculate(row.id, false)
         })
-
+        calculateSummary()
+        triggerAutoSave()
     }
     function openUraianGalleryEdit(uraianId, uraianName){
   
@@ -1454,7 +1456,7 @@
                 updateHargaSemua()
                 triggerAutosave()
             })
-    document.getElementById('rab_discount_display_edit').addEventListener('input',function(){
+    document.getElementById('rab_discount_display_edit').addEventListener('blur',function(){
 
         rupiahInput(this)
 
@@ -1465,7 +1467,7 @@
 
     })
 
-    document.getElementById('rab_shipping_display_edit').addEventListener('input',function(){
+    document.getElementById('rab_shipping_display_edit').addEventListener('blur',function(){
 
         rupiahInput(this)
 

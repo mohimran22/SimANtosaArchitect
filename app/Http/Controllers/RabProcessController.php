@@ -362,7 +362,7 @@ public function update(Request $request, Project $project, RabProcess $rab)
 
     return response()->json([
         'success' => true,
-                'message' => 'RAB berhasil diupdate'
+        'message' => 'RAB berhasil diupdate'
     ]);
 }
 

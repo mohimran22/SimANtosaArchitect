@@ -145,10 +145,8 @@
                     INPUT HARGA MANUAL {{ strtoupper(str_replace('.', '', $label)) }}
                 </td>
                 <td>
-                    <input type="number"
-                        min="0"
-                        step="0.01"
-                        class="form-control form-control-sm text-end"
+                    <input type="text"
+                        class="form-control form-control-sm text-end format-rp"
                         
                         @if($key == 'labor') id="effective_labor" value="{{ $jobCategory->effective_labor }}" @endif
                         @if($key == 'product') id="effective_product" value="{{ $jobCategory->effective_product }}" @endif
@@ -244,8 +242,19 @@
             return new Intl.NumberFormat('id-ID', {
                 style: 'currency',
                 currency: 'IDR',
-                minimumFractionDigits: 0
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
             }).format(num || 0);
+        }
+        function parseRp(val) {
+            if (!val) return null;
+
+            return parseFloat(
+                val
+                    .replace(/[^\d,]/g, '') // hapus selain angka & koma
+                    .replace(/\./g, '')     // hapus titik ribuan
+                    .replace(',', '.')     // koma → titik desimal
+            );
         }
 
         function recalcAll() {
@@ -271,13 +280,13 @@
                 }
             });
 
-            let effectiveLabor     = parseFloat($('#effective_labor').val());
-            let effectiveProduct   = parseFloat($('#effective_product').val());
-            let effectiveEquipment = parseFloat($('#effective_equipment').val());
+            let effectiveLabor     = parseRp($('#effective_labor').val());
+            let effectiveProduct   = parseRp($('#effective_product').val());
+            let effectiveEquipment = parseRp($('#effective_equipment').val());
 
-            effectiveLabor     = isNaN(effectiveLabor)     ? totalLabor     : effectiveLabor;
-            effectiveProduct   = isNaN(effectiveProduct)   ? totalProduct   : effectiveProduct;
-            effectiveEquipment = isNaN(effectiveEquipment) ? totalEquipment : effectiveEquipment;
+            effectiveLabor     = (effectiveLabor == null)     ? totalLabor     : effectiveLabor;
+            effectiveProduct   = (effectiveProduct == null)   ? totalProduct   : effectiveProduct;
+            effectiveEquipment = (effectiveEquipment == null) ? totalEquipment : effectiveEquipment;
 
             let subtotal = effectiveLabor + effectiveProduct + effectiveEquipment;
 
@@ -300,6 +309,25 @@
                 grandTotal
             };
         }
+        $(document).on('input', '.format-rp', function () {
+            let value = $(this).val();
+            let number = parseRp(value);
+
+            if (number === null) {
+                $(this).val('');
+            } else {
+                $(this).val(formatRp(number));
+            }
+
+            // 🔥 langsung hitung ulang
+            recalcAll();
+
+            clearTimeout(window.saveTimer);
+            window.saveTimer = setTimeout(() => {
+                saveEffective();
+                autoSave();
+            }, 500);
+        });
         $('#effective_labor, #effective_product, #effective_equipment').on('input', function () {
             recalcAll();
 
@@ -314,9 +342,9 @@
                 "{{ route('job-categories.update-effective', $jobCategory->id) }}",
                 {
                     _token: "{{ csrf_token() }}",
-                    effective_labor: $('#effective_labor').val(),
-                    effective_product: $('#effective_product').val(),
-                    effective_equipment: $('#effective_equipment').val()
+                    effective_labor: parseRp($('#effective_labor').val()),
+                    effective_product: parseRp($('#effective_product').val()),
+                    effective_equipment: parseRp($('#effective_equipment').val())
                 }
             );
         }
