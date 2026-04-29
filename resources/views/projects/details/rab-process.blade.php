@@ -48,7 +48,6 @@ $rab = $project->rab()->with([
             @foreach($rab->categories as $category)
 
                 @php
-                    $categoryLetter = chr(65 + $loop->index);
                     $uraianNo = 1;
 
                     $categoryTotal = $category->uraians
@@ -57,7 +56,7 @@ $rab = $project->rab()->with([
                 @endphp
 
                     <tr class="table-secondary">
-                        <th>{{ $categoryLetter }}</th>
+                        <th>{{ $category->letter }}</th>
                         <th colspan="4">{{ $category->name }}</th>
                         <th class="text-end">
                             Rp {{ number_format($categoryTotal,2,',','.') }}

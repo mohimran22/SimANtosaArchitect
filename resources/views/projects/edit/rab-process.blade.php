@@ -241,9 +241,9 @@
     })
     let autosaveTimer = null
 
-    function triggerAutosave(){
+    function triggerAutosave(force = false){
 
-        if(currentMode === 'drag') return
+        if(currentMode === 'drag' && !force) return
 
         if(document.querySelector('.editing')){
             return
@@ -287,23 +287,43 @@
 
         let data = []
 
-        document.querySelectorAll('.category-row').forEach(cat => {
+        document.querySelectorAll('.category-row').forEach((cat, catIndex) => {
 
             const catId = cat.id
 
             let catData = {
                 id: catId,
                 name: cat.dataset.name || '',
+                order: catIndex, // 🔥 PENTING
                 uraians: []
             }
 
             document.querySelectorAll(`.uraian-row[data-category="${catId}"]`)
-            .forEach(uraian => {
+            .forEach((uraian, uraianIndex) => {
 
-                catData.uraians.push({
+                let uraianData = {
                     id: uraian.id,
-                    name: uraian.dataset.name || ''
+                    name: uraian.dataset.name || '',
+                    order: uraianIndex, // 🔥
+                    jobs: []
+                }
+
+                document.querySelectorAll(`.job-row[data-parent="${uraian.id}"]`)
+                .forEach((job, jobIndex) => {
+
+                    const jobSelect = job.querySelector('.job-select')
+
+                    if(!jobSelect || !jobSelect.value) return
+
+                    uraianData.jobs.push({
+                        id: job.dataset.id || null,
+                        job_category_id: jobSelect.value,
+                        order: jobIndex // 🔥
+                    })
+
                 })
+
+                catData.uraians.push(uraianData)
 
             })
 
@@ -373,7 +393,16 @@
 
     }
     function numberToLetters(num){
-        return String.fromCharCode(65 + num)
+        let letters = ''
+        num = num + 1 // karena A = 1, bukan 0
+
+        while(num > 0){
+            let rem = (num - 1) % 26
+            letters = String.fromCharCode(65 + rem) + letters
+            num = Math.floor((num - 1) / 26)
+        }
+
+        return letters
     }
 
     let currentRabJob = null;
@@ -419,10 +448,6 @@
 
         if(mode === 'drag'){
 
-            // DISABLE INPUT
-            // document.querySelectorAll('input, select, textarea').forEach(el=>{
-            //     el.disabled = true
-            // })
             document.body.classList.toggle('drag-mode', mode === 'drag')
 
             initSortable()
@@ -480,6 +505,7 @@
                 draggedGroup = []
                 renumberAll()
                 recalcAfterDrag()
+                triggerAutosave(true)
             }
         })
     }
@@ -731,7 +757,7 @@
         if(isDragMode()) return
         const tbody = document.getElementById('rab_offerItemsBody_edit')
 
-        let letter = String.fromCharCode(65 + categoryIndex)
+        let letter = numberToLetters(categoryIndex)
         let catId = 'cat_'+categoryIndex
 
         uraianIndex[catId] = 1
@@ -1296,7 +1322,7 @@
 
         categories.forEach((cat,i)=>{
 
-            const letter = String.fromCharCode(65 + i)
+            const letter = numberToLetters(i)
 
             cat.querySelector('td').innerHTML = `
                 <span class="drag-handle me-2" style="cursor:move">
@@ -1506,58 +1532,66 @@
     function collectItems(){
 
         let items = []
+        document.querySelectorAll('.uraian-row').forEach(uraian => {
 
-        document.querySelectorAll('.job-row').forEach(row => {
+        const uraianId = uraian.id
 
-            const jobSelect = row.querySelector('.job-select')
-            if(!jobSelect || !jobSelect.value) return
+            document.querySelectorAll(`.job-row[data-parent="${uraianId}"]`)
+            .forEach((row, index) => {
 
-            const volume = Number(
-                parseFloat(
-                    row.querySelector('.vol')?.value || 0
-                ).toFixed(5)
-            )
+                const jobSelect = row.querySelector('.job-select')
+                if(!jobSelect || !jobSelect.value) return
 
-            const satuan = row.querySelector('.sat')?.innerText || ''
+                const volume = Number(
+                    parseFloat(
+                        row.querySelector('.vol')?.value || 0
+                    ).toFixed(5)
+                )
 
-            const jobName = jobSelect.options[jobSelect.selectedIndex]?.text || ''
+                const satuan = row.querySelector('.sat')?.innerText || ''
 
-            const hargaInput = row.querySelector('.harga')
+                const jobName = jobSelect.options[jobSelect.selectedIndex]?.text || ''
 
-            const basePrice = Number(
-                hargaInput?.dataset.value || 0
-            )
+                const hargaInput = row.querySelector('.harga')
 
-            const price = parseRupiah(
-                hargaInput?.value || 0
-            )
+                const basePrice = Number(
+                    hargaInput?.dataset.value || 0
+                )
 
-            const total = Number(volume) * Number(price)
+                const price = parseRupiah(
+                    hargaInput?.value || 0
+                )
 
-            items.push({
+                const total = Number(volume) * Number(price)
 
-                id: row.dataset.id || null,
+                items.push({
 
-                job_category_id: jobSelect.value,
-                job_name: jobName,
-                satuan: satuan,
+                    id: row.dataset.id || null,
 
-                volume: volume,
-                base_price: basePrice,
-                price: price,
-                total: total,
+                    job_category_id: jobSelect.value,
 
-                uraian_key: row.dataset.parent,
-                category_key: row.dataset.category,
+                    order: index, // ✅ sekarang BENAR (per uraian)
 
-                uraian_name:
-                    document.getElementById(row.dataset.parent)?.dataset.name || '',
+                    job_name: jobName,
+                    satuan: satuan,
 
-                category_name:
-                    document.getElementById(row.dataset.category)?.dataset.name || 'Kategori'
+                    volume: volume,
+                    base_price: basePrice,
+                    price: price,
+                    total: total,
+
+                    uraian_key: uraianId, // 🔥 pakai langsung
+                    category_key: row.dataset.category,
+
+                    uraian_name:
+                        uraian.dataset.name || '',
+
+                    category_name:
+                        document.getElementById(row.dataset.category)?.dataset.name || 'Kategori'
+
+                })
 
             })
-
         })
 
         return items
@@ -1681,7 +1715,7 @@
                     })
 
                     fetch(`/projects/{{ $project->id }}/rab/{{ $rab->id }}`,{
-                        method:'POST',
+                        method:'PUT',
                         headers:{
                             'X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]').content,
                             'X-HTTP-Method-Override':'PUT',

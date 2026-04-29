@@ -589,7 +589,7 @@ public function autosave(Request $request, RabProcess $rab)
                     'category_id' => $categoryId,
                     'name' => $uraian['name'],
                     'uraian_key' => $uraian['id'],
-                    'sort' => $j,
+                    'order_no' => $uraian['order'] ?? $j
                     'is_draft' => true
                 ]);
 
@@ -607,17 +607,14 @@ public function autosave(Request $request, RabProcess $rab)
             RabProcessItem::create([
                 'rab_process_id' => $rab->id,
                 'uraian_id' => $uraianId,
-
                 'job_category_id' => $item['job_category_id'],
                 'job_name' => $item['job_name'] ?? '',
-
                 'base_price' => $item['base_price'] ?? 0,
                 'satuan' => $item['satuan'] ?? '',
                 'volume' => $item['volume'] ?? 0,
-
                 'price' => $item['price'] ?? 0,
                 'total' => $item['total'] ?? 0,
-
+                'order_no' => $item['order'] ?? $index,
                 'is_draft' => true
             ]);
         }
@@ -648,11 +645,13 @@ public function loadDraft(RabProcess $rab)
 
     $uraians = RabProcessUraian::where('rab_process_id', $rab->id)
         ->where('is_draft', $isDraft)
+        ->orderBy('order_no')
         ->get()
         ->groupBy('category_id');
 
     $items = RabProcessItem::where('rab_process_id', $rab->id)
         ->where('is_draft', $isDraft)
+        ->orderBy('order_no')
         ->get()
         ->groupBy('uraian_id');
 

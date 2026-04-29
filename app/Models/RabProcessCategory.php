@@ -8,10 +8,17 @@ class RabProcessCategory extends Model
 {
     protected $fillable = [
         'rab_process_id',
-        'name'
+        'name',
+        'order_no',
+        'is_draft'
     ];
         public function uraians()
     {
         return $this->hasMany(RabProcessUraian::class, 'category_id');
     }
+
+    public function getLetterAttribute()
+{
+    return number_to_letters($this->order_no);
+}
 }

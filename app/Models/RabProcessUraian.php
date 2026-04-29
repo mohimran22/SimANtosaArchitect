@@ -11,7 +11,7 @@ class RabProcessUraian extends Model
         'rab_process_id',
         'category_id',
         'name',
-        'sort',
+        'order_no',
         'uraian_key'
     ];
         public function items()
