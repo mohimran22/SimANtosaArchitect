@@ -506,6 +506,17 @@
                 renumberAll()
                 recalcAfterDrag()
                 triggerAutosave(true)
+            },
+
+            onMove: function(evt){
+                const dragged = evt.dragged
+                const related = evt.related
+
+                if(dragged.classList.contains('job-row')){
+                    return dragged.dataset.parent === related.dataset.parent
+                }
+
+                return true
             }
         })
     }

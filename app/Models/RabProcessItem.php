@@ -17,7 +17,7 @@ class RabProcessItem extends Model
     'base_price',
     'price',
     'total',
-    'uraian_id'
+    'uraian_id',
     'order_no'
 ];
 public function category()
