@@ -471,9 +471,9 @@
                 },
                 body: JSON.stringify({
                     value: value,
-                    effective_labor: $('#effective_labor').val(),
-                    effective_product: $('#effective_product').val(),
-                    effective_equipment: $('#effective_equipment').val()
+                    effective_labor: parseRp($('#effective_labor').val()),
+                    effective_product: parseRp($('#effective_product').val()),
+                    effective_equipment: parseRp($('#effective_equipment').val())
                 })
             })
             .then(res => res.json())

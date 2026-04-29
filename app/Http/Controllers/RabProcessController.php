@@ -684,7 +684,7 @@ public function autosave(Request $request, RabProcess $rab)
                     $existing->update([
                         'uraian_id' => $uraianId,
                         'job_category_id' => $job->id,
-                        'job_name' => $job->name,
+                        'job_name' => $job->nama_pekerjaan,
                         'base_price' => $basePrice,
                         'satuan' => $job->satuan ?? '',
                         'volume' => $item['volume'],
@@ -697,12 +697,16 @@ public function autosave(Request $request, RabProcess $rab)
                 }
 
             } else {
+                \Log::info('JOB DEBUG', [
+                    'job_id' => $item['job_category_id'],
+                    'job' => $job,
+                ]);
 
                 $new = RabProcessItem::create([
                     'rab_process_id' => $rab->id,
                     'uraian_id' => $uraianId,
                     'job_category_id' => $job->id,
-                    'job_name' => $job->name,      
+                    'job_name' => $job->nama_pekerjaan,      
                     'base_price' => $basePrice,     
                     'satuan' => $job->satuan ?? '', 
                     'volume' => $item['volume'],
