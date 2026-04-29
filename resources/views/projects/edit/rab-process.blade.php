@@ -75,6 +75,7 @@
             <button type="button" id="btnDragMode" class="btn btn-outline-secondary btn-sm">
                 🔀 Urutkan Daftar Pekerjaan
             </button>
+            <span id="modeIndicator" class="badge bg-primary">EDIT MODE</span>
         </div>
         <table class="table table-bordered align-middle" id="offerItemsTable">
             <colgroup>
@@ -203,8 +204,6 @@
     window.currentRabId = "{{ $rab->id ?? '' }}";
 </script>
 <script>
-    let currentMode = 'edit'
-    let sortableInstance = null
 
     document.addEventListener('keydown', function(e){
 
@@ -232,7 +231,7 @@
             }
             return
         }
-
+        if(!el.matches('.uraian-input, .category-input')) return
     })
     
     document.addEventListener('mousedown', function(e){
@@ -274,15 +273,15 @@
                 profit: globalProfit,
                 overhead: globalOverhead
             })
-        })    .then(res => {
-        if(!res.ok){
-            console.error('Autosave gagal', res.status)
-            return
-        }
-    })
-    .catch(err => {
-        console.error('Autosave error:', err)
-    })
+        }).then(res => {
+            if(!res.ok){
+                console.error('Autosave gagal', res.status)
+                return
+            }
+        })
+        .catch(err => {
+            console.error('Autosave error:', err)
+        })
     }
     function collectCategories(){
 
@@ -331,16 +330,13 @@
     }
 
     function parseRupiah(val){
-
         if(!val) return 0
 
-        return Number(
-            val
-            .replace(/[^\d,]/g,'')
-            .replace(/\./g,'')
-            .replace(',', '.')
-        )
+        val = val.replace(/[^\d.,]/g,'')
+        val = val.replace(/\./g,'')
+        val = val.replace(',', '.')
 
+        return Number(val) || 0
     }
 
     function formatRupiah(number){
@@ -392,6 +388,8 @@
     let draggedGroup = []
     let uraianImages = {}
     let activeUraian = null
+    let currentMode = 'edit'
+    let sortableInstance = null
 
     function setMode(mode){
 
@@ -435,7 +433,8 @@
 
             document.getElementById('btnEditMode').classList.add('btn-outline-primary')
             document.getElementById('btnEditMode').classList.remove('btn-primary')
-
+            document.getElementById('modeIndicator').innerText =
+                mode === 'drag' ? 'DRAG MODE' : 'EDIT MODE'
         }
     }
     function initSortable(){
@@ -910,13 +909,10 @@
             if(input){
                 input.focus()
                 input.select()
-
-                // 🔥 trigger reflow supaya event stabil
                 input.dispatchEvent(new Event('input', { bubbles: true }))
             }
         },100)
         renumberUraian(catId)
-        triggerAutosave()
     }
 
     function saveUraianEdit(uraianId){
@@ -956,8 +952,6 @@
 
             </div>
         `
-
-        // 🔥 cek apakah sudah ada job-row
         const jobs = document.querySelectorAll(`.job-row[data-parent="${uraianId}"]`)
 
         if(jobs.length === 0){
@@ -1093,7 +1087,6 @@
 
         select.select2('open')
         },200)
-        triggerAutosave()
     }
 
     function loadJobEdit(rowId, jobId){
@@ -1163,7 +1156,6 @@
         updateCategorySubtotal(row.dataset.category)
         if(triggerSave){
             calculateSummary()
-            triggerAutosave()
         }
     }
     function updateCategorySubtotal(catId){
@@ -1615,16 +1607,6 @@
 
     document.getElementById('btnDragMode').addEventListener('click',()=>{
         setMode('drag')
-    })
-    document.addEventListener('keydown', function(e){
-        if(e.key === 'Escape'){
-            setMode('edit')
-        }
-
-        if(e.key === 'd' && e.ctrlKey){
-            e.preventDefault()
-            setMode('drag')
-        }
     })
 </script>
 <script>
