@@ -2,7 +2,18 @@
 $rab = $project->rab()->with([
     'categories.uraians.items'
 ])->first();
+function numberToLetters($num) {
+    $letters = '';
+    $num = $num + 1;
 
+    while ($num > 0) {
+        $rem = ($num - 1) % 26;
+        $letters = chr(65 + $rem) . $letters;
+        $num = intdiv(($num - 1), 26);
+    }
+
+    return $letters;
+}
 @endphp
 
 @can('lihat data proyek')
@@ -48,6 +59,7 @@ $rab = $project->rab()->with([
             @foreach($rab->categories as $category)
 
                 @php
+                    $categoryLetter = numberToLetters($loop->index);
                     $uraianNo = 1;
 
                     $categoryTotal = $category->uraians
@@ -56,7 +68,7 @@ $rab = $project->rab()->with([
                 @endphp
 
                     <tr class="table-secondary">
-                        <th>{{ $category->letter }}</th>
+                        <th>{{ $categoryLetter }}</th>
                         <th colspan="4">{{ $category->name }}</th>
                         <th class="text-end">
                             Rp {{ number_format($categoryTotal,2,',','.') }}

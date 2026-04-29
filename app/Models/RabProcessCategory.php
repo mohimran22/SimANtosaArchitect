@@ -17,8 +17,8 @@ class RabProcessCategory extends Model
         return $this->hasMany(RabProcessUraian::class, 'category_id');
     }
 
-    public function getLetterAttribute()
-{
-    return number_to_letters($this->order_no);
-}
+//     public function getLetterAttribute()
+// {
+//     return number_to_letters($this->order_no);
+// }
 }
