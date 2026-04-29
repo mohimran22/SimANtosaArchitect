@@ -604,24 +604,58 @@ public function autosave(Request $request, RabProcess $rab)
             $uraianId = $uraianMap[$item['uraian_key']] ?? null;
             if(!$uraianId) continue;
 
+            $profit   = $request->profit ?? 0;
+            $overhead = $request->overhead ?? 0;
+
+            $job = JobCategory::find($item['job_category_id']);
+            $basePrice = $job?->harga ?? 0;
+
+            $price = $basePrice +
+                ($basePrice * $profit / 100) +
+                ($basePrice * $overhead / 100);
+
+            $total = ($item['volume'] ?? 0) * $price;
+
             RabProcessItem::create([
                 'rab_process_id' => $rab->id,
                 'uraian_id' => $uraianId,
                 'job_category_id' => $item['job_category_id'],
-                'job_name' => $item['job_name'] ?? '',
-                'base_price' => $item['base_price'] ?? 0,
-                'satuan' => $item['satuan'] ?? '',
+                'job_name' => $job?->name ?? '',
+                'base_price' => $basePrice,
+                'satuan' => $job?->satuan ?? '',
                 'volume' => $item['volume'] ?? 0,
-                'price' => $item['price'] ?? 0,
-                'total' => $item['total'] ?? 0,
+                'price' => $price,
+                'total' => $total,
                 'order_no' => $item['order'] ?? $index,
                 'is_draft' => true
             ]);
         }
 
+        $subtotal = RabProcessItem::where('rab_process_id', $rab->id)
+            ->where('is_draft', true)
+            ->sum('total');
+
+        $discount = $request->discount ?? 0;
+        $taxRate  = $request->tax_rate ?? 0;
+        $shipping = $request->shipping ?? 0;
+
+        $afterDiscount = $subtotal - $discount;
+        $tax = $afterDiscount * $taxRate / 100;
+        $grandTotal = $afterDiscount + $tax + $shipping;
+
         $rab->update([
+            'base_subtotal' => $subtotal,
+            'subtotal' => $subtotal,
+            'discount' => $discount,
+            'subtotal_after_discount' => $afterDiscount,
             'profit' => $request->profit ?? 0,
             'overhead' => $request->overhead ?? 0,
+            'tax_rate' => $taxRate,
+            'tax_total' => $tax,
+            'shipping' => $shipping,
+            'subtotal' => $subtotal,
+            'grand_total' => $grandTotal,
+            'updated_by' => auth()->id(),
         ]);
 
     });
