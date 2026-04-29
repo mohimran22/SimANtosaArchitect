@@ -980,7 +980,6 @@
 
             </div>
         `
-
         setTimeout(()=>{
             row.querySelector('.uraian-input').focus()
         },50)
@@ -1087,6 +1086,7 @@
 
         select.select2('open')
         },200)
+        triggerAutosave()
     }
 
     function loadJobEdit(rowId, jobId){
@@ -1156,6 +1156,7 @@
         updateCategorySubtotal(row.dataset.category)
         if(triggerSave){
             calculateSummary()
+            triggerAutosave()
         }
     }
     function updateCategorySubtotal(catId){
