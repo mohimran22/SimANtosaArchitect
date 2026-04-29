@@ -311,7 +311,7 @@ $(document).ready(function () {
         // 🔥 RULE AKUNTANSI DASAR
         const firstDigit = accountCode.charAt(0);
 
-        if (firstDigit === "1" || firstDigit === "5" || firstDigit === "6") {
+        if (firstDigit === "5" || firstDigit === "6") {
             // Aset + Beban → normal di DEBIT
             $credit.prop('disabled', true).val('');
         } 

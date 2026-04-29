@@ -251,9 +251,8 @@
 
             return parseFloat(
                 val
-                    .replace(/[^\d,]/g, '') // hapus selain angka & koma
-                    .replace(/\./g, '')     // hapus titik ribuan
-                    .replace(',', '.')     // koma → titik desimal
+                    .replace(/\./g, '')  // hapus ribuan
+                    .replace(',', '.')  // koma → titik
             );
         }
 
@@ -310,16 +309,39 @@
             };
         }
         $(document).on('input', '.format-rp', function () {
-            let value = $(this).val();
-            let number = parseRp(value);
+            let input = this;
 
-            if (number === null) {
-                $(this).val('');
-            } else {
-                $(this).val(formatRp(number));
+            let start = input.selectionStart;
+            let end   = input.selectionEnd;
+
+            let oldValue = input.value;
+
+            let clean = oldValue.replace(/[^\d,]/g, '');
+
+            let parts = clean.split(',');
+
+            let integerPart = parts[0] || '';
+            let decimalPart = parts[1] || '';
+
+            decimalPart = decimalPart.substring(0, 2);
+
+            let formattedInteger = integerPart
+                .replace(/^0+(?=\d)/, '') 
+                .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+
+            let newValue = formattedInteger;
+
+            if (parts.length > 1) {
+                newValue += ',' + decimalPart;
             }
 
-            // 🔥 langsung hitung ulang
+            let diff = newValue.length - oldValue.length;
+
+            input.value = newValue;
+
+            let newPos = start + diff;
+            input.setSelectionRange(newPos, newPos);
+
             recalcAll();
 
             clearTimeout(window.saveTimer);
@@ -429,7 +451,6 @@
                 document.getElementById('unit_price_' + itemId).innerText = formatRp(data.item.base_unit_price);
                 document.getElementById('total_price_' + itemId).innerText = formatRp(data.item.total_price);
 
-                // Update summary
                 document.getElementById('subtotal').innerText = formatRp(data.summary.subtotal);
                 document.getElementById('overhead_value').innerText = formatRp(data.summary.overhead_value);
                 document.getElementById('profit_value').innerText = formatRp(data.summary.profit_value);
@@ -468,7 +489,8 @@
                 $('#overhead_value').text(formatRp(data.summary.overhead_value));
                 $('#profit_value').text(formatRp(data.summary.profit_value));
                 $('#grand_total').text(formatRp(data.summary.grand_total));
-
+                let row = document.querySelector(`tr[data-item-id="${itemId}"]`);
+                row.dataset.total = data.item.total_price;
             });
 
         });

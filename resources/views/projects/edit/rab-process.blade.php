@@ -271,7 +271,10 @@
                 categories: collectCategories(),
                 items: collectItems(),
                 profit: globalProfit,
-                overhead: globalOverhead
+                overhead: globalOverhead,
+                discount: parseRupiah(document.getElementById('rab_discount_edit').value),
+                tax_rate: Number(document.getElementById('rab_tax_rate_edit').value || 0),
+                shipping: parseRupiah(document.getElementById('rab_shipping_edit').value)
             })
         }).then(async res => {
                 const text = await res.text()
@@ -295,8 +298,9 @@
 
             let catData = {
                 id: catId,
+                db_id: cat.dataset.id || null,
                 name: cat.dataset.name || '',
-                order: catIndex, // 🔥 PENTING
+                order: catIndex, 
                 uraians: []
             }
 
@@ -305,8 +309,9 @@
 
                 let uraianData = {
                     id: uraian.id,
+                    db_id: uraian.dataset.id || null,
                     name: uraian.dataset.name || '',
-                    order: uraianIndex, // 🔥
+                    order: uraianIndex,
                     jobs: []
                 }
 
@@ -547,6 +552,7 @@
             tbody.insertAdjacentHTML('beforeend',`
             <tr class="table-secondary fw-bold category-row"
                 id="${catId}"
+                data-id="${cat.id}"
                 data-category="${catId}"
                 data-name="${cat.name}">
 
@@ -603,6 +609,7 @@
 
                 <tr class="uraian-row"
                     id="${uraianId}"
+                    data-id="${uraian.id}" 
                     data-category="${catId}"
                     data-name="${uraian.name}">
 
@@ -1593,7 +1600,7 @@
                     price: price,
                     total: total,
 
-                    uraian_key: uraianId, // 🔥 pakai langsung
+                    uraian_key: uraian.dataset.id || uraian.id, 
                     category_key: row.dataset.category,
 
                     uraian_name:

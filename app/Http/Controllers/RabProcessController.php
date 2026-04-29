@@ -544,31 +544,69 @@ public function autosave(Request $request, RabProcess $rab)
     abort_if(auth()->user()->cannot('ubah data proyek'), 403);
 
     DB::transaction(function () use ($request, $rab) {
+        $existingCategories = RabProcessCategory::where('rab_process_id', $rab->id)
+            ->where('is_draft', true)
+            ->get()
+            ->keyBy('id');
+
+        $existingUraians = RabProcessUraian::where('rab_process_id', $rab->id)
+            ->where('is_draft', true)
+            ->get()
+            ->keyBy('id');
+
+        $existingItems = RabProcessItem::where('rab_process_id', $rab->id)
+            ->where('is_draft', true)
+            ->get()
+            ->keyBy('id');
+
+        $usedCategoryIds = [];
+        $usedUraianIds = [];
+        $usedItemIds = [];
 
         RabProcessItem::where('rab_process_id', $rab->id)
             ->where('is_draft', true)
+            ->whereNotIn('id', $usedItemIds)
             ->delete();
 
         RabProcessUraian::where('rab_process_id', $rab->id)
             ->where('is_draft', true)
+            ->whereNotIn('id', $usedUraianIds)
             ->delete();
 
         RabProcessCategory::where('rab_process_id', $rab->id)
             ->where('is_draft', true)
+            ->whereNotIn('id', $usedCategoryIds)
             ->delete();
 
         $categoryMap = [];
 
         foreach ($request->categories ?? [] as $i => $cat) {
 
-            if(empty($cat['name']) || empty($cat['id'])) continue;
+            if (empty($cat['name'])) continue;
 
-            $category = RabProcessCategory::create([
-                'rab_process_id' => $rab->id,
-                'name' => $cat['name'],
-                'order_no' => $i,
-                'is_draft' => true
-            ]);
+            if (!empty($cat['db_id'])) {
+                // UPDATE
+                $category = $existingCategories[$cat['db_id']] ?? null;
+
+                if ($category) {
+                    $category->update([
+                        'name' => $cat['name'],
+                        'order_no' => $i
+                    ]);
+
+                    $usedCategoryIds[] = $category->id;
+                }
+            } else {
+                // INSERT
+                $category = RabProcessCategory::create([
+                    'rab_process_id' => $rab->id,
+                    'name' => $cat['name'],
+                    'order_no' => $i,
+                    'is_draft' => true
+                ]);
+
+                $usedCategoryIds[] = $category->id;
+            }
 
             $categoryMap[$cat['id']] = $category->id;
         }
@@ -579,56 +617,102 @@ public function autosave(Request $request, RabProcess $rab)
 
             foreach ($cat['uraians'] ?? [] as $j => $uraian) {
 
-                if(empty($uraian['name']) || empty($uraian['id'])) continue;
+                if (empty($uraian['name'])) continue;
 
                 $categoryId = $categoryMap[$cat['id']] ?? null;
-                if(!$categoryId) continue;
+                if (!$categoryId) continue;
 
-                $u = RabProcessUraian::create([
-                    'rab_process_id' => $rab->id,
-                    'category_id' => $categoryId,
-                    'name' => $uraian['name'],
-                    'uraian_key' => $uraian['id'],
-                    'order_no' => $uraian['order'] ?? $j,
-                    'is_draft' => true
-                ]);
+                if (!empty($uraian['db_id'])) {
 
-                $uraianMap[$uraian['id']] = $u->id;
+                    $u = $existingUraians[$uraian['db_id']] ?? null;
+
+                    if ($u) {
+                        $u->update([
+                            'name' => $uraian['name'],
+                            'category_id' => $categoryId,
+                            'order_no' => $uraian['order'] ?? $j
+                        ]);
+
+                        $usedUraianIds[] = $u->id;
+                    }
+
+                } else {
+
+                    $u = RabProcessUraian::create([
+                        'rab_process_id' => $rab->id,
+                        'category_id' => $categoryId,
+                        'name' => $uraian['name'],
+                        'uraian_key' => $uraian['id'],
+                        'order_no' => $uraian['order'] ?? $j,
+                        'is_draft' => true
+                    ]);
+
+                    $usedUraianIds[] = $u->id;
+                }
+
+                // $uraianMap[$uraian['id']] = $u->id;
+                $key = $uraian['db_id'] ?? $uraian['id'];
+                $uraianMap[$key] = $u->id;
             }
         }
 
+        $jobIds = collect($request->items)
+            ->pluck('job_category_id')
+            ->filter()
+            ->unique();
+
+        $jobs = JobCategory::whereIn('id', $jobIds)->get()->keyBy('id');
+
         foreach ($request->items ?? [] as $index => $item) {
 
-            if(empty($item['job_category_id'])) continue;
+            if (empty($item['job_category_id'])) continue;
 
             $uraianId = $uraianMap[$item['uraian_key']] ?? null;
-            if(!$uraianId) continue;
+            if (!$uraianId) continue;
 
-            $profit   = $request->profit ?? 0;
-            $overhead = $request->overhead ?? 0;
+            $job = $jobs[$item['job_category_id']] ?? null;
+            if (!$job) continue;
 
-            $job = JobCategory::find($item['job_category_id']);
-            $basePrice = $job?->harga ?? 0;
+            $basePrice = $job->harga;
 
             $price = $basePrice +
-                ($basePrice * $profit / 100) +
-                ($basePrice * $overhead / 100);
+                ($basePrice * $request->profit / 100) +
+                ($basePrice * $request->overhead / 100);
 
             $total = ($item['volume'] ?? 0) * $price;
 
-            RabProcessItem::create([
-                'rab_process_id' => $rab->id,
-                'uraian_id' => $uraianId,
-                'job_category_id' => $item['job_category_id'],
-                'job_name' => $job?->name ?? '',
-                'base_price' => $basePrice,
-                'satuan' => $job?->satuan ?? '',
-                'volume' => $item['volume'] ?? 0,
-                'price' => $price,
-                'total' => $total,
-                'order_no' => $item['order'] ?? $index,
-                'is_draft' => true
-            ]);
+            if (!empty($item['db_id'])) {
+
+                $existing = $existingItems[$item['db_id']] ?? null;
+
+                if ($existing) {
+                    $existing->update([
+                        'uraian_id' => $uraianId,
+                        'job_category_id' => $job->id,
+                        'volume' => $item['volume'],
+                        'price' => $price,
+                        'total' => $total,
+                        'order_no' => $item['order'] ?? $index
+                    ]);
+
+                    $usedItemIds[] = $existing->id;
+                }
+
+            } else {
+
+                $new = RabProcessItem::create([
+                    'rab_process_id' => $rab->id,
+                    'uraian_id' => $uraianId,
+                    'job_category_id' => $job->id,
+                    'volume' => $item['volume'],
+                    'price' => $price,
+                    'total' => $total,
+                    'order_no' => $item['order'] ?? $index,
+                    'is_draft' => true
+                ]);
+
+                $usedItemIds[] = $new->id;
+            }
         }
 
         $subtotal = RabProcessItem::where('rab_process_id', $rab->id)
