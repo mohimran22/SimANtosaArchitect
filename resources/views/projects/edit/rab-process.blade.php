@@ -273,12 +273,14 @@
                 profit: globalProfit,
                 overhead: globalOverhead
             })
-        }).then(res => {
-            if(!res.ok){
-                console.error('Autosave gagal', res.status)
-                return
-            }
-        })
+        }).then(async res => {
+                const text = await res.text()
+                console.log('RESPONSE:', text)
+
+                if(!res.ok){
+                    console.error('Autosave gagal', res.status)
+                }
+            })
         .catch(err => {
             console.error('Autosave error:', err)
         })

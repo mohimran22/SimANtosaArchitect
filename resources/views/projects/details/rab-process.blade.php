@@ -110,7 +110,7 @@ function numberToLetters($num) {
 
                         <td>{{ $item->satuan }}</td>
 
-                        <td>{{ number_format($item->volume,2) }}</td>
+                        <td>{{ number_format($item->volume,5) }}</td>
 
                         <td>
                             Rp {{ number_format($item->price,2,',','.') }}

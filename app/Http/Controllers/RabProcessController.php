@@ -561,7 +561,7 @@ public function autosave(Request $request, RabProcess $rab)
 
         foreach ($request->categories ?? [] as $i => $cat) {
 
-            if(empty($cat['name'])) continue;
+            if(empty($cat['name']) || empty($cat['id'])) continue;
 
             $category = RabProcessCategory::create([
                 'rab_process_id' => $rab->id,
@@ -579,7 +579,7 @@ public function autosave(Request $request, RabProcess $rab)
 
             foreach ($cat['uraians'] ?? [] as $j => $uraian) {
 
-                if(empty($uraian['name'])) continue;
+                if(empty($uraian['name']) || empty($uraian['id'])) continue;
 
                 $categoryId = $categoryMap[$cat['id']] ?? null;
                 if(!$categoryId) continue;
@@ -589,7 +589,7 @@ public function autosave(Request $request, RabProcess $rab)
                     'category_id' => $categoryId,
                     'name' => $uraian['name'],
                     'uraian_key' => $uraian['id'],
-                    'order_no' => $uraian['order'] ?? $j
+                    'order_no' => $uraian['order'] ?? $j,
                     'is_draft' => true
                 ]);
 
@@ -597,7 +597,7 @@ public function autosave(Request $request, RabProcess $rab)
             }
         }
 
-        foreach ($request->items ?? [] as $item) {
+        foreach ($request->items ?? [] as $index => $item) {
 
             if(empty($item['job_category_id'])) continue;
 
