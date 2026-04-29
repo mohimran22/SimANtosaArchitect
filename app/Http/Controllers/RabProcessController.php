@@ -563,21 +563,6 @@ public function autosave(Request $request, RabProcess $rab)
         $usedUraianIds = [];
         $usedItemIds = [];
 
-        RabProcessItem::where('rab_process_id', $rab->id)
-            ->where('is_draft', true)
-            ->whereNotIn('id', $usedItemIds)
-            ->delete();
-
-        RabProcessUraian::where('rab_process_id', $rab->id)
-            ->where('is_draft', true)
-            ->whereNotIn('id', $usedUraianIds)
-            ->delete();
-
-        RabProcessCategory::where('rab_process_id', $rab->id)
-            ->where('is_draft', true)
-            ->whereNotIn('id', $usedCategoryIds)
-            ->delete();
-
         $categoryMap = [];
 
         foreach ($request->categories ?? [] as $i => $cat) {
@@ -610,6 +595,11 @@ public function autosave(Request $request, RabProcess $rab)
 
             $categoryMap[$cat['id']] = $category->id;
         }
+
+        RabProcessCategory::where('rab_process_id', $rab->id)
+            ->where('is_draft', true)
+            ->whereNotIn('id', $usedCategoryIds)
+            ->delete();
 
         $uraianMap = [];
 
@@ -656,6 +646,11 @@ public function autosave(Request $request, RabProcess $rab)
             }
         }
 
+        RabProcessUraian::where('rab_process_id', $rab->id)
+            ->where('is_draft', true)
+            ->whereNotIn('id', $usedUraianIds)
+            ->delete();
+
         $jobIds = collect($request->items)
             ->pluck('job_category_id')
             ->filter()
@@ -689,6 +684,9 @@ public function autosave(Request $request, RabProcess $rab)
                     $existing->update([
                         'uraian_id' => $uraianId,
                         'job_category_id' => $job->id,
+                        'job_name' => $job->name,
+                        'base_price' => $basePrice,
+                        'satuan' => $job->satuan ?? '',
                         'volume' => $item['volume'],
                         'price' => $price,
                         'total' => $total,
@@ -704,6 +702,9 @@ public function autosave(Request $request, RabProcess $rab)
                     'rab_process_id' => $rab->id,
                     'uraian_id' => $uraianId,
                     'job_category_id' => $job->id,
+                    'job_name' => $job->name,      
+                    'base_price' => $basePrice,     
+                    'satuan' => $job->satuan ?? '', 
                     'volume' => $item['volume'],
                     'price' => $price,
                     'total' => $total,
@@ -714,6 +715,11 @@ public function autosave(Request $request, RabProcess $rab)
                 $usedItemIds[] = $new->id;
             }
         }
+
+        RabProcessItem::where('rab_process_id', $rab->id)
+            ->where('is_draft', true)
+            ->whereNotIn('id', $usedItemIds)
+            ->delete();
 
         $subtotal = RabProcessItem::where('rab_process_id', $rab->id)
             ->where('is_draft', true)
