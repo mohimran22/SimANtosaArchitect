@@ -281,9 +281,9 @@
                 items: collectItems(),
                 profit: globalProfit,
                 overhead: globalOverhead,
-                discount: parseRupiah(document.getElementById('rab_discount_edit').value),
+                discount: parseRupiah(document.getElementById('rab_discount_display_edit').value),
                 tax_rate: Number(document.getElementById('rab_tax_rate_edit').value || 0),
-                shipping: parseRupiah(document.getElementById('rab_shipping_edit').value)
+                shipping: parseRupiah(document.getElementById('rab_shipping_display_edit').value)
             })
         }).then(res => res.json())
             .then(res => {
@@ -1622,7 +1622,7 @@
 
                     job_category_id: jobSelect.value,
 
-                    order: index, // ✅ sekarang BENAR (per uraian)
+                    order: index,
 
                     job_name: jobName,
                     satuan: satuan,
