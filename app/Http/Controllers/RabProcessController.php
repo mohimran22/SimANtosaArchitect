@@ -736,7 +736,7 @@ public function autosave(Request $request, RabProcess $rab)
                         'volume' => $item['volume'],
                         'price' => $price,
                         'total' => $total,
-                        'order_no' => $item['order'] ?? $index
+                        'order_no' => $item['order']
                     ]);
 
                     $usedItemIds[] = $existing->id;
@@ -755,7 +755,7 @@ public function autosave(Request $request, RabProcess $rab)
                     'volume' => $item['volume'],
                     'price' => $price,
                     'total' => $total,
-                    'order_no' => $item['order'] ?? $index,
+                    'order_no' => $item['order'],
                     'is_draft' => true
                 ]);
 

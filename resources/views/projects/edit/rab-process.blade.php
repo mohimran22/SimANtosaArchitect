@@ -245,7 +245,7 @@
 
     function triggerAutosave(force = false){
 
-        if(currentMode === 'drag' && !force) return
+        if(currentMode === 'drag' && !force)
 
         if(document.querySelector('.editing')){
             return
@@ -459,6 +459,7 @@
     let activeUraian = null
     let currentMode = 'edit'
     let sortableInstance = null
+    let globalIndex = 0;
 
     function setMode(mode){
 
@@ -498,8 +499,6 @@
 
             document.getElementById('btnEditMode').classList.add('btn-outline-primary')
             document.getElementById('btnEditMode').classList.remove('btn-primary')
-            document.getElementById('modeIndicator').innerText =
-                mode === 'drag' ? 'DRAG MODE' : 'EDIT MODE'
         }
     }
     function initSortable(){
@@ -1409,7 +1408,7 @@
             calculate(row.id, false)
         })
         calculateSummary()
-        triggerAutosave()
+        triggerAutosave(true)
     }
     function openUraianGalleryEdit(uraianId, uraianName){
   
@@ -1589,7 +1588,7 @@
         const uraianId = uraian.id
 
             document.querySelectorAll(`.job-row[data-parent="${uraianId}"]`)
-            .forEach((row, index) => {
+            .forEach((row) => {
 
                 const jobSelect = row.querySelector('.job-select')
                 if(!jobSelect || !jobSelect.value) return
@@ -1622,7 +1621,7 @@
 
                     job_category_id: jobSelect.value,
 
-                    order: index,
+                    order: globalIndex++,
 
                     job_name: jobName,
                     satuan: satuan,
