@@ -276,13 +276,27 @@
                 tax_rate: Number(document.getElementById('rab_tax_rate_edit').value || 0),
                 shipping: parseRupiah(document.getElementById('rab_shipping_edit').value)
             })
-        }).then(async res => {
-                const text = await res.text()
-                console.log('RESPONSE:', text)
+        }).then(res => res.json())
+            .then(res => {
 
-                if(!res.ok){
-                    console.error('Autosave gagal', res.status)
+                if(res.category_map){
+                    Object.entries(res.category_map).forEach(([tempId, dbId]) => {
+                        const el = document.getElementById(tempId)
+                        if(el){
+                            el.dataset.id = dbId
+                        }
+                    })
                 }
+
+                if(res.uraian_map){
+                    Object.entries(res.uraian_map).forEach(([tempId, dbId]) => {
+                        const el = document.getElementById(tempId)
+                        if(el){
+                            el.dataset.id = dbId
+                        }
+                    })
+                }
+
             })
         .catch(err => {
             console.error('Autosave error:', err)
@@ -1600,7 +1614,7 @@
                     price: price,
                     total: total,
 
-                    uraian_key: uraian.dataset.id || uraian.id, 
+                    uraian_key: uraian.id, 
                     category_key: row.dataset.category,
 
                     uraian_name:

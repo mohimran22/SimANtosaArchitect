@@ -542,8 +542,9 @@ public function structure($id)
 public function autosave(Request $request, RabProcess $rab)
 {
     abort_if(auth()->user()->cannot('ubah data proyek'), 403);
-
-    DB::transaction(function () use ($request, $rab) {
+    $categoryMap = [];
+    $uraianMap = [];
+    DB::transaction(function () use ($request, $rab, &$categoryMap, &$uraianMap) {
         $existingCategories = RabProcessCategory::where('rab_process_id', $rab->id)
             ->where('is_draft', true)
             ->get()
@@ -563,14 +564,16 @@ public function autosave(Request $request, RabProcess $rab)
         $usedUraianIds = [];
         $usedItemIds = [];
 
-        $categoryMap = [];
+        
 
         foreach ($request->categories ?? [] as $i => $cat) {
 
             if (empty($cat['name'])) continue;
 
+            $category = null; // 🔥 penting
+
             if (!empty($cat['db_id'])) {
-                // UPDATE
+
                 $category = $existingCategories[$cat['db_id']] ?? null;
 
                 if ($category) {
@@ -580,9 +583,20 @@ public function autosave(Request $request, RabProcess $rab)
                     ]);
 
                     $usedCategoryIds[] = $category->id;
+                } else {
+                    // 🔥 fallback: buat baru kalau tidak ketemu
+                    $category = RabProcessCategory::create([
+                        'rab_process_id' => $rab->id,
+                        'name' => $cat['name'],
+                        'order_no' => $i,
+                        'is_draft' => true
+                    ]);
+
+                    $usedCategoryIds[] = $category->id;
                 }
+
             } else {
-                // INSERT
+
                 $category = RabProcessCategory::create([
                     'rab_process_id' => $rab->id,
                     'name' => $cat['name'],
@@ -593,7 +607,15 @@ public function autosave(Request $request, RabProcess $rab)
                 $usedCategoryIds[] = $category->id;
             }
 
-            $categoryMap[$cat['id']] = $category->id;
+            // 🔥 SAFE GUARD
+            if ($category) {
+                $categoryMap[$cat['id']] = $category->id;
+            }
+            if (!$category) {
+                \Log::error('CATEGORY NULL', [
+                    'cat' => $cat
+                ]);
+            }
         }
 
         RabProcessCategory::where('rab_process_id', $rab->id)
@@ -601,7 +623,7 @@ public function autosave(Request $request, RabProcess $rab)
             ->whereNotIn('id', $usedCategoryIds)
             ->delete();
 
-        $uraianMap = [];
+        
 
         foreach ($request->categories ?? [] as $cat) {
 
@@ -612,6 +634,8 @@ public function autosave(Request $request, RabProcess $rab)
                 $categoryId = $categoryMap[$cat['id']] ?? null;
                 if (!$categoryId) continue;
 
+                $u = null; // 🔥 penting
+
                 if (!empty($uraian['db_id'])) {
 
                     $u = $existingUraians[$uraian['db_id']] ?? null;
@@ -621,6 +645,18 @@ public function autosave(Request $request, RabProcess $rab)
                             'name' => $uraian['name'],
                             'category_id' => $categoryId,
                             'order_no' => $uraian['order'] ?? $j
+                        ]);
+
+                        $usedUraianIds[] = $u->id;
+                    } else {
+                        // 🔥 fallback create
+                        $u = RabProcessUraian::create([
+                            'rab_process_id' => $rab->id,
+                            'category_id' => $categoryId,
+                            'name' => $uraian['name'],
+                            'uraian_key' => $uraian['id'],
+                            'order_no' => $uraian['order'] ?? $j,
+                            'is_draft' => true
                         ]);
 
                         $usedUraianIds[] = $u->id;
@@ -640,9 +676,16 @@ public function autosave(Request $request, RabProcess $rab)
                     $usedUraianIds[] = $u->id;
                 }
 
-                // $uraianMap[$uraian['id']] = $u->id;
-                $key = $uraian['db_id'] ?? $uraian['id'];
-                $uraianMap[$key] = $u->id;
+                // 🔥 SAFE GUARD
+                if ($u) {
+                    $key = $uraian['db_id'] ?? $uraian['id'];
+                    $uraianMap[$key] = $u->id;
+                }
+                if (!$u) {
+                    \Log::error('CATEGORY NULL', [
+                        'uraian' => $u
+                    ]);
+                }
             }
         }
 
@@ -697,6 +740,10 @@ public function autosave(Request $request, RabProcess $rab)
                 }
 
             } else {
+                \Log::info('JOB DEBUG', [
+                    'job_id' => $item['job_category_id'],
+                    'job' => $job,
+                ]);
 
                 $new = RabProcessItem::create([
                     'rab_process_id' => $rab->id,
@@ -751,7 +798,9 @@ public function autosave(Request $request, RabProcess $rab)
     });
 
     return response()->json([
-        'status' => 'saved'
+        'status' => 'saved',
+        'category_map' => $categoryMap,
+        'uraian_map' => $uraianMap,
     ]);
 }
 public function loadDraft(RabProcess $rab)
