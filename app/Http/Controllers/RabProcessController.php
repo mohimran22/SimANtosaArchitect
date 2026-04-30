@@ -711,7 +711,10 @@ public function autosave(Request $request, RabProcess $rab)
             $job = $jobs[$item['job_category_id']] ?? null;
             if (!$job) continue;
 
-            $basePrice = $job->base_unit_price;
+            // pastikan relasi ke-load
+            $job->loadMissing('items');
+
+            $basePrice = $job->items->sum('total_price');
 
             $price = $basePrice +
                 ($basePrice * $request->profit / 100) +
@@ -757,8 +760,8 @@ public function autosave(Request $request, RabProcess $rab)
                 ]);
 
                 $usedItemIds[] = $new->id;
+                $itemMap[$item['id'] ?? $index] = $new->id;
             }
-            $itemMap[$item['id'] ?? $index] = $new->id;
         }
 
         if (!empty($usedItemIds)) {
