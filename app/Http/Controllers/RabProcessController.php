@@ -699,7 +699,10 @@ public function autosave(Request $request, RabProcess $rab)
             ->filter()
             ->unique();
 
-        $jobs = JobCategory::whereIn('id', $jobIds)->get()->keyBy('id');
+        $jobs = JobCategory::with('items')
+            ->whereIn('id', $jobIds)
+            ->get()
+            ->keyBy('id');
 
         foreach ($request->items ?? [] as $index => $item) {
 
@@ -711,16 +714,14 @@ public function autosave(Request $request, RabProcess $rab)
             $job = $jobs[$item['job_category_id']] ?? null;
             if (!$job) continue;
 
-            // pastikan relasi ke-load
-            $job->loadMissing('items');
-
             $basePrice = $job->items->sum('total_price');
 
             $price = $basePrice +
                 ($basePrice * $request->profit / 100) +
                 ($basePrice * $request->overhead / 100);
 
-            $total = ($item['volume'] ?? 0) * $price;
+            $volume = (float) ($item['volume'] ?? 0);
+            $total = $volume * $price;
 
             if (!empty($item['db_id'])) {
 
@@ -740,7 +741,7 @@ public function autosave(Request $request, RabProcess $rab)
                     ]);
 
                     $usedItemIds[] = $existing->id;
-                    $itemMap[$item['id'] ?? $index] = $existing->id;
+                    $itemMap[$item['id']] = $existing->id;
                 }
 
             } else {
@@ -760,7 +761,7 @@ public function autosave(Request $request, RabProcess $rab)
                 ]);
 
                 $usedItemIds[] = $new->id;
-                $itemMap[$item['id'] ?? $index] = $new->id;
+                $itemMap[$item['id']] = $new->id;
             }
         }
 
@@ -779,12 +780,11 @@ public function autosave(Request $request, RabProcess $rab)
         $taxRate  = $request->tax_rate ?? 0;
         $shipping = $request->shipping ?? 0;
 
-        $afterDiscount = $subtotal - $discount;
-        $tax = $afterDiscount * $taxRate / 100;
-        $grandTotal = $afterDiscount + $tax + $shipping;
+        $afterDiscount = max(0, $subtotal - $discount);
+        $tax = round($afterDiscount * $taxRate / 100);
+        $grandTotal = round($afterDiscount + $tax + $shipping);
 
         $rab->update([
-            'base_subtotal' => $subtotal,
             'subtotal' => $subtotal,
             'discount' => $discount,
             'subtotal_after_discount' => $afterDiscount,

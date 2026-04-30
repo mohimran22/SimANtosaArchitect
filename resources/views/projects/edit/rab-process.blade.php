@@ -245,7 +245,7 @@
 
     function triggerAutosave(force = false){
 
-        if(currentMode === 'drag' && !force)
+        if(currentMode === 'drag' && !force) return
 
         if(document.querySelector('.editing')){
             return
@@ -267,6 +267,7 @@
 
         if(!window.currentRabId){
             console.warn('Autosave skip: currentRabId belum ada')
+            isSaving = false
             return
         }
 
@@ -443,6 +444,9 @@
         }
 
         return letters
+    }
+    function round(num){
+        return Math.round(num)
     }
 
     let currentRabJob = null;
@@ -1275,7 +1279,7 @@
         // discount
         let discount = parseRupiah(document.getElementById('rab_discount_edit').value)
 
-        let subAfterDiscount = subtotal - discount
+        let subAfterDiscount = Math.max(0, subtotal - discount)
 
         document.getElementById('rab_subAfterDiscount').value = subAfterDiscount
         document.getElementById('rab_subAfterDiscountDisplay_edit').innerText = formatRupiah(subAfterDiscount)
@@ -1283,7 +1287,7 @@
         // tax
         let taxRate = Number(document.getElementById('rab_tax_rate_edit').value || 0)
 
-        let taxTotal = subAfterDiscount * taxRate / 100
+        let taxTotal = round(subAfterDiscount * taxRate / 100)
 
         document.getElementById('rab_tax_total').value = taxTotal
         document.getElementById('rab_totalTaxDisplay_edit').innerText = formatRupiah(taxTotal)
@@ -1292,7 +1296,7 @@
         let shipping = parseRupiah(document.getElementById('rab_shipping_edit').value)
 
         // grand total
-        let grand = subAfterDiscount + taxTotal + shipping
+        let grand = round(subAfterDiscount + taxTotal + shipping)
 
         const grandEl = document.getElementById('rab_grandTotalDisplay_edit')
 
@@ -1401,6 +1405,8 @@
             })
             uraianIndex[catId] = uraianRows.length + 1
         })
+        renumberCategory()
+        renumberUraian(catId)
     }
     function recalcAfterDrag(){
 
@@ -1499,7 +1505,7 @@
 
             hargaInput.value = formatRupiah(newPrice)
 
-            calculate(row.id)
+            calculate(row.id, false)
 
         })
 
@@ -1609,8 +1615,8 @@
                     hargaInput?.dataset.value || 0
                 )
 
-                const price = parseRupiah(
-                    hargaInput?.value || 0
+                const price = Number(
+                    hargaInput?.dataset.value || 0
                 )
 
                 const total = Number(volume) * Number(price)

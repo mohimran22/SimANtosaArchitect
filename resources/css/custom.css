@@ -733,13 +733,13 @@ cursor:pointer;
 .viewer-prev{ left:20px }
 .viewer-next{ right:20px }
 /* Hilangkan spinner biar lebih rapi */
-/* input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-inner-spin-button,
 input[type=number]::-webkit-outer-spin-button {
     -webkit-appearance: none;
     margin: 0;
 }
 
-input[type=number] {
+/* input[type=number] {
     -moz-appearance: textfield;
 } */
  .drag-mode input,
