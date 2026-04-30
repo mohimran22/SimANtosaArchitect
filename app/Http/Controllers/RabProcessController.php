@@ -668,7 +668,7 @@ public function autosave(Request $request, RabProcess $rab)
             $job = $jobs[$item['job_category_id']] ?? null;
             if (!$job) continue;
 
-            $basePrice = $job->harga;
+            $basePrice = $job->base_unit_price;
 
             $price = $basePrice +
                 ($basePrice * $request->profit / 100) +
@@ -697,10 +697,6 @@ public function autosave(Request $request, RabProcess $rab)
                 }
 
             } else {
-                \Log::info('JOB DEBUG', [
-                    'job_id' => $item['job_category_id'],
-                    'job' => $job,
-                ]);
 
                 $new = RabProcessItem::create([
                     'rab_process_id' => $rab->id,

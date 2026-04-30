@@ -196,7 +196,7 @@
                        step="0.01"
                        id="overhead_percent"
                        value="{{ $overheadPercent }}"
-                       class="form-control form-control-sm text-end">
+                       class="form-control form-control-md text-end">
             </td>
             <td class="text-end fw-bold" id="overhead_value">
                 Rp {{ number_format($overheadValue, 0, ',', '.') }}
@@ -211,7 +211,7 @@
                        step="0.01"
                        id="profit_percent"
                        value="{{ $profitPercent }}"
-                       class="form-control form-control-sm text-end">
+                       class="form-control form-control-md text-end">
             </td>
             <td class="text-end fw-bold" id="profit_value">
                 Rp {{ number_format($profitValue, 0, ',', '.') }}
