@@ -544,7 +544,8 @@ public function autosave(Request $request, RabProcess $rab)
     abort_if(auth()->user()->cannot('ubah data proyek'), 403);
     $categoryMap = [];
     $uraianMap = [];
-    DB::transaction(function () use ($request, $rab, &$categoryMap, &$uraianMap) {
+    $itemMap = [];
+    DB::transaction(function () use ($request, $rab, &$categoryMap, &$uraianMap, &$itemMap) {
         $existingCategories = RabProcessCategory::where('rab_process_id', $rab->id)
             ->where('is_draft', true)
             ->get()
@@ -678,8 +679,7 @@ public function autosave(Request $request, RabProcess $rab)
 
                 // 🔥 SAFE GUARD
                 if ($u) {
-                    $key = $uraian['db_id'] ?? $uraian['id'];
-                    $uraianMap[$key] = $u->id;
+                    $uraianMap[$uraian['id']] = $u->id;
                 }
                 if (!$u) {
                     \Log::error('CATEGORY NULL', [
@@ -737,13 +737,10 @@ public function autosave(Request $request, RabProcess $rab)
                     ]);
 
                     $usedItemIds[] = $existing->id;
+                    $itemMap[$item['id'] ?? $index] = $existing->id;
                 }
 
             } else {
-                \Log::info('JOB DEBUG', [
-                    'job_id' => $item['job_category_id'],
-                    'job' => $job,
-                ]);
 
                 $new = RabProcessItem::create([
                     'rab_process_id' => $rab->id,
@@ -761,12 +758,15 @@ public function autosave(Request $request, RabProcess $rab)
 
                 $usedItemIds[] = $new->id;
             }
+            $itemMap[$item['id'] ?? $index] = $new->id;
         }
 
-        RabProcessItem::where('rab_process_id', $rab->id)
-            ->where('is_draft', true)
-            ->whereNotIn('id', $usedItemIds)
-            ->delete();
+        if (!empty($usedItemIds)) {
+            RabProcessItem::where('rab_process_id', $rab->id)
+                ->where('is_draft', true)
+                ->whereNotIn('id', $usedItemIds)
+                ->delete();
+        }
 
         $subtotal = RabProcessItem::where('rab_process_id', $rab->id)
             ->where('is_draft', true)
@@ -801,6 +801,7 @@ public function autosave(Request $request, RabProcess $rab)
         'status' => 'saved',
         'category_map' => $categoryMap,
         'uraian_map' => $uraianMap,
+        'item_map' => $itemMap
     ]);
 }
 public function loadDraft(RabProcess $rab)

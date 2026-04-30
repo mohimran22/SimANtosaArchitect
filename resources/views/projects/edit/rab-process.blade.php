@@ -239,6 +239,8 @@
             e.stopPropagation()
         }
     })
+    
+    let isSaving = false
     let autosaveTimer = null
 
     function triggerAutosave(force = false){
@@ -252,10 +254,17 @@
         clearTimeout(autosaveTimer)
 
         autosaveTimer = setTimeout(() => {
+                    if(!isSaving){   // ⛔ tahan kalau masih request
             autoSaveToServer()
+        }
         }, 1000)
     }
+    
     function autoSaveToServer(){
+            if(isSaving) return // ⛔ cegah spam
+
+    isSaving = true
+
         if(!window.currentRabId){
             console.warn('Autosave skip: currentRabId belum ada')
             return
@@ -278,7 +287,7 @@
             })
         }).then(res => res.json())
             .then(res => {
-
+                if(requestId !== lastRequestId) return
                 if(res.category_map){
                     Object.entries(res.category_map).forEach(([tempId, dbId]) => {
                         const el = document.getElementById(tempId)
@@ -296,11 +305,22 @@
                         }
                     })
                 }
+                if(res.item_map){
+                    Object.entries(res.item_map).forEach(([tempId, dbId]) => {
+                        const el = document.getElementById(tempId)
+                        if(el){
+                            el.dataset.id = dbId
+                        }
+                    })
+                }
 
             })
         .catch(err => {
             console.error('Autosave error:', err)
         })
+            .finally(() => {
+        isSaving = false
+    })
     }
     function collectCategories(){
 
@@ -329,20 +349,20 @@
                     jobs: []
                 }
 
-                document.querySelectorAll(`.job-row[data-parent="${uraian.id}"]`)
-                .forEach((job, jobIndex) => {
+                // document.querySelectorAll(`.job-row[data-parent="${uraian.id}"]`)
+                // .forEach((job, jobIndex) => {
 
-                    const jobSelect = job.querySelector('.job-select')
+                //     const jobSelect = job.querySelector('.job-select')
 
-                    if(!jobSelect || !jobSelect.value) return
+                //     if(!jobSelect || !jobSelect.value) return
 
-                    uraianData.jobs.push({
-                        id: job.dataset.id || null,
-                        job_category_id: jobSelect.value,
-                        order: jobIndex // 🔥
-                    })
+                //     uraianData.jobs.push({
+                //         id: job.dataset.id || null,
+                //         job_category_id: jobSelect.value,
+                //         order: jobIndex // 🔥
+                //     })
 
-                })
+                // })
 
                 catData.uraians.push(uraianData)
 
@@ -526,7 +546,6 @@
                 draggedGroup = []
                 renumberAll()
                 recalcAfterDrag()
-                triggerAutosave(true)
             },
 
             onMove: function(evt){
@@ -1019,7 +1038,7 @@
                 addJobRowEdit(uraianId)
             },50)
         }
-        triggerAutosave()
+        // triggerAutosave()
     }
     function editUraian(uraianId){
         if(isDragMode()) return
@@ -1146,7 +1165,7 @@
 
         select.select2('open')
         },200)
-        triggerAutosave()
+
     }
 
     function loadJobEdit(rowId, jobId){
