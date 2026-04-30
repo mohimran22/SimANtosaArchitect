@@ -711,7 +711,7 @@ public function autosave(Request $request, RabProcess $rab)
             $job = $jobs[$item['job_category_id']] ?? null;
             if (!$job) continue;
 
-            $basePrice = $job->base_price;
+            $basePrice = $job->base_unit_price;
 
             $price = $basePrice +
                 ($basePrice * $request->profit / 100) +

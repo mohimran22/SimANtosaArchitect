@@ -239,7 +239,7 @@
             e.stopPropagation()
         }
     })
-    
+
     let isSaving = false
     let autosaveTimer = null
 
@@ -287,7 +287,6 @@
             })
         }).then(res => res.json())
             .then(res => {
-                if(requestId !== lastRequestId) return
                 if(res.category_map){
                     Object.entries(res.category_map).forEach(([tempId, dbId]) => {
                         const el = document.getElementById(tempId)
