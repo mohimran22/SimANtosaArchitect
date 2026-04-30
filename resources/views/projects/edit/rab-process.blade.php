@@ -244,6 +244,7 @@
     let autosaveTimer = null
 
     function triggerAutosave(force = false){
+        syncDiscountShipping()
 
         if(currentMode === 'drag' && !force) return
 
@@ -282,9 +283,9 @@
                 items: collectItems(),
                 profit: globalProfit,
                 overhead: globalOverhead,
-                discount: parseRupiah(document.getElementById('rab_discount_display_edit').value),
+                discount: Number(document.getElementById('rab_discount_edit').value || 0),
                 tax_rate: Number(document.getElementById('rab_tax_rate_edit').value || 0),
-                shipping: parseRupiah(document.getElementById('rab_shipping_display_edit').value)
+                shipping: Number(document.getElementById('rab_shipping_edit').value || 0)
             })
         }).then(res => res.json())
             .then(res => {
