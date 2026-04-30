@@ -489,8 +489,7 @@
                 $('#overhead_value').text(formatRp(data.summary.overhead_value));
                 $('#profit_value').text(formatRp(data.summary.profit_value));
                 $('#grand_total').text(formatRp(data.summary.grand_total));
-                let row = document.querySelector(`tr[data-item-id="${itemId}"]`);
-                row.dataset.total = data.item.total_price;
+                
             });
 
         });
