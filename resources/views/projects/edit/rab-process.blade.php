@@ -1718,15 +1718,11 @@
 
                 const hargaInput = row.querySelector('.harga')
 
-                const basePrice = Number(
-                    hargaInput?.dataset.value || 0
-                )
+                const basePrice = Number(hargaInput?.dataset.value || 0)
 
-                const price = Number(
-                    hargaInput?.dataset.value || 0
-                )
+                const price = parseRupiah(hargaInput?.value || 0)
 
-                const total = Number(volume) * Number(price)
+                const total = volume * price
 
                 items.push({
 

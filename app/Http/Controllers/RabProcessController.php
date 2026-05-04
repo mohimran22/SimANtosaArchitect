@@ -722,7 +722,7 @@ public function autosave(Request $request, RabProcess $rab)
                 ($basePrice * $profit / 100) +
                 ($basePrice * $overhead / 100);
 
-            $volume = $this->parseNumber($item['volume'] ?? 0);
+            $volume = (float) $item['volume'];
             $total = $volume * $price;
 
             if (!empty($item['db_id'])) {
@@ -755,7 +755,7 @@ public function autosave(Request $request, RabProcess $rab)
                     'job_name' => $job->nama_pekerjaan,      
                     'base_price' => $basePrice,     
                     'satuan' => $job->satuan ?? '', 
-                    'volume' => $item['volume'],
+                    'volume' => $volume,
                     'price' => $price,
                     'total' => $total,
                     'order_no' => $item['order'],
