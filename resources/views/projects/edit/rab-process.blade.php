@@ -241,10 +241,10 @@
 
     let isSaving = false
     let autosaveTimer = null
-
+    let isDragging = false
     function triggerAutosave(force = false){
         syncDiscountShipping()
-
+        if(isDragging && !force) return
         if(currentMode === 'drag' && !force) return
 
         if(document.querySelector('.editing')){
@@ -257,7 +257,7 @@
                     if(!isSaving){   // ⛔ tahan kalau masih request
             autoSaveToServer()
         }
-        }, 1000)
+        }, 2000)
     }
     
     function autoSaveToServer(){
@@ -348,21 +348,6 @@
                     order: uraianIndex,
                     jobs: []
                 }
-
-                // document.querySelectorAll(`.job-row[data-parent="${uraian.id}"]`)
-                // .forEach((job, jobIndex) => {
-
-                //     const jobSelect = job.querySelector('.job-select')
-
-                //     if(!jobSelect || !jobSelect.value) return
-
-                //     uraianData.jobs.push({
-                //         id: job.dataset.id || null,
-                //         job_category_id: jobSelect.value,
-                //         order: jobIndex // 🔥
-                //     })
-
-                // })
 
                 catData.uraians.push(uraianData)
 
@@ -513,13 +498,6 @@
     }
     let reorderTimer = null
 
-// function triggerReorderSave(){
-//     clearTimeout(reorderTimer)
-
-//     reorderTimer = setTimeout(()=>{
-//         saveOrderToServer()
-//     }, 300)
-// }
     function initSortable(){
 
         const tbody = document.getElementById('rab_offerItemsBody_edit')
@@ -530,7 +508,7 @@
             draggable:'.category-row, .uraian-row, .job-row',
 
             onStart:function(evt){
-
+                isDragging = true
                 const row = evt.item
                 draggedGroup = [row]
 
@@ -549,25 +527,25 @@
                 }
             },
 
-onEnd:function(evt){
+    onEnd:function(evt){
+        isDragging = false
+        const row = evt.item
 
-    const row = evt.item
+        if(draggedGroup.length > 1){
+            let insertPoint = row.nextElementSibling
+            draggedGroup.slice(1).forEach(r=>{
+                tbody.insertBefore(r, insertPoint)
+            })
+        }
 
-    if(draggedGroup.length > 1){
-        let insertPoint = row.nextElementSibling
-        draggedGroup.slice(1).forEach(r=>{
-            tbody.insertBefore(r, insertPoint)
-        })
+        draggedGroup = []
+
+        renumberAll()
+
+        setTimeout(()=>{
+            saveOrderToServer()
+        },100)
     }
-
-    draggedGroup = []
-
-    renumberAll()
-
-    setTimeout(()=>{
-        saveOrderToServer()
-    },100)
-}
 
             onMove: function(evt){
                 const dragged = evt.dragged
@@ -633,27 +611,27 @@ onEnd:function(evt){
     }
     let isReordering = false
 
-function saveOrderToServer(){
+    function saveOrderToServer(){
 
-    if(isReordering) return
+        if(isReordering) return
 
-    isReordering = true
+        isReordering = true
 
-    fetch(`/rab/reorder/${window.currentRabId}`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-        },
-        body: JSON.stringify({
-            structure: collectOrder()
+        fetch(`/rab/reorder/${window.currentRabId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify({
+                structure: collectOrder()
+            })
         })
-    })
-    .catch(err => console.error('Reorder error:', err))
-    .finally(() => {
-        isReordering = false
-    })
-}
+        .catch(err => console.error('Reorder error:', err))
+        .finally(() => {
+            isReordering = false
+        })
+    }
     function loadExistingRab(data){
 
         const tbody = document.getElementById('rab_offerItemsBody_edit')
@@ -1519,7 +1497,6 @@ function saveOrderToServer(){
             calculate(row.id, false)
         })
         calculateSummary()
-        triggerAutosave(true)
     }
     function openUraianGalleryEdit(uraianId, uraianName){
   
@@ -1694,6 +1671,7 @@ function saveOrderToServer(){
     function collectItems(){
 
         let items = []
+        globalIndex = 0
         document.querySelectorAll('.uraian-row').forEach(uraian => {
 
         const uraianId = uraian.id
