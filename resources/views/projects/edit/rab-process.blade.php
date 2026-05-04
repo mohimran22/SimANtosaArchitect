@@ -192,10 +192,10 @@
 
     <textarea name="notes" rows="3" class="form-control"></textarea>
 
-            <div class="mt-4">
+            {{-- <div class="mt-4">
                 <button type="button" class="btn btn-dark" id="btnSubmitRab">Update Data RAB</button>
                 <button type="button" id="btn-cancel-rab" class="btn btn-light btn-sm">Batal</button>
-            </div>
+            </div> --}}
 </form>
 
 @push('js')
@@ -203,6 +203,16 @@
     window.currentRabId = "{{ $rab->id ?? '' }}";
 </script>
 <script>
+    document.addEventListener('DOMContentLoaded', function(){
+
+    if(typeof loadExistingRab !== 'function'){
+        console.error('loadExistingRab belum tersedia!')
+        return
+    }
+
+    loadDraft()
+})
+
 
     document.addEventListener('keydown', function(e){
 
@@ -874,7 +884,21 @@
         },300)
 
     }
+    function loadDraft(){
+        if(!window.currentRabId){
+            console.warn('Load draft skip: currentRabId belum ada')
+            return
+        }
 
+        fetch(`/rab/autosave/${window.currentRabId}`)
+        .then(res => res.json())
+        .then(data => {
+
+            if(!data || !data.categories?.length) return
+
+            loadExistingRab(data)
+        })
+    }
     function addCategoryEdit(){
         if(isDragMode()) return
         const tbody = document.getElementById('rab_offerItemsBody_edit')
@@ -1642,7 +1666,7 @@
                 updateHargaSemua()
                 triggerAutosave()
             })
-    document.getElementById('rab_discount_display_edit').addEventListener('blur',function(){
+    document.getElementById('rab_discount_display_edit').addEventListener('input',function(){
 
         rupiahInput(this)
 
@@ -1650,10 +1674,10 @@
             parseRupiah(this.value)
 
         calculateSummary()
-
+        triggerAutosave()
     })
 
-    document.getElementById('rab_shipping_display_edit').addEventListener('blur',function(){
+    document.getElementById('rab_shipping_display_edit').addEventListener('input',function(){
 
         rupiahInput(this)
 
@@ -1661,7 +1685,7 @@
             parseRupiah(this.value)
 
         calculateSummary()
-
+        triggerAutosave()
     })
 
     document.getElementById('rab_tax_rate_edit').addEventListener('input', function () {
@@ -1759,23 +1783,7 @@
         }
 
     }
-    function loadDraft(){
-        if(!window.currentRabId){
-            console.warn('Load draft skip: currentRabId belum ada')
-            return
-        }
 
-        fetch(`/rab/autosave/${window.currentRabId}`)
-        .then(res => res.json())
-        .then(data => {
-
-            if(!data || !data.categories?.length) return
-
-            loadExistingRab(data)
-        })
-    }
-
-    document.addEventListener('DOMContentLoaded', loadDraft)
     document.getElementById('btnEditMode').addEventListener('click',()=>{
         setMode('edit')
 
