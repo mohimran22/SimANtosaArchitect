@@ -713,14 +713,16 @@ public function autosave(Request $request, RabProcess $rab)
 
             $job = $jobs[$item['job_category_id']] ?? null;
             if (!$job) continue;
+            $profit = (float) str_replace(',', '.', $request->profit ?? 0);
+            $overhead = (float) str_replace(',', '.', $request->overhead ?? 0);
 
-            $basePrice = $job->items->sum('total_price');
+            $basePrice = $job->items()->sum('total_price');
 
             $price = $basePrice +
-                ($basePrice * $request->profit / 100) +
-                ($basePrice * $request->overhead / 100);
+                ($basePrice * $profit / 100) +
+                ($basePrice * $overhead / 100);
 
-            $volume = (float) ($item['volume'] ?? 0);
+            $volume = $this->parseNumber($item['volume'] ?? 0);
             $total = $volume * $price;
 
             if (!empty($item['db_id'])) {
@@ -734,7 +736,7 @@ public function autosave(Request $request, RabProcess $rab)
                         'job_name' => $job->nama_pekerjaan,
                         'base_price' => $basePrice,
                         'satuan' => $job->satuan ?? '',
-                        'volume' => $item['volume'],
+                        'volume' => $volume,
                         'price' => $price,
                         'total' => $total,
                         'order_no' => $item['order']
@@ -788,8 +790,8 @@ public function autosave(Request $request, RabProcess $rab)
             'subtotal' => $subtotal,
             'discount' => $discount,
             'subtotal_after_discount' => $afterDiscount,
-            'profit' => $request->profit ?? 0,
-            'overhead' => $request->overhead ?? 0,
+            'profit' => $profit,
+            'overhead' => $overhead,
             'tax_rate' => $taxRate,
             'tax_total' => $tax,
             'shipping' => $shipping,
@@ -797,7 +799,12 @@ public function autosave(Request $request, RabProcess $rab)
             'grand_total' => $grandTotal,
             'updated_by' => auth()->id(),
         ]);
-
+        \Log::info([
+            'profit_raw' => $request->profit,
+            'profit_casted' => $profit,
+            'overhead_raw' => $request->overhead,
+            'overhead_casted' => $overhead,
+        ]);
     });
 
     return response()->json([
@@ -874,5 +881,11 @@ public function loadDraft(RabProcess $rab)
     }
 
     return response()->json($result);
+}
+private function parseNumber($val)
+{
+    if ($val === null || $val === '') return 0;
+
+    return (float) str_replace(',', '.', str_replace('.', '', $val));
 }
 }

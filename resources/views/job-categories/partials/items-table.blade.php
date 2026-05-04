@@ -43,9 +43,11 @@
 
             @foreach($items->where('category', $key) as $item)
                 @php $subtotal += $item->total_price; @endphp
-                <tr data-item-id="{{ $item->id }}"
+                <tr 
+                    data-item-id="{{ $item->id }}"
                     data-category="{{ $item->category }}"
-                    data-total="{{ $item->total_price }}">
+                    data-total="{{ (float) $item->total_price }}"
+                >
 
                     <td class="text-center">{{ $no++ }}</td>
                     <td>
@@ -81,7 +83,7 @@
                             @if($item->category == 'equipment')
                                 @foreach($equipments as $eq)
                                     <option value="equipment_{{ $eq->id }}"
-                                        @selected($item->equipment_id == $eq->id)>
+                                        @selected($item->equipment_cost_id == $eq->id)>
                                         {{ $eq->description }}
                                     </option>
                                 @endforeach
@@ -148,9 +150,16 @@
                     <input type="text"
                         class="form-control form-control-sm text-end format-rp"
                         
-                        @if($key == 'labor') id="effective_labor" value="{{ $jobCategory->effective_labor }}" @endif
-                        @if($key == 'product') id="effective_product" value="{{ $jobCategory->effective_product }}" @endif
-                        @if($key == 'equipment') id="effective_equipment" value="{{ $jobCategory->effective_equipment }}" @endif
+                        @if($key == 'labor') id="effective_labor" value="{{ $jobCategory->effective_labor 
+                            ? number_format($jobCategory->effective_labor, 2, ',', '.') 
+                            : '' }}" 
+                        @endif
+                        @if($key == 'product') id="effective_product" value="{{ $jobCategory->effective_product 
+    ? number_format($jobCategory->effective_product, 2, ',', '.') 
+    : '' }}" @endif
+                        @if($key == 'equipment') id="effective_equipment" value="{{ $jobCategory->effective_equipment 
+    ? number_format($jobCategory->effective_equipment, 2, ',', '.') 
+    : '' }}" @endif
 
                         placeholder="Kosong = otomatis">
                 </td>
@@ -184,7 +193,7 @@
         <tr>
             <td colspan="6" class="text-end fw-bold">JUMLAH (A + B + C)</td>
             <td class="text-end fw-bold" id="subtotal">
-                Rp {{ number_format($subTotal, 0, ',', '.') }}
+                Rp {{ number_format($subTotal, 2, ',', '.') }}
             </td>
         </tr>
 
@@ -237,7 +246,7 @@
             placeholder: "-- Pilih --",
             width: '100%'
         });
-            
+        let isUpdatingFromServer = false;
         function formatRp(num) {
             return new Intl.NumberFormat('id-ID', {
                 style: 'currency',
@@ -257,11 +266,8 @@
         }
 
         function recalcAll() {
-            // let subtotal = 0;
+            if (isUpdatingFromServer) return;
 
-            // document.querySelectorAll('tr[data-item-id]').forEach(row => {
-            //     subtotal += parseFloat(row.dataset.total || 0);
-            // });
             let totalLabor = 0;
             let totalProduct = 0;
             let totalEquipment = 0;
@@ -309,6 +315,7 @@
             };
         }
         $(document).on('input', '.format-rp', function () {
+            if (isUpdatingFromServer) return;
             let input = this;
 
             let start = input.selectionStart;
@@ -351,6 +358,7 @@
             }, 500);
         });
         $('#effective_labor, #effective_product, #effective_equipment').on('input', function () {
+            if (isUpdatingFromServer) return;
             recalcAll();
 
             clearTimeout(window.saveTimer);
@@ -364,15 +372,16 @@
                 "{{ route('job-categories.update-effective', $jobCategory->id) }}",
                 {
                     _token: "{{ csrf_token() }}",
-                    effective_labor: parseRp($('#effective_labor').val()),
-                    effective_product: parseRp($('#effective_product').val()),
-                    effective_equipment: parseRp($('#effective_equipment').val())
+                    effective_labor: parseRp($('#effective_labor').val()) ?? null,
+                    effective_product: parseRp($('#effective_product').val()) ?? null,
+                    effective_equipment: parseRp($('#effective_equipment').val()) ?? null
                 }
             );
         }
         function autoSave() {
+            if (isUpdatingFromServer) return;
             const result = recalcAll();
-
+            if (!result) return;
             $.post(
                 "{{ route('job-categories.save-overhead-profit', $jobCategory->id) }}",
                 {
@@ -395,40 +404,6 @@
 
         recalcAll();
 
-        // $(document).on('change', '.supplier-change', function () {
-
-        //     let itemId = this.dataset.itemId;
-        //     let supplierId = this.value;
-
-        //     fetch(`/job-items/${itemId}/change-supplier`, {
-        //         method: 'POST',
-        //         headers: {
-        //             'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
-        //             'Content-Type': 'application/json'
-        //         },
-        //         body: JSON.stringify({
-        //             supplier_id: supplierId
-        //         })
-        //     })
-        //     .then(res => res.json())
-        //     .then(data => {
-
-        //         console.log('RESP:', data); // ⬅️ DEBUG
-
-        //         // Update UI row
-        //         document.getElementById('unit_price_' + itemId).innerText = formatRp(data.base_unit_price);
-        //         document.getElementById('total_price_' + itemId).innerText = formatRp(data.total_price);
-
-        //         // Update dataset
-        //         let row = document.querySelector(`tr[data-item-id="${itemId}"]`);
-        //         row.dataset.total = data.total_price;
-
-        //         // Recalculate all
-        //         recalcAll();
-        //         autoSave();
-        //     });
-
-        // });
         $(document).on('change', '.supplier-change', function () {
 
             let itemId = this.dataset.itemId;
@@ -458,7 +433,7 @@
             });   
         });
         $(document).on('change', '.uraian-change', function () {
-
+            isUpdatingFromServer = true;
             let el = $(this);
             let itemId = el.data('item-id');
             let value = el.val();
@@ -471,9 +446,9 @@
                 },
                 body: JSON.stringify({
                     value: value,
-                    effective_labor: parseRp($('#effective_labor').val()),
-                    effective_product: parseRp($('#effective_product').val()),
-                    effective_equipment: parseRp($('#effective_equipment').val())
+                    effective_labor: parseRp($('#effective_labor').val()) ?? null,
+                    effective_product: parseRp($('#effective_product').val()) ?? null,
+                    effective_equipment: parseRp($('#effective_equipment').val()) ?? null
                 })
             })
             .then(res => res.json())
@@ -485,11 +460,15 @@
                 $('#total_price_' + itemId).text(formatRp(data.item.total_price));
                 $('#code_' + itemId).text(data.item.code);
                 $('#unit_' + itemId).text(data.item.unit);
+                let row = document.querySelector(`tr[data-item-id="${itemId}"]`);
+                if (row) {
+                    row.dataset.total = parseFloat(data.item.total_price || 0);
+                }
                 $('#subtotal').text(formatRp(data.summary.subtotal));
                 $('#overhead_value').text(formatRp(data.summary.overhead_value));
                 $('#profit_value').text(formatRp(data.summary.profit_value));
                 $('#grand_total').text(formatRp(data.summary.grand_total));
-                
+                isUpdatingFromServer = false;
             });
 
         });

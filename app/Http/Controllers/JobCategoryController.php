@@ -469,9 +469,9 @@ public function getProductSupplierById($id)
     $job = JobCategory::findOrFail($id);
 
     $job->update([
-        'effective_labor'     => (float) $request->effective_labor ?? 0,
-        'effective_product'   => (float) $request->effective_product ?? 0,
-        'effective_equipment' => (float) $request->effective_equipment ?? 0,
+            'effective_labor'     => $request->effective_labor !== null ? (float) $request->effective_labor : null,
+            'effective_product'   => $request->effective_product !== null ? (float) $request->effective_product : null,
+            'effective_equipment' => $request->effective_equipment !== null ? (float) $request->effective_equipment : null,
     ]);
     $job->refresh();
     RabRecalculator::recalcCategory($job);

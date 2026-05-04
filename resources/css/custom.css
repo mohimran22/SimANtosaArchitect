@@ -366,7 +366,6 @@ overflow-x: hidden;
     table-layout: auto;
 }
 
-.table th,
 .table td {
     font-family: 'Poppins', sans-serif !important;
     font-weight: 400;

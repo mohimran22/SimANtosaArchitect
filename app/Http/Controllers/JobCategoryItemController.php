@@ -88,7 +88,7 @@ class JobCategoryItemController extends Controller
 
     public function changeUraian(Request $request, JobCategoryItem $item)
 {
-    $value = $request->value; // contoh: product_12
+    $value = $request->value;
 
     [$type, $id] = explode('_', $value);
 
@@ -143,9 +143,9 @@ class JobCategoryItemController extends Controller
         }
 
         $item->jobCategory->update([
-            'effective_labor'     => (float) $request->effective_labor ?? 0,
-            'effective_product'   => (float) $request->effective_product ?? 0,
-            'effective_equipment' => (float) $request->effective_equipment ?? 0,
+            'effective_labor'     => $request->effective_labor !== null ? (float) $request->effective_labor : null,
+            'effective_product'   => $request->effective_product !== null ? (float) $request->effective_product : null,
+            'effective_equipment' => $request->effective_equipment !== null ? (float) $request->effective_equipment : null,
         ]);
 
         $item->jobCategory->refresh();

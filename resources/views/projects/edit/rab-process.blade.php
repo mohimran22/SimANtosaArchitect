@@ -68,14 +68,13 @@
     <div class="row mb-4 mt-3">
         <h4 class="fw-bold mb-3">Rincian Pekerjaan</h4>
         <div class="mb-2 d-flex gap-2">
-            <button type="button" id="btnEditMode" class="btn btn-primary btn-sm">
+            <button type="button" id="btnEditMode" class="btn btn-dark btn-sm">
                 ✏️ Mode Edit
             </button>
 
             <button type="button" id="btnDragMode" class="btn btn-outline-secondary btn-sm">
                 🔀 Urutkan Daftar Pekerjaan
             </button>
-            <span id="modeIndicator" class="badge bg-primary">EDIT MODE</span>
         </div>
         <table class="table table-bordered align-middle" id="offerItemsTable">
             <colgroup>
@@ -472,38 +471,44 @@
 
         if(mode === 'edit'){
 
-            // ENABLE INPUT
+            document.body.classList.remove('drag-mode')
+
             document.querySelectorAll('input, select, textarea').forEach(el=>{
                 el.disabled = false
             })
 
-            // DESTROY SORTABLE
             if(sortableInstance){
                 sortableInstance.destroy()
                 sortableInstance = null
             }
 
-            // UI tombol
-            document.getElementById('btnEditMode').classList.add('btn-primary')
-            document.getElementById('btnEditMode').classList.remove('btn-outline-primary')
+            // bersihin sisa drag
+            document.querySelectorAll('.job-row, .uraian-row, .category-row')
+            .forEach(el => {
+                el.style.transform = ''
+                el.style.transition = ''
+                el.classList.remove('sortable-chosen','sortable-ghost','sortable-drag')
+            })
 
-            document.getElementById('btnDragMode').classList.add('btn-outline-secondary')
-            document.getElementById('btnDragMode').classList.remove('btn-secondary')
+            // reinit select2
+            $('.select2-row').each(function(){
+                if($(this).hasClass("select2-hidden-accessible")){
+                    $(this).select2('destroy')
+                }
+            })
+
+            $('.select2-row').select2({
+                width: '100%',
+                dropdownAutoWidth: true
+            })
 
         }
 
         if(mode === 'drag'){
 
-            document.body.classList.toggle('drag-mode', mode === 'drag')
+            document.body.classList.add('drag-mode')
 
             initSortable()
-
-            // UI tombol
-            document.getElementById('btnDragMode').classList.add('btn-secondary')
-            document.getElementById('btnDragMode').classList.remove('btn-outline-secondary')
-
-            document.getElementById('btnEditMode').classList.add('btn-outline-primary')
-            document.getElementById('btnEditMode').classList.remove('btn-primary')
         }
     }
     function initSortable(){
@@ -1398,16 +1403,32 @@
         uraianIndex[catId] = rows.length + 1
     }
     function renumberAll(){
-        document.querySelectorAll('.category-row').forEach(cat=>{
+
+        document.querySelectorAll('.category-row').forEach((cat, i)=>{
+
             const catId = cat.dataset.category
+
+            // 🔥 renumber kategori (A, B, C)
+            const letter = numberToLetters(i)
+
+            cat.querySelector('td').innerHTML = `
+                <span class="drag-handle me-2" style="cursor:move">
+                    <i class="ti ti-grip-vertical"></i>
+                </span>
+                ${letter}
+            `
+
+            // 🔥 renumber uraian
             const uraianRows = document.querySelectorAll(`.uraian-row[data-category="${catId}"]`)
-            uraianRows.forEach((row,i)=>{
-                row.querySelector('td:first-child').innerText = i+1
+
+            uraianRows.forEach((row, index)=>{
+                row.querySelector('td:first-child').innerText = index + 1
             })
+
             uraianIndex[catId] = uraianRows.length + 1
         })
-        renumberCategory()
-        renumberUraian(catId)
+
+        categoryIndex = document.querySelectorAll('.category-row').length
     }
     function recalcAfterDrag(){
 
@@ -1696,6 +1717,7 @@
     document.addEventListener('DOMContentLoaded', loadDraft)
     document.getElementById('btnEditMode').addEventListener('click',()=>{
         setMode('edit')
+
     })
 
     document.getElementById('btnDragMode').addEventListener('click',()=>{
@@ -1705,8 +1727,6 @@
 <script>
 
         const needRefresh = @json($needRefresh)
-
-        document.addEventListener('DOMContentLoaded', function(){
 
             const btnSubmit = document.getElementById('btnSubmitRab')
 
@@ -1855,7 +1875,7 @@
                 })
             }
 
-        })
+        
 
 </script>
 @endpush
