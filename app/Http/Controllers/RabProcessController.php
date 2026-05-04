@@ -716,7 +716,7 @@ public function autosave(Request $request, RabProcess $rab)
             $profit = (float) str_replace(',', '.', $request->profit ?? 0);
             $overhead = (float) str_replace(',', '.', $request->overhead ?? 0);
 
-            $basePrice = $job->items()->sum('total_price');
+            $basePrice = $job->grand_total;
 
             $price = $basePrice +
                 ($basePrice * $profit / 100) +

@@ -1056,7 +1056,7 @@ document.addEventListener('click', function (e) {
                         loadExistingRab(data);
                         setTimeout(() => {
                             initRabEdit()
-                        }, 100)
+                        }, 2000)
 
                         rabLoaded = true
                     });

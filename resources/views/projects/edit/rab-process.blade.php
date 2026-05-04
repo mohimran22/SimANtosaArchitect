@@ -211,7 +211,7 @@
     }
 
     loadDraft()
-})
+    })
 
 
     document.addEventListener('keydown', function(e){
@@ -537,25 +537,25 @@
                 }
             },
 
-    onEnd:function(evt){
-        isDragging = false
-        const row = evt.item
+            onEnd:function(evt){
+                isDragging = false
+                const row = evt.item
 
-        if(draggedGroup.length > 1){
-            let insertPoint = row.nextElementSibling
-            draggedGroup.slice(1).forEach(r=>{
-                tbody.insertBefore(r, insertPoint)
-            })
-        }
+                if(draggedGroup.length > 1){
+                    let insertPoint = row.nextElementSibling
+                    draggedGroup.slice(1).forEach(r=>{
+                        tbody.insertBefore(r, insertPoint)
+                    })
+                }
 
-        draggedGroup = []
+                draggedGroup = []
 
-        renumberAll()
+                renumberAll()
 
-        setTimeout(()=>{
-            saveOrderToServer()
-        },100)
-    }
+                setTimeout(()=>{
+                    saveOrderToServer()
+                },100)
+            },
 
             onMove: function(evt){
                 const dragged = evt.dragged
@@ -1803,15 +1803,6 @@
                 btnSubmit.addEventListener('click', function(e){
 
                     e.preventDefault()
-
-                    // if(needRefresh){
-                    //     Swal.fire({
-                    //         icon:'warning',
-                    //         title:'Harga belum disinkronkan',
-                    //         text:'Silakan refresh harga RAB terlebih dahulu.'
-                    //     })
-                    //     return
-                    // }
 
                     const items = collectItems()
 
