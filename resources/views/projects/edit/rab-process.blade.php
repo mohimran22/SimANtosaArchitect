@@ -511,6 +511,15 @@
             initSortable()
         }
     }
+    let reorderTimer = null
+
+// function triggerReorderSave(){
+//     clearTimeout(reorderTimer)
+
+//     reorderTimer = setTimeout(()=>{
+//         saveOrderToServer()
+//     }, 300)
+// }
     function initSortable(){
 
         const tbody = document.getElementById('rab_offerItemsBody_edit')
@@ -540,21 +549,25 @@
                 }
             },
 
-            onEnd:function(evt){
+onEnd:function(evt){
 
-                const row = evt.item
+    const row = evt.item
 
-                if(draggedGroup.length > 1){
-                    let insertPoint = row.nextElementSibling
-                    draggedGroup.slice(1).forEach(r=>{
-                        tbody.insertBefore(r, insertPoint)
-                    })
-                }
+    if(draggedGroup.length > 1){
+        let insertPoint = row.nextElementSibling
+        draggedGroup.slice(1).forEach(r=>{
+            tbody.insertBefore(r, insertPoint)
+        })
+    }
 
-                draggedGroup = []
-                renumberAll()
-                recalcAfterDrag()
-            },
+    draggedGroup = []
+
+    renumberAll()
+
+    setTimeout(()=>{
+        saveOrderToServer()
+    },100)
+}
 
             onMove: function(evt){
                 const dragged = evt.dragged
@@ -571,6 +584,76 @@
     function isDragMode(){
         return currentMode === 'drag'
     }
+    function collectOrder(){
+
+        let data = []
+
+        document.querySelectorAll('.category-row').forEach((cat, catIndex) => {
+
+            const catId = cat.dataset.id
+            if(!catId) return
+
+            let catData = {
+                id: catId,
+                order: catIndex,
+                uraians: []
+            }
+
+            document.querySelectorAll(`.uraian-row[data-category="${cat.id}"]`)
+            .forEach((uraian, uraianIndex) => {
+
+                const uraianId = uraian.dataset.id
+                if(!uraianId) return
+
+                let uraianData = {
+                    id: uraianId,
+                    order: uraianIndex,
+                    items: []
+                }
+
+                document.querySelectorAll(`.job-row[data-parent="${uraian.id}"]`)
+                .forEach((row, itemIndex) => {
+
+                    const itemId = row.dataset.id
+                    if(!itemId) return
+
+                    uraianData.items.push({
+                        id: itemId,
+                        order: itemIndex
+                    })
+                })
+
+                catData.uraians.push(uraianData)
+            })
+
+            data.push(catData)
+        })
+
+        return data
+    }
+    let isReordering = false
+
+function saveOrderToServer(){
+
+    if(isReordering) return
+
+    isReordering = true
+
+    fetch(`/rab/reorder/${window.currentRabId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: JSON.stringify({
+            structure: collectOrder()
+        })
+    })
+    .catch(err => console.error('Reorder error:', err))
+    .finally(() => {
+        isReordering = false
+    })
+}
     function loadExistingRab(data){
 
         const tbody = document.getElementById('rab_offerItemsBody_edit')

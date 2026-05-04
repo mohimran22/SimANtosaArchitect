@@ -799,12 +799,11 @@ public function autosave(Request $request, RabProcess $rab)
             'grand_total' => $grandTotal,
             'updated_by' => auth()->id(),
         ]);
-        \Log::info([
-            'profit_raw' => $request->profit,
-            'profit_casted' => $profit,
-            'overhead_raw' => $request->overhead,
-            'overhead_casted' => $overhead,
-        ]);
+            \Log::info([
+                'job_id' => $job->id,
+                'basePrice_collection' => $job->items->sum('total_price'),
+                'basePrice_query' => $job->items()->sum('total_price'),
+            ]);
     });
 
     return response()->json([
@@ -887,5 +886,39 @@ private function parseNumber($val)
     if ($val === null || $val === '') return 0;
 
     return (float) str_replace(',', '.', str_replace('.', '', $val));
+}
+public function reorder(Request $request, RabProcess $rab)
+{
+    DB::transaction(function () use ($request, $rab) {
+
+        foreach ($request->structure ?? [] as $cat) {
+
+            RabProcessCategory::where('id', $cat['id'])
+                ->where('rab_process_id', $rab->id)
+                ->update([
+                    'order_no' => $cat['order']
+                ]);
+
+            foreach ($cat['uraians'] ?? [] as $uraian) {
+
+                RabProcessUraian::where('id', $uraian['id'])
+                    ->where('rab_process_id', $rab->id)
+                    ->update([
+                        'order_no' => $uraian['order']
+                    ]);
+
+                foreach ($uraian['items'] ?? [] as $item) {
+
+                    RabProcessItem::where('id', $item['id'])
+                        ->where('rab_process_id', $rab->id)
+                        ->update([
+                            'order_no' => $item['order']
+                        ]);
+                }
+            }
+        }
+    });
+
+    return response()->json(['status' => 'ok']);
 }
 }
