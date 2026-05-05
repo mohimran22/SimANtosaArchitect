@@ -103,13 +103,18 @@
                                     <div class="row mb-4">
                                         <div class="col-md-6 mb-3">
                                             <label class="form-label">Apakah Akun Induk?</label>
-                                            <input type="checkbox" name="is_parent" value="1">
+                                            <select name="is_parent" 
+                                                    class="form-select select2 @error('is_parent') is-invalid @enderror">
+                                                <option value="">-- Silahkan dipilih --</option>
+                                                <option value="1" {{ old('is_parent') == '1' ? 'selected' : '' }}>Ya (Akun Induk)</option>
+                                                <option value="0" {{ old('is_parent') == '0' ? 'selected' : '' }}>Tidak (Akun Anak)</option>
+                                            </select>
                                         </div>
 
                                         <div class="col-md-6 mb-3">
                                             <label class="form-label">Akun Induk</label>
                                             <select name="parent_id" class="form-select select2">
-                                                <option value="">-- Tidak Ada --</option>
+                                                <option value="">-- Pilih Akun Induk --</option>
                                                 @foreach ($parentAccounts as $parent)
                                                     <option value="{{ $parent->id }}">{{ $parent->account_name }}</option>
                                                 @endforeach
@@ -134,7 +139,6 @@
 <script>
     $(document).ready(function() {
         $('.select2').select2({
-            placeholder: "-- Pilih --",
             width: '100%'
         });
     });
@@ -144,16 +148,16 @@ $(document).ready(function(){
 
     function generateCode(){
         let category = $('[name="category"]').val()
-        let subCategory = $('[name="sub_category"]').val()
+        let parentId = $('[name="parent_id"]').val() // ✅ ganti
 
-        if(!category || !subCategory){
+        if(!category){
             $('#account_code_preview').val('')
             return
         }
 
         $('#account_code_preview').val('Generating...')
 
-        fetch(`/accounting/generate-code?category=${encodeURIComponent(category)}&sub_category=${encodeURIComponent(subCategory)}`)
+        fetch(`/accounting/generate-code?category=${encodeURIComponent(category)}&parent_id=${encodeURIComponent(parentId ?? '')}`)
             .then(res => res.json())
             .then(data => {
                 $('#account_code_preview').val(data.code)
@@ -161,7 +165,7 @@ $(document).ready(function(){
     }
 
     $('[name="category"]').on('change', generateCode)
-    $('[name="sub_category"]').on('change', generateCode)
+    $('[name="parent_id"]').on('change', generateCode) // ✅ ganti
 
 })
 </script>

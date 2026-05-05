@@ -155,7 +155,7 @@ public function store(Request $request)
 
     $code = $this->generateAccountCode(
         $request->category,
-        $request->sub_category
+        $request->parent_id
     );
 
     if (AccountingAccount::where('account_code', $code)->exists()) {
@@ -181,7 +181,7 @@ public function store(Request $request)
         ->with('success', 'Akun berhasil ditambahkan.');
 }
 
-    public function edit(AccountingAccount $accounting)
+    public function edit(AccountingAccount $account)
     {
         $user = Auth::user();
 
@@ -199,10 +199,8 @@ public function store(Request $request)
 
     $parentAccounts = AccountingAccount::where('is_parent', true)->get();
 
-    return view('accounting.edit', [
-        'account' => $accounting,
-        'parentAccounts' => $parentAccounts
-    ]);
+    return view('accounting.edit', compact('account', 'parentAccounts'));
+
     }
 
     public function update(Request $request, AccountingAccount $account)
@@ -262,22 +260,6 @@ public function store(Request $request)
             'is_active' => true,
             'person_type' => $request->person_type,
         ]);
-        // $account->fill([
-        //     'account_code' => $request->account_code,
-        //     'account_name' => $request->account_name,
-        //     'category' => $request->category,
-        //     'sub_category' => $request->sub_category,
-        //     'initial_balance' => $isParent ? null : ($request->initial_balance ?? 0),
-        //     'is_parent' => $isParent,
-        //     'parent_id' => $isParent ? null : $request->parent_id,
-        //     'is_active' => true,
-        //     'person_type' => $request->person_type,
-        // ]);
-
-        // dd(
-        //     $account->getDirty(),
-        //     $account->isDirty()
-        // );
 
         return redirect()
             ->route('accounting.index')
@@ -294,13 +276,13 @@ public function store(Request $request)
 public function generateCode(Request $request)
 {
     $category = $request->category;
-    $subCategory = $request->sub_category;
+    $parentId = $request->parent_id;
 
-    if (!$category || !$subCategory) {
+    if (!$category) {
         return response()->json(['code' => '-']);
     }
 
-    $code = $this->generateAccountCode($category, $subCategory);
+    $code = $this->generateAccountCode($category, $parentId);
 
     return response()->json(['code' => $code]);
 }
@@ -317,32 +299,53 @@ public function generateCode(Request $request)
     };
 }
 
-private function generateAccountCode($category, $subCategory)
+private function generateAccountCode($category, $parentId = null)
 {
-    $prefix = $this->getCategoryPrefix($category);
+    // LEVEL 1 → KATEGORI
+    if (!$parentId) {
+        $prefix = $this->getCategoryPrefix($category);
+        return "{$prefix}-000-000";
+    }
 
-    // Ambil angka sub kategori (misal: 100, 200)
-    $subPrefix = $this->generateSubCategoryCode($subCategory);
+    $parent = AccountingAccount::findOrFail($parentId);
+    $parts = explode('-', $parent->account_code);
 
-    // Cari nomor terakhir
-    $last = AccountingAccount::where('account_code', 'ilike', "{$prefix}-{$subPrefix}-%")
+    // LEVEL 2 → SUB KATEGORI
+    if ($parts[1] === '000') {
+
+        $last = AccountingAccount::where('parent_id', $parentId)
+            ->orderBy('account_code', 'desc')
+            ->first();
+
+        if ($last) {
+            $lastMid = (int) explode('-', $last->account_code)[1];
+            $nextMid = str_pad($lastMid + 10, 3, '0', STR_PAD_LEFT);
+        } else {
+            $nextMid = '100';
+        }
+
+        return "{$parts[0]}-{$nextMid}-000";
+    }
+
+    // LEVEL 3 → AKUN DETAIL
+    $last = AccountingAccount::where('parent_id', $parentId)
         ->orderBy('account_code', 'desc')
         ->first();
 
     if ($last) {
-        $lastNumber = (int) substr($last->account_code, -3);
-        $nextNumber = str_pad($lastNumber + 1, 3, '0', STR_PAD_LEFT);
+        $lastEnd = (int) substr($last->account_code, -3);
+        $nextEnd = str_pad($lastEnd + 1, 3, '0', STR_PAD_LEFT);
     } else {
-        $nextNumber = '001';
+        $nextEnd = '001';
     }
 
-    return "{$prefix}-{$subPrefix}-{$nextNumber}";
+    return "{$parts[0]}-{$parts[1]}-{$nextEnd}";
 }
 
 private function generateSubCategoryCode($subCategory)
 {
     return match ($subCategory) {
-        'Aset Lancar - Kas & Bank' => '10',
+        'Aset Lancar - Kas & Bank' => '100',
         'Aset Lancar - Piutang' => '110',
         'Aset Lancar - Persediaan Barang' => '120',
         'Aset Tetap' => '200',
