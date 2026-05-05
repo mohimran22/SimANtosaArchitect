@@ -29,7 +29,6 @@
     <tbody>
         @php 
             $no = 'A'; 
-            $grand = 0; 
         @endphp
 
         @foreach($rab->categories as $category)
@@ -51,7 +50,6 @@
             </tr>
 
             @php
-                $grand += $subtotal;
                 $no++;
             @endphp
 
@@ -60,13 +58,33 @@
 
     <tfoot>
         <tr style="font-weight:bold;">
-            <td colspan="2" align="right">JUMLAH</td>
-            <td align="right">Rp {{ number_format($grand,0,',','.') }}</td>
+            <td colspan="2" align="right">SUBTOTAL</td>
+            <td align="right">Rp {{ number_format($rab->subtotal,0,',','.') }}</td>
+        </tr>
+        <tr style="font-weight:bold;">
+            <td colspan="2" align="right">DISKON</td>
+            <td align="right">{{ number_format($rab->discount,0,',','.') }}</td>
+        </tr>
+        <tr style="font-weight:bold;">
+            <td colspan="2" align="right">SUBTOTAL AFTER DISKON</td>
+            <td align="right">{{ number_format($rab->subtotal_after_discount,0,',','.') }}</td>
+        </tr>
+        <tr style="font-weight:bold;">
+            <td colspan="2" align="right">TAX ({{ $rab->tax_rate }}%)</td>
+            <td align="right">{{ number_format($rab->tax_total,0,',','.') }}</td>
+        </tr>
+        <tr style="font-weight:bold;">
+            <td colspan="2" align="right">SHIPPING</td>
+            <td align="right">{{ number_format($rab->shipping,0,',','.') }}</td>
+        </tr>
+        <tr style="font-weight:bold;">
+            <td colspan="2" align="right">GRAND TOTAL</td>
+            <td align="right">{{ number_format($rab->grand_total,0,',','.') }}</td>
         </tr>
         <tr style="font-weight:bold;">
             <td colspan="2" align="right">DIBULATKAN</td>
             <td align="right">
-                Rp {{ number_format(floor($grand / 100000) * 100000,0,',','.') }}
+                Rp {{ number_format(floor($rab->grand_total / 100000) * 100000,0,',','.') }}
             </td>
         </tr>
     </tfoot>

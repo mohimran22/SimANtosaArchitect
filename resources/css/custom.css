@@ -600,7 +600,7 @@ col.just-hidden {
 #offerItemsTable col:nth-child(4){ width:110px }
 #offerItemsTable col:nth-child(5){ width:150px }
 #offerItemsTable col:nth-child(6){ width:160px }
-#offerItemsTable col:nth-child(7){ width:90px }
+#offerItemsTable col:nth-child(7){ width:110px }
 .uraian-row{
 position:relative;
 }
