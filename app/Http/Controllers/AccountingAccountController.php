@@ -16,7 +16,8 @@ public function index(Request $request)
 {
     $user = Auth::user();
 
-    $query = AccountingAccount::with(['parent']);
+    $query = AccountingAccount::with(['parent'])
+        ->orderBy('account_code', 'asc');
 
     if ($user->hasRole('Super-Admin')) {
         // semua data
@@ -102,8 +103,6 @@ public function index(Request $request)
             })
 
             ->rawColumns(['aksi', 'account_name'])
-            ->orderColumn('account_code', 'account_code $1') // biar sorting jalan
-
             ->make(true);
     }
 

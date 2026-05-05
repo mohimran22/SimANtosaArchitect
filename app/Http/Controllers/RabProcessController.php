@@ -724,7 +724,7 @@ public function autosave(Request $request, RabProcess $rab)
 
             $volume = (float) $item['volume'];
 
-            $total = round($volume * $price, 5);
+            $total = round($volume * $price);
 
             if (!empty($item['db_id'])) {
 
@@ -794,15 +794,17 @@ public function autosave(Request $request, RabProcess $rab)
             }
         }
 
-        $subtotal = RabProcessItem::where('rab_process_id', $rab->id)->sum('total');
+        $subtotal = RabProcessItem::where('rab_process_id', $rab->id)
+            ->where('is_draft', true)
+            ->sum('total');
 
         $discount = $request->discount ?? 0;
         $taxRate  = $request->tax_rate ?? 0;
         $shipping = $request->shipping ?? 0;
 
         $afterDiscount = max(0, $subtotal - $discount);
-        $tax = $afterDiscount * $taxRate / 100;
-        $grandTotal = $afterDiscount + $tax + $shipping;
+        $tax = round($afterDiscount * $taxRate / 100);
+        $grandTotal = round($afterDiscount + $tax + $shipping);
 
         $rab->update([
             'contact_name' => $request->contact_name,
