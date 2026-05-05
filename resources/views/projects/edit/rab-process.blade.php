@@ -1338,7 +1338,7 @@
 
         let hargaFinal = basePrice + profitValue + overheadValue
 
-        let total = vol * hargaFinal
+        let total = round(vol * hargaFinal)
 
         const hargaEl = row.querySelector('.harga')
         const totalEl = row.querySelector('.total')

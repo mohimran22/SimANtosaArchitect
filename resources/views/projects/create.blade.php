@@ -1089,13 +1089,13 @@ document.addEventListener("DOMContentLoaded", () => {
     btn?.addEventListener("click", () => {
 
         if(!isEditMode){
-            // 👉 MASUK MODE EDIT
+
             view.style.display = "none";
             edit.style.display = "block";
 
             btn.classList.remove('btn-dark')
             btn.classList.add('btn-danger')
-            btn.innerHTML = '<i class="ti ti-x"></i>' // icon cancel
+            btn.innerHTML = '<i class="ti ti-x"></i>' 
             btn.title = "Cancel"
 
             if(!rabLoaded){
@@ -1124,7 +1124,7 @@ document.addEventListener("DOMContentLoaded", () => {
             isEditMode = true
 
         } else {
-            // 👉 KELUAR MODE EDIT
+            
             edit.style.display = "none";
             view.style.display = "block";
 
