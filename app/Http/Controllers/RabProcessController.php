@@ -722,11 +722,9 @@ public function autosave(Request $request, RabProcess $rab)
                 ($basePrice * $profit / 100) +
                 ($basePrice * $overhead / 100);
 
-            $price = round($price, 2);
+            $volume = (string) $item['volume'];
 
-            $volume = (float) $item['volume'];
-
-            $total = round($volume * $price, 2);
+            $total = $volume * $price;
 
             if (!empty($item['db_id'])) {
 

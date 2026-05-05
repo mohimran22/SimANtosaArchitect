@@ -113,7 +113,7 @@
                     <th>
                         <input type="text" class="form-control"
                             id="rab_discount_display_edit"
-                            value="{{ number_format($rab->discount,0,',','.') }}">
+                            value="{{ number_format($rab->discount,3,',','.') }}">
                         <input type="hidden" name="discount" id="rab_discount_edit" value="{{ $rab->discount }}">
                     </th>
                 </tr>
@@ -142,7 +142,7 @@
                     <th>
                         <input type="text" class="form-control"
                             id="rab_shipping_display_edit"
-                            value="{{ number_format($rab->shipping,0,',','.') }}">
+                            value="{{ number_format($rab->shipping,3,',','.') }}">
                         <input type="hidden" name="shipping" id="rab_shipping_edit" value="{{ $rab->shipping }}">
                     </th>
                 </tr>
@@ -1397,8 +1397,8 @@
         document.getElementById('rab_subtotal').value = subtotal
         document.getElementById('rab_subtotalDisplay_edit').innerText = formatRupiah(subtotal)
 
-        // discount
-        let discount = parseRupiah(document.getElementById('rab_discount_edit').value)
+        // let discount = parseRupiah(document.getElementById('rab_discount_edit').value)
+        let discount = Number(document.getElementById('rab_discount_edit').value || 0)
 
         let subAfterDiscount = Math.max(0, subtotal - discount)
 
@@ -1691,7 +1691,13 @@
             })
     document.getElementById('rab_discount_display_edit').addEventListener('input',function(){
 
-        rupiahInput(this)
+        let raw = parseRupiah(this.value)
+
+        document.getElementById('rab_discount_edit').value = raw
+        this.value = this.value // biarin user ketik bebas
+        this.addEventListener('blur', function(){
+            this.value = formatRupiah(parseRupiah(this.value))
+        })
 
         document.getElementById('rab_discount_edit').value =
             parseRupiah(this.value)
@@ -1738,7 +1744,7 @@
                 const volume = Number(
                     parseFloat(
                         row.querySelector('.vol')?.value || 0
-                    ).toFixed(5)
+                    ).toFixed(10)
                 )
 
                 const satuan = row.querySelector('.sat')?.innerText || ''

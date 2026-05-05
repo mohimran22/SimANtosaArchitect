@@ -1034,7 +1034,7 @@ document.addEventListener('click', function (e) {
     });
 });
 </script>
-<script>
+{{-- <script>
     let rabLoaded = false
     document.addEventListener("DOMContentLoaded", () => {
 
@@ -1075,7 +1075,72 @@ document.addEventListener('click', function (e) {
         });
 
     });
+</script> --}}
+<script>
+let rabLoaded = false
+let isEditMode = false
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    const view = document.getElementById("rab-view");
+    const edit = document.getElementById("rab-edit");
+    const btn = document.getElementById("btn-edit-rab");
+
+    btn?.addEventListener("click", () => {
+
+        if(!isEditMode){
+            // 👉 MASUK MODE EDIT
+            view.style.display = "none";
+            edit.style.display = "block";
+
+            btn.classList.remove('btn-dark')
+            btn.classList.add('btn-danger')
+            btn.innerHTML = '<i class="ti ti-x"></i>' // icon cancel
+            btn.title = "Cancel"
+
+            if(!rabLoaded){
+
+                const rabId = @json($rab?->id);
+
+                fetch(`/rab/${rabId}/structure`)
+                    .then(res => res.json())
+                    .then(data => {
+
+                        loadExistingRab(data);
+
+                        setTimeout(() => {
+                            initRabEdit()
+                        }, 2000)
+
+                        rabLoaded = true
+                    });
+
+            }else{
+                setTimeout(() => {
+                    initRabEdit()
+                }, 100)
+            }
+
+            isEditMode = true
+
+        } else {
+            // 👉 KELUAR MODE EDIT
+            edit.style.display = "none";
+            view.style.display = "block";
+
+            btn.classList.remove('btn-danger')
+            btn.classList.add('btn-dark')
+            btn.innerHTML = '<i class="ti ti-edit"></i>'
+            btn.title = "Edit Data"
+
+            isEditMode = false
+        }
+
+    });
+
+});
 </script>
+
 <script>
 document.addEventListener("DOMContentLoaded", () => {
 
