@@ -29,6 +29,11 @@ class JobCategoryController extends Controller
                 ->editColumn('grand_total', function ($row) {
                     return 'Rp ' . number_format($row->grand_total ?? 0, 0, ',', '.');
                 })
+                ->editColumn('nama_group', function ($row) {
+                    $url = route('job-categories.edit', $row->id);
+                    $name = Str::title($row->nama_group ?? '-');
+                    return '<a href="'.$url.'">'.e($name).'</a>';
+                })
                 // ->addColumn('aksi', function ($row) {
                 //     return '
                 //         <a href="'.route('job-categories.edit', $row->id).'" 
@@ -86,7 +91,7 @@ class JobCategoryController extends Controller
                         )
                     ");
                 })
-                ->rawColumns(['aksi'])
+                ->rawColumns(['aksi', 'nama_group'])
                 ->make(true);
         }
 

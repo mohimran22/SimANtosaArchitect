@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\AccountingAccount;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use Yajra\DataTables\Facades\DataTables;
 
 class AccountingAccountController extends Controller
@@ -71,6 +72,11 @@ public function index(Request $request)
             ->addColumn('status', function ($row) {
                 return $row->is_active ? 'Aktif' : 'Nonaktif';
             })
+            ->editColumn('account_name', function ($row) {
+                    $url = route('accounting.edit', $row->id);
+                    $name = Str::title($row->account_name ?? '-');
+                    return '<a href="'.$url.'">'.e($name).'</a>';
+            })
 
             ->addColumn('aksi', function ($row) {
                 $buttons = '';
@@ -95,7 +101,7 @@ public function index(Request $request)
                 return $buttons;
             })
 
-            ->rawColumns(['aksi'])
+            ->rawColumns(['aksi', 'account_name'])
             ->orderColumn('account_code', 'account_code $1') // biar sorting jalan
 
             ->make(true);
@@ -202,14 +208,42 @@ public function store(Request $request)
     public function update(Request $request, AccountingAccount $account)
     {
         $request->validate([
-            'account_code' => 'required|string|max:255',
+            'account_code' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('accounting_accounts', 'account_code')->ignore($account->id),
+            ],
             'account_name' => 'required|string|max:255',
             'category' => 'required|string|max:255',
             'sub_category' => 'required|string|max:255',
             'initial_balance' => 'nullable|numeric',
             'is_parent' => 'nullable|boolean',
             'parent_id' => 'nullable|uuid|exists:accounting_accounts,id',
+            'person_type' => 'nullable|string',
         ]);
+
+        // if ($request->parent_id == $account->id) {
+        //     return back()->withErrors([
+        //         'parent_id' => 'Tidak boleh memilih diri sendiri sebagai parent.'
+        //     ]);
+        // }
+        if ($request->parent_id) {
+            $parent = AccountingAccount::find($request->parent_id);
+
+            if ($parent && $parent->category !== $request->category) {
+                return back()->withErrors([
+                    'parent_id' => 'Kategori parent harus sama dengan akun.'
+                ]);
+            }
+        }
+        $isParent = $request->boolean('is_parent');
+
+        if (!$isParent && !$request->parent_id) {
+            return back()->withErrors([
+                'parent_id' => 'Akun child wajib punya akun induk'
+            ]);
+        }
 
         if ($request->parent_id == $account->id) {
             return back()->withErrors([
@@ -222,11 +256,28 @@ public function store(Request $request)
             'account_name' => $request->account_name,
             'category' => $request->category,
             'sub_category' => $request->sub_category,
-            'initial_balance' => $request->initial_balance,
-            'is_parent' => $request->boolean('is_parent'),
-            'parent_id' => $request->parent_id,
+            'initial_balance' => $isParent ? null : ($request->initial_balance ?? 0),
+            'is_parent' => $isParent,
+            'parent_id' => $isParent ? null : $request->parent_id,
             'is_active' => true,
+            'person_type' => $request->person_type,
         ]);
+        // $account->fill([
+        //     'account_code' => $request->account_code,
+        //     'account_name' => $request->account_name,
+        //     'category' => $request->category,
+        //     'sub_category' => $request->sub_category,
+        //     'initial_balance' => $isParent ? null : ($request->initial_balance ?? 0),
+        //     'is_parent' => $isParent,
+        //     'parent_id' => $isParent ? null : $request->parent_id,
+        //     'is_active' => true,
+        //     'person_type' => $request->person_type,
+        // ]);
+
+        // dd(
+        //     $account->getDirty(),
+        //     $account->isDirty()
+        // );
 
         return redirect()
             ->route('accounting.index')
@@ -291,7 +342,7 @@ private function generateAccountCode($category, $subCategory)
 private function generateSubCategoryCode($subCategory)
 {
     return match ($subCategory) {
-        'Aset Lancar - Kas & Bank' => '100',
+        'Aset Lancar - Kas & Bank' => '10',
         'Aset Lancar - Piutang' => '110',
         'Aset Lancar - Persediaan Barang' => '120',
         'Aset Tetap' => '200',

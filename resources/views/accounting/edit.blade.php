@@ -47,7 +47,7 @@
                                 </div>
 
                                 <div class="mb-3">
-                                    <label>Kategori</label>
+                                    <label>Sub Kategori</label>
                                     <input type="text" name="sub_category" value="{{ $account->sub_category }}" class="form-control" required>
                                 </div>
 
@@ -58,13 +58,14 @@
 
                                 <div class="mb-3">
                                     <label>Apakah Akun Induk?</label>
+                                    <input type="hidden" name="is_parent" value="0">
                                     <input type="checkbox" name="is_parent" value="1" {{ $account->is_parent ? 'checked' : '' }}>
                                 </div>
 
                                 <div class="mb-3">
                                     <label>Akun Induk</label>
                                     <select name="parent_id" class="form-select select2">
-                                        <option value="">-- Tidak Ada --</option>
+                                        <option value="">-- Pilih Akun Induk --</option>
                                         @foreach ($parentAccounts as $parent)
                                             <option value="{{ $parent->id }}" {{ $account->parent_id == $parent->id ? 'selected' : '' }}>
                                                 {{ $parent->account_name }}
@@ -89,10 +90,7 @@
 @push('js')
 <script>
     $(document).ready(function() {
-        $('.select2').select2({
-            placeholder: "-- Pilih --",
-            width: '100%'
-        });
+        $('.select2').select2({width: '100%'});
     });
 </script>
 @endpush

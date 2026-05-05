@@ -451,11 +451,11 @@ protected function notifyProjectEvent(Project $project, string $event)
     }
 }
 
-    public function getPackage($id)
-    {
-        $package = RabProcess::with('items')->findOrFail($id);
-        return response()->json($package);
-    }
+public function getPackage($id)
+{
+    $package = RabProcess::with('items')->findOrFail($id);
+    return response()->json($package);
+}
 
 public function items($id)
 {
@@ -506,7 +506,7 @@ public function destroy($id)
 
     return response()->json(['success'=>true]);
 }
-public function uraianImages($uraianId)
+public function uraianImages($uraianId) //detail
 {
 
     $uraian = RabProcessUraian::findOrFail($uraianId);
@@ -722,8 +722,11 @@ public function autosave(Request $request, RabProcess $rab)
                 ($basePrice * $profit / 100) +
                 ($basePrice * $overhead / 100);
 
+            $price = round($price, 2);
+
             $volume = (float) $item['volume'];
-            $total = $volume * $price;
+
+            $total = round($volume * $price, 2);
 
             if (!empty($item['db_id'])) {
 
@@ -774,6 +777,25 @@ public function autosave(Request $request, RabProcess $rab)
                 ->delete();
         }
 
+        foreach(($request->uraian_images ?? []) as $uraianKey => $images){
+
+            RabUraianImage::where('rab_id', $rab->id)
+                ->where('uraian_key', $uraianKey)
+                ->delete();
+
+            foreach(($images ?? []) as $imgId){
+
+                $exists = RabImage::where('id', $imgId)->exists();
+                if(!$exists) continue;
+
+                RabUraianImage::create([
+                    'rab_id' => $rab->id,
+                    'uraian_key' => $uraianKey,
+                    'image_id' => $imgId
+                ]);
+            }
+        }
+
         $subtotal = RabProcessItem::where('rab_process_id', $rab->id)
             ->where('is_draft', true)
             ->sum('total');
@@ -787,6 +809,9 @@ public function autosave(Request $request, RabProcess $rab)
         $grandTotal = round($afterDiscount + $tax + $shipping);
 
         $rab->update([
+            'contact_name' => $request->contact_name,
+            'job_location' => $request->job_location,
+            'job_duration' => $request->job_duration,
             'subtotal' => $subtotal,
             'discount' => $discount,
             'subtotal_after_discount' => $afterDiscount,
@@ -799,11 +824,6 @@ public function autosave(Request $request, RabProcess $rab)
             'grand_total' => $grandTotal,
             'updated_by' => auth()->id(),
         ]);
-            \Log::info([
-                'job_id' => $job->id,
-                'basePrice_collection' => $job->items->sum('total_price'),
-                'basePrice_query' => $job->items()->sum('total_price'),
-            ]);
     });
 
     return response()->json([
@@ -881,12 +901,7 @@ public function loadDraft(RabProcess $rab)
 
     return response()->json($result);
 }
-private function parseNumber($val)
-{
-    if ($val === null || $val === '') return 0;
 
-    return (float) str_replace(',', '.', str_replace('.', '', $val));
-}
 public function reorder(Request $request, RabProcess $rab)
 {
     DB::transaction(function () use ($request, $rab) {

@@ -252,6 +252,22 @@
     let isSaving = false
     let autosaveTimer = null
     let isDragging = false
+    let currentRabJob = null
+    let rabItems = {}
+    let currentBasePrice = 0
+    let globalProfit = 0
+    let globalOverhead = 0
+    let categoryIndex = 0
+    let uraianIndex = {}
+    let uraianGlobalIndex = 0
+    let jobIndex = 0
+    let draggedGroup = []
+    let uraianImages = {}
+    let activeUraian = null
+    let currentMode = 'edit'
+    let sortableInstance = null
+    let globalIndex = 0;
+
     function triggerAutosave(force = false){
         syncDiscountShipping()
         if(isDragging && !force) return
@@ -264,73 +280,84 @@
         clearTimeout(autosaveTimer)
 
         autosaveTimer = setTimeout(() => {
-                    if(!isSaving){   // ⛔ tahan kalau masih request
+        if(!isSaving){   
             autoSaveToServer()
         }
         }, 2000)
     }
     
     function autoSaveToServer(){
-            if(isSaving) return // ⛔ cegah spam
+        if(isSaving) return 
 
-    isSaving = true
+        isSaving = true
 
-        if(!window.currentRabId){
-            console.warn('Autosave skip: currentRabId belum ada')
+            if(!window.currentRabId){
+                console.warn('Autosave skip: currentRabId belum ada')
+                isSaving = false
+                return
+            }
+
+            fetch(`/rab/autosave/${window.currentRabId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: JSON.stringify({
+                    categories: collectCategories(),
+                    items: collectItems(),
+                    contact_name: document.querySelector('[name=contact_name]')?.value || '',
+                    job_location: document.querySelector('[name=job_location]')?.value || '',
+                    job_duration: document.querySelector('[name=job_duration]')?.value || 0,
+
+                    uraian_images: uraianImages,
+                    profit: globalProfit,
+                    overhead: globalOverhead,
+                    discount: Number(document.getElementById('rab_discount_edit').value || 0),
+                    tax_rate: Number(document.getElementById('rab_tax_rate_edit').value || 0),
+                    shipping: Number(document.getElementById('rab_shipping_edit').value || 0)
+                })
+            }).then(res => res.json())
+                .then(res => {
+                    if(res.category_map){
+                        Object.entries(res.category_map).forEach(([tempId, dbId]) => {
+                            const el = document.getElementById(tempId)
+                            if(el){
+                                el.dataset.id = dbId
+                            }
+                        })
+                    }
+
+                    if(res.uraian_map){
+                        Object.entries(res.uraian_map).forEach(([tempId, dbId]) => {
+                            const el = document.getElementById(tempId)
+                            if(el){
+                                el.dataset.id = dbId
+                            }
+                        })
+                    }
+                    if(res.item_map){
+                        Object.entries(res.item_map).forEach(([tempId, dbId]) => {
+                            const el = document.getElementById(tempId)
+                            if(el){
+                                el.dataset.id = dbId
+                            }
+                        })
+                    }
+                    uraian_images: Object.fromEntries(
+                        Object.entries(uraianImages).map(([key, imgs]) => [
+                            key,
+                            imgs.map(img => img.id)
+                        ])
+                    )
+
+                })
+            .catch(err => {
+                console.error('Autosave error:', err)
+            })
+                .finally(() => {
             isSaving = false
-            return
-        }
-
-        fetch(`/rab/autosave/${window.currentRabId}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-            },
-            body: JSON.stringify({
-                categories: collectCategories(),
-                items: collectItems(),
-                profit: globalProfit,
-                overhead: globalOverhead,
-                discount: Number(document.getElementById('rab_discount_edit').value || 0),
-                tax_rate: Number(document.getElementById('rab_tax_rate_edit').value || 0),
-                shipping: Number(document.getElementById('rab_shipping_edit').value || 0)
-            })
-        }).then(res => res.json())
-            .then(res => {
-                if(res.category_map){
-                    Object.entries(res.category_map).forEach(([tempId, dbId]) => {
-                        const el = document.getElementById(tempId)
-                        if(el){
-                            el.dataset.id = dbId
-                        }
-                    })
-                }
-
-                if(res.uraian_map){
-                    Object.entries(res.uraian_map).forEach(([tempId, dbId]) => {
-                        const el = document.getElementById(tempId)
-                        if(el){
-                            el.dataset.id = dbId
-                        }
-                    })
-                }
-                if(res.item_map){
-                    Object.entries(res.item_map).forEach(([tempId, dbId]) => {
-                        const el = document.getElementById(tempId)
-                        if(el){
-                            el.dataset.id = dbId
-                        }
-                    })
-                }
-
-            })
-        .catch(err => {
-            console.error('Autosave error:', err)
         })
-            .finally(() => {
-        isSaving = false
-    })
     }
     function collectCategories(){
 
@@ -444,25 +471,28 @@
         return Math.round(num)
     }
 
-    let currentRabJob = null;
-    let rabItems = {}
-    let currentBasePrice = 0
-    let globalProfit = 0
-    let globalOverhead = 0
-    let categoryIndex = 0
-    let uraianIndex = {}
-    let uraianGlobalIndex = 0
-    let jobIndex = 0
-    let draggedGroup = []
-    let uraianImages = {}
-    let activeUraian = null
-    let currentMode = 'edit'
-    let sortableInstance = null
-    let globalIndex = 0;
-
     function setMode(mode){
 
         currentMode = mode
+        const btnEdit = document.getElementById('btnEditMode')
+        const btnDrag = document.getElementById('btnDragMode')
+
+        // RESET dulu
+        btnEdit.classList.remove('btn-dark')
+        btnEdit.classList.add('btn-outline-secondary')
+
+        btnDrag.classList.remove('btn-dark')
+        btnDrag.classList.add('btn-outline-secondary')
+
+        if(mode === 'edit'){
+            btnEdit.classList.remove('btn-outline-secondary')
+            btnEdit.classList.add('btn-dark')
+        }
+
+        if(mode === 'drag'){
+            btnDrag.classList.remove('btn-outline-secondary')
+            btnDrag.classList.add('btn-dark')
+        }
 
         if(mode === 'edit'){
 
@@ -765,7 +795,6 @@
                 </tr>
                 `)
 
-                // JOB / ITEM
                 uraian.items.forEach(job => {
 
                     const jobId = 'job_'+jobIndex++
@@ -1131,7 +1160,7 @@
                 addJobRowEdit(uraianId)
             },50)
         }
-        // triggerAutosave()
+        triggerAutosave()
     }
     function editUraian(uraianId){
         if(isDragMode()) return
@@ -1155,6 +1184,7 @@
         setTimeout(()=>{
             row.querySelector('.uraian-input').focus()
         },50)
+        triggerAutosave()
     }
 
     function addJobRowEdit(uraianId){
@@ -1435,30 +1465,23 @@
 
         if(!catRow) return
 
-        // hapus semua uraian + job dalam kategori
         document.querySelectorAll(`.uraian-row[data-category="${catId}"]`)
         .forEach(uraian=>{
 
             const uraianId = uraian.id
 
-            // hapus job dalam uraian
             document.querySelectorAll(`[data-parent="${uraianId}"]`)
             .forEach(job=>job.remove())
 
             uraian.remove()
         })
 
-        // hapus tombol + uraian
         const addRow = document.getElementById('addUraianEdit_'+catId)
         if(addRow) addRow.remove()
 
-        // hapus kategori
         catRow.remove()
 
-        // reset numbering
         renumberCategory()
-
-        // hitung ulang
         calculateSummary()
         triggerAutosave()
     }
@@ -1687,6 +1710,12 @@
         calculateSummary()
         triggerAutosave()
     })
+    document.querySelectorAll('[name=contact_name], [name=job_location], [name=job_duration]')
+    .forEach(el => {
+        el.addEventListener('input', () => {
+            triggerAutosave()
+        })
+    })
 
     document.getElementById('rab_tax_rate_edit').addEventListener('input', function () {
         calculateSummary();
@@ -1775,14 +1804,11 @@
 
             document.getElementById('rab_shipping_edit').value =
                 parseRupiah(shippingDisplay.value)
-
         }
-
     }
 
     document.getElementById('btnEditMode').addEventListener('click',()=>{
         setMode('edit')
-
     })
 
     document.getElementById('btnDragMode').addEventListener('click',()=>{
@@ -1925,13 +1951,8 @@
                                 location.reload()
                             }
                         })
-
                     })
-
                 })
             }
-
-        
-
 </script>
 @endpush

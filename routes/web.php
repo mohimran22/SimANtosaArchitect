@@ -161,8 +161,10 @@ Route::middleware(['auth', 'permission:lihat daftar kontraktor|lihat data kontra
 
 Route::get('/accounting/generate-code', [AccountingAccountController::class, 'generateCode']);
 Route::middleware(['role:Super-Admin|Akuntan'])->group(function () {
-    Route::resource('/accounting', AccountingAccountController::class);
+    Route::resource('/accounting', AccountingAccountController::class)
+    ->parameters(['accounting' => 'account']);
 });
+         
 
 Route::get('/journals/{journal}/print', [AccountingJournalController::class, 'print'])
     ->name('journals.print');
