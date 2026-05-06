@@ -506,13 +506,12 @@ public function destroy($id)
 
     return response()->json(['success'=>true]);
 }
-public function uraianImages($uraianId) //detail
+public function uraianImages($uraianId)
 {
-
     $uraian = RabProcessUraian::findOrFail($uraianId);
 
     $images = RabUraianImage::with('image')
-        ->where('uraian_key', $uraian->uraian_key)
+        ->where('uraian_id', $uraian->id)
         ->get();
 
     return response()->json(
@@ -704,6 +703,9 @@ public function autosave(Request $request, RabProcess $rab)
             ->get()
             ->keyBy('id');
 
+        $profit = (float) str_replace(',', '.', $request->profit ?? 0);
+        $overhead = (float) str_replace(',', '.', $request->overhead ?? 0);
+
         foreach ($request->items ?? [] as $index => $item) {
 
             if (empty($item['job_category_id'])) continue;
@@ -713,8 +715,6 @@ public function autosave(Request $request, RabProcess $rab)
 
             $job = $jobs[$item['job_category_id']] ?? null;
             if (!$job) continue;
-            $profit = (float) str_replace(',', '.', $request->profit ?? 0);
-            $overhead = (float) str_replace(',', '.', $request->overhead ?? 0);
 
             $basePrice = $job->grand_total;
 
@@ -745,6 +745,24 @@ public function autosave(Request $request, RabProcess $rab)
 
                     $usedItemIds[] = $existing->id;
                     $itemMap[$item['id']] = $existing->id;
+                } else {
+                    
+                    $new = RabProcessItem::create([
+                        'rab_process_id' => $rab->id,
+                        'uraian_id' => $uraianId,
+                        'job_category_id' => $job->id,
+                        'job_name' => $job->nama_pekerjaan,      
+                        'base_price' => $basePrice,     
+                        'satuan' => $job->satuan ?? '', 
+                        'volume' => $volume,
+                        'price' => $price,
+                        'total' => $total,
+                        'order_no' => $item['order'],
+                        'is_draft' => true
+                    ]);
+
+                    $usedItemIds[] = $new->id;
+                    $itemMap[$item['id']] = $new->id;
                 }
 
             } else {
@@ -777,8 +795,11 @@ public function autosave(Request $request, RabProcess $rab)
 
         foreach(($request->uraian_images ?? []) as $uraianKey => $images){
 
+            $uraianId = $uraianMap[$uraianKey] ?? null;
+            if(!$uraianId) continue;
+
             RabUraianImage::where('rab_id', $rab->id)
-                ->where('uraian_key', $uraianKey)
+                ->where('uraian_id', $uraianId)
                 ->delete();
 
             foreach(($images ?? []) as $imgId){
@@ -788,7 +809,7 @@ public function autosave(Request $request, RabProcess $rab)
 
                 RabUraianImage::create([
                     'rab_id' => $rab->id,
-                    'uraian_key' => $uraianKey,
+                    'uraian_id' => $uraianId,
                     'image_id' => $imgId
                 ]);
             }
@@ -798,9 +819,9 @@ public function autosave(Request $request, RabProcess $rab)
             ->where('is_draft', true)
             ->sum('total');
 
-        $discount = $request->discount ?? 0;
-        $taxRate  = $request->tax_rate ?? 0;
-        $shipping = $request->shipping ?? 0;
+        $discount = (float) $request->discount;
+        $taxRate  = (float) $request->tax_rate;
+        $shipping = (float) $request->shipping;
 
         $afterDiscount = max(0, $subtotal - $discount);
         $tax = round($afterDiscount * $taxRate / 100);
@@ -810,7 +831,7 @@ public function autosave(Request $request, RabProcess $rab)
             'contact_name' => $request->contact_name,
             'job_location' => $request->job_location,
             'job_duration' => $request->job_duration,
-            'subtotal' => $subtotal,
+            'base_subtotal' => $subtotal,
             'discount' => $discount,
             'subtotal_after_discount' => $afterDiscount,
             'profit' => $profit,

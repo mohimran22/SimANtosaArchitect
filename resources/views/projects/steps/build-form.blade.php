@@ -138,6 +138,13 @@ function formatRupiah(n){
     return 'Rp ' + Number(n || 0).toLocaleString('id-ID')
 }
 
+function formatNumber(n){
+    return Number(n || 0).toLocaleString('id-ID', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    })
+}
+
 function setRupiah(selector,val){
     $(selector).val(formatRupiah(val))
 }
@@ -194,7 +201,7 @@ function loadRabItems(){
                                 ${item.job_name}
                             </td>
                             <td>${item.satuan}</td>
-                            <td>${item.volume}</td>
+                            <td>${formatNumber(item.volume)}</td>
                             <td>${formatRupiah(item.price)}</td>
                             <td>${formatRupiah(item.total)}</td>
                         </tr>
