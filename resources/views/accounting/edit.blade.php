@@ -73,7 +73,7 @@
                                     </div>
                                 
 
-                                    <div class="col-md-6 mb-3">
+                                    <div class="col-md-6 mb-3" id="parent-field">
                                         <label class="form-label">Akun Induk</label>
                                         <select name="parent_id" class="form-select select2">
                                             <option value="">-- Pilih Akun Induk --</option>
@@ -100,25 +100,30 @@
 @endsection
 @push('js')
 <script>
-    $(document).ready(function() {
-        $('.select2').select2({
-            width: '100%'
-        });
+$(document).ready(function() {
+
+    $('.select2').select2({
+        width: '100%'
     });
-document.addEventListener('DOMContentLoaded', function () {
+
     const selectIsParent = document.querySelector('[name="is_parent"]');
-    const parentField = document.querySelector('[name="parent_id"]').closest('.mb-3');
+    const parentField = document.getElementById('parent-field');
 
     function toggleParent() {
-        if (selectIsParent.value == "1") {
+        if (!selectIsParent || !parentField) return;
+
+        if (selectIsParent.value === "1") {
             parentField.style.display = 'none';
         } else {
             parentField.style.display = 'block';
         }
     }
 
+    // jalan saat pertama load
     toggleParent();
-    selectIsParent.addEventListener('change', toggleParent);
+
+    // 🔥 WAJIB: jalan saat berubah
+    $(selectIsParent).on('change', toggleParent);
 });
 </script>
 @endpush

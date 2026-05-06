@@ -81,15 +81,14 @@
                                     <div class="row mb-4">
                                         <div class="col-md-6 mb-3">
                                             <label class="form-label">Apakah Akun Induk?</label>
-                                            <select name="is_parent" 
-                                                    class="form-select select2 @error('is_parent') is-invalid @enderror">
+                                            <select name="is_parent" class="form-select select2 @error('is_parent') is-invalid @enderror">
                                                 <option value="">-- Silahkan dipilih --</option>
                                                 <option value="1" {{ old('is_parent') == '1' ? 'selected' : '' }}>Ya (Akun Induk)</option>
                                                 <option value="0" {{ old('is_parent') == '0' ? 'selected' : '' }}>Tidak (Akun Anak)</option>
                                             </select>
                                         </div>
 
-                                        <div class="col-md-6 mb-3">
+                                        <div class="col-md-6 mb-3" id="parent-field">
                                             <label class="form-label">Akun Induk</label>
                                             <select name="parent_id" class="form-select select2">
                                                 <option value="">-- Pilih Akun Induk --</option>
@@ -142,7 +141,7 @@ $(document).ready(function(){
 
     function generateCode(){
         let category = $('[name="category"]').val()
-        let parentId = $('[name="parent_id"]').val() // ✅ ganti
+        let parentId = $('[name="parent_id"]').val()
 
         if(!category){
             $('#account_code_preview').val('')
@@ -162,5 +161,22 @@ $(document).ready(function(){
     $('[name="parent_id"]').on('change', generateCode) // ✅ ganti
 
 })
+</script>
+<script>
+$(document).ready(function(){
+    const selectIsParent = document.querySelector('[name="is_parent"]');
+    const parentField = document.getElementById('parent-field');
+
+    function toggleParent() {
+        if (selectIsParent.value == "1") {
+            parentField.style.display = 'none';
+        } else {
+            parentField.style.display = 'block';
+        }
+    }
+
+    toggleParent();
+    $(selectIsParent).on('change', toggleParent);
+});
 </script>
 @endpush
