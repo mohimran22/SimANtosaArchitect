@@ -506,7 +506,7 @@ public function destroy($id)
 
     return response()->json(['success'=>true]);
 }
-public function uraianImages($uraianId) //detail
+public function uraianImages($uraianId)
 {
 
     $uraian = RabProcessUraian::findOrFail($uraianId);
@@ -768,12 +768,11 @@ public function autosave(Request $request, RabProcess $rab)
             }
         }
 
-        if (!empty($usedItemIds)) {
             RabProcessItem::where('rab_process_id', $rab->id)
                 ->where('is_draft', true)
                 ->whereNotIn('id', $usedItemIds)
                 ->delete();
-        }
+        
 
         foreach(($request->uraian_images ?? []) as $uraianKey => $images){
 
