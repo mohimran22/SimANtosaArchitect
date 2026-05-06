@@ -125,10 +125,11 @@ public function index(Request $request)
     } else {
         abort(403, 'Role tidak diizinkan.');
     }
-
+    $categories = config('accounting.categories');
+    $subCategories = config('accounting.sub_categories');
     $parentAccounts = AccountingAccount::where('is_parent', true)->get();
 
-    return view('accounting.create', compact('parentAccounts'));
+    return view('accounting.create', compact('parentAccounts', 'categories', 'subCategories'));
 }
 
 
@@ -302,7 +303,18 @@ private function generateAccountCode($category, $parentId = null)
 {
     // LEVEL 1 → KATEGORI
     if (!$parentId) {
+
         $prefix = $this->getCategoryPrefix($category);
+
+        // cek apakah root sudah ada
+        $root = AccountingAccount::where('account_code', "{$prefix}-000-000")->first();
+
+        if ($root) {
+            // berarti ini level 2
+            return $this->generateAccountCode($category, $root->id);
+        }
+
+        // kalau belum ada → buat root
         return "{$prefix}-000-000";
     }
 

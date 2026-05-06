@@ -1034,48 +1034,6 @@ document.addEventListener('click', function (e) {
     });
 });
 </script>
-{{-- <script>
-    let rabLoaded = false
-    document.addEventListener("DOMContentLoaded", () => {
-
-        const view = document.getElementById("rab-view");
-        const edit = document.getElementById("rab-edit");
-        document.getElementById("btn-edit-rab")?.addEventListener("click", () => {
-
-            view.style.display = "none";
-            edit.style.display = "block";
-
-            if(!rabLoaded){
-
-                const rabId = @json($rab?->id);
-
-                fetch(`/rab/${rabId}/structure`)
-                    .then(res => res.json())
-                    .then(data => {
-
-                        loadExistingRab(data);
-                        setTimeout(() => {
-                            initRabEdit()
-                        }, 2000)
-
-                        rabLoaded = true
-                    });
-
-            }else{
-                setTimeout(() => {
-                            initRabEdit()
-                }, 100)
-            }
-
-        });
-
-        document.getElementById("btn-cancel-rab").addEventListener("click", () => {
-            edit.style.display = "none";
-            view.style.display = "block";
-        });
-
-    });
-</script> --}}
 <script>
 let rabLoaded = false
 let isEditMode = false
@@ -1257,7 +1215,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
 });
 </script>
-
 
 <script>
 document.querySelectorAll('.preview-image').forEach(img => {

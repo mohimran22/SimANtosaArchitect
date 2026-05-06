@@ -342,7 +342,7 @@ public function update(Request $request, Project $project, RabProcess $rab)
 
             foreach(($images ?? []) as $imgId){
 
-                $exists = \App\Models\RabImage::where('id', $imgId)->exists();
+                $exists = RabImage::where('id', $imgId)->exists();
 
                 if(!$exists){
                     continue;

@@ -57,39 +57,17 @@
                                             <label class="form-label">Kategori</label>
                                             <select name="category" class="form-select select2" required>
                                                 <option value="">-- Pilih Kategori --</option>
-                                                <option value="AKTIVA">AKTIVA</option>
-                                                <option value="KEWAJIBAN">KEWAJIBAN</option>
-                                                <option value="EKUITAS">EKUITAS</option>
-                                                <option value="PENDAPATAN">PENDAPATAN</option>
-                                                <option value="BEBAN">BEBAN</option>
+                                                    @foreach ($categories as $cat)
+                                                        <option value="{{ $cat }}">{{ $cat }}</option>
+                                                    @endforeach
                                             </select>
                                         </div>
 
                                         <div class="col-md-6 mb-3">
                                             <label class="form-label">Sub Kategori</label>
-                                            <select name="sub_category" class="form-select select2" required>
-                                                <option value="">-- Pilih Sub kategori --</option>
-                                                <option value="Aset Lancar - Kas & Bank">Aset Lancar - Kas & Bank</option>
-                                                <option value="Aset Lancar - Persediaan Barang">Aset Lancar - Persediaan Barang</option>
-                                                <option value="Aset Lancar - Piutang">Aset Lancar - Piutang</option>
-                                                <option value="Aset Lancar - Dana Belum Disetor">Aset Lancar - Dana Belum Disetor</option>
-                                                <option value="Aset Lancar - Pajak Bayar Dimuka">Aset Lancar - Pajak Bayar Dimuka</option>
-                                                <option value="Aset Tetap">Aset Tetap</option>
-                                                <option value="Penyusutan">Penyusutan</option>
-                                                <option value="Hutang">Hutang</option>
-                                                <option value="Uang Muka Penjualan">Uang Muka Penjualan</option>
-                                                <option value="Pajak">Pajak</option>
-                                                <option value="Modal">Modal</option>
-                                                <option value="Pendapatan Desain">Pendapatan Desain</option>
-                                                <option value="Pendapatan RAB">Pendapatan RAB</option>
-                                                <option value="Pendapatan Build">Pendapatan Build</option>
-                                                <option value="Pendapatan Lainnya">Pendapatan Lainnya</option>
-                                                <option value="Biaya Desain">Biaya Desain</option>
-                                                <option value="Biaya RAB">Biaya RAB</option>
-                                                <option value="Biaya Build">Biaya Build</option>
-                                                <option value="Beban Penjualan & Pemasaran">Beban Penjualan & Pemasaran</option>
-                                                <option value="Beban Administrasi & Umum">Beban Administrasi & Umum</option>
-                                            </select>
+                                                <select name="sub_category" id="sub_category" class="form-select select2">
+                                                    <option value="">-- Pilih Sub kategori --</option>
+                                                </select>
                                         </div>
                                     </div>
 
@@ -142,6 +120,22 @@
             width: '100%'
         });
     });
+</script>
+<script>
+const subCategories = @json($subCategories);
+
+$('[name="category"]').on('change', function () {
+    let selected = $(this).val();
+    let options = '<option value="">-- Pilih Sub kategori --</option>';
+
+    if (subCategories[selected]) {
+        subCategories[selected].forEach(function (item) {
+            options += `<option value="${item}">${item}</option>`;
+        });
+    }
+
+    $('#sub_category').html(options).trigger('change');
+});
 </script>
 <script>
 $(document).ready(function(){

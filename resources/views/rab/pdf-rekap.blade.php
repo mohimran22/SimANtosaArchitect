@@ -58,34 +58,34 @@
 
     <tfoot>
         <tr style="font-weight:bold;">
-            <td colspan="2" align="right">SUBTOTAL</td>
-            <td align="right">Rp {{ number_format($rab->subtotal,0,',','.') }}</td>
+            <th colspan="2" align="right">SUBTOTAL</th>
+            <th align="right">Rp {{ number_format($rab->subtotal,0,',','.') }}</th>
         </tr>
         <tr style="font-weight:bold;">
-            <td colspan="2" align="right">DISKON</td>
-            <td align="right">{{ number_format($rab->discount,0,',','.') }}</td>
+            <th colspan="2" align="right">DISKON</th>
+            <th align="right">{{ number_format($rab->discount,0,',','.') }}</th>
         </tr>
         <tr style="font-weight:bold;">
-            <td colspan="2" align="right">SUBTOTAL AFTER DISKON</td>
-            <td align="right">{{ number_format($rab->subtotal_after_discount,0,',','.') }}</td>
+            <th colspan="2" align="right">SUBTOTAL AFTER DISKON</th>
+            <th align="right">{{ number_format($rab->subtotal_after_discount,0,',','.') }}</th>
         </tr>
         <tr style="font-weight:bold;">
-            <td colspan="2" align="right">TAX ({{ $rab->tax_rate }}%)</td>
-            <td align="right">{{ number_format($rab->tax_total,0,',','.') }}</td>
+            <th colspan="2" align="right">TAX ({{ $rab->tax_rate }}%)</th>
+            <th align="right">{{ number_format($rab->tax_total,0,',','.') }}</th>
         </tr>
         <tr style="font-weight:bold;">
-            <td colspan="2" align="right">SHIPPING</td>
-            <td align="right">{{ number_format($rab->shipping,0,',','.') }}</td>
+            <th colspan="2" align="right">SHIPPING</th>
+            <th align="right">{{ number_format($rab->shipping,0,',','.') }}</th>
         </tr>
         <tr style="font-weight:bold;">
-            <td colspan="2" align="right">GRAND TOTAL</td>
-            <td align="right">{{ number_format($rab->grand_total,0,',','.') }}</td>
+            <th colspan="2" align="right">GRAND TOTAL</th>
+            <th align="right">{{ number_format($rab->grand_total,0,',','.') }}</th>
         </tr>
         <tr style="font-weight:bold;">
-            <td colspan="2" align="right">DIBULATKAN</td>
-            <td align="right">
+            <th colspan="2" align="right">DIBULATKAN</th>
+            <th align="right">
                 Rp {{ number_format(floor($rab->grand_total / 100000) * 100000,0,',','.') }}
-            </td>
+            </th>
         </tr>
     </tfoot>
 </table>
