@@ -197,9 +197,11 @@ public function store(Request $request)
         abort(403, 'Role tidak diizinkan.');
     }
 
+    $categories = config('accounting.categories');
+    $subCategories = config('accounting.sub_categories');
     $parentAccounts = AccountingAccount::where('is_parent', true)->get();
 
-    return view('accounting.edit', compact('account', 'parentAccounts'));
+    return view('accounting.edit', compact('account', 'parentAccounts', 'categories', 'subCategories'));
 
     }
 
@@ -221,11 +223,6 @@ public function store(Request $request)
             'person_type' => 'nullable|string',
         ]);
 
-        // if ($request->parent_id == $account->id) {
-        //     return back()->withErrors([
-        //         'parent_id' => 'Tidak boleh memilih diri sendiri sebagai parent.'
-        //     ]);
-        // }
         if ($request->parent_id) {
             $parent = AccountingAccount::find($request->parent_id);
 

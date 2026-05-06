@@ -44,12 +44,21 @@
 
                                     <div class="col-md-6 mb-3">
                                         <label class="form-label">Kategori</label>
-                                        <input type="text" name="category" value="{{ $account->category }}" class="form-control" required>
+                                        <select name="category" class="form-select select2" required>
+                                            <option value="">-- Pilih Kategori --</option>
+                                                    @foreach ($categories as $cat)
+                                                        <option value="{{ $cat }}" {{ $account->category == $cat ? 'selected' : '' }}>
+                                                            {{ $cat }}
+                                                        </option>
+                                                    @endforeach
+                                        </select>
                                     </div>
 
                                     <div class="col-md-6 mb-3">
                                         <label class="form-label">Sub Kategori</label>
-                                        <input type="text" name="sub_category" value="{{ $account->sub_category }}" class="form-control" required>
+                                        <select name="sub_category" id="sub_category" class="form-select select2">
+                                            <option value="">-- Pilih Sub kategori --</option>
+                                        </select>
                                     </div>
                                 </div>
                                 <div class="row mb-4">
@@ -125,5 +134,61 @@ $(document).ready(function() {
     // 🔥 WAJIB: jalan saat berubah
     $(selectIsParent).on('change', toggleParent);
 });
+</script>
+<script>
+const subCategories = @json($subCategories);
+const selectedSub = "{{ $account->sub_category }}";
+
+function loadSub(category) {
+    let options = '<option value="">-- Pilih Sub kategori --</option>';
+
+    if (subCategories[category]) {
+        subCategories[category].forEach(function (item) {
+            let selected = item === selectedSub ? 'selected' : '';
+            options += `<option value="${item}" ${selected}>${item}</option>`;
+        });
+    }
+
+    $('#sub_category').html(options).trigger('change');
+}
+
+// 🔥 Load saat edit pertama kali
+$(document).ready(function () {
+    let category = $('[name="category"]').val();
+    if (category) {
+        loadSub(category);
+    }
+});
+
+// 🔥 Load saat berubah
+$('[name="category"]').on('change', function () {
+    loadSub($(this).val());
+});
+</script>
+<script>
+$(document).ready(function(){
+
+    function generateCode(){
+        let category = $('[name="category"]').val()
+        let parentId = $('[name="parent_id"]').val()
+
+        if(!category){
+            $('#account_code_preview').val('')
+            return
+        }
+
+        $('#account_code_preview').val('Generating...')
+
+        fetch(`/accounting/generate-code?category=${encodeURIComponent(category)}&parent_id=${encodeURIComponent(parentId ?? '')}`)
+            .then(res => res.json())
+            .then(data => {
+                $('#account_code_preview').val(data.code)
+            })
+    }
+
+    $('[name="category"]').on('change', generateCode)
+    $('[name="parent_id"]').on('change', generateCode)
+
+})
 </script>
 @endpush
