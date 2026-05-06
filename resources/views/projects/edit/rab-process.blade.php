@@ -310,10 +310,17 @@
                     job_location: document.querySelector('[name=job_location]')?.value || '',
                     job_duration: document.querySelector('[name=job_duration]')?.value || 0,
                     uraian_images: Object.fromEntries(
-                        Object.entries(uraianImages).map(([key, imgs]) => [
-                            key,
-                            imgs.map(img => img.id)
-                        ])
+                        Object.entries(uraianImages).map(([key, imgs]) => {
+
+                            const el = document.getElementById(key)
+
+                            const realId = el?.dataset?.id || key
+
+                            return [
+                                realId,
+                                imgs.map(img => img.id)
+                            ]
+                        })
                     ),
                     profit: globalProfit,
                     overhead: globalOverhead,
@@ -1779,7 +1786,7 @@
                     price: price,
                     total: total,
 
-                    uraian_key: uraian.id, 
+                    uraian_id: uraian.dataset.id || null,
                     category_key: row.dataset.category,
 
                     uraian_name:
