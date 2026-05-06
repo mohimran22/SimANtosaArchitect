@@ -309,19 +309,6 @@
                     contact_name: document.querySelector('[name=contact_name]')?.value || '',
                     job_location: document.querySelector('[name=job_location]')?.value || '',
                     job_duration: document.querySelector('[name=job_duration]')?.value || 0,
-                    uraian_images: Object.fromEntries(
-                        Object.entries(uraianImages).map(([key, imgs]) => {
-
-                            const el = document.getElementById(key)
-
-                            const realId = el?.dataset?.id || key
-
-                            return [
-                                realId,
-                                imgs.map(img => img.id)
-                            ]
-                        })
-                    ),
                     profit: globalProfit,
                     overhead: globalOverhead,
                     discount: Number(document.getElementById('rab_discount_edit').value || 0),
@@ -338,18 +325,12 @@
                             }
                         })
                     }
+
                     if(res.uraian_map){
                         Object.entries(res.uraian_map).forEach(([tempId, dbId]) => {
                             const el = document.getElementById(tempId)
                             if(el){
                                 el.dataset.id = dbId
-
-                                if(uraianImages[tempId]){
-                                    uraianImages[dbId] = uraianImages[tempId]
-                                    delete uraianImages[tempId]
-                                }
-
-                                el.id = dbId
                             }
                         })
                     }
@@ -743,7 +724,7 @@
             // URAIAN
             cat.uraians.forEach(uraian => {
 
-                const uraianId = 'ex_' + uraian.id
+                const uraianId = 'ex_' + uraian.uraian_key
                 if(!uraianImages[uraianId]){
                     uraianImages[uraianId] = []
                 }
@@ -1415,6 +1396,7 @@
         document.getElementById('rab_subAfterDiscount').value = subAfterDiscount
         document.getElementById('rab_subAfterDiscountDisplay_edit').innerText = formatRupiah(subAfterDiscount)
 
+        // tax
         let taxRate = Number(document.getElementById('rab_tax_rate_edit').value || 0)
 
         let taxTotal = round(subAfterDiscount * taxRate / 100)
@@ -1422,8 +1404,10 @@
         document.getElementById('rab_tax_total').value = taxTotal
         document.getElementById('rab_totalTaxDisplay_edit').innerText = formatRupiah(taxTotal)
 
+        // shipping
         let shipping = parseRupiah(document.getElementById('rab_shipping_edit').value)
 
+        // grand total
         let grand = round(subAfterDiscount + taxTotal + shipping)
 
         const grandEl = document.getElementById('rab_grandTotalDisplay_edit')
@@ -1617,10 +1601,6 @@
                 'X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]').content
             }
         })
-        .then(() => {
-            uraianImages[activeUraian].splice(index,1)
-            renderGalleryEdit()
-        })
 
         uraianImages[activeUraian].splice(index,1)
 
@@ -1786,7 +1766,7 @@
                     price: price,
                     total: total,
 
-                    uraian_id: uraian.dataset.id || null,
+                    uraian_key: uraian.id, 
                     category_key: row.dataset.category,
 
                     uraian_name:
