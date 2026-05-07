@@ -1283,13 +1283,6 @@
             width: '100%',
             dropdownAutoWidth: true
         })
-        const select = $(`#${jobId} .job-select`)
-
-        select.select2({
-            width: '100%',
-            dropdownAutoWidth: true
-        })
-
     }
 
     function loadJobEdit(rowId, jobId){
