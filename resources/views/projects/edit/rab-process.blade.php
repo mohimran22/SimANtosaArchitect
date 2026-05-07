@@ -1163,9 +1163,7 @@
         const jobs = document.querySelectorAll(`.job-row[data-parent="${uraianId}"]`)
 
         if(jobs.length === 0){
-            setTimeout(()=>{
-                addJobRowEdit(uraianId)
-            },50)
+            addJobRowEdit(uraianId)
         }
         triggerAutosave()
     }
@@ -1285,16 +1283,12 @@
             width: '100%',
             dropdownAutoWidth: true
         })
-        setTimeout(()=>{
         const select = $(`#${jobId} .job-select`)
-        select.select2()
 
-        select.next('.select2-container')
-            .find('.select2-selection')
-            .focus()
-
-        select.select2('open')
-        },200)
+        select.select2({
+            width: '100%',
+            dropdownAutoWidth: true
+        })
 
     }
 
