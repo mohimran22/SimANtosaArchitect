@@ -800,6 +800,7 @@ public function autosave(Request $request, RabProcess $rab)
                 ->filter()
                 ->unique()
                 ->values();
+                
             if (array_key_exists($uraianKey, $request->uraian_images ?? [])) {
             RabUraianImage::where('rab_id', $rab->id)
                 ->where('uraian_id', $uraianId)
