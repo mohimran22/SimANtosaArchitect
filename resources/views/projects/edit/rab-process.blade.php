@@ -76,7 +76,7 @@
                 🔀 Urutkan Daftar Pekerjaan
             </button>
         </div>
-        <table class="table table-bordered align-middle" id="offerItemsTable">
+        <table class="table table-bordered align-middle" id="rabItemsTableEdit">
             <colgroup>
                 <col><col><col><col><col><col><col>
             </colgroup>
@@ -306,6 +306,7 @@
                 body: JSON.stringify({
                     categories: collectCategories(),
                     items: collectItems(),
+                    uraian_images: collectUraianImages(),
                     contact_name: document.querySelector('[name=contact_name]')?.value || '',
                     job_location: document.querySelector('[name=job_location]')?.value || '',
                     job_duration: document.querySelector('[name=job_duration]')?.value || 0,
@@ -664,7 +665,8 @@
         })
     }
     function loadExistingRab(data){
-
+        uraianImages = {}
+        rabItems = {}
         const tbody = document.getElementById('rab_offerItemsBody_edit')
         tbody.innerHTML = ''
 
@@ -721,10 +723,9 @@
             </tr>
             `)
 
-            // URAIAN
             cat.uraians.forEach(uraian => {
 
-                const uraianId = 'ex_' + uraian.uraian_key
+                const uraianId = uraian.uraian_key
                 if(!uraianImages[uraianId]){
                     uraianImages[uraianId] = []
                 }
@@ -827,7 +828,7 @@
                             <input type="number"
                                 class="form-control vol"
                                 value="${job.volume}"
-                                oninput="calculate('${jobId}')">
+                                oninput="rabEditCalculate('${jobId}')">
                         </td>
 
                         <td>
@@ -873,7 +874,6 @@
                 })
             })
 
-            // ADD URAIAN BUTTON
             tbody.insertAdjacentHTML('beforeend',`
 
             <tr class="no-drag" id="addUraianEdit_${catId}">
@@ -900,24 +900,40 @@
 
         setTimeout(()=>{
             syncDiscountShipping()
-            calculateSummary()
+            rabEditCalculateSummary()
         },300)
 
     }
+    let draftLoaded = false
     function loadDraft(){
         if(!window.currentRabId){
             console.warn('Load draft skip: currentRabId belum ada')
             return
         }
-
+        if(draftLoaded) return
         fetch(`/rab/autosave/${window.currentRabId}`)
         .then(res => res.json())
         .then(data => {
 
             if(!data || !data.categories?.length) return
-
+            draftLoaded = true
             loadExistingRab(data)
         })
+    }
+    function collectUraianImages(){
+
+        let result = {}
+
+        Object.keys(uraianImages).forEach(uraianKey => {
+
+            result[uraianKey] =
+                (uraianImages[uraianKey] || [])
+                .map(img => img.id)
+                .filter(Boolean)
+
+        })
+
+        return result
     }
     function addCategoryEdit(){
         if(isDragMode()) return
@@ -963,7 +979,7 @@
     function saveCategoryEdit(catId){
 
         const row = document.getElementById(catId)
-        const input = row.querySelector('.category-input')
+        let input = row.querySelector('.category-input')
 
         row.classList.remove('editing')
 
@@ -1229,7 +1245,7 @@
                 <input type="number"
                     step="0.01"
                     class="form-control vol"
-                    oninput="calculate('${jobId}')">
+                    oninput="rabEditCalculate('${jobId}')">
             </td>
 
             <td>
@@ -1310,11 +1326,11 @@
                 hargaInput.value = formatRupiah(job.harga)
             }
 
-            calculate(rowId)
+            rabEditCalculate(rowId)
         })
     }
 
-    function calculate(rowId, triggerSave = true){
+    function rabEditCalculate(rowId, triggerSave = true){
 
         const row = document.getElementById(rowId)
 
@@ -1348,7 +1364,7 @@
 
         updateCategorySubtotal(row.dataset.category)
         if(triggerSave){
-            calculateSummary()
+            rabEditCalculateSummary()
             triggerAutosave()
         }
     }
@@ -1376,7 +1392,7 @@
         }
 
     }
-    function calculateSummary(){
+    function rabEditCalculateSummary(){
 
         let subtotal = 0
 
@@ -1431,7 +1447,7 @@
             updateCategorySubtotal(catId)
         }
 
-        calculateSummary()
+        rabEditCalculateSummary()
         triggerAutosave()
     }
     function removeUraianEdit(id){
@@ -1448,7 +1464,7 @@
 
         updateCategorySubtotal(catId)
 
-        calculateSummary()
+        rabEditCalculateSummary()
         triggerAutosave()
     }
     function removeCat(catId){
@@ -1473,7 +1489,7 @@
         catRow.remove()
 
         renumberCategory()
-        calculateSummary()
+        rabEditCalculateSummary()
         triggerAutosave()
     }
     function renumberCategory(){
@@ -1532,9 +1548,9 @@
     function recalcAfterDrag(){
 
         document.querySelectorAll('.job-row').forEach(row=>{
-            calculate(row.id, false)
+            rabEditCalculate(row.id, false)
         })
-        calculateSummary()
+        rabEditCalculateSummary()
     }
     function openUraianGalleryEdit(uraianId, uraianName){
   
@@ -1625,7 +1641,7 @@
 
             hargaInput.value = formatRupiah(newPrice)
 
-            calculate(row.id, false)
+            rabEditCalculate(row.id, false)
 
         })
 
@@ -1637,36 +1653,81 @@
         $("#modalTitleEdit").text(uraian);
 
     });
-    document.getElementById('uraianImageInputEdit').addEventListener('change',function(){
+    document.getElementById('uraianImageInputEdit').addEventListener('change', function(){
 
         const files = this.files
+
+        const uraianRow = document.getElementById(activeUraian)
+
+        if(!uraianRow){
+            alert('Uraian tidak ditemukan')
+            return
+        }
+
+        // wajib sudah punya DB ID
+        if(!uraianRow.dataset.id){
+            alert('Tunggu autosave selesai dulu sebelum upload gambar')
+            return
+        }
 
         Array.from(files).forEach(file=>{
 
             const formData = new FormData()
+
             formData.append('image', file)
 
+            // relasi utama
+            formData.append(
+                'rab_uraian_id',
+                uraianRow.dataset.id
+            )
+
+            formData.append(
+                'rab_id',
+                window.currentRabId
+            )
+
             fetch('/rab-images/upload',{
+
                 method:'POST',
+
                 headers:{
-                    'X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]').content
+                    'X-CSRF-TOKEN':
+                        document.querySelector(
+                            'meta[name="csrf-token"]'
+                        ).content
                 },
+
                 body:formData
             })
+
             .then(res=>res.json())
+
             .then(img=>{
 
                 if(!uraianImages[activeUraian]){
                     uraianImages[activeUraian] = []
                 }
 
-                uraianImages[activeUraian].push(img)
+                uraianImages[activeUraian].push({
+                    id: img.id,
+                    url: img.url
+                })
 
                 renderGalleryEdit()
 
+                triggerAutosave(true)
+            })
+
+            .catch(err=>{
+                console.error(err)
+                alert('Upload gambar gagal')
             })
 
         })
+
+        // reset input
+        this.value = ''
 
     })
             document.getElementById('rab_profit_display_edit').addEventListener('input', function(){
@@ -1680,33 +1741,38 @@
                 updateHargaSemua()
                 triggerAutosave()
             })
-    document.getElementById('rab_discount_display_edit').addEventListener('input',function(){
+            const discountEl = document.getElementById('rab_discount_display_edit')
 
-        let raw = parseRupiah(this.value)
+            discountEl.addEventListener('input', function(){
 
-        document.getElementById('rab_discount_edit').value = raw
-        this.value = this.value // biarin user ketik bebas
-        this.addEventListener('blur', function(){
-            this.value = formatRupiah(parseRupiah(this.value))
-        })
+                let raw = parseRupiah(this.value)
 
-        document.getElementById('rab_discount_edit').value =
-            parseRupiah(this.value)
+                document.getElementById('rab_discount_edit').value = raw
 
-        calculateSummary()
-        triggerAutosave()
-    })
+                rabEditCalculateSummary()
+                triggerAutosave()
+            })
 
-    document.getElementById('rab_shipping_display_edit').addEventListener('input',function(){
+            discountEl.addEventListener('blur', function(){
+                this.value = formatRupiah(parseRupiah(this.value))
+            })
 
-        rupiahInput(this)
+            const shippingEl = document.getElementById('rab_shipping_display_edit')
 
-        document.getElementById('rab_shipping_edit').value =
-            parseRupiah(this.value)
+            shippingEl.addEventListener('input', function(){
 
-        calculateSummary()
-        triggerAutosave()
-    })
+                let raw = parseRupiah(this.value)
+
+                document.getElementById('rab_shipping_edit').value = raw
+
+                rabEditCalculateSummary()
+                triggerAutosave()
+            })
+
+            shippingEl.addEventListener('blur', function(){
+                this.value = formatRupiah(parseRupiah(this.value))
+            })
+
     document.querySelectorAll('[name=contact_name], [name=job_location], [name=job_duration]')
     .forEach(el => {
         el.addEventListener('input', () => {
@@ -1715,7 +1781,7 @@
     })
 
     document.getElementById('rab_tax_rate_edit').addEventListener('input', function () {
-        calculateSummary();
+        rabEditCalculateSummary();
     });
 
     function collectItems(){
@@ -1746,13 +1812,15 @@
 
                 const basePrice = Number(hargaInput?.dataset.value || 0)
 
-                const price = parseRupiah(hargaInput?.value || 0)
+                // const price = parseRupiah(hargaInput?.value || 0)
+                const price = Number(hargaInput?.dataset.value || 0)
 
                 const total = volume * price
 
                 items.push({
 
                     id: row.dataset.id || null,
+                    db_id: row.dataset.id || null,
 
                     job_category_id: jobSelect.value,
 

@@ -49,8 +49,16 @@
   
     <div class="row mb-4 mt-3">
         <h4 class="fw-bold mb-3">Rincian Pekerjaan</h4>
+        <div class="mb-2 d-flex gap-2">
+            <button type="button" id="tombolUbah" class="btn btn-dark btn-sm">
+                ✏️ Mode Edit
+            </button>
 
-        <table class="table table-bordered align-middle" id="offerItemsTable">
+            <button type="button" id="tombolGeser" class="btn btn-outline-secondary btn-sm">
+                🔀 Urutkan Daftar Pekerjaan
+            </button>
+        </div>
+        <table class="table table-bordered align-middle" id="rabItemsTable">
             <colgroup>
                 <col><col><col><col><col><col><col>
             </colgroup>
@@ -177,6 +185,8 @@ let jobIndex = 0;
 let draggedGroup = []
 let uraianImages = {}
 let activeUraian = null
+    let currentMode = 'edit'
+    let sortableInstance = null
 
 function parseRupiah(value){
 
@@ -207,106 +217,225 @@ function rupiahInput(el){
 
 }
 
-function numberToLetters(num) {
-    let letters = '';
-    while (num >= 0) {
-        letters = String.fromCharCode((num % 26) + 65) + letters;
-        num = Math.floor(num / 26) - 1;
+    function numberToLettersrab(num){
+        let letters = ''
+        num = num + 1 // karena A = 1, bukan 0
+
+        while(num > 0){
+            let rem = (num - 1) % 26
+            letters = String.fromCharCode(65 + rem) + letters
+            num = Math.floor((num - 1) / 26)
+        }
+
+        return letters
     }
-    return letters;
-}
 
-const tbody = document.getElementById('rab_offerItemsBody')
+    function setModeCreate(mode){
 
-new Sortable(tbody,{
-    animation:150,
-    handle:'.drag-handle,.drag-ahsp',
-    draggable:'tr',
+        currentMode = mode
+        const btnEdit = document.getElementById('tombolUbah')
+        const btnDrag = document.getElementById('tombolGeser')
 
-    onStart:function(evt){
+        // RESET dulu
+        btnEdit.classList.remove('btn-dark')
+        btnEdit.classList.add('btn-outline-secondary')
 
-            const row = evt.item
-            draggedGroup = [row]
+        btnDrag.classList.remove('btn-dark')
+        btnDrag.classList.add('btn-outline-secondary')
 
-            if(row.classList.contains('category-row')){
+        if(mode === 'edit'){
+            btnEdit.classList.remove('btn-outline-secondary')
+            btnEdit.classList.add('btn-dark')
+        }
 
-                let next = row.nextElementSibling
+        if(mode === 'drag'){
+            btnDrag.classList.remove('btn-outline-secondary')
+            btnDrag.classList.add('btn-dark')
+        }
 
-                while(next && !next.classList.contains('category-row')){
-                    draggedGroup.push(next)
-                    next = next.nextElementSibling
+        if(mode === 'edit'){
+
+            document.body.classList.remove('drag-mode')
+
+            document.querySelectorAll('input, select, textarea').forEach(el=>{
+                el.disabled = false
+            })
+
+            if(sortableInstance){
+                sortableInstance.destroy()
+                sortableInstance = null
+            }
+
+            // bersihin sisa drag
+            document.querySelectorAll('.job-row, .uraian-row, .category-row')
+            .forEach(el => {
+                el.style.transform = ''
+                el.style.transition = ''
+                el.classList.remove('sortable-chosen','sortable-ghost','sortable-drag')
+            })
+
+            // reinit select2
+            $('.select2-row').each(function(){
+                if($(this).hasClass("select2-hidden-accessible")){
+                    $(this).select2('destroy')
                 }
+            })
 
-            }
-
-            if(row.classList.contains('uraian-row')){
-
-                const uraianId = row.id
-
-                document.querySelectorAll(`[data-parent="${uraianId}"]`)
-                    .forEach(r=>draggedGroup.push(r))
-
-            }
-
-    },
-
-    onEnd:function(evt){
-
-        const row = evt.item
-
-        if(draggedGroup.length > 1){
-
-            let insertPoint = row.nextElementSibling
-
-            draggedGroup.slice(1).forEach(r=>{
-                tbody.insertBefore(r, insertPoint)
+            $('.select2-row').select2({
+                width: '100%',
+                dropdownAutoWidth: true
             })
 
         }
 
-        renumberAll()
-        recalcAfterDrag()
-    },
-    onMove:function(evt){
+        if(mode === 'drag'){
 
-        const dragged = evt.dragged
-        const related = evt.related
+            document.body.classList.add('drag-mode')
 
-        if(!related) return true
-
-        // CATEGORY hanya boleh bertemu CATEGORY
-        if(dragged.classList.contains('category-row')){
-            if(!related.classList.contains('category-row')){
-                return false
-            }
+            initSortableCreate()
         }
-
-        // AHSP tidak boleh keluar dari uraian
-        if(dragged.classList.contains('job-row')){
-            if(!related.classList.contains('job-row') &&
-            !related.classList.contains('uraian-row')){
-                return false
-            }
-        }
-
-        // URAIAN tidak boleh keluar kategori
-        if(dragged.classList.contains('uraian-row')){
-            if(related.classList.contains('category-row')){
-                return false
-            }
-        }
-        if(related.classList.contains('no-drag')){
-            return false
-        }
-
-        return true
     }
-})
-function addCategory(){
+    let reorderTimer = null
 
+    function initSortableCreate(){
+
+        const tbody = document.getElementById('rab_offerItemsBody_edit')
+
+        sortableInstance = new Sortable(tbody,{
+            animation:150,
+            handle:'.drag-handle,.drag-ahsp',
+            draggable:'.category-row, .uraian-row, .job-row',
+
+            onStart:function(evt){
+                isDragging = true
+                const row = evt.item
+                draggedGroup = [row]
+
+                if(row.classList.contains('category-row')){
+                    let next = row.nextElementSibling
+                    while(next && !next.classList.contains('category-row')){
+                        draggedGroup.push(next)
+                        next = next.nextElementSibling
+                    }
+                }
+
+                if(row.classList.contains('uraian-row')){
+                    const uraianId = row.id
+                    document.querySelectorAll(`[data-parent="${uraianId}"]`)
+                        .forEach(r=>draggedGroup.push(r))
+                }
+            },
+
+            onEnd:function(evt){
+                isDragging = false
+                const row = evt.item
+
+                if(draggedGroup.length > 1){
+                    let insertPoint = row.nextElementSibling
+                    draggedGroup.slice(1).forEach(r=>{
+                        tbody.insertBefore(r, insertPoint)
+                    })
+                }
+
+                draggedGroup = []
+
+                renumberAll()
+
+                setTimeout(()=>{
+                    saveOrderToServerrab()
+                },100)
+            },
+
+            onMove: function(evt){
+                const dragged = evt.dragged
+                const related = evt.related
+
+                if(dragged.classList.contains('job-row')){
+                    return dragged.dataset.parent === related.dataset.parent
+                }
+
+                return true
+            }
+        })
+    }
+    function isDragModeCreate(){
+        return currentMode === 'drag'
+    }
+    function collectOrderCreate(){
+
+        let data = []
+
+        document.querySelectorAll('.category-row').forEach((cat, catIndex) => {
+
+            const catId = cat.dataset.id
+            if(!catId) return
+
+            let catData = {
+                id: catId,
+                order: catIndex,
+                uraians: []
+            }
+
+            document.querySelectorAll(`.uraian-row[data-category="${cat.id}"]`)
+            .forEach((uraian, uraianIndex) => {
+
+                const uraianId = uraian.dataset.id
+                if(!uraianId) return
+
+                let uraianData = {
+                    id: uraianId,
+                    order: uraianIndex,
+                    items: []
+                }
+
+                document.querySelectorAll(`.job-row[data-parent="${uraian.id}"]`)
+                .forEach((row, itemIndex) => {
+
+                    const itemId = row.dataset.id
+                    if(!itemId) return
+
+                    uraianData.items.push({
+                        id: itemId,
+                        order: itemIndex
+                    })
+                })
+
+                catData.uraians.push(uraianData)
+            })
+
+            data.push(catData)
+        })
+
+        return data
+    }
+    let isReordering = false
+
+    function saveOrderToServerrab(){
+
+        if(isReordering) return
+
+        isReordering = true
+
+        fetch(`/rab/reorder/${window.currentRabId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify({
+                structure: collectOrderCreate()
+            })
+        })
+        .catch(err => console.error('Reorder error:', err))
+        .finally(() => {
+            isReordering = false
+        })
+    }
+function addCategory(){
+    if(isDragModeCreate()) return
     const tbody = document.getElementById('rab_offerItemsBody')
 
-    let letter = String.fromCharCode(65 + categoryIndex)
+    let letter = numberToLettersrab(categoryIndex)
     let catId = 'cat_'+categoryIndex
 
     uraianIndex[catId] = 1
@@ -380,7 +509,7 @@ function saveCategory(catId){
 }
 
 function addUraian(catId){
-
+    if(isDragModeCreate()) return
     const addRow = document.getElementById('addUraian_'+catId)
 
     let uraianNo = uraianIndex[catId]++
@@ -455,7 +584,7 @@ function saveUraian(uraianId){
 }
 
 function addJobRow(uraianId){
-
+    if(isDragModeCreate()) return
     const originalSelect = document.getElementById('jobCategorySelect')
     const options = originalSelect.innerHTML
 
@@ -759,7 +888,7 @@ function renumberCategory(){
 
     categories.forEach((cat,i)=>{
 
-        const letter = String.fromCharCode(65 + i)
+        const letter = numberToLettersrab(i)
 
         cat.querySelector('td').innerHTML = `
             <span class="drag-handle me-2" style="cursor:move">
@@ -949,6 +1078,13 @@ document
     }
 
 })
+    document.getElementById('tombolUbah').addEventListener('click',()=>{
+        setModeCreate('edit')
+    })
+
+    document.getElementById('tombolGeser').addEventListener('click',()=>{
+        setModeCreate('drag')
+    })
 document.addEventListener('DOMContentLoaded', function(){
     document.getElementById('rabForm').addEventListener('submit', function () {
         console.log("submit jalan")

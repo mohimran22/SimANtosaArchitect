@@ -14,15 +14,17 @@ class RabProcessUraian extends Model
         'order_no',
         'uraian_key'
     ];
-        public function items()
-    {
-        return $this->hasMany(RabProcessItem::class,'uraian_id');
-    }
+public function items()
+{
+    return $this->hasMany(RabProcessItem::class,'uraian_id')
+        ->where('is_draft', true)
+        ->orderBy('order_no');
+}
 public function images()
 {
     return $this->hasMany(
         RabUraianImage::class,
-        'uraian_key',   // foreign key di rab_uraian_images
+        'uraian_id',   // foreign key di rab_uraian_images
         'uraian_key'    // local key di rab_process_uraians
     );
 }

@@ -1068,7 +1068,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                         setTimeout(() => {
                             initRabEdit()
-                        }, 2000)
+                        }, 100)
 
                         rabLoaded = true
                     });

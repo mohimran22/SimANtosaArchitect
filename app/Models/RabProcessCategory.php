@@ -12,10 +12,19 @@ class RabProcessCategory extends Model
         'order_no',
         'is_draft'
     ];
-        public function uraians()
+    public function uraians()
     {
-        return $this->hasMany(RabProcessUraian::class, 'category_id');
+        return $this->hasMany(RabProcessUraian::class,'category_id')
+            ->where('is_draft', true)
+            ->orderBy('order_no');
     }
+
+    public function items()
+{
+    return $this->hasMany(RabProcessItem::class,'uraian_id')
+        ->where('is_draft', true)
+        ->orderBy('order_no');
+}
 
 //     public function getLetterAttribute()
 // {

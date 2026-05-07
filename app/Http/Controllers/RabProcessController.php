@@ -206,6 +206,137 @@ public function exportPdf(Project $project)
     return $pdf->stream('RENCANA ANGGARAN BIAYA-'.$project->project_name.'.pdf');
 }
 
+public function refreshFromMaster(RabProcess $rab)
+{
+    DB::transaction(function () use ($rab) {
+
+        $subtotal = 0;
+
+        foreach ($rab->items as $item) {
+
+            // Ambil harga terbaru dari job_category
+            $job = JobCategory::find($item->job_category_id);
+
+            if (!$job) continue;
+
+            $newPrice = $job->grand_total;
+
+            $base = $item->volume * $newPrice;
+
+            $profitValue = $base * ($item->profit / 100);
+            $overheadValue = $base * ($item->overhead / 100);
+
+            $total = $base + $profitValue + $overheadValue;
+
+            $item->update([
+                'price' => $newPrice,
+                'total' => $total,
+            ]);
+
+            $subtotal += $total;
+        }
+
+        $discount = $rab->discount;
+        $taxRate  = $rab->tax_rate;
+        $shipping = $rab->shipping;
+
+        $afterDiscount = max($subtotal - $discount, 0);
+        $taxTotal = $afterDiscount * ($taxRate / 100);
+        $grandTotal = $afterDiscount + $taxTotal + $shipping;
+
+        $rab->update([
+            'subtotal' => $subtotal,
+            'subtotal_after_discount' => $afterDiscount,
+            'tax_total' => $taxTotal,
+            'grand_total' => $grandTotal,
+            'analisa_version' => Cache::get('job_category_last_updated', 0),
+            'updated_by' => auth()->id(),
+        ]);
+    });
+
+    return response()->json(['success' => true]);
+}
+
+protected function notifyProjectEvent(Project $project, string $event)
+{
+    $cfg = config("project_events.$event");
+    if (!$cfg) return;
+
+    $admin    = auth()->user();
+    $customer = $project->customer?->user;
+
+    $targets = [];
+
+    if ($admin) {
+        $targets['admin'] = $admin;
+    }
+
+    if ($customer) {
+        $targets['customer'] = $customer;
+    }
+
+    foreach ($targets as $role => $user) {
+        if (!isset($cfg['message'][$role])) continue;
+
+        ProjectNotifier::notifyUsers(
+            [$user],
+            ProjectNotifier::makePayload($project, [
+                'type'    => $event,
+                'role'    => $role,
+                'title'   => $cfg['title'],
+                'message' => $cfg['message'][$role],
+                'url'     => route('projects.create', ['project_id' => $project->id]),
+            ])
+        );
+    }
+}
+
+public function getPackage($id)
+{
+    $package = RabProcess::with('items')->findOrFail($id);
+    return response()->json($package);
+}
+
+public function items($id)
+{
+    $rab = RabProcess::with([
+        'categories.uraians.items',
+        'categories.uraians.images.image'
+    ])->findOrFail($id);
+
+        return response()->json([
+            'categories' => $rab->categories,
+            'header' => [
+                'tax_rate' => $rab->tax_rate,
+                'discount' => $rab->discount,
+                'shipping' => $rab->shipping,
+                'subtotal' => $rab->subtotal,
+                'subtotal_after_discount' => $rab->subtotal_after_discount,
+                'tax_total' => $rab->tax_total,
+                'grand_total' => $rab->grand_total,
+                'notes' => $rab->notes,
+            ],
+        ]);
+}
+
+public function upload(Request $request)
+{
+    $request->validate([
+        'image' => 'required|image|max:4096'
+    ]);
+
+    $path = $request->file('image')->store('rab/uraian','public');
+
+    $img = RabImage::create([
+        'path' => $path
+    ]);
+
+    return response()->json([
+        'id' => $img->id,
+        'url' => Storage::url($path)
+    ]);
+}
+
 public function update(Request $request, Project $project, RabProcess $rab)
 {
     abort_if(auth()->user()->cannot('ubah data proyek'), 403);
@@ -342,7 +473,7 @@ public function update(Request $request, Project $project, RabProcess $rab)
 
             foreach(($images ?? []) as $imgId){
 
-                $exists = RabImage::where('id', $imgId)->exists();
+                $exists = \App\Models\RabImage::where('id', $imgId)->exists();
 
                 if(!$exists){
                     continue;
@@ -365,137 +496,6 @@ public function update(Request $request, Project $project, RabProcess $rab)
         'message' => 'RAB berhasil diupdate'
     ]);
 }
-
-public function refreshFromMaster(RabProcess $rab)
-{
-    DB::transaction(function () use ($rab) {
-
-        $subtotal = 0;
-
-        foreach ($rab->items as $item) {
-
-            // Ambil harga terbaru dari job_category
-            $job = JobCategory::find($item->job_category_id);
-
-            if (!$job) continue;
-
-            $newPrice = $job->grand_total;
-
-            $base = $item->volume * $newPrice;
-
-            $profitValue = $base * ($item->profit / 100);
-            $overheadValue = $base * ($item->overhead / 100);
-
-            $total = $base + $profitValue + $overheadValue;
-
-            $item->update([
-                'price' => $newPrice,
-                'total' => $total,
-            ]);
-
-            $subtotal += $total;
-        }
-
-        $discount = $rab->discount;
-        $taxRate  = $rab->tax_rate;
-        $shipping = $rab->shipping;
-
-        $afterDiscount = max($subtotal - $discount, 0);
-        $taxTotal = $afterDiscount * ($taxRate / 100);
-        $grandTotal = $afterDiscount + $taxTotal + $shipping;
-
-        $rab->update([
-            'subtotal' => $subtotal,
-            'subtotal_after_discount' => $afterDiscount,
-            'tax_total' => $taxTotal,
-            'grand_total' => $grandTotal,
-            'analisa_version' => Cache::get('job_category_last_updated', 0),
-            'updated_by' => auth()->id(),
-        ]);
-    });
-
-    return response()->json(['success' => true]);
-}
-
-protected function notifyProjectEvent(Project $project, string $event)
-{
-    $cfg = config("project_events.$event");
-    if (!$cfg) return;
-
-    $admin    = auth()->user();
-    $customer = $project->customer?->user;
-
-    $targets = [];
-
-    if ($admin) {
-        $targets['admin'] = $admin;
-    }
-
-    if ($customer) {
-        $targets['customer'] = $customer;
-    }
-
-    foreach ($targets as $role => $user) {
-        if (!isset($cfg['message'][$role])) continue;
-
-        ProjectNotifier::notifyUsers(
-            [$user],
-            ProjectNotifier::makePayload($project, [
-                'type'    => $event,
-                'role'    => $role,
-                'title'   => $cfg['title'],
-                'message' => $cfg['message'][$role],
-                'url'     => route('projects.create', ['project_id' => $project->id]),
-            ])
-        );
-    }
-}
-
-public function getPackage($id)
-{
-    $package = RabProcess::with('items')->findOrFail($id);
-    return response()->json($package);
-}
-
-public function items($id)
-{
-    $rab = RabProcess::with([
-        'categories.uraians.items',
-        'categories.uraians.images.image'
-    ])->findOrFail($id);
-
-        return response()->json([
-            'categories' => $rab->categories,
-            'header' => [
-                'tax_rate' => $rab->tax_rate,
-                'discount' => $rab->discount,
-                'shipping' => $rab->shipping,
-                'subtotal' => $rab->subtotal,
-                'subtotal_after_discount' => $rab->subtotal_after_discount,
-                'tax_total' => $rab->tax_total,
-                'grand_total' => $rab->grand_total,
-                'notes' => $rab->notes,
-            ],
-        ]);
-}
-
-public function upload(Request $request)
-{
-    $request->validate([
-        'image' => 'required|image|max:4096'
-    ]);
-
-    $path = $request->file('image')->store('rab/uraian','public');
-
-    $img = RabImage::create([
-        'path' => $path
-    ]);
-
-    return response()->json([
-        'id' => $img->id,
-        'url' => Storage::url($path)
-    ]);
-}
 public function destroy($id)
 {
     $img = RabImage::findOrFail($id);
@@ -506,18 +506,18 @@ public function destroy($id)
 
     return response()->json(['success'=>true]);
 }
-public function uraianImages($uraianId)
+public function uraianImages(RabProcessUraian $uraian)
 {
-
-    $uraian = RabProcessUraian::findOrFail($uraianId);
-
     $images = RabUraianImage::with('image')
-        ->where('uraian_key', $uraian->uraian_key)
+        ->where('uraian_id', $uraian->id)
         ->get();
 
     return response()->json(
         $images->map(fn($i)=>[
-            'url'=>asset('storage/'.$i->image->path)
+            'id'  => $i->image?->id,
+            'url' => $i->image
+                ? asset('storage/'.$i->image->path)
+                : null
         ])
     );
 }
@@ -565,13 +565,11 @@ public function autosave(Request $request, RabProcess $rab)
         $usedUraianIds = [];
         $usedItemIds = [];
 
-        
-
         foreach ($request->categories ?? [] as $i => $cat) {
 
             if (empty($cat['name'])) continue;
 
-            $category = null; // 🔥 penting
+            $category = null; 
 
             if (!empty($cat['db_id'])) {
 
@@ -585,7 +583,6 @@ public function autosave(Request $request, RabProcess $rab)
 
                     $usedCategoryIds[] = $category->id;
                 } else {
-                    // 🔥 fallback: buat baru kalau tidak ketemu
                     $category = RabProcessCategory::create([
                         'rab_process_id' => $rab->id,
                         'name' => $cat['name'],
@@ -608,7 +605,6 @@ public function autosave(Request $request, RabProcess $rab)
                 $usedCategoryIds[] = $category->id;
             }
 
-            // 🔥 SAFE GUARD
             if ($category) {
                 $categoryMap[$cat['id']] = $category->id;
             }
@@ -621,10 +617,15 @@ public function autosave(Request $request, RabProcess $rab)
 
         RabProcessCategory::where('rab_process_id', $rab->id)
             ->where('is_draft', true)
-            ->whereNotIn('id', $usedCategoryIds)
+            ->when(
+                count($usedCategoryIds),
+                fn($q) => $q->whereNotIn('id', $usedCategoryIds)
+            )
+            ->when(
+                empty($usedCategoryIds),
+                fn($q) => $q
+            )
             ->delete();
-
-        
 
         foreach ($request->categories ?? [] as $cat) {
 
@@ -635,7 +636,7 @@ public function autosave(Request $request, RabProcess $rab)
                 $categoryId = $categoryMap[$cat['id']] ?? null;
                 if (!$categoryId) continue;
 
-                $u = null; // 🔥 penting
+                $u = null; 
 
                 if (!empty($uraian['db_id'])) {
 
@@ -650,7 +651,6 @@ public function autosave(Request $request, RabProcess $rab)
 
                         $usedUraianIds[] = $u->id;
                     } else {
-                        // 🔥 fallback create
                         $u = RabProcessUraian::create([
                             'rab_process_id' => $rab->id,
                             'category_id' => $categoryId,
@@ -677,22 +677,28 @@ public function autosave(Request $request, RabProcess $rab)
                     $usedUraianIds[] = $u->id;
                 }
 
-                // 🔥 SAFE GUARD
                 if ($u) {
                     $uraianMap[$uraian['id']] = $u->id;
                 }
                 if (!$u) {
-                    \Log::error('CATEGORY NULL', [
-                        'uraian' => $u
+                    \Log::error('URAIAN NULL', [
+                        'uraian_data' => $u
                     ]);
                 }
             }
         }
 
         RabProcessUraian::where('rab_process_id', $rab->id)
-            ->where('is_draft', true)
-            ->whereNotIn('id', $usedUraianIds)
-            ->delete();
+        ->where('is_draft', true)
+        ->when(
+            count($usedUraianIds),
+            fn($q) => $q->whereNotIn('id', $usedUraianIds)
+        )
+        ->when(
+            empty($usedUraianIds),
+            fn($q) => $q
+        )
+        ->delete();
 
         $jobIds = collect($request->items)
             ->pluck('job_category_id')
@@ -704,6 +710,9 @@ public function autosave(Request $request, RabProcess $rab)
             ->get()
             ->keyBy('id');
 
+        $profit = (float) str_replace(',', '.', $request->profit ?? 0);
+        $overhead = (float) str_replace(',', '.', $request->overhead ?? 0);
+
         foreach ($request->items ?? [] as $index => $item) {
 
             if (empty($item['job_category_id'])) continue;
@@ -713,8 +722,6 @@ public function autosave(Request $request, RabProcess $rab)
 
             $job = $jobs[$item['job_category_id']] ?? null;
             if (!$job) continue;
-            $profit = (float) str_replace(',', '.', $request->profit ?? 0);
-            $overhead = (float) str_replace(',', '.', $request->overhead ?? 0);
 
             $basePrice = $job->grand_total;
 
@@ -768,26 +775,47 @@ public function autosave(Request $request, RabProcess $rab)
             }
         }
 
-            RabProcessItem::where('rab_process_id', $rab->id)
-                ->where('is_draft', true)
-                ->whereNotIn('id', $usedItemIds)
-                ->delete();
-        
+        RabProcessItem::where('rab_process_id', $rab->id)
+            ->where('is_draft', true)
+            ->when(
+                count($usedItemIds),
+                fn($q) => $q->whereNotIn('id', $usedItemIds)
+            )
+            ->when(
+                empty($usedItemIds),
+                fn($q) => $q
+            )
+            ->delete();
 
         foreach(($request->uraian_images ?? []) as $uraianKey => $images){
 
-            RabUraianImage::where('rab_id', $rab->id)
-                ->where('uraian_key', $uraianKey)
-                ->delete();
+            $uraianId =
+                $uraianMap[$uraianKey]
+                ?? RabProcessUraian::where('uraian_key', $uraianKey)
+                    ->where('rab_process_id', $rab->id)
+                    ->value('id');
+            if(!$uraianId) continue;
 
-            foreach(($images ?? []) as $imgId){
+            $currentIds = collect($images)
+                ->filter()
+                ->unique()
+                ->values();
+            if (array_key_exists($uraianKey, $request->uraian_images ?? [])) {
+            RabUraianImage::where('rab_id', $rab->id)
+                ->where('uraian_id', $uraianId)
+                ->whereNotIn('image_id', $currentIds)
+                ->delete();
+            }
+
+            foreach($currentIds as $imgId){
 
                 $exists = RabImage::where('id', $imgId)->exists();
+
                 if(!$exists) continue;
 
-                RabUraianImage::create([
+                RabUraianImage::firstOrCreate([
                     'rab_id' => $rab->id,
-                    'uraian_key' => $uraianKey,
+                    'uraian_id' => $uraianId,
                     'image_id' => $imgId
                 ]);
             }
@@ -797,9 +825,9 @@ public function autosave(Request $request, RabProcess $rab)
             ->where('is_draft', true)
             ->sum('total');
 
-        $discount = $request->discount ?? 0;
-        $taxRate  = $request->tax_rate ?? 0;
-        $shipping = $request->shipping ?? 0;
+        $discount = (float) $request->discount;
+        $taxRate  = (float) $request->tax_rate;
+        $shipping = (float) $request->shipping;
 
         $afterDiscount = max(0, $subtotal - $discount);
         $tax = round($afterDiscount * $taxRate / 100);
@@ -809,7 +837,7 @@ public function autosave(Request $request, RabProcess $rab)
             'contact_name' => $request->contact_name,
             'job_location' => $request->job_location,
             'job_duration' => $request->job_duration,
-            'subtotal' => $subtotal,
+            'base_subtotal' => $subtotal,
             'discount' => $discount,
             'subtotal_after_discount' => $afterDiscount,
             'profit' => $profit,

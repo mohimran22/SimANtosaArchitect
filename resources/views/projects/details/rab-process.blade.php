@@ -268,13 +268,29 @@ function bukagaleri(uraianId, uraianName){
     container.innerHTML = '<div class="text-muted">Loading...</div>'
 
     fetch(`/rab/uraian-images/${uraianId}`)
-    .then(res => res.json())
+    
+    .then(async res => {
+
+        if(!res.ok){
+
+            const text = await res.text()
+
+            console.error(text)
+
+            throw new Error('Gagal load gambar')
+        }
+
+        return res.json()
+    })
     .then(data => {
 
         container.innerHTML=''
 
         if(data.length===0){
-            container.innerHTML='<div class="text-muted">Belum ada gambar</div>'
+
+            container.innerHTML=
+                '<div class="text-muted">Belum ada gambar</div>'
+
             return
         }
 
@@ -285,8 +301,8 @@ function bukagaleri(uraianId, uraianName){
             container.insertAdjacentHTML('beforeend',`
 
                 <img src="${img.url}"
-                     class="rab-gallery-img"
-                     data-index="${index}">
+                    class="rab-gallery-img"
+                    data-index="${index}">
 
             `)
 
@@ -294,8 +310,19 @@ function bukagaleri(uraianId, uraianName){
 
     })
 
-    modal.show()
+    .catch(err => {
 
+        console.error(err)
+
+        container.innerHTML = `
+            <div class="text-danger">
+                Gagal memuat gambar
+            </div>
+        `
+    })
+
+    modal.show()
+    console.log('URAIAN ID:', uraianId)
 }
 
 document.addEventListener("click",function(e){
