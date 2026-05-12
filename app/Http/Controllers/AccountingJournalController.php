@@ -96,14 +96,13 @@ public function create()
 {
     $licenseId = config('app.license_id');
 
-    // Accounts
-    $accounts = AccountingAccount::where('is_parent', false)
-        ->where('is_active', true)
+    $accounts = AccountingAccount::query()
         ->where('license_id', $licenseId)
+        ->where('is_parent', false)
+        ->where('is_active', true)
         ->orderBy('account_code')
         ->get();
 
-    // Employees
     $employees = User::select('id', 'fullname as name')->get();
 
     $journalCode = $this->generateNextJournalCode();
@@ -112,12 +111,12 @@ public function create()
         ->where('is_closed', true)
         ->max('end_date');
 
-    return view('journals.create', compact(
-        'accounts',
-        'employees',
-        'journalCode',
-        'lastClosedDate'
-    ));
+    return view('journals.create', [
+        'accounts'       => $accounts,
+        'employees'      => $employees,
+        'journalCode'    => $journalCode,
+        'lastClosedDate' => $lastClosedDate,
+    ]);
 }
 
 private function generateNextJournalCode()

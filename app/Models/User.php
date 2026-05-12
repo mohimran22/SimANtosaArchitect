@@ -161,7 +161,7 @@ public function activeRole()
     return null;
 }
 
-public function getBirthDateFormattedAttribute()
+    public function getBirthDateFormattedAttribute()
     {
         return $this->birth_date ? Carbon::parse($this->birth_date)->format('d/m/Y') : '-';
     }
