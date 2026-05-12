@@ -241,12 +241,6 @@
         }
         if(!el.matches('.uraian-input, .category-input')) return
     })
-    
-    document.addEventListener('mousedown', function(e){
-        if(e.target.closest('input,textarea,select')){
-            e.stopPropagation()
-        }
-    })
 
     let isSaving = false
     let autosaveTimer = null
