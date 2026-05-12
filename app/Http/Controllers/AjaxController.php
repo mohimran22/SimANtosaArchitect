@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\AccountingAccount;
-use App\Models\Student;
+use App\Models\Customer;
 use App\Models\Employee;
 use App\Models\User;
 
@@ -28,11 +28,18 @@ class AjaxController extends Controller
         return response()->json($accounts);
     }
 
-    public function getStudents()
+    public function getCustomers()
     {
-        return response()->json(
-            Student::select('id', 'fullname as name')->get()
-        );
+        $customers = Customer::with('user')
+            ->get()
+            ->map(function ($cus) {
+                return [
+                    'id'   => $cus->id,
+                    'name' => $cus->user?->fullname ?? '-',
+                ];
+            });
+
+        return response()->json($customers);
     }
 
     public function getEmployees()
@@ -49,10 +56,10 @@ class AjaxController extends Controller
         return response()->json($employees);
     }
 
-    public function getLicenseholders()
-    {
-        return response()->json(
-            User::select('id', 'fullname')->get()
-        );
-    }
+    // public function getCustomers()
+    // {
+    //     return response()->json(
+    //         User::select('id', 'fullname')->get()
+    //     );
+    // }
 }

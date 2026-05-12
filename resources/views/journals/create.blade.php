@@ -221,6 +221,9 @@ $(document).ready(function () {
 
         let url = '';
         if (type === "employee") url = '/get-employees';
+        else if (type === "customer") url = '/get-customers';
+        else if (type === "licenseholder") url = '/get-licenseholders';
+        else if (type === "license") url = '/get-licenses';
 
         if (url) {
             if (userCache[type]) {

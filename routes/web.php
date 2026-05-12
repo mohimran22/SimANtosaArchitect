@@ -667,6 +667,7 @@ Route::middleware(['auth'])->group(function () {
     // data untuk form jurnal
     Route::get('/get-accounts', [AjaxController::class, 'getAccounts']);
     Route::get('/get-employees', [AjaxController::class, 'getEmployees']);
+    Route::get('/get-customers', [AjaxController::class, 'getCustomers']);
 
     Route::get('/ajax/journals/next-code', [AccountingJournalController::class, 'getNextCode']);
 });

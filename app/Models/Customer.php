@@ -11,9 +11,9 @@ class Customer extends Model
 {
 
     public function user()
-{
-    return $this->belongsTo(User::class);
-}
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 
 
     public function province() {
@@ -51,9 +51,6 @@ public function scopeLoyalty($query, $level)
         return $query->where('loyalty_level', $level);
     }
 
-    /**
-     * 🔹 Accessor: Format membership jadi huruf besar pertama (Silver, Gold, Platinum)
-     */
     public function getLoyaltyLevelFormattedAttribute()
     {
         return ucfirst($this->loyalty_level);

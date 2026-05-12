@@ -46,7 +46,7 @@ class AccountingAccount extends Model
         return $this->hasMany(self::class, 'parent_id');
     }
 
-               public function details()
+        public function details()
     {
         return $this->hasMany(AccountingJournalDetail::class, 'account_id');
     }

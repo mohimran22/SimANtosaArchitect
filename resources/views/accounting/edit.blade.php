@@ -66,6 +66,14 @@
                                         <label class="form-label">Saldo Awal</label>
                                         <input type="number" step="0.01" name="initial_balance" value="{{ $account->initial_balance }}" class="form-control">
                                     </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">User</label>
+                                        <select name="person_type" class="form-select select2" value="{{ old('person_type') }}" required>
+                                            <option value="">-- Pilih --</option>
+                                            <option value="employee" {{ old('person_type', $account->person_type) == 'employee' ? 'selected' : '' }}>Karyawan</option>
+                                            <option value="customer" {{ old('person_type', $account->person_type) == 'customer' ? 'selected' : '' }}>Customer</option>
+                                        </select>
+                                    </div>
                                 </div>
 
                                 <div class="row mb-4">
