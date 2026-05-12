@@ -110,7 +110,7 @@ public function index(Request $request)
 }
 
 
-    public function create()
+    public function create(AccountingAccount $account)
 {
     $user = Auth::user();
 
@@ -129,7 +129,7 @@ public function index(Request $request)
     $subCategories = config('accounting.sub_categories');
     $parentAccounts = AccountingAccount::where('is_parent', true)->get();
 
-    return view('accounting.create', compact('parentAccounts', 'categories', 'subCategories'));
+    return view('accounting.create', compact('account', 'parentAccounts', 'categories', 'subCategories'));
 }
 
 

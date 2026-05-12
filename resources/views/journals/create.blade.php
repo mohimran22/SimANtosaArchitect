@@ -110,8 +110,8 @@
                                                         <option value="">-- Pilih User --</option>
                                                     </select>
                                                 </td>
-                                                <td><input type="number" step="0.01" name="details[0][debit]" class="form-control debit-input"></td>
-                                                <td><input type="number" step="0.01" name="details[0][credit]" class="form-control credit-input"></td>
+                                                <td><input type="text" name="details[0][debit]" class="form-control debit-input"></td>
+                                                <td><input type="text" name="details[0][credit]" class="form-control credit-input"></td>
                                                 <td><button type="button" class="btn btn-sm btn-dark remove-row" title="Hapus">
                                                         <i class="ti ti-trash"></i>
                                                     </button>
@@ -171,7 +171,6 @@ $(document).ready(function () {
 
     let accountsData = [];
 
-    // ✅ Load accounts sekali saja (tanpa license)
     function loadAccounts() {
         $.get(`/get-accounts`, function (data) {
             accountsData = data;
@@ -181,7 +180,6 @@ $(document).ready(function () {
             });
         });
 
-        // ✅ Ambil kode jurnal (tanpa license)
         $('#journal_code').val('Loading...');
         $.get(`/ajax/journals/next-code`)
             .done(function (res) {
@@ -273,8 +271,8 @@ $(document).ready(function () {
                     <select name="details[${rowCount}][person]" 
                             class="form-select user-select"></select>
                 </td>
-                <td><input type="number" step="0.01" name="details[${rowCount}][debit]" class="form-control debit-input"></td>
-                <td><input type="number" step="0.01" name="details[${rowCount}][credit]" class="form-control credit-input"></td>
+                <td><input type="text" name="details[${rowCount}][debit]" class="form-control debit-input"></td>
+                <td><input type="text" name="details[${rowCount}][credit]" class="form-control credit-input"></td>
                 <td>
                     <button type="button" class="btn btn-sm btn-dark remove-row">
                         <i class="ti ti-trash"></i>
@@ -335,13 +333,26 @@ $(document).ready(function () {
             $debit.removeClass('bg-light');
         }
     });
+    function formatRupiah(value) {
+
+        value = value.replace(/[^\d]/g, '');
+
+        return new Intl.NumberFormat('id-ID').format(value);
+    }
+
+    function parseRupiah(value) {
+
+        return parseFloat(
+            String(value).replace(/\./g, '')
+        ) || 0;
+    }
 
     function calculateSubtotals() {
         let totalDebit = 0, totalCredit = 0;
 
         $('#detail-rows tr').each(function() {
-            totalDebit  += parseFloat($(this).find('.debit-input').val()) || 0;
-            totalCredit += parseFloat($(this).find('.credit-input').val()) || 0;
+            totalDebit  += parseRupiah($(this).find('.debit-input').val())
+            totalCredit += parseRupiah($(this).find('.credit-input').val())
         });
 
         $('#subtotal-debit').text(totalDebit.toLocaleString('id-ID'));
@@ -354,9 +365,11 @@ $(document).ready(function () {
         }
     }
 
-    $(document).on('input', '.debit-input, .credit-input', function() {
-        let val = parseFloat($(this).val()) || 0;
-        $(this).val(Math.abs(val));
+    $(document).on('input', '.debit-input, .credit-input', function () {
+
+        let raw = $(this).val().replace(/[^\d]/g, '');
+
+        $(this).val(formatRupiah(raw));
 
         if ($(this).hasClass('debit-input')) {
             $(this).closest('tr').find('.credit-input').val('');
@@ -368,17 +381,38 @@ $(document).ready(function () {
     });
 
     $('form').on('submit', function (e) {
-        let totalDebit = 0, totalCredit = 0;
 
-        $('#detail-rows tr').each(function() {
-            totalDebit  += parseFloat($(this).find('.debit-input').val()) || 0;
-            totalCredit += parseFloat($(this).find('.credit-input').val()) || 0;
+        let totalDebit = 0;
+        let totalCredit = 0;
+
+        $('#detail-rows tr').each(function () {
+
+            totalDebit += parseRupiah(
+                $(this).find('.debit-input').val()
+            );
+
+            totalCredit += parseRupiah(
+                $(this).find('.credit-input').val()
+            );
         });
 
+        // Validasi balance
         if (totalDebit !== totalCredit) {
+
             e.preventDefault();
+
             alert('Transaksi tidak seimbang!');
+
+            return false;
         }
+
+        // Convert rupiah -> numeric sebelum submit
+        $('.debit-input, .credit-input').each(function () {
+
+            let numeric = parseRupiah($(this).val());
+
+            $(this).val(numeric);
+        });
     });
 
 });

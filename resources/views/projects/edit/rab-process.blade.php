@@ -210,12 +210,21 @@
         return
     }
 
-    loadDraft()
+        loadDraft()
     })
+
+    let enterLock = false
 
     document.addEventListener('keydown', function(e){
 
         if(e.key !== 'Enter') return
+        if(enterLock) return
+
+        enterLock = true
+
+        setTimeout(() => {
+            enterLock = false
+        }, 300)
 
         const el = e.target
         if(!el || el.disabled) return
@@ -1156,13 +1165,14 @@
         const jobs = document.querySelectorAll(`.job-row[data-parent="${uraianId}"]`)
 
         if(jobs.length === 0){
-            requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    addJobRowEdit(uraianId)
-                })
-            })
+            setTimeout(() => {
+                addJobRowEdit(uraianId)
+            }, 10)
         }
-        triggerAutosave()
+
+        setTimeout(() => {
+            triggerAutosave()
+        }, 100)
     }
     function editUraian(uraianId){
         if(isDragMode()) return
@@ -1276,14 +1286,17 @@
         `)
         const select = $(`#${jobId} .job-select`)
 
-        requestAnimationFrame(() => {
+        setTimeout(() => {
+
+            if(select.hasClass("select2-hidden-accessible")){
+                select.select2('destroy')
+            }
 
             select.select2({
-                width: '100%',
-                dropdownAutoWidth: true
+                width: '100%'
             })
 
-        })
+        }, 10)
     }
 
     function loadJobEdit(rowId, jobId){
