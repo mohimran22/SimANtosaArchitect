@@ -109,7 +109,7 @@
 @endsection
 @push('js')
 <script>
-$(document).ready(function() {
+$(document).ready(function () {
 
     $('.select2').select2({
         width: '100%'
@@ -128,41 +128,47 @@ $(document).ready(function() {
         }
     }
 
-    // jalan saat pertama load
     toggleParent();
 
-    // 🔥 WAJIB: jalan saat berubah
     $(selectIsParent).on('change', toggleParent);
-});
-</script>
-<script>
-const subCategories = @json($subCategories);
-const selectedSub = "{{ $account->sub_category }}";
 
-function loadSub(category) {
-    let options = '<option value="">-- Pilih Sub kategori --</option>';
+    const subCategories = @json($subCategories);
+    const selectedSub = @json($account->sub_category);
 
-    if (subCategories[category]) {
-        subCategories[category].forEach(function (item) {
-            let selected = item === selectedSub ? 'selected' : '';
-            options += `<option value="${item}" ${selected}>${item}</option>`;
-        });
+    function loadSub(category) {
+
+        let options = '<option value="">-- Pilih Sub kategori --</option>';
+
+        if (subCategories[category]) {
+
+            subCategories[category].forEach(function (item) {
+
+                let selected = item == selectedSub ? 'selected' : '';
+
+                options += `
+                    <option value="${item}" ${selected}>
+                        ${item}
+                    </option>
+                `;
+            });
+        }
+
+        $('#sub_category')
+            .html(options)
+            .val(selectedSub)
+            .trigger('change');
     }
 
-    $('#sub_category').html(options).trigger('change');
-}
-
-// 🔥 Load saat edit pertama kali
-$(document).ready(function () {
     let category = $('[name="category"]').val();
+
     if (category) {
         loadSub(category);
     }
-});
 
-// 🔥 Load saat berubah
-$('[name="category"]').on('change', function () {
-    loadSub($(this).val());
+    $('[name="category"]').on('change', function () {
+        loadSub($(this).val());
+    });
+
 });
 </script>
 <script>

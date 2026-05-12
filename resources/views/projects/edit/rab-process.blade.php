@@ -213,7 +213,6 @@
     loadDraft()
     })
 
-
     document.addEventListener('keydown', function(e){
 
         if(e.key !== 'Enter') return
@@ -1163,7 +1162,9 @@
         const jobs = document.querySelectorAll(`.job-row[data-parent="${uraianId}"]`)
 
         if(jobs.length === 0){
-            addJobRowEdit(uraianId)
+            setTimeout(() => {
+                addJobRowEdit(uraianId)
+            }, 100)
         }
         triggerAutosave()
     }
