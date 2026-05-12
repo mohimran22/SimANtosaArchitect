@@ -157,6 +157,7 @@ public function store(Request $request)
         $request->category,
         $request->parent_id
     );
+    $licenseId = config('app.license_id');
 
     if (AccountingAccount::where('account_code', $code)->exists()) {
         return back()->withErrors([
@@ -166,6 +167,7 @@ public function store(Request $request)
 
     AccountingAccount::create([
         'id' => Str::uuid(),
+        'license_id'   => $licenseId,
         'account_code' => $code,
         'account_name' => $request->account_name,
         'category' => $request->category,
@@ -206,62 +208,92 @@ public function store(Request $request)
     }
 
     public function update(Request $request, AccountingAccount $account)
-    {
-        $request->validate([
-            'account_code' => [
-                'required',
-                'string',
-                'max:255',
-                Rule::unique('accounting_accounts', 'account_code')->ignore($account->id),
-            ],
-            'account_name' => 'required|string|max:255',
-            'category' => 'required|string|max:255',
-            'sub_category' => 'required|string|max:255',
-            'initial_balance' => 'nullable|numeric',
-            'is_parent' => 'nullable|boolean',
-            'parent_id' => 'nullable|uuid|exists:accounting_accounts,id',
-            'person_type' => 'nullable|string',
+{
+    $licenseId = config('app.license_id');
+
+    $request->validate([
+        'account_code' => [
+            'required',
+            'string',
+            'max:255',
+            Rule::unique('accounting_accounts', 'account_code')
+                ->ignore($account->id),
+        ],
+
+        'account_name' => 'required|string|max:255',
+        'category' => 'required|string|max:255',
+        'sub_category' => 'required|string|max:255',
+        'initial_balance' => 'nullable|numeric',
+        'is_parent' => 'nullable|boolean',
+
+        'parent_id' => [
+            'nullable',
+            'uuid',
+            Rule::exists('accounting_accounts', 'id')
+                ->where('license_id', $licenseId),
+        ],
+
+        'person_type' => 'nullable|string',
+    ]);
+
+    $isParent = $request->boolean('is_parent');
+
+    if ($isParent && $request->parent_id) {
+        return back()->withErrors([
+            'parent_id' => 'Akun parent tidak boleh memiliki induk.'
         ]);
-
-        if ($request->parent_id) {
-            $parent = AccountingAccount::find($request->parent_id);
-
-            if ($parent && $parent->category !== $request->category) {
-                return back()->withErrors([
-                    'parent_id' => 'Kategori parent harus sama dengan akun.'
-                ]);
-            }
-        }
-        $isParent = $request->boolean('is_parent');
-
-        if (!$isParent && !$request->parent_id) {
-            return back()->withErrors([
-                'parent_id' => 'Akun child wajib punya akun induk'
-            ]);
-        }
-
-        if ($request->parent_id == $account->id) {
-            return back()->withErrors([
-                'parent_id' => 'Tidak boleh memilih diri sendiri sebagai parent.'
-            ]);
-        }
-
-        $account->update([
-            'account_code' => $request->account_code,
-            'account_name' => $request->account_name,
-            'category' => $request->category,
-            'sub_category' => $request->sub_category,
-            'initial_balance' => $isParent ? null : ($request->initial_balance ?? 0),
-            'is_parent' => $isParent,
-            'parent_id' => $isParent ? null : $request->parent_id,
-            'is_active' => true,
-            'person_type' => $request->person_type,
-        ]);
-
-        return redirect()
-            ->route('accounting.index')
-            ->with('success', 'Akun berhasil diubah.');
     }
+
+    // Child wajib punya parent
+    if (!$isParent && !$request->parent_id) {
+        return back()->withErrors([
+            'parent_id' => 'Akun child wajib punya akun induk.'
+        ]);
+    }
+
+    if ($request->parent_id == $account->id) {
+        return back()->withErrors([
+            'parent_id' => 'Tidak boleh memilih diri sendiri sebagai parent.'
+        ]);
+    }
+
+    $parent = null;
+
+    if ($request->parent_id) {
+
+        $parent = AccountingAccount::where('license_id', $licenseId)
+            ->find($request->parent_id);
+
+        if ($parent && $parent->category !== $request->category) {
+            return back()->withErrors([
+                'parent_id' => 'Kategori parent harus sama dengan akun.'
+            ]);
+        }
+
+        if ($parent && $parent->parent_id == $account->id) {
+            return back()->withErrors([
+                'parent_id' => 'Circular parent tidak diperbolehkan.'
+            ]);
+        }
+    }
+
+    $account->update([
+        'account_code' => $request->account_code,
+        'account_name' => $request->account_name,
+        'category' => $request->category,
+        'sub_category' => $request->sub_category,
+        'initial_balance' => $isParent ? null : ($request->initial_balance ?? 0),
+        'is_parent' => $isParent,
+        'parent_id' => $isParent ? null : $request->parent_id,
+        'is_active' => true,
+        'person_type' => $request->person_type,
+        'license_id' => $licenseId,
+    ]);
+
+    return redirect()
+        ->route('accounting.index')
+        ->with('success', 'Akun berhasil diubah.');
+}
 
     public function destroy($id)
     {

@@ -97,7 +97,7 @@ public function create()
     $licenseId = config('app.license_id');
 
     $accounts = AccountingAccount::query()
-        // ->where('license_id', $licenseId)
+        ->where('license_id', $licenseId)
         ->where('is_parent', false)
         ->where('is_active', true)
         ->orderBy('account_code')
