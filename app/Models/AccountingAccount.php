@@ -30,6 +30,7 @@ class AccountingAccount extends Model
         'category',
         'is_parent',
         'parent_id',
+        'license_id',
         'sub_category',
         'initial_balance',
         'is_active',
