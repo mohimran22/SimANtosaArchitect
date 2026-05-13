@@ -1202,14 +1202,6 @@
 
             </div>
         `
-        const jobs = document.querySelectorAll(`.job-row[data-parent="${uraianId}"]`)
-
-        if(jobs.length === 0){
-            setTimeout(() => {
-                addJobRowEdit(uraianId)
-            }, 10)
-        }
-
         setTimeout(() => {
             triggerAutosave()
         }, 100)
