@@ -211,7 +211,9 @@
     let enterLock = false
 
     document.addEventListener('keydown', function(e){
-
+        if($(e.target).closest('.select2-container').length){
+            return
+        }
         if(e.key !== 'Enter') return
         if(enterLock) return
         enterLock = true
@@ -1321,7 +1323,7 @@
                     dropdownAutoWidth: true
                 })
 
-                select.trigger('change')
+                select.select2('open')
             }
 
         }, 100)
