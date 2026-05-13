@@ -44,7 +44,10 @@ return [
         'BEBAN' => [
             'Biaya Lisensi',
             'Biaya Pembelian',
+            'Biaya Pembelian Material',
             'Biaya Pembelian Merchandise',
+            'Biaya Pembelian Peralatan',
+            'Biaya Pembelian Peralatan Kantor',
             'Biaya Pembayaran Upah',
             'Beban Penjualan & Pemasaran',
             'Beban Administrasi & Umum',

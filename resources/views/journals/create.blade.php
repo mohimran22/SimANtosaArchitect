@@ -309,7 +309,6 @@ $(document).ready(function () {
         // render user
         renderUserOptions($row.find('.user-select'), personType);
 
-        // 🔥 RULE AKUNTANSI DASAR
         const firstDigit = accountCode.charAt(0);
 
         if (firstDigit === "5" || firstDigit === "6") {

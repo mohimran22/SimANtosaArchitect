@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    {{-- <title>General Journal</title> --}}
+    <title>Antosa Architect</title>
     <style>
         body {
             font-family: DejaVu Sans, sans-serif;

@@ -34,7 +34,7 @@
 <body>
     <div class="header">
         <h1 style="text-align:center;">Laporan Neraca </h1>
-        <h2 style="text-align:center;">CV AHA Right Brain </h2>
+        <h2 style="text-align:center;">Antosa Architect </h2>
         <h3>Periode: {{ \Carbon\Carbon::parse($startDate)->format('d/M/Y') }} - {{ \Carbon\Carbon::parse($endDate)->format('d/M/Y') }}</h3>
         @if($licenses->where('id', $request->license_id)->first())
             <h4>Lisensi: {{ $licenses->where('id', $request->license_id)->first()->name }}</h4>

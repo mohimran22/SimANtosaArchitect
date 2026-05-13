@@ -9,7 +9,7 @@ use App\Models\AccountingJournalDetail;
 use App\Models\AccountingAccount;
 use App\Models\AccountingPeriod;
 use App\Models\License;
-use App\Models\Student;
+use App\Models\Customer;
 use App\Models\Employee;
 use App\Models\LicenseHolder;
 use App\Models\User;
@@ -250,17 +250,14 @@ public function show(AccountingJournal $journal)
 
 public function edit(AccountingJournal $journal)
 {
-    // 🔒 optional security (kalau masih pakai license di DB)
     if ($journal->license_id !== config('app.license_id')) {
         abort(403);
     }
 
-    // akun
     $accounts = AccountingAccount::where('is_active', true)
         ->orderBy('account_code')
         ->get();
 
-    // employee saja (kalau masih dipakai)
     $employees = Employee::with('user')
         ->get()
         ->map(fn($emp) => [
@@ -268,9 +265,16 @@ public function edit(AccountingJournal $journal)
             'name' => $emp->user?->fullname ?? '-',
         ]);
 
+    $customers = Customer::with('user')
+        ->get()
+        ->map(fn($cus) => [
+            'id'   => $cus->id,
+            'name' => $cus->user?->fullname ?? '-',
+        ]);
+
     $journal->load(['details.account']);
 
-    return view('journals.edit', compact('journal', 'accounts', 'employees'));
+    return view('journals.edit', compact('journal', 'accounts', 'employees', 'customers'));
 }
 
 
@@ -573,7 +577,7 @@ public function exportPDF(Request $request)
     ))
     ->setPaper('a4', 'landscape');
 
-    return $pdf->stream('general.pdf');
+    return $pdf->stream('Jurnal-Umum.pdf');
 }
 
 public function ledger(Request $request)
@@ -705,12 +709,12 @@ public function trialBalance(Request $request)
 /**
  * Ambil akun + group berdasarkan kategori dan sub-kategori
  */
-    private function getGroupedAccounts($startDate, $endDate)
+    private function getGroupedAccounts($startDate, $endDate, $licenseId)
 {
-    $accounts = AccountingAccount::where('parent_id')
-        ->with(['details.journal' => function ($q) use ($startDate, $endDate) {
-                $q->whereBetween('transaction_date', [$startDate, $endDate]);
-                //    ->where('license_id', $licenseId);
+    $accounts = AccountingAccount::where('license_id', $licenseId)
+        ->with(['details.journal' => function ($q) use ($startDate, $endDate, $licenseId) {
+                $q->whereBetween('transaction_date', [$startDate, $endDate])
+                   ->where('license_id', $licenseId);
         }])
         ->get()
         ->map(function ($account) {
@@ -792,7 +796,7 @@ public function print(AccountingJournal $journal)
     $pdf = Pdf::loadView('journals.print', compact('journal'))
         ->setPaper('a4', 'landscape'); // bisa juga landscape
 
-    return $pdf->stream('journal-'.$journal->journal_code.'.pdf');
+    return $pdf->stream('Jurnal-Harian'.$journal->journal_code.'.pdf');
 }
 
 public function balanceSheet(Request $request)
@@ -810,11 +814,11 @@ public function balanceSheet(Request $request)
     //     $licenses = $user->employee?->licenses ?? collect();
     // }
 
-    // $activeLicenseId = $request->get('license_id') ?? session('active_license_id');
+    $activeLicenseId = $request->get('license_id') ?? session('active_license_id');
 
     $viewType = $request->get('view', 'default'); // 🔹 default | skontro
 
-    $groupedAccounts = $this->getGroupedAccounts($startDate, $endDate);
+    $groupedAccounts = $this->getGroupedAccounts($startDate, $endDate, $activeLicenseId);
 
     $totals = ReportService::calculateBalanceSheet($groupedAccounts);
 

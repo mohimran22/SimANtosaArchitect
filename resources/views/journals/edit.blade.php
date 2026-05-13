@@ -110,13 +110,17 @@
 
                                                 <td>
                                                     <select name="details[{{ $i }}][person]" 
-                                                            class="form-control select2 user-select" 
+                                                            class="form-select select2 user-select" 
                                                             data-row="{{ $i }}" 
                                                             data-selected="{{ $detail->person ?? '' }}">
                                                         <option value="">-- Pilih User --</option>
                                                         @php
                                                             if ($detail->person_type === 'employee') {
                                                                 $users = $employees;
+                                                            } elseif ($detail->person_type === 'customer') {
+                                                                $users = $customers;
+                                                            } elseif ($detail->person_type === 'license') {
+                                                                $users = $licenseList;
                                                             } else {
                                                                 $users = collect();
                                                             }
@@ -130,7 +134,7 @@
                                                 </td>
                                                 
                                                 <td>
-                                                    <input type="number" step="0.01" 
+                                                    <input type="text"
                                                         name="details[{{ $i }}][debit]" 
                                                         class="form-control debit-input" 
                                                         value="{{ old("details.$i.debit", $detail->debit) }}"
@@ -143,7 +147,7 @@
 
                                                 
                                                 <td>
-                                                    <input type="number" step="0.01" 
+                                                    <input type="text" 
                                                         name="details[{{ $i }}][credit]" 
                                                         class="form-control credit-input" 
                                                         value="{{ old("details.$i.credit", $detail->credit) }}"
@@ -231,7 +235,6 @@ $(document).ready(function () {
 
     let accountsData = [];
 
-    // 🔹 Ambil semua akun (single license)
     function loadAccounts() {
         $.get(`/get-accounts`, function (data) {
             accountsData = data;
@@ -263,30 +266,32 @@ $(document).ready(function () {
         $select.select2({ placeholder: "-- Pilih Akun --", width: '100%' });
     }
 
-    // 🔹 User (employee only)
     function renderUserOptions($select, personType, selected = null) {
-        if ($select.hasClass("select2-hidden-accessible")) {
-            $select.select2("destroy");
-        }
-
         $select.empty().append('<option value="">-- Pilih User --</option>');
 
-        if (personType !== 'employee') return;
+        if (!personType) return;
 
-        $.get('/get-employees', function (data) {
+        let urlMap = {
+            employee: '/get-employees',
+            customer: '/get-customers',
+            licenseholder: '/get-licenseholders',
+            license: '/get-licenses'
+        };
+
+        if (!urlMap[personType]) return;
+
+        $.get(urlMap[personType], function (data) {
             $.each(data, function (_, user) {
-                $select.append(`
-                    <option value="${user.id}" ${selected == user.id ? 'selected' : ''}>
+                $select.append(
+                    `<option value="${user.id}" ${selected == user.id ? 'selected' : ''}>
                         ${user.name}
-                    </option>
-                `);
+                     </option>`
+                );
             });
         });
-
-        $select.select2({ placeholder: "-- Pilih User --", width: '100%' });
     }
 
-    const debitOnly = new Set(["1","5","6"]);   
+    const debitOnly = new Set(["5","6"]);   
     const creditOnly = new Set(["2","3","4"]);  
 
     function applyDebitCreditRule($row, accountCode) {
@@ -305,21 +310,17 @@ $(document).ready(function () {
         }
     }
 
-    // 🔹 Change akun
     $(document).on('change', '.account-select', function () {
         const $row = $(this).closest('tr');
 
         const accountCode = String($(this).find(':selected').data('code') || '');
         const personType  = $(this).find(':selected').data('person-type');
 
-        // user
         renderUserOptions($row.find('.user-select'), personType);
 
-        // debit/credit rule
         applyDebitCreditRule($row, accountCode);
     });
 
-    // 🔹 INIT EDIT MODE (penting!)
     $('.account-select').each(function () {
         const $row = $(this).closest('tr');
 
@@ -328,14 +329,11 @@ $(document).ready(function () {
         const $userSelect = $row.find('.user-select');
         const selectedUser = $userSelect.data('selected');
 
-        // load user lama
         renderUserOptions($userSelect, personType, selectedUser);
 
-        // apply rule debit/credit
         applyDebitCreditRule($row, accountCode);
     });
 
-    // 🔹 Tambah row
     $('#add-row').click(function () {
         const rowCount = $('#detail-rows tr').length;
 
@@ -348,10 +346,10 @@ $(document).ready(function () {
                 <td><input type="text" name="details[${rowCount}][description]" class="form-control"></td>
                 <td>
                     <select name="details[${rowCount}][person]" 
-                            class="form-select user-select"></select>
+                            class="form-select select2 user-select"></select>
                 </td>
-                <td><input type="number" step="0.01" name="details[${rowCount}][debit]" class="form-control debit-input"></td>
-                <td><input type="number" step="0.01" name="details[${rowCount}][credit]" class="form-control credit-input"></td>
+                <td><input type="text" name="details[${rowCount}][debit]" class="form-control debit-input"></td>
+                <td><input type="text" name="details[${rowCount}][credit]" class="form-control credit-input"></td>
                 <td>
                     <button type="button" class="btn btn-sm btn-dark remove-row">
                         <i class="ti ti-trash"></i>
@@ -365,19 +363,29 @@ $(document).ready(function () {
         renderAccountOptions($('#detail-rows tr:last .account-select'));
     });
 
-    // 🔹 Hapus row
     $(document).on('click', '.remove-row', function () {
         $(this).closest('tr').remove();
         calculateSubtotals();
     });
+    function formatRupiah(value) {
 
-    // 🔹 Hitung subtotal
+        value = value.replace(/[^\d]/g, '');
+
+        return new Intl.NumberFormat('id-ID').format(value);
+    }
+
+    function parseRupiah(value) {
+
+        return parseFloat(
+            String(value).replace(/\./g, '')
+        ) || 0;
+    }
     function calculateSubtotals() {
         let totalDebit = 0, totalCredit = 0;
 
         $('#detail-rows tr').each(function() {
-            totalDebit  += parseFloat($(this).find('.debit-input').val()) || 0;
-            totalCredit += parseFloat($(this).find('.credit-input').val()) || 0;
+            totalDebit  += parseRupiah($(this).find('.debit-input').val()) || 0;
+            totalCredit += parseRupiah($(this).find('.credit-input').val()) || 0;
         });
 
         $('#subtotal-debit').text(totalDebit.toLocaleString('id-ID'));
@@ -390,10 +398,11 @@ $(document).ready(function () {
         }
     }
 
-    // 🔹 Input debit/kredit
-    $(document).on('input', '.debit-input, .credit-input', function() {
-        let val = parseFloat($(this).val()) || 0;
-        $(this).val(Math.abs(val));
+    $(document).on('input', '.debit-input, .credit-input', function () {
+
+        let raw = $(this).val().replace(/[^\d]/g, '');
+
+        $(this).val(formatRupiah(raw));
 
         if ($(this).hasClass('debit-input')) {
             $(this).closest('tr').find('.credit-input').val('');
@@ -404,23 +413,53 @@ $(document).ready(function () {
         calculateSubtotals();
     });
 
-    // 🔹 Validasi submit
     $('form').on('submit', function (e) {
-        let totalDebit = 0, totalCredit = 0;
 
-        $('#detail-rows tr').each(function() {
-            totalDebit  += parseFloat($(this).find('.debit-input').val()) || 0;
-            totalCredit += parseFloat($(this).find('.credit-input').val()) || 0;
+        let totalDebit = 0;
+        let totalCredit = 0;
+
+        $('#detail-rows tr').each(function () {
+
+            totalDebit += parseRupiah(
+                $(this).find('.debit-input').val()
+            );
+
+            totalCredit += parseRupiah(
+                $(this).find('.credit-input').val()
+            );
         });
 
         if (totalDebit !== totalCredit) {
+
             e.preventDefault();
-            alert('Transaksi tidak balance!');
+
+            alert('Transaksi tidak seimbang!');
+
+            return false;
         }
+
+        $('.debit-input, .credit-input').each(function () {
+
+            let numeric = parseRupiah($(this).val());
+
+            $(this).val(numeric);
+        });
     });
 
     loadAccounts();
+
+    $('.debit-input, .credit-input').each(function () {
+
+        let value = $(this).val();
+
+        if (value) {
+            $(this).val(formatRupiah(value));
+        }
+    });
+
+    calculateSubtotals();
 });
+
 </script>
 
 @endpush

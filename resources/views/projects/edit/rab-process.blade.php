@@ -237,17 +237,15 @@
 
             el.dataset.saving = '1'
 
+            el.blur()
+
             const row = el.closest('.uraian-row')
 
-            if(row){
-                saveUraianEdit(row.id)
-            }
-
             setTimeout(() => {
-                if(document.body.contains(el)){
-                    delete el.dataset.saving
+                if(row){
+                    saveUraianEdit(row.id)
                 }
-            }, 300)
+            }, 0)
 
             return
         }
@@ -1162,7 +1160,6 @@
         const row = document.getElementById(uraianId)
         if(!row) return
 
-        // cegah double save
         if(row.dataset.processing === '1') return
 
         row.dataset.processing = '1'
@@ -1202,6 +1199,14 @@
 
             </div>
         `
+        const jobs = document.querySelectorAll(`.job-row[data-parent="${uraianId}"]`)
+
+        if(jobs.length === 0){
+            setTimeout(() => {
+                addJobRowEdit(uraianId)
+            }, 10)
+        }
+
         setTimeout(() => {
             triggerAutosave()
         }, 100)

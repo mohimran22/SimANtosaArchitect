@@ -39,7 +39,7 @@
                 </div>
 
                 <div class="col-md-3">
-                    <button type="submit" class="btn btn-primary text-white w-100">
+                    <button type="submit" class="btn btn-dark text-white w-100">
                         <i class="ti ti-filter"></i> Filter
                     </button>
                 </div>

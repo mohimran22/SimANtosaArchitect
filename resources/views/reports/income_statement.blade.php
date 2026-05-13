@@ -29,7 +29,7 @@
                 </div>
 
                 <div class="col-md-3 align-self-end">
-                    <button type="submit" class="btn btn-primary text-white">Filter</button>
+                    <button type="submit" class="btn btn-dark text-white">Filter</button>
                 </div>
             </form>
         </div>
