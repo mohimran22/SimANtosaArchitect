@@ -230,12 +230,25 @@
         if(!el || el.disabled) return
 
         if(el.classList.contains('uraian-input')){
+
+            if(el.dataset.saving === '1') return
+
             e.preventDefault()
 
+            el.dataset.saving = '1'
+
             const row = el.closest('.uraian-row')
+
             if(row){
                 saveUraianEdit(row.id)
             }
+
+            setTimeout(() => {
+                if(document.body.contains(el)){
+                    delete el.dataset.saving
+                }
+            }, 300)
+
             return
         }
 
@@ -285,7 +298,7 @@
         if(!isSaving){   
             autoSaveToServer()
         }
-        }, 2000)
+        }, 5000)
     }
     
     function autoSaveToServer(){
@@ -867,11 +880,24 @@
                         total: job.total
                     }
 
-                    setTimeout(()=>{
-                        $(`#${jobId} .job-select`)
-                            .val(job.job_category_id)
-                            .trigger('change')
-                    },50)
+                    setTimeout(() => {
+
+                        const select = $(`#${jobId} .job-select`)
+
+                        select.val(job.job_category_id).trigger('change.select2')
+
+                        const row = document.getElementById(jobId)
+
+                        row.querySelector('.sat').innerText = job.satuan
+
+                        const hargaInput = row.querySelector('.harga')
+
+                        hargaInput.dataset.value = job.base_price
+                        hargaInput.value = formatRupiah(job.base_price)
+
+                        rabEditCalculate(jobId, false)
+
+                    }, 50)
 
                 })
             })
@@ -898,7 +924,13 @@
 
         })
 
-        $('.select2-row').select2()
+        $('.select2-row').each(function () {
+            if (!$(this).hasClass('select2-hidden-accessible')) {
+                $(this).select2({
+                    width: '100%'
+                })
+            }
+        })
 
         setTimeout(()=>{
             syncDiscountShipping()
@@ -1128,11 +1160,19 @@
     function saveUraianEdit(uraianId){
 
         const row = document.getElementById(uraianId)
+        if(!row) return
+
+        // cegah double save
+        if(row.dataset.processing === '1') return
+
+        row.dataset.processing = '1'
 
         const input = row.querySelector('.uraian-input')
 
-        // kalau sudah tersimpan jangan proses lagi
-        if(!input) return
+        if(!input){
+            delete row.dataset.processing
+            return
+        }
 
         const name = input.value.trim() || 'Uraian Baru'
 
@@ -1173,6 +1213,9 @@
         setTimeout(() => {
             triggerAutosave()
         }, 100)
+        setTimeout(() => {
+            delete row.dataset.processing
+        }, 300)
     }
     function editUraian(uraianId){
         if(isDragMode()) return
