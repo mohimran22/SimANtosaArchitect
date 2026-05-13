@@ -1145,7 +1145,6 @@
         },100)
         renumberUraian(catId)
     }
-
     function saveUraianEdit(uraianId){
 
         const row = document.getElementById(uraianId)
@@ -1154,8 +1153,6 @@
         if(row.dataset.processing === '1') return
 
         row.dataset.processing = '1'
-
-        isCreatingUraian = true
 
         const input = row.querySelector('.uraian-input')
 
@@ -1168,49 +1165,70 @@
 
         row.dataset.name = name
 
-        row.cells[1].innerHTML = `
-            <div class="d-flex align-items-center gap-2">
+        const nomor = row.querySelector('td').innerText.trim()
 
-                <span class="drag-handle">
-                    <i class="ti ti-grip-vertical"></i>
-                </span>
+        row.innerHTML = `
+            <td class="text-center fw-bold">
+                ${nomor}
+            </td>
 
-                <span class="uraian-text"
-                    onclick="editUraian('${uraianId}')">
+            <td colspan="5">
 
-                    ${name}
+                <div class="d-flex align-items-center gap-2">
 
-                </span>
+                    <span class="drag-handle">
+                        <i class="ti ti-grip-vertical"></i>
+                    </span>
 
+                    <span class="uraian-text"
+                        onclick="editUraian('${uraianId}')">
+
+                        ${name}
+
+                    </span>
+
+                    <button type="button"
+                        class="btn btn-sm btn-gambar-edit"
+                        onclick="openUraianGalleryEdit('${uraianId}','${name}')">
+
+                        <i class="ti ti-photo"></i>
+
+                    </button>
+
+                </div>
+
+            </td>
+
+            <td>
                 <button type="button"
-                    class="btn btn-sm btn-gambar-edit"
-                    onclick="openUraianGalleryEdit('${uraianId}','${name}')">
-
-                    <i class="ti ti-photo"></i>
-
+                    class="btn btn-sm btn-secondary"
+                    onclick="removeUraianEdit('${uraianId}')">
+                    -
                 </button>
-
-            </div>
+            </td>
         `
-        requestAnimationFrame(() => {
 
-            const jobs = document.querySelectorAll(
-                `.job-row[data-parent="${uraianId}"]`
+        delete row.dataset.processing
+        delete input.dataset.saving
+
+        addJobRowEdit(uraianId)
+
+        setTimeout(() => {
+
+            const selectEl = document.querySelector(
+                `.job-row[data-parent="${uraianId}"] .job-select`
             )
 
-            if(jobs.length === 0){
-                addJobRowEdit(uraianId)
+            if(selectEl){
+
+                const $select = $(selectEl)
+
+                $select.select2('open')
             }
 
-            setTimeout(() => {
-                triggerAutosave()
-            }, 300)
-            setTimeout(() => {
-                isCreatingUraian = false
-            }, 500)
+        }, 300)
 
-            delete row.dataset.processing
-        })
+        triggerAutosave()
     }
     function editUraian(uraianId){
         if(isDragMode()) return
@@ -1338,7 +1356,7 @@
             if($select.hasClass('select2-hidden-accessible')){
                 $select.select2('destroy')
             }
-            console.log(options)
+
             $select.select2({
                 width: '100%',
                 dropdownParent: $('body')
@@ -1616,8 +1634,7 @@
         const modal = new bootstrap.Modal(
             document.getElementById('uraianGalleryModalEdit')
         )
-        console.log(uraianImages)
-    console.log(activeUraian)
+
         modal.show()
     }
 
@@ -1652,8 +1669,6 @@
             `)
 
         })
-        console.log(images)
-
     }
 
     function removeUraianImage(index){
