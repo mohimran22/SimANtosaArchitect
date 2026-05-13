@@ -72,6 +72,7 @@
                                             <option value="">-- Pilih --</option>
                                             <option value="employee" {{ old('person_type', $account->person_type) == 'employee' ? 'selected' : '' }}>Karyawan</option>
                                             <option value="customer" {{ old('person_type', $account->person_type) == 'customer' ? 'selected' : '' }}>Customer</option>
+                                            <option value="worker" {{ old('person_type', $account->person_type) == 'worker' ? 'selected' : '' }}>Tukang</option>
                                         </select>
                                     </div>
                                 </div>

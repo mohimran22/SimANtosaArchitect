@@ -11,7 +11,7 @@ use App\Models\AccountingPeriod;
 use App\Models\License;
 use App\Models\Customer;
 use App\Models\Employee;
-use App\Models\LicenseHolder;
+use App\Models\Worker;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -105,6 +105,7 @@ public function create()
 
     $employees = User::select('id', 'fullname as name')->get();
     $customers = User::select('id', 'fullname as name')->get();
+    $workers = User::select('id', 'fullname as name')->get();
 
     $journalCode = $this->generateNextJournalCode();
     $lastClosedDate = DB::table('accounting_periods')
@@ -116,6 +117,7 @@ public function create()
         'accounts'       => $accounts,
         'employees'      => $employees,
         'customers'      => $customers,
+        'workers'        => $workers,
         'journalCode'    => $journalCode,
         'lastClosedDate' => $lastClosedDate,
     ]);
@@ -272,9 +274,16 @@ public function edit(AccountingJournal $journal)
             'name' => $cus->user?->fullname ?? '-',
         ]);
 
+    $workers = Worker::with('user')
+        ->get()
+        ->map(fn($work) => [
+            'id'   => $work->id,
+            'name' => $work->user?->fullname ?? '-',
+        ]);
+
     $journal->load(['details.account']);
 
-    return view('journals.edit', compact('journal', 'accounts', 'employees', 'customers'));
+    return view('journals.edit', compact('journal', 'accounts', 'employees', 'customers', 'workers'));
 }
 
 
@@ -828,6 +837,7 @@ public function balanceSheet(Request $request)
     return view('reports.balance_sheet', array_merge([
         'startDate'       => $startDate,
         'endDate'         => $endDate,
+        'activeLicenseId' => $activeLicenseId,
         'groupedAccounts' => $groupedAccounts,
         'viewType'        => $viewType,
         'totalDebit'      => $totalDebit,

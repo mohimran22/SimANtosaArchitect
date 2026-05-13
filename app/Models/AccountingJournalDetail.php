@@ -48,7 +48,7 @@ class AccountingJournalDetail extends Model
      return match ($this->account->person_type) {
         'customer'       => \App\Models\Customer::find($this->person)?->user?->fullname ?? '-',
         'employee'      => \App\Models\Employee::find($this->person)?->user?->fullname ?? '-',
-        'licenseholder' => \App\Models\LicenseHolder::find($this->person)?->fullname ?? '-',
+        'worker' => \App\Models\Worker::find($this->person)?->user?->fullname ?? '-',
         'license'       => Str::isUuid($this->person)
                                 ? \App\Models\License::find($this->person)?->name
                                 : $this->person,

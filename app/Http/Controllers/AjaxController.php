@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\AccountingAccount;
 use App\Models\Customer;
 use App\Models\Employee;
-use App\Models\User;
+use App\Models\Worker;
 
 class AjaxController extends Controller
 {
@@ -56,10 +56,17 @@ class AjaxController extends Controller
         return response()->json($employees);
     }
 
-    // public function getCustomers()
-    // {
-    //     return response()->json(
-    //         User::select('id', 'fullname')->get()
-    //     );
-    // }
+    public function getWorkers()
+    {
+        $workers = Worker::with('user')
+            ->get()
+            ->map(function ($work) {
+                return [
+                    'id'   => $work->id,
+                    'name' => $work->user?->fullname ?? '-',
+                ];
+            });
+
+        return response()->json($workers);
+    }
 }

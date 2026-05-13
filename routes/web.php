@@ -668,6 +668,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/get-accounts', [AjaxController::class, 'getAccounts']);
     Route::get('/get-employees', [AjaxController::class, 'getEmployees']);
     Route::get('/get-customers', [AjaxController::class, 'getCustomers']);
+    Route::get('/get-workers', [AjaxController::class, 'getWorkers']);
 
     Route::get('/ajax/journals/next-code', [AccountingJournalController::class, 'getNextCode']);
 });

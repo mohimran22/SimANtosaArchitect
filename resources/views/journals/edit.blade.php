@@ -119,8 +119,8 @@
                                                                 $users = $employees;
                                                             } elseif ($detail->person_type === 'customer') {
                                                                 $users = $customers;
-                                                            } elseif ($detail->person_type === 'license') {
-                                                                $users = $licenseList;
+                                                            } elseif ($detail->person_type === 'worker') {
+                                                                $users = $workers;
                                                             } else {
                                                                 $users = collect();
                                                             }
@@ -274,7 +274,7 @@ $(document).ready(function () {
         let urlMap = {
             employee: '/get-employees',
             customer: '/get-customers',
-            licenseholder: '/get-licenseholders',
+            worker: '/get-workers',
             license: '/get-licenses'
         };
 

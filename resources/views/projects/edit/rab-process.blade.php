@@ -56,7 +56,7 @@
             <input type="hidden" name="overhead" id="rab_overhead_edit">
         </div>
     </div>
-    <select style="display:none" id="jobCategorySelectEdit">
+    <select class="d-none" id="jobCategorySelectEdit">
         <option value="">-- Pilih AHSP --</option>
         @foreach($jobCategories as $job) 
         <option value="{{ $job->id }}" > 
@@ -203,16 +203,6 @@
     window.currentRabId = "{{ $rab->id ?? '' }}";
 </script>
 <script>
-    document.addEventListener('DOMContentLoaded', function(){
-
-    if(typeof loadExistingRab !== 'function'){
-        console.error('loadExistingRab belum tersedia!')
-        return
-    }
-
-        loadDraft()
-    })
-
     let enterLock = false
 
     document.addEventListener('keydown', function(e){
@@ -280,12 +270,13 @@
     let currentMode = 'edit'
     let sortableInstance = null
     let globalIndex = 0;
+    let isCreatingUraian = false
 
     function triggerAutosave(force = false){
         syncDiscountShipping()
         if(isDragging && !force) return
         if(currentMode === 'drag' && !force) return
-
+        if(isCreatingUraian) return
         if(document.querySelector('.editing')){
             return
         }
@@ -1164,6 +1155,8 @@
 
         row.dataset.processing = '1'
 
+        isCreatingUraian = true
+
         const input = row.querySelector('.uraian-input')
 
         if(!input){
@@ -1199,20 +1192,25 @@
 
             </div>
         `
-        const jobs = document.querySelectorAll(`.job-row[data-parent="${uraianId}"]`)
+        requestAnimationFrame(() => {
 
-        if(jobs.length === 0){
-            setTimeout(() => {
+            const jobs = document.querySelectorAll(
+                `.job-row[data-parent="${uraianId}"]`
+            )
+
+            if(jobs.length === 0){
                 addJobRowEdit(uraianId)
-            }, 10)
-        }
+            }
 
-        setTimeout(() => {
-            triggerAutosave()
-        }, 100)
-        setTimeout(() => {
+            setTimeout(() => {
+                triggerAutosave()
+            }, 300)
+            setTimeout(() => {
+                isCreatingUraian = false
+            }, 500)
+
             delete row.dataset.processing
-        }, 300)
+        })
     }
     function editUraian(uraianId){
         if(isDragMode()) return
@@ -1328,15 +1326,25 @@
 
         setTimeout(() => {
 
-            if(select.hasClass("select2-hidden-accessible")){
-                select.select2('destroy')
+            const selectEl = document.querySelector(`#${jobId} .job-select`)
+
+            if(!selectEl){
+                console.error('Select tidak ditemukan:', jobId)
+                return
             }
 
-            select.select2({
-                width: '100%'
+            const $select = $(selectEl)
+
+            if($select.hasClass('select2-hidden-accessible')){
+                $select.select2('destroy')
+            }
+            console.log(options)
+            $select.select2({
+                width: '100%',
+                dropdownParent: $('body')
             })
 
-        }, 10)
+        }, 100)
     }
 
     function loadJobEdit(rowId, jobId){
