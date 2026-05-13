@@ -56,7 +56,7 @@
             <input type="hidden" name="overhead" id="rab_overhead_edit">
         </div>
     </div>
-    <select class="d-none" id="jobCategorySelectEdit">
+    <select style="display:none" id="jobCategorySelectEdit">
         <option value="">-- Pilih AHSP --</option>
         @foreach($jobCategories as $job) 
         <option value="{{ $job->id }}" > 
@@ -191,11 +191,6 @@
     <h4 class="fw-bold mb-3">Keterangan</h4>
 
     <textarea name="notes" rows="3" class="form-control"></textarea>
-
-            {{-- <div class="mt-4">
-                <button type="button" class="btn btn-dark" id="btnSubmitRab">Update Data RAB</button>
-                <button type="button" id="btn-cancel-rab" class="btn btn-light btn-sm">Batal</button>
-            </div> --}}
 </form>
 
 @push('js')
@@ -203,13 +198,22 @@
     window.currentRabId = "{{ $rab->id ?? '' }}";
 </script>
 <script>
+    document.addEventListener('DOMContentLoaded', function(){
+
+    if(typeof loadExistingRab !== 'function'){
+        console.error('loadExistingRab belum tersedia!')
+        return
+    }
+
+        loadDraft()
+    })
+
     let enterLock = false
 
     document.addEventListener('keydown', function(e){
 
         if(e.key !== 'Enter') return
         if(enterLock) return
-
         enterLock = true
 
         setTimeout(() => {
@@ -227,15 +231,17 @@
 
             el.dataset.saving = '1'
 
-            el.blur()
-
             const row = el.closest('.uraian-row')
 
+            if(row){
+                saveUraianEdit(row.id)
+            }
+
             setTimeout(() => {
-                if(row){
-                    saveUraianEdit(row.id)
+                if(document.body.contains(el)){
+                    delete el.dataset.saving
                 }
-            }, 0)
+            }, 300)
 
             return
         }
@@ -270,13 +276,12 @@
     let currentMode = 'edit'
     let sortableInstance = null
     let globalIndex = 0;
-    let isCreatingUraian = false
 
     function triggerAutosave(force = false){
         syncDiscountShipping()
         if(isDragging && !force) return
         if(currentMode === 'drag' && !force) return
-        if(isCreatingUraian) return
+
         if(document.querySelector('.editing')){
             return
         }
@@ -287,7 +292,7 @@
         if(!isSaving){   
             autoSaveToServer()
         }
-        }, 5000)
+        }, 2000)
     }
     
     function autoSaveToServer(){
@@ -873,20 +878,14 @@
 
                         const select = $(`#${jobId} .job-select`)
 
-                        select.val(job.job_category_id).trigger('change.select2')
+                        select.select2({
+                            width: '100%',
+                            dropdownAutoWidth: true
+                        })
 
-                        const row = document.getElementById(jobId)
+                        select.val(job.job_category_id).trigger('change')
 
-                        row.querySelector('.sat').innerText = job.satuan
-
-                        const hargaInput = row.querySelector('.harga')
-
-                        hargaInput.dataset.value = job.base_price
-                        hargaInput.value = formatRupiah(job.base_price)
-
-                        rabEditCalculate(jobId, false)
-
-                    }, 50)
+                    }, 100)
 
                 })
             })
@@ -913,13 +912,7 @@
 
         })
 
-        $('.select2-row').each(function () {
-            if (!$(this).hasClass('select2-hidden-accessible')) {
-                $(this).select2({
-                    width: '100%'
-                })
-            }
-        })
+        $('.select2-row').select2()
 
         setTimeout(()=>{
             syncDiscountShipping()
@@ -934,12 +927,10 @@
             return
         }
         if(draftLoaded) return
+        draftLoaded = true
         fetch(`/rab/autosave/${window.currentRabId}`)
         .then(res => res.json())
         .then(data => {
-
-            if(!data || !data.categories?.length) return
-            draftLoaded = true
             loadExistingRab(data)
         })
     }
@@ -1145,11 +1136,13 @@
         },100)
         renumberUraian(catId)
     }
+
     function saveUraianEdit(uraianId){
 
         const row = document.getElementById(uraianId)
         if(!row) return
 
+        // cegah double save
         if(row.dataset.processing === '1') return
 
         row.dataset.processing = '1'
@@ -1165,70 +1158,42 @@
 
         row.dataset.name = name
 
-        const nomor = row.querySelector('td').innerText.trim()
+        row.cells[1].innerHTML = `
+            <div class="d-flex align-items-center gap-2">
 
-        row.innerHTML = `
-            <td class="text-center fw-bold">
-                ${nomor}
-            </td>
+                <span class="drag-handle">
+                    <i class="ti ti-grip-vertical"></i>
+                </span>
 
-            <td colspan="5">
+                <span class="uraian-text"
+                    onclick="editUraian('${uraianId}')">
 
-                <div class="d-flex align-items-center gap-2">
+                    ${name}
 
-                    <span class="drag-handle">
-                        <i class="ti ti-grip-vertical"></i>
-                    </span>
+                </span>
 
-                    <span class="uraian-text"
-                        onclick="editUraian('${uraianId}')">
-
-                        ${name}
-
-                    </span>
-
-                    <button type="button"
-                        class="btn btn-sm btn-gambar-edit"
-                        onclick="openUraianGalleryEdit('${uraianId}','${name}')">
-
-                        <i class="ti ti-photo"></i>
-
-                    </button>
-
-                </div>
-
-            </td>
-
-            <td>
                 <button type="button"
-                    class="btn btn-sm btn-secondary"
-                    onclick="removeUraianEdit('${uraianId}')">
-                    -
+                    class="btn btn-sm btn-gambar-edit"
+                    onclick="openUraianGalleryEdit('${uraianId}','${name}')">
+
+                    <i class="ti ti-photo"></i>
+
                 </button>
-            </td>
+
+            </div>
         `
+        row.classList.remove('editing')
+        const jobs = document.querySelectorAll(`.job-row[data-parent="${uraianId}"]`)
 
-        delete row.dataset.processing
-        delete input.dataset.saving
-
-        addJobRowEdit(uraianId)
-
-        setTimeout(() => {
-
-            const selectEl = document.querySelector(
-                `.job-row[data-parent="${uraianId}"] .job-select`
-            )
-
-            if(selectEl){
-
-                const $select = $(selectEl)
-
-                $select.select2('open')
-            }
-
-        }, 300)
+        if(jobs.length === 0){
+            addJobRowEdit(uraianId)
+        }
 
         triggerAutosave()
+
+        setTimeout(() => {
+            delete row.dataset.processing
+        }, 300)
     }
     function editUraian(uraianId){
         if(isDragMode()) return
@@ -1340,27 +1305,24 @@
 
         </tr>
         `)
-        const select = $(`#${jobId} .job-select`)
-
+        triggerAutosave()
         setTimeout(() => {
 
-            const selectEl = document.querySelector(`#${jobId} .job-select`)
+            const select = $(`#${jobId} .job-select`)
 
-            if(!selectEl){
-                console.error('Select tidak ditemukan:', jobId)
-                return
+            if(select.length){
+
+                if(select.hasClass('select2-hidden-accessible')){
+                    select.select2('destroy')
+                }
+
+                select.select2({
+                    width: '100%',
+                    dropdownAutoWidth: true
+                })
+
+                select.trigger('change')
             }
-
-            const $select = $(selectEl)
-
-            if($select.hasClass('select2-hidden-accessible')){
-                $select.select2('destroy')
-            }
-
-            $select.select2({
-                width: '100%',
-                dropdownParent: $('body')
-            })
 
         }, 100)
     }
@@ -1634,7 +1596,8 @@
         const modal = new bootstrap.Modal(
             document.getElementById('uraianGalleryModalEdit')
         )
-
+        console.log(uraianImages)
+    console.log(activeUraian)
         modal.show()
     }
 
@@ -1669,6 +1632,8 @@
             `)
 
         })
+        console.log(images)
+
     }
 
     function removeUraianImage(index){
