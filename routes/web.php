@@ -526,7 +526,10 @@ Route::get('/rab-process/{id}/items',
     ->name('rab.process.items.json');
 Route::post('/rab-images/upload', [\App\Http\Controllers\RabProcessController::class,'upload']);
 Route::delete('/rab-images/{id}', [\App\Http\Controllers\RabProcessController::class,'destroy']);
-Route::get('/rab/uraian-images/{uraian}', [\App\Http\Controllers\RabProcessController::class,'uraianImages']);
+Route::get(
+    '/rab/uraian-images/{uraian}',
+    [\App\Http\Controllers\RabProcessController::class, 'uraianImages']
+)->name('rab.uraian-images');
 Route::get('/rab/{id}/structure', [\App\Http\Controllers\RabProcessController::class,'structure']);
 Route::post('/rab/autosave/{rab}', [\App\Http\Controllers\RabProcessController::class, 'autosave']);
 Route::post('/rab/reorder/{rab}', [\App\Http\Controllers\RabProcessController::class, 'reorder']);

@@ -8,7 +8,6 @@ class RabUraianImage extends Model
 {
     protected $fillable = [
         'rab_id',
-        'uraian_id',
         'uraian_key',
         'image_id'
     ];

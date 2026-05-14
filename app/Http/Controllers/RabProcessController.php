@@ -160,37 +160,6 @@ public function store(Request $request)
 
     return back()->with('success', 'RAB berhasil disimpan dan proyek dinyatakan selesai');
 }
-
-// public function exportPdf(Project $project)
-// {
-//     $rab = $project->rab;
-//     if (!$rab) abort(404);
-
-//     $grouped = [];
-
-//     foreach ($rab->items as $item) {
-
-//         $kode = $item->category->kode_group ?? '-';
-//         $nama = $item->category->nama_group ?? 'PEKERJAAN LAIN-LAIN';
-
-//         if (!isset($grouped[$kode])) {
-//             $grouped[$kode] = [
-//                 'kode' => $kode,
-//                 'nama' => $nama,
-//                 'items' => [],
-//                 'subtotal' => 0
-//             ];
-//         }
-
-//         $grouped[$kode]['items'][] = $item;
-//         $grouped[$kode]['subtotal'] += $item->total;
-//     }
-
-//     $pdf = Pdf::loadView('rab.pdf', compact('rab', 'project', 'grouped'))
-//         ->setPaper('A4', 'portrait');
-
-//     return $pdf->stream('RAB-'.$project->name.'.pdf');
-// }
 public function exportPdf(Project $project)
 {
     $rab = $project->rab()->with([
@@ -506,15 +475,15 @@ public function destroy($id)
 
     return response()->json(['success'=>true]);
 }
-public function uraianImages(RabProcessUraian $uraian)
+public function uraianImages($uraianKey)
 {
     $images = RabUraianImage::with('image')
-        ->where('uraian_id', $uraian->id)
+        ->where('uraian_key', $uraianKey)
         ->get();
 
     return response()->json(
-        $images->map(fn($i)=>[
-            'id'  => $i->image?->id,
+        $images->map(fn($i) => [
+            'id' => $i->image?->id,
             'url' => $i->image
                 ? asset('storage/'.$i->image->path)
                 : null
@@ -751,7 +720,9 @@ public function autosave(Request $request, RabProcess $rab)
                     ]);
 
                     $usedItemIds[] = $existing->id;
-                    $itemMap[$item['id']] = $existing->id;
+                    if (!empty($item['id'])) {
+                        $itemMap[$item['id']] = $existing->id;
+                    }
                 }
 
             } else {
@@ -771,7 +742,9 @@ public function autosave(Request $request, RabProcess $rab)
                 ]);
 
                 $usedItemIds[] = $new->id;
-                $itemMap[$item['id']] = $new->id;
+                if (!empty($item['id'])) {
+                    $itemMap[$item['id']] = $new->id;
+                }
             }
         }
 
@@ -789,24 +762,15 @@ public function autosave(Request $request, RabProcess $rab)
 
         foreach(($request->uraian_images ?? []) as $uraianKey => $images){
 
-            $uraianId =
-                $uraianMap[$uraianKey]
-                ?? RabProcessUraian::where('uraian_key', $uraianKey)
-                    ->where('rab_process_id', $rab->id)
-                    ->value('id');
-            if(!$uraianId) continue;
-
             $currentIds = collect($images ?? [])
                 ->filter()
                 ->unique()
                 ->values();
-                
-            if (array_key_exists($uraianKey, $request->uraian_images ?? [])) {
+
             RabUraianImage::where('rab_id', $rab->id)
-                ->where('uraian_id', $uraianId)
+                ->where('uraian_key', $uraianKey)
                 ->whereNotIn('image_id', $currentIds)
                 ->delete();
-            }
 
             foreach($currentIds as $imgId){
 
@@ -816,7 +780,6 @@ public function autosave(Request $request, RabProcess $rab)
 
                 RabUraianImage::firstOrCreate([
                     'rab_id' => $rab->id,
-                    'uraian_id' => $uraianId,
                     'uraian_key' => $uraianKey,
                     'image_id' => $imgId
                 ]);

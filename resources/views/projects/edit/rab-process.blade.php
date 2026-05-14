@@ -1765,18 +1765,13 @@
 
             // relasi utama
             formData.append(
-                'rab_uraian_id',
-                uraianRow.dataset.id
+                'urain_key',
+                activeUraian
             )
 
             formData.append(
                 'rab_id',
                 window.currentRabId
-            )
-
-            formData.append(
-                'uraian_key',
-                activeUraian
             )
 
             fetch('/rab-images/upload',{

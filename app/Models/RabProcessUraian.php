@@ -24,8 +24,8 @@ public function images()
 {
     return $this->hasMany(
         RabUraianImage::class,
-        'uraian_id',   // foreign key di rab_uraian_images
-        'uraian_key'    // local key di rab_process_uraians
+        'uraian_key',
+        'uraian_key'
     );
 }
 public function categori()

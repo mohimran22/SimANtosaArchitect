@@ -1,6 +1,7 @@
 @php
 $rab = $project->rab()->with([
-    'categories.uraians.items'
+    'categories.uraians.items',
+    'categories.uraians.images.image'
 ])->first();
 function numberToLetters($num) {
     $letters = '';
@@ -87,7 +88,10 @@ function numberToLetters($num) {
 
                                 <button type="button"
                                     class="btn btn-sm btn-gambar"
-                                    onclick="bukagaleri('{{ $uraian->id }}','{{ $uraian->name }}')">
+                                    onclick="bukagaleri(
+                                        '{{ route('rab.uraian-images', $uraian->id) }}',
+                                        '{{ $uraian->name }}'
+                                    )">
 
                                     <i class="ti ti-photo"></i>
 
@@ -255,7 +259,7 @@ let viewerImages = []
 let currentIndex = 0
 let scale = 1
 
-function bukagaleri(uraianId, uraianName){
+function bukagaleri(url, uraianName){
 
     const modal = new bootstrap.Modal(
         document.getElementById('uraianGalleryModall')
@@ -267,8 +271,8 @@ function bukagaleri(uraianId, uraianName){
     title.innerText = uraianName
     container.innerHTML = '<div class="text-muted">Loading...</div>'
 
-    fetch(`/rab/uraian-images/${uraianId}`)
-    
+    fetch(url)
+
     .then(async res => {
 
         if(!res.ok){
@@ -282,13 +286,14 @@ function bukagaleri(uraianId, uraianName){
 
         return res.json()
     })
+
     .then(data => {
 
-        container.innerHTML=''
+        container.innerHTML = ''
 
-        if(data.length===0){
+        if(data.length === 0){
 
-            container.innerHTML=
+            container.innerHTML =
                 '<div class="text-muted">Belum ada gambar</div>'
 
             return
@@ -322,7 +327,6 @@ function bukagaleri(uraianId, uraianName){
     })
 
     modal.show()
-    console.log('URAIAN ID:', uraianId)
 }
 
 document.addEventListener("click",function(e){
