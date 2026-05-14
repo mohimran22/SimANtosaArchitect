@@ -211,11 +211,14 @@
     let enterLock = false
 
     document.addEventListener('keydown', function(e){
+
         if($(e.target).closest('.select2-container').length){
             return
         }
+
         if(e.key !== 'Enter') return
         if(enterLock) return
+
         enterLock = true
 
         setTimeout(() => {
@@ -223,13 +226,17 @@
         }, 300)
 
         const el = e.target
+
         if(!el || el.disabled) return
 
+        // ======================
+        // URAIAN
+        // ======================
         if(el.classList.contains('uraian-input')){
 
-            if(el.dataset.saving === '1') return
-
             e.preventDefault()
+
+            if(el.dataset.saving === '1') return
 
             el.dataset.saving = '1'
 
@@ -240,25 +247,64 @@
             }
 
             setTimeout(() => {
-                if(document.body.contains(el)){
-                    delete el.dataset.saving
-                }
+                delete el.dataset.saving
             }, 300)
 
             return
         }
 
+        // ======================
+        // CATEGORY
+        // ======================
         if(el.classList.contains('category-input')){
+
             e.preventDefault()
 
             const row = el.closest('.category-row')
+
             if(row){
                 saveCategoryEdit(row.id)
             }
+
             return
         }
-        if(!el.matches('.uraian-input, .category-input')) return
     })
+
+    document.addEventListener('blur', function(e){
+
+        const el = e.target
+
+        if(!el.classList.contains('uraian-input')) return
+
+        if(el.dataset.saving === '1') return
+
+        el.dataset.saving = '1'
+
+        const row = el.closest('.uraian-row')
+
+        if(row){
+            saveUraianEdit(row.id)
+        }
+
+        setTimeout(() => {
+            delete el.dataset.saving
+        }, 300)
+
+    }, true)
+
+    document.addEventListener('blur', function(e){
+
+        const el = e.target
+
+        if(!el.classList.contains('category-input')) return
+
+        const row = el.closest('.category-row')
+
+        if(row){
+            saveCategoryEdit(row.id)
+        }
+
+    }, true)
 
     let isSaving = false
     let autosaveTimer = null
@@ -1153,18 +1199,17 @@
         const row = document.getElementById(uraianId)
         if(!row) return
 
-        if(row.dataset.processing === '1') return
-
-        row.dataset.processing = '1'
-
         const input = row.querySelector('.uraian-input')
 
-        if(!input){
-            delete row.dataset.processing
+        if(!input) return
+        
+        const name = input.value.trim()
+
+        if(!name){
+            alert('Uraian tidak boleh kosong')
+            input.focus()
             return
         }
-
-        const name = input.value.trim() || 'Uraian Baru'
 
         row.dataset.name = name
 
@@ -1198,16 +1243,18 @@
         if(jobs.length === 0){
             addJobRowEdit(uraianId)
         }
-
-        triggerAutosave()
-
         setTimeout(() => {
             delete row.dataset.processing
         }, 300)
+        triggerAutosave()
     }
     function editUraian(uraianId){
+
         if(isDragMode()) return
+
         const row = document.getElementById(uraianId)
+
+        row.classList.add('editing')
 
         const name = row.dataset.name || ''
 
@@ -1224,10 +1271,15 @@
 
             </div>
         `
+
         setTimeout(()=>{
-            row.querySelector('.uraian-input').focus()
+
+            const input = row.querySelector('.uraian-input')
+
+            input.focus()
+            input.select()
+
         },50)
-        triggerAutosave()
     }
 
     function addJobRowEdit(uraianId){
@@ -1327,7 +1379,8 @@
 
                 select.select2({
                     width: '100%',
-                    dropdownAutoWidth: true
+                    dropdownAutoWidth: true,
+                    dropdownParent: $(`#${jobId}`)
                 })
 
                 select.select2('open')

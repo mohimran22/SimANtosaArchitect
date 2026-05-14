@@ -456,7 +456,7 @@
             <div id="invoice-final" class="step-section">
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body px-5 py-4">
-                        <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div class="sticky-rab-header d-flex justify-content-between align-items-center mb-4">
                             <h3 class="mb-3 fw-bold">
                                 @if($project->project_type == 1)
                                     8. Invoice Pelunasan Desain

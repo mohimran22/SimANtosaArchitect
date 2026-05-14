@@ -772,3 +772,11 @@ input[type=number]::-webkit-outer-spin-button {
 .drag-ahsp {
     opacity: 0.3;
 }
+.sticky-rab-header{
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: white;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
