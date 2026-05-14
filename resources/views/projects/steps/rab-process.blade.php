@@ -1061,9 +1061,7 @@ document.getElementById('rab_shipping_display').addEventListener('input',functio
 document.getElementById('rab_tax_rate').addEventListener('input', function () {
     calculateSummary();
 });
-document
-.querySelector('#rab_offerItemsBody')
-.addEventListener('keydown', function(e){
+document.querySelector('#rab_offerItemsBody').addEventListener('keydown', function(e){
 
     if(e.key === 'Enter'){
 

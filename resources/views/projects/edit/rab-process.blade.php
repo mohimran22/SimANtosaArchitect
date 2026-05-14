@@ -688,7 +688,7 @@
 
         globalProfit = parseFloat(data.meta.profit) || 0
         globalOverhead = parseFloat(data.meta.overhead) || 0
-
+        uraianGlobalIndex = Date.now()
         data.categories.forEach(cat => {
 
             const catId = 'cat_'+categoryIndex
@@ -789,6 +789,10 @@
                     </td>
 
                     <td>
+                        <button type="button" class="btn btn-sm btn-dark"
+                            onclick="addJobRowEdit('${uraianId}')">
+                            +
+                        </button>
                         <button type="button" class="btn btn-sm btn-secondary"
                             onclick="removeUraianEdit('${uraianId}')">
                             -
@@ -1119,6 +1123,10 @@
             </td>
 
             <td>
+                <button type="button" class="btn btn-sm btn-dark"
+                    onclick="addJobRowEdit('${uraianId}')">
+                    +
+                </button>
                 <button type="button" class="btn btn-sm btn-secondary"
                     onclick="removeUraianEdit('${uraianId}')">
                     -
@@ -1137,6 +1145,7 @@
             }
         },100)
         renumberUraian(catId)
+        triggerAutosave()
     }
 
     function saveUraianEdit(uraianId){
@@ -1144,7 +1153,6 @@
         const row = document.getElementById(uraianId)
         if(!row) return
 
-        // cegah double save
         if(row.dataset.processing === '1') return
 
         row.dataset.processing = '1'
@@ -1232,13 +1240,15 @@
 
         const uraianRow = document.getElementById(uraianId)
 
-        let lastRow = uraianRow
+        const relatedRows = [
+            ...document.querySelectorAll(`.job-row[data-parent="${uraianId}"]`)
+        ]
 
-        document.querySelectorAll(`[data-parent="${uraianId}"]`)
-            .forEach(row => lastRow = row)
+        const lastRow = relatedRows.length
+            ? relatedRows[relatedRows.length - 1]
+            : uraianRow
 
-        lastRow.insertAdjacentHTML('afterend',`
-
+        lastRow.insertAdjacentHTML('afterend', `
         <tr class="job-row"
             id="${jobId}"
             data-id=""
@@ -1280,7 +1290,6 @@
                 <input type="text"
                     class="form-control harga"
                     readonly>
-
             </td>
 
             <td>
@@ -1290,7 +1299,6 @@
             </td>
 
             <td>
-
                 <button type="button"
                     class="btn btn-sm btn-dark"
                     onclick="addJobRowEdit('${uraianId}')">
@@ -1302,7 +1310,6 @@
                     onclick="removeJob('${jobId}')">
                 -
                 </button>
-
             </td>
 
         </tr>
@@ -1598,8 +1605,6 @@
         const modal = new bootstrap.Modal(
             document.getElementById('uraianGalleryModalEdit')
         )
-        console.log(uraianImages)
-    console.log(activeUraian)
         modal.show()
     }
 
@@ -1634,8 +1639,6 @@
             `)
 
         })
-        console.log(images)
-
     }
 
     function removeUraianImage(index){
