@@ -781,7 +781,7 @@
             `)
 
             cat.uraians.forEach(uraian => {
-
+                
                 const uraianId = uraian.uraian_key
                 if(!uraianImages[uraianId]){
                     uraianImages[uraianId] = []
@@ -791,7 +791,7 @@
                     uraian.images.forEach(img=>{
                         uraianImages[uraianId].push({
                             id: img.id,
-                            url: img.image.url
+                            url: img.url
                         })
                     })
                 }
@@ -1765,7 +1765,7 @@
 
             // relasi utama
             formData.append(
-                'urain_key',
+                'uraian_key',
                 activeUraian
             )
 

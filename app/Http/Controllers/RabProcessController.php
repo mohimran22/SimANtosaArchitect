@@ -842,11 +842,14 @@ public function loadDraft(RabProcess $rab)
         ->orderBy('order_no')
         ->get();
 
-    $uraians = RabProcessUraian::where('rab_process_id', $rab->id)
-        ->where('is_draft', $isDraft)
-        ->orderBy('order_no')
-        ->get()
-        ->groupBy('category_id');
+    $uraians = RabProcessUraian::with([
+        'images.image'
+    ])
+    ->where('rab_process_id', $rab->id)
+    ->where('is_draft', $isDraft)
+    ->orderBy('order_no')
+    ->get()
+    ->groupBy('category_id');
 
     $items = RabProcessItem::where('rab_process_id', $rab->id)
         ->where('is_draft', $isDraft)
@@ -865,21 +868,32 @@ public function loadDraft(RabProcess $rab)
     foreach ($categories as $cat) {
 
         $catData = [
+            'id' => $cat->id,
             'name' => $cat->name,
             'uraians' => []
         ];
 
         foreach ($uraians[$cat->id] ?? [] as $u) {
 
-            $uData = [
-                'uraian_key' => $u->uraian_key,
-                'name' => $u->name,
-                'items' => []
-            ];
+        $uData = [
+            'id' => $u->id,
+            'uraian_key' => $u->uraian_key,
+            'name' => $u->name,
+
+            'images' => $u->images->map(function($img){
+                return [
+                    'id' => $img->image->id,
+                    'url' => $img->image->url,
+                ];
+            })->values(),
+
+            'items' => []
+        ];
 
             foreach ($items[$u->id] ?? [] as $it) {
 
                 $uData['items'][] = [
+                      'id' => $it->id,
                     'job_category_id' => $it->job_category_id,
                     'satuan' => $it->satuan,
                     'volume' => $it->volume,

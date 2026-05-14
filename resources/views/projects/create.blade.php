@@ -437,8 +437,23 @@
                             <h3 class="mb-3 fw-bold">7. Form Pengerjaan</h3>
                             @include('projects.steps.work-process')
                         @elseif($project->project_type == 2)
-                            <h3 class="mb-3 fw-bold">6. Form Pembuatan RAB</h3>
-                            @include('projects.steps.rab-process')
+                        <div class="d-flex justify-content-between align-items-center mb-4 sticky-rab-header">
+
+                    <h3 class="fw-bold mb-0">
+                        6. Form Pembuatan RAB
+                    </h3>
+
+                    <button
+                        type="submit"
+                        form="rabForm"
+                        class="btn btn-dark">
+                        <i class="ti ti-device-floppy me-1"></i>
+                        Simpan RAB
+                    </button>
+
+                </div>
+
+                @include('projects.steps.rab-process')
                         @elseif($project->project_type == 3)
                             <h3 class="mb-3 fw-bold">7. Form Kemajuan Pekerjaan</h3>
                             @include('projects.steps.build-process')

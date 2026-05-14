@@ -164,11 +164,11 @@
 
     <textarea name="notes" rows="3" class="form-control"></textarea>
 
-    <div class="text-end mt-4">
+    {{-- <div class="text-end mt-4">
         <button type="submit" class="btn btn-dark px-4">
             <i class="ti ti-device-floppy me-1"></i>Simpan RAB
         </button>
-    </div>
+    </div> --}}
 </form>
 @endcan
 
