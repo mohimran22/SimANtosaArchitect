@@ -1774,6 +1774,11 @@
                 window.currentRabId
             )
 
+            formData.append(
+                'uraian_key',
+                activeUraian
+            )
+
             fetch('/rab-images/upload',{
 
                 method:'POST',

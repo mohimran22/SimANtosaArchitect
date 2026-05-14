@@ -600,7 +600,6 @@ col.just-hidden {
 #rabItemsTableEdit col:nth-child(4){ width:110px }
 #rabItemsTableEdit col:nth-child(5){ width:150px }
 #rabItemsTableEdit col:nth-child(6){ width:160px }
-#rabItemsTableEdit col:nth-child(7){ width:110px }
 
 #rabItemsTable col:nth-child(1){ width:50px }
 #rabItemsTable col:nth-child(2){ width:35% }
@@ -608,7 +607,7 @@ col.just-hidden {
 #rabItemsTable col:nth-child(4){ width:110px }
 #rabItemsTable col:nth-child(5){ width:150px }
 #rabItemsTable col:nth-child(6){ width:160px }
-#rabItemsTable col:nth-child(7){ width:110px }
+
 .uraian-row{
 position:relative;
 }

@@ -796,7 +796,7 @@ public function autosave(Request $request, RabProcess $rab)
                     ->value('id');
             if(!$uraianId) continue;
 
-            $currentIds = collect($images)
+            $currentIds = collect($images ?? [])
                 ->filter()
                 ->unique()
                 ->values();
@@ -817,6 +817,7 @@ public function autosave(Request $request, RabProcess $rab)
                 RabUraianImage::firstOrCreate([
                     'rab_id' => $rab->id,
                     'uraian_id' => $uraianId,
+                    'uraian_key' => $uraianKey,
                     'image_id' => $imgId
                 ]);
             }
