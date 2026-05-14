@@ -71,6 +71,9 @@
             scrollY: '500px',
             scrollX: true,
             scrollCollapse: true,
+                fixedColumns: {
+                    leftColumns: 3
+                },
             serverSide: true,
             processing: true,
             ajax: '{{ route("accounting.index") }}',

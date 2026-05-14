@@ -759,30 +759,36 @@ public function autosave(Request $request, RabProcess $rab)
                 fn($q) => $q
             )
             ->delete();
+        if($request->has('uraian_images')){
+            foreach(($request->uraian_images ?? []) as $uraianKey => $images){
 
-        foreach(($request->uraian_images ?? []) as $uraianKey => $images){
+                // skip kalau belum ada data gambar
+                if(empty($images)){
+                    continue;
+                }
 
-            $currentIds = collect($images ?? [])
-                ->filter()
-                ->unique()
-                ->values();
+                $currentIds = collect($images)
+                    ->filter()
+                    ->unique()
+                    ->values();
 
-            RabUraianImage::where('rab_id', $rab->id)
-                ->where('uraian_key', $uraianKey)
-                ->whereNotIn('image_id', $currentIds)
-                ->delete();
+                RabUraianImage::where('rab_id', $rab->id)
+                    ->where('uraian_key', $uraianKey)
+                    ->whereNotIn('image_id', $currentIds)
+                    ->delete();
 
-            foreach($currentIds as $imgId){
+                foreach($currentIds as $imgId){
 
-                $exists = RabImage::where('id', $imgId)->exists();
+                    $exists = RabImage::where('id', $imgId)->exists();
 
-                if(!$exists) continue;
+                    if(!$exists) continue;
 
-                RabUraianImage::firstOrCreate([
-                    'rab_id' => $rab->id,
-                    'uraian_key' => $uraianKey,
-                    'image_id' => $imgId
-                ]);
+                    RabUraianImage::firstOrCreate([
+                        'rab_id' => $rab->id,
+                        'uraian_key' => $uraianKey,
+                        'image_id' => $imgId
+                    ]);
+                }
             }
         }
 

@@ -527,7 +527,7 @@ Route::get('/rab-process/{id}/items',
 Route::post('/rab-images/upload', [\App\Http\Controllers\RabProcessController::class,'upload']);
 Route::delete('/rab-images/{id}', [\App\Http\Controllers\RabProcessController::class,'destroy']);
 Route::get(
-    '/rab/uraian-images/{uraian}',
+    '/rab/uraian-images/{uraianKey}',
     [\App\Http\Controllers\RabProcessController::class, 'uraianImages']
 )->name('rab.uraian-images');
 Route::get('/rab/{id}/structure', [\App\Http\Controllers\RabProcessController::class,'structure']);

@@ -40,6 +40,12 @@
 <script>
 $(function () {
     $('#jobTable').DataTable({
+        scrollY: '500px',
+            scrollX: true,
+            scrollCollapse: true,
+                fixedColumns: {
+                    leftColumns: 3
+                },
         processing: true,
         serverSide: true,
         ajax: "{{ route('job-categories.index') }}",
