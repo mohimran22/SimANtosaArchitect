@@ -344,8 +344,6 @@
                 isSaving = false
                 return
             }
-            console.log('URAIMG', uraianImages)
-            console.log('COLLECT', collectUraianImages())
 
             fetch(`/rab/autosave/${window.currentRabId}`, {
                 method: 'POST',
@@ -716,7 +714,7 @@
     }
     
     function loadExistingRab(data){
-        console.log(data.categories)
+
         uraianImages = {}
         rabItems = {}
         const tbody = document.getElementById('rab_offerItemsBody_edit')
@@ -777,20 +775,18 @@
 
             cat.uraians.forEach(uraian => {
                 
-                const uraianId = uraian.uraian_key || ('uraian_' + uraian.id)
+                const uraianId = 'uraian_' + uraian.id
                 const uraianKey = uraianId 
                 if(!uraianImages[uraianKey]){
                     uraianImages[uraianKey] = []
                 }
 
-                console.log('LOAD IMAGES', uraian.images)
-
                 if(Array.isArray(uraian.images)){
-                    uraian.images.forEach(img => {
 
+                    uraian.images.forEach(img => {
                         uraianImages[uraianKey].push({
                             id: img.id,
-                            url: img.url
+                            url: img.image ? img.image.url : null
                         })
 
                     })
@@ -1653,13 +1649,17 @@
     }
     function openUraianGalleryEdit(rowId, uraianName){
   
-        activeUraian = rowId
+        const row = document.getElementById(rowId)
+        activeUraian = row.id
 
         $("#modalTitleEdit").text(uraianName)
 
-        if(!uraianImages[rowId]){
-            uraianImages[rowId] = []
+        if(!uraianImages[activeUraian]){
+            uraianImages[activeUraian] = []
         }
+
+        console.log('OPEN GALLERY', activeUraian)
+        console.log(uraianImages)
 
         renderGalleryEdit()
 
