@@ -22,11 +22,7 @@ public function items()
 }
 public function images()
 {
-    return $this->hasMany(
-        RabUraianImage::class,
-        'uraian_key',
-        'uraian_key'
-    );
+    return $this->hasMany(RabUraianImage::class, 'uraian_id');
 }
 public function categori()
 {

@@ -2,6 +2,10 @@
     $latest = \Illuminate\Support\Facades\Cache::get('job_category_last_updated', 0);
 
     $needRefresh = $rab->analisa_version < $latest;
+    $rab = $project->rab()->with([
+        'categories.uraians.items',
+        'categories.uraians.images.image'
+    ])->first();
 @endphp
 
 
@@ -196,8 +200,7 @@
 @push('js')
 <script>
     window.currentRabId = "{{ $rab->id ?? '' }}";
-</script>
-<script>
+
     document.addEventListener('DOMContentLoaded', function(){
 
     if(typeof loadExistingRab !== 'function'){
@@ -229,9 +232,6 @@
 
         if(!el || el.disabled) return
 
-        // ======================
-        // URAIAN
-        // ======================
         if(el.classList.contains('uraian-input')){
 
             e.preventDefault()
@@ -253,9 +253,6 @@
             return
         }
 
-        // ======================
-        // CATEGORY
-        // ======================
         if(el.classList.contains('category-input')){
 
             e.preventDefault()
@@ -323,11 +320,18 @@
     let activeUraian = null
     let currentMode = 'edit'
     let sortableInstance = null
-    let globalIndex = 0;
+    let globalIndex = 0
+    let draftLoaded = false
+    let isLoadingDraft = false
 
     function triggerAutosave(force = false){
+
+        if(isLoadingDraft) return
+
         syncDiscountShipping()
+
         if(isDragging && !force) return
+
         if(currentMode === 'drag' && !force) return
 
         if(document.querySelector('.editing')){
@@ -353,6 +357,8 @@
                 isSaving = false
                 return
             }
+            console.log('URAIMG', uraianImages)
+            console.log('COLLECT', collectUraianImages())
 
             fetch(`/rab/autosave/${window.currentRabId}`, {
                 method: 'POST',
@@ -721,7 +727,9 @@
             isReordering = false
         })
     }
+    
     function loadExistingRab(data){
+        console.log(data.categories)
         uraianImages = {}
         rabItems = {}
         const tbody = document.getElementById('rab_offerItemsBody_edit')
@@ -782,17 +790,22 @@
 
             cat.uraians.forEach(uraian => {
                 
-                const uraianId = uraian.uraian_key
-                if(!uraianImages[uraianId]){
-                    uraianImages[uraianId] = []
+                const uraianId = 'uraian_' + uraian.id
+                const uraianKey = uraianId 
+                if(!uraianImages[uraianKey]){
+                    uraianImages[uraianKey] = []
                 }
 
-                if(uraian.images){
-                    uraian.images.forEach(img=>{
-                        uraianImages[uraianId].push({
+                console.log('LOAD IMAGES', uraian.images)
+
+                if(Array.isArray(uraian.images)){
+                    uraian.images.forEach(img => {
+
+                        uraianImages[uraianKey].push({
                             id: img.id,
                             url: img.url
                         })
+
                     })
                 }
 
@@ -972,31 +985,39 @@
         },300)
 
     }
-    let draftLoaded = false
+
     function loadDraft(){
-        if(!window.currentRabId){
-            console.warn('Load draft skip: currentRabId belum ada')
-            return
-        }
+
+        if(!window.currentRabId) return
         if(draftLoaded) return
+
         draftLoaded = true
+        isLoadingDraft = true
+
         fetch(`/rab/autosave/${window.currentRabId}`)
         .then(res => res.json())
         .then(data => {
             loadExistingRab(data)
+        })
+        .finally(() => {
+            isLoadingDraft = false
         })
     }
     function collectUraianImages(){
 
         let result = {}
 
-        Object.keys(uraianImages).forEach(uraianKey => {
+        document.querySelectorAll('.uraian-row').forEach(row => {
 
-            result[uraianKey] =
-                (uraianImages[uraianKey] || [])
+            const tempKey = row.id
+            const dbId = row.dataset.id
+
+            if(!dbId) return
+
+            result[dbId] =
+                (uraianImages[tempKey] || [])
                 .map(img => img.id)
                 .filter(Boolean)
-
         })
 
         return result
@@ -1643,14 +1664,14 @@
         })
         rabEditCalculateSummary()
     }
-    function openUraianGalleryEdit(uraianId, uraianName){
+    function openUraianGalleryEdit(rowId, uraianName){
   
-        activeUraian = uraianId
+        activeUraian = rowId
 
         $("#modalTitleEdit").text(uraianName)
 
-        if(!uraianImages[uraianId]){
-            uraianImages[uraianId] = []
+        if(!uraianImages[rowId]){
+            uraianImages[rowId] = []
         }
 
         renderGalleryEdit()
@@ -1675,6 +1696,7 @@
         }
 
         images.forEach((img,index)=>{
+            if(!img.url) return
 
             gallery.insertAdjacentHTML('beforeend',`
 
@@ -1740,83 +1762,85 @@
         $("#modalTitleEdit").text(uraian);
 
     });
-    document.getElementById('uraianImageInputEdit').addEventListener('change', function(){
+            document.getElementById('uraianImageInputEdit')
+            .addEventListener('change', function(){
 
-        const files = this.files
+                const files = this.files
 
-        const uraianRow = document.getElementById(activeUraian)
+                const uraianRow = document.getElementById(activeUraian)
 
-        if(!uraianRow){
-            alert('Uraian tidak ditemukan')
-            return
-        }
-
-        // wajib sudah punya DB ID
-        if(!uraianRow.dataset.id){
-            alert('Tunggu autosave selesai dulu sebelum upload gambar')
-            return
-        }
-
-        Array.from(files).forEach(file=>{
-
-            const formData = new FormData()
-
-            formData.append('image', file)
-
-            // relasi utama
-            formData.append(
-                'uraian_key',
-                activeUraian
-            )
-
-            formData.append(
-                'rab_id',
-                window.currentRabId
-            )
-
-            fetch('/rab-images/upload',{
-
-                method:'POST',
-
-                headers:{
-                    'X-CSRF-TOKEN':
-                        document.querySelector(
-                            'meta[name="csrf-token"]'
-                        ).content
-                },
-
-                body:formData
-            })
-
-            .then(res=>res.json())
-
-            .then(img=>{
-
-                if(!uraianImages[activeUraian]){
-                    uraianImages[activeUraian] = []
+                if(!uraianRow){
+                    alert('Uraian tidak ditemukan')
+                    return
                 }
 
-                uraianImages[activeUraian].push({
-                    id: img.id,
-                    url: img.url
+                if(!uraianRow.dataset.id){
+                    alert('Tunggu autosave selesai dulu sebelum upload gambar')
+                    return
+                }
+
+                Array.from(files).forEach(file=>{
+
+                    const formData = new FormData()
+
+                    formData.append('image', file)
+
+                    formData.append(
+                        'uraian_id',
+                        uraianRow.dataset.id
+                    )
+
+                    formData.append(
+                        'rab_id',
+                        window.currentRabId
+                    )
+
+                    fetch('/rab-images/upload',{
+
+                        method:'POST',
+
+                        headers:{
+                            'X-CSRF-TOKEN':
+                                document.querySelector(
+                                    'meta[name="csrf-token"]'
+                                ).content
+                        },
+
+                        body:formData
+                    })
+
+                    .then(res=>res.json())
+
+                    .then(img => {
+
+                        if(!img.url){
+                            alert('URL gambar kosong')
+                            return
+                        }
+
+                        if(!uraianImages[activeUraian]){
+                            uraianImages[activeUraian] = []
+                        }
+
+                        uraianImages[activeUraian].push({
+                            id: img.id,
+                            url: img.url
+                        })
+
+                        renderGalleryEdit()
+
+                        triggerAutosave(true)
+                    })
+
+                    .catch(err=>{
+                        console.error(err)
+                        alert('Upload gambar gagal')
+                    })
+
                 })
 
-                renderGalleryEdit()
-
-                triggerAutosave(true)
+                this.value = ''
             })
-
-            .catch(err=>{
-                console.error(err)
-                alert('Upload gambar gagal')
-            })
-
-        })
-
-        // reset input
-        this.value = ''
-
-    })
             document.getElementById('rab_profit_display_edit').addEventListener('input', function(){
                 globalProfit = Number(this.value) || 0
                 updateHargaSemua()
@@ -1868,7 +1892,8 @@
     })
 
     document.getElementById('rab_tax_rate_edit').addEventListener('input', function () {
-        rabEditCalculateSummary();
+        rabEditCalculateSummary()
+        triggerAutosave()
     });
 
     function collectItems(){

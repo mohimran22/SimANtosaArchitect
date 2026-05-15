@@ -8,7 +8,7 @@ class RabUraianImage extends Model
 {
     protected $fillable = [
         'rab_id',
-        'uraian_key',
+        'uraian_id',
         'image_id'
     ];
 
@@ -19,6 +19,6 @@ class RabUraianImage extends Model
 
     public function image()
     {
-        return $this->belongsTo(RabImage::class);
+        return $this->belongsTo(RabImage::class, 'image_id');
     }
 }

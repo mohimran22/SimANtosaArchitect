@@ -291,18 +291,27 @@ public function items($id)
 public function upload(Request $request)
 {
     $request->validate([
-        'image' => 'required|image|max:4096'
+        'image' => 'required|image|max:4096',
+        'uraian_id' => 'required|exists:rab_process_uraians,id',
+        'rab_id' => 'required|exists:rab_process,id'
     ]);
 
-    $path = $request->file('image')->store('rab/uraian','public');
+    $path = $request->file('image')->store('rab/uraian', 'public');
 
     $img = RabImage::create([
         'path' => $path
     ]);
 
+    RabUraianImage::create([
+        'rab_id' => $request->rab_id,
+        'uraian_id' => $request->uraian_id,
+        'image_id' => $img->id
+    ]);
+
     return response()->json([
         'id' => $img->id,
-        'url' => Storage::url($path)
+        'path' => $path,
+        'url' => asset('storage/' . $path)
     ]);
 }
 
@@ -475,17 +484,17 @@ public function destroy($id)
 
     return response()->json(['success'=>true]);
 }
-public function uraianImages($uraianKey)
+public function uraianImages($uraianId)
 {
     $images = RabUraianImage::with('image')
-        ->where('uraian_key', $uraianKey)
+        ->where('uraian_id', $uraianId)
         ->get();
 
     return response()->json(
         $images->map(fn($i) => [
             'id' => $i->image?->id,
             'url' => $i->image
-                ? asset('storage/'.$i->image->path)
+                ? asset('storage/' . $i->image->path)
                 : null
         ])
     );
@@ -759,38 +768,46 @@ public function autosave(Request $request, RabProcess $rab)
                 fn($q) => $q
             )
             ->delete();
-        if($request->has('uraian_images')){
-            foreach(($request->uraian_images ?? []) as $uraianKey => $images){
 
-                // skip kalau belum ada data gambar
-                if(empty($images)){
-                    continue;
-                }
+            // if($request->has('uraian_images')){
 
-                $currentIds = collect($images)
-                    ->filter()
-                    ->unique()
-                    ->values();
+            //     foreach(($request->uraian_images ?? []) as $uraianId => $images){
 
-                RabUraianImage::where('rab_id', $rab->id)
-                    ->where('uraian_key', $uraianKey)
-                    ->whereNotIn('image_id', $currentIds)
-                    ->delete();
+            //         $uraianExists = RabProcessUraian::where('id', $uraianId)->exists();
 
-                foreach($currentIds as $imgId){
+            //         if(!$uraianExists){
+            //             continue;
+            //         }
 
-                    $exists = RabImage::where('id', $imgId)->exists();
+            //         $currentIds = collect($images)
+            //             ->filter()
+            //             ->map(fn($id) => (int)$id)
+            //             ->filter()
+            //             ->unique()
+            //             ->values();
 
-                    if(!$exists) continue;
+            //         if($currentIds->isEmpty()){
+            //             continue;
+            //         }
+            //         RabUraianImage::where('rab_id', $rab->id)
+            //             ->where('uraian_id', $uraianId)
+            //             ->whereNotIn('image_id', $currentIds)
+            //             ->delete();
 
-                    RabUraianImage::firstOrCreate([
-                        'rab_id' => $rab->id,
-                        'uraian_key' => $uraianKey,
-                        'image_id' => $imgId
-                    ]);
-                }
-            }
-        }
+            //         foreach($currentIds as $imgId){
+
+            //             $exists = RabImage::where('id', $imgId)->exists();
+
+            //             if(!$exists) continue;
+
+            //             RabUraianImage::firstOrCreate([
+            //                 'rab_id' => $rab->id,
+            //                 'uraian_id' => $uraianId,
+            //                 'image_id' => $imgId
+            //             ]);
+            //         }
+            //     }
+            // }
 
         $subtotal = RabProcessItem::where('rab_process_id', $rab->id)
             ->where('is_draft', true)
@@ -875,25 +892,33 @@ public function loadDraft(RabProcess $rab)
 
         foreach ($uraians[$cat->id] ?? [] as $u) {
 
-        $uData = [
-            'id' => $u->id,
-            'uraian_key' => $u->uraian_key,
-            'name' => $u->name,
+            $uData = [
+                'id' => $u->id,
+                'uraian_key' => $u->uraian_key,
+                'name' => $u->name,
 
-            'images' => $u->images->map(function($img){
+                'images' => $u->images->map(function ($pivot) {
+
+                $image = RabImage::find($pivot->image_id);
+
+                if (!$image) {
+                    return null;
+                }
+
                 return [
-                    'id' => $img->image->id,
-                    'url' => $img->image->url,
+                    'id' => $image->id,
+                    'url' => $image->url,
                 ];
-            })->values(),
 
-            'items' => []
-        ];
+            })->filter()->values()->toArray(),
+
+                'items' => []
+            ];
 
             foreach ($items[$u->id] ?? [] as $it) {
 
                 $uData['items'][] = [
-                      'id' => $it->id,
+                    'id' => $it->id,
                     'job_category_id' => $it->job_category_id,
                     'satuan' => $it->satuan,
                     'volume' => $it->volume,

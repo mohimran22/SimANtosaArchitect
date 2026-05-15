@@ -89,7 +89,7 @@ function numberToLetters($num) {
                                 <button type="button"
                                     class="btn btn-sm btn-gambar"
                                     onclick="bukagaleri(
-                                        '{{ route('rab.uraian-images', $uraian->uraian_key) }}',
+                                        '{{ route('rab.uraian-images', $uraian->id) }}',
                                         '{{ $uraian->name }}'
                                     )">
 
