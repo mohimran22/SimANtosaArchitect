@@ -769,46 +769,6 @@ public function autosave(Request $request, RabProcess $rab)
             )
             ->delete();
 
-            // if($request->has('uraian_images')){
-
-            //     foreach(($request->uraian_images ?? []) as $uraianId => $images){
-
-            //         $uraianExists = RabProcessUraian::where('id', $uraianId)->exists();
-
-            //         if(!$uraianExists){
-            //             continue;
-            //         }
-
-            //         $currentIds = collect($images)
-            //             ->filter()
-            //             ->map(fn($id) => (int)$id)
-            //             ->filter()
-            //             ->unique()
-            //             ->values();
-
-            //         if($currentIds->isEmpty()){
-            //             continue;
-            //         }
-            //         RabUraianImage::where('rab_id', $rab->id)
-            //             ->where('uraian_id', $uraianId)
-            //             ->whereNotIn('image_id', $currentIds)
-            //             ->delete();
-
-            //         foreach($currentIds as $imgId){
-
-            //             $exists = RabImage::where('id', $imgId)->exists();
-
-            //             if(!$exists) continue;
-
-            //             RabUraianImage::firstOrCreate([
-            //                 'rab_id' => $rab->id,
-            //                 'uraian_id' => $uraianId,
-            //                 'image_id' => $imgId
-            //             ]);
-            //         }
-            //     }
-            // }
-
         $subtotal = RabProcessItem::where('rab_process_id', $rab->id)
             ->where('is_draft', true)
             ->sum('total');
@@ -899,18 +859,18 @@ public function loadDraft(RabProcess $rab)
 
                 'images' => $u->images->map(function ($pivot) {
 
-                $image = RabImage::find($pivot->image_id);
+                    $image = $pivot->image;
 
-                if (!$image) {
-                    return null;
-                }
+                    if (!$image) {
+                        return null;
+                    }
 
-                return [
-                    'id' => $image->id,
-                    'url' => $image->url,
-                ];
+                    return [
+                        'id' => $image->id,
+                        'url' => $image->url,
+                    ];
 
-            })->filter()->values()->toArray(),
+                })->filter()->values()->toArray(),
 
                 'items' => []
             ];

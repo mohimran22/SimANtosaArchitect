@@ -2,10 +2,7 @@
     $latest = \Illuminate\Support\Facades\Cache::get('job_category_last_updated', 0);
 
     $needRefresh = $rab->analisa_version < $latest;
-    $rab = $project->rab()->with([
-        'categories.uraians.items',
-        'categories.uraians.images.image'
-    ])->first();
+
 @endphp
 
 
@@ -200,16 +197,6 @@
 @push('js')
 <script>
     window.currentRabId = "{{ $rab->id ?? '' }}";
-
-    document.addEventListener('DOMContentLoaded', function(){
-
-    if(typeof loadExistingRab !== 'function'){
-        console.error('loadExistingRab belum tersedia!')
-        return
-    }
-
-        loadDraft()
-    })
 
     let enterLock = false
 
@@ -790,7 +777,7 @@
 
             cat.uraians.forEach(uraian => {
                 
-                const uraianId = 'uraian_' + uraian.id
+                const uraianId = uraian.uraian_key || ('uraian_' + uraian.id)
                 const uraianKey = uraianId 
                 if(!uraianImages[uraianKey]){
                     uraianImages[uraianKey] = []
