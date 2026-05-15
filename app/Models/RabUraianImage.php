@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class RabUraianImage extends Model
 {
+    protected $table = 'rab_uraian_images';
+
     protected $fillable = [
         'rab_id',
         'uraian_id',

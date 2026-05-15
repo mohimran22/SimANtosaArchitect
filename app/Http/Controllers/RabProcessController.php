@@ -520,9 +520,13 @@ public function structure($id)
 public function autosave(Request $request, RabProcess $rab)
 {
     abort_if(auth()->user()->cannot('ubah data proyek'), 403);
+
     $categoryMap = [];
+
     $uraianMap = [];
+    
     $itemMap = [];
+
     DB::transaction(function () use ($request, $rab, &$categoryMap, &$uraianMap, &$itemMap) {
         $existingCategories = RabProcessCategory::where('rab_process_id', $rab->id)
             ->where('is_draft', true)

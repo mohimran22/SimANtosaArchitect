@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class RabProcessUraian extends Model
 {
+    protected $table = 'rab_process_uraians';
 
     protected $fillable = [
         'rab_process_id',
