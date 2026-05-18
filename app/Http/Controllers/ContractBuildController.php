@@ -13,41 +13,82 @@ use Carbon\Carbon;
 
 class ContractBuildController extends Controller
 {
-        public function buildpdf(Project $project)
-    {
+    //     public function buildpdf(Project $project)
+    // {
 
-        $offer = $project->offer;
-        abort_if(!$offer, 404, 'Penawaran belum tersedia');
+    //     $offer = $project->offer;
+    //     abort_if(!$offer, 404, 'Penawaran belum tersedia');
         
-        Carbon::setLocale('id');
+    //     Carbon::setLocale('id');
 
-        $tanggal = Carbon::parse($offer->offer_date ?? now());
-        $jobDuration = (int) ($offer->rab->job_duration ?? 0);
-        $items = $offer->items
-            ->groupBy('category_name')
-            ->map(function ($categoryItems) {
-                return $categoryItems->groupBy('uraian_name');
-            });
-        $data = [
-            'project'  => $project,
-            'offer'    => $offer,
-            'customer' => optional($project->customer->user)->fullname,
-            'offerItems' => $items,
-            'hari'              => $tanggal->translatedFormat('l'),
-            'tanggal'           => $tanggal->day,
-            'tanggal_terbilang' => terbilang($tanggal->day),
-            'job_duration'          => $jobDuration,
-            'job_duration_text'     => terbilang($jobDuration),
-            'bulan'             => $tanggal->translatedFormat('F'),
-            'tahun'             => $tanggal->year,
-            'tahun_terbilang'   => terbilang($tanggal->year),
-        ];
+    //     $tanggal = Carbon::parse($offer->offer_date ?? now());
+    //     $jobDuration = (int) ($offer->rab->job_duration ?? 0);
+    //     $items = $offer->items
+    //         ->groupBy('category_name')
+    //         ->map(function ($categoryItems) {
+    //             return $categoryItems->groupBy('uraian_name');
+    //         });
+    //     $data = [
+    //         'project'  => $project,
+    //         'offer'    => $offer,
+    //         'customer' => optional($project->customer->user)->fullname,
+    //         'offerItems' => $items,
+    //         'hari'              => $tanggal->translatedFormat('l'),
+    //         'tanggal'           => $tanggal->day,
+    //         'tanggal_terbilang' => terbilang($tanggal->day),
+    //         'job_duration'          => $jobDuration,
+    //         'job_duration_text'     => terbilang($jobDuration),
+    //         'bulan'             => $tanggal->translatedFormat('F'),
+    //         'tahun'             => $tanggal->year,
+    //         'tahun_terbilang'   => terbilang($tanggal->year),
+    //     ];
 
-        $pdf = Pdf::loadView('contract.buildpdf', $data)
-            ->setPaper('A4', 'portrait');
+    //     $pdf = Pdf::loadView('contract.buildpdf', $data)
+    //         ->setPaper('A4', 'portrait');
 
-        return $pdf->stream('Draft-Kontrak-' . $project->project_name . '.pdf');
-    }
+    //     return $pdf->stream('Draft-Kontrak-' . $project->project_name . '.pdf');
+    // }
+    public function buildpdf(Project $project)
+{
+    $offer = $project->offer;
+
+    abort_if(!$offer, 404, 'Penawaran belum tersedia');
+
+    $rab = $offer->rab;
+
+    Carbon::setLocale('id');
+
+    $tanggal = Carbon::parse($offer->offer_date ?? now());
+
+    $jobDuration = (int) ($offer->rab->job_duration ?? 0);
+
+    $data = [
+        'project'               => $project,
+        'offer'                 => $offer,
+        'rab'                   => $rab,
+        'categories'            => $rab->categories,
+
+        'customer'              => optional($project->customer->user)->fullname,
+
+        'hari'                  => $tanggal->translatedFormat('l'),
+        'tanggal'               => $tanggal->day,
+        'tanggal_terbilang'     => terbilang($tanggal->day),
+
+        'job_duration'          => $jobDuration,
+        'job_duration_text'     => terbilang($jobDuration),
+
+        'bulan'                 => $tanggal->translatedFormat('F'),
+        'tahun'                 => $tanggal->year,
+        'tahun_terbilang'       => terbilang($tanggal->year),
+    ];
+
+    $pdf = Pdf::loadView('contract.buildpdf', $data)
+        ->setPaper('A4', 'portrait');
+
+    return $pdf->stream(
+        'Draft-Kontrak-' . $project->project_name . '.pdf'
+    );
+}
 
         public function approve(Project $project)
     {

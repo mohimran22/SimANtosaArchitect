@@ -240,34 +240,34 @@ adalah sebagai berikut:
 
 <ol type="A" style="margin-left: 30px;">
 
-@foreach($offerItems as $categoryName => $uraians)
-
-    @php
-        $cleanName = preg_replace('/^HARGA SATUAN\s*/i', '', $categoryName);
-    @endphp
+@foreach($categories as $category)
 
     <li>
-        <strong>{{ $cleanName }}</strong>
+
+        <strong>
+            {{ preg_replace('/^HARGA SATUAN\s*/i', '', $category->name) }}
+        </strong>
 
         <ol type="1" style="margin-top:6px; margin-left:20px;">
 
-            @foreach($uraians as $uraianName => $items)
+            @foreach($category->uraians as $uraian)
 
                 <li>
-                    <strong>{{ $uraianName }}</strong>
+
+                    <strong>{{ $uraian->name }}</strong>
 
                     <ol type="a" style="margin-left:20px; margin-top:4px;">
 
-                        @foreach($items as $item)
+                        @foreach($uraian->items as $item)
 
                             <li>
-                                {{ $item->item_name }}
-                                {{-- ({{ number_format($item->volume, 2) }} {{ $item->satuan }}) --}}
+                                {{ $item->job_name }}
                             </li>
 
                         @endforeach
 
                     </ol>
+
                 </li>
 
             @endforeach

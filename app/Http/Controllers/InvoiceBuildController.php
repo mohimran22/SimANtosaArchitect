@@ -106,35 +106,51 @@ class InvoiceBuildController extends Controller
                 'approved_ip' => request()->ip(),
             ]);
 
-            if ($invoice->termin == 1 && $project->buildItems()->count() == 0) {
+            if (
+                $invoice->termin == 1 &&
+                BuildProcessItem::where('project_id', $project->id)->doesntExist()
+            ) {
 
                 $project->load('offer.rab.categories.uraians.items');
 
-                foreach ($project->offer->rab->categories as $category) {
-                    foreach ($category->uraians as $uraian) {
-                        foreach ($uraian->items as $item) {
+                $rows = [];
 
-                        BuildProcessItem::create([
-                            'project_id' => $project->id,
-                            'rab_item_id' => $item->id,
+                foreach ($project->offer->rab->categories as $cIndex => $category) {
+                      
+                    foreach ($category->uraians as $uIndex => $uraian) {
 
-                            'category_name' => $category->name,
-                            'uraian_name' => $uraian->name,
+                        foreach ($uraian->items as $iIndex => $item) {
 
-                            'job_category_id' => $item->job_category_id,
-                            'uraian' => $item->job_name,
+                            $rows[] = [
 
-                            'price' => $item->price,
-                            'volume' => $item->volume,
-                            'total' => $item->total,
-                            'satuan' => $item->satuan ?? null,
+                                'project_id' => $project->id,
+                                'rab_item_id' => $item->id,
 
-                            'bobot_percent' => 0,
-                        ]);
+                                'category_name' => $category->name,
+                                'uraian_name' => $uraian->name,
 
+                                'job_category_id' => $item->job_category_id,
+                                'uraian' => $item->job_name,
+
+                                'price' => $item->price,
+                                'volume' => $item->volume,
+                                'total' => $item->total,
+                                'satuan' => $item->satuan,
+
+                                'bobot_percent' => 0,
+
+                                // 'category_order' => $cIndex,
+                                // 'uraian_order' => $uIndex,
+                                // 'item_order' => $iIndex,
+
+                                'created_at' => now(),
+                                'updated_at' => now(),
+                            ];
                         }
                     }
                 }
+
+                BuildProcessItem::insert($rows);
             }
             $lastTermin = 4;
 
