@@ -12,7 +12,7 @@ class AccountingJournalDetail extends Model
     public $incrementing = false;
     protected $keyType = 'string';
     public $timestamps = false;
-
+    protected $table = 'accounting_journal_details';
 
     protected $fillable = [
         'journal_id',
@@ -55,6 +55,5 @@ class AccountingJournalDetail extends Model
          default         => $this->person ?? '-', // ⬅️ fallback ke kolom langsung
     };
 }
-
 
 }
