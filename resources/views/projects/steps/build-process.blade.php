@@ -1447,6 +1447,46 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
     }
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
 
+            function initStickyHeader() {
+
+                const table = document.querySelector('.progress-table')
+                if (!table) return
+
+                const rows = table.querySelectorAll('thead tr')
+
+                let topOffset = 0
+
+                rows.forEach((row, index) => {
+
+                    const height = row.offsetHeight
+
+                    row.querySelectorAll('th').forEach(th => {
+                        th.style.top = topOffset + 'px'
+                    })
+
+                    topOffset += height
+                })
+            }
+
+            initStickyHeader()
+
+            window.addEventListener('resize', initStickyHeader)
+
+            // kalau kolom hide/show berubah
+            const observer = new MutationObserver(() => {
+                initStickyHeader()
+            })
+
+            observer.observe(document.querySelector('.progress-table thead'), {
+                childList: true,
+                subtree: true,
+                attributes: true
+            })
+
+        })
     </script>
 @endpush

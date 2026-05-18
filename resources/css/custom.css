@@ -533,7 +533,6 @@ col.just-hidden {
 .progress-table thead th {
     background-color: #f8f9fa;
     position: sticky;
-    top: 0;
     vertical-align: middle;
     z-index: 80; /* base header */
 }
@@ -547,6 +546,22 @@ col.just-hidden {
 .progress-table thead th.sticky-col {
     z-index: 100 !important;
     background-color: #ffff;
+}
+
+.progress-table col.col-hidden {
+    visibility: collapse;
+    width: 0 !important;
+}
+
+/* sel yang ikut kolom hidden */
+.progress-table th.col-hidden,
+.progress-table td.col-hidden {
+    visibility: collapse;
+    padding: 0 !important;
+    border: 0 !important;
+}
+.progress-table tr.table-warning td.sticky-col {
+    background-color: #fff3cd !important;
 }
 
 /* sticky kolom kiri (class dari JS) */
@@ -570,21 +585,7 @@ col.just-hidden {
     display: none !important;
 }
 /* benar-benar menghapus kolom dari layout */
-.progress-table col.col-hidden {
-    visibility: collapse;
-    width: 0 !important;
-}
 
-/* sel yang ikut kolom hidden */
-.progress-table th.col-hidden,
-.progress-table td.col-hidden {
-    visibility: collapse;
-    padding: 0 !important;
-    border: 0 !important;
-}
-.progress-table tr.table-warning td.sticky-col {
-    background-color: #fff3cd !important;
-}
 .table-warning .badge.bg-warning {
     background-color: #ffca2c; /* lebih pekat dari cell */
 }
