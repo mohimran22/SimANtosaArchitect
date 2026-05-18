@@ -28,6 +28,18 @@ foreach ($items as $item) {
     $grouped[$category]['items'][$uraian]['subtotal'] += $item->total;
     $grouped[$category]['subtotal'] += $item->total;
 }
+function numberToLetters($num) {
+    $letters = '';
+    $num = $num + 1;
+
+    while ($num > 0) {
+        $rem = ($num - 1) % 26;
+        $letters = chr(65 + $rem) . $letters;
+        $num = intdiv(($num - 1), 26);
+    }
+
+    return $letters;
+}
 @endphp
 
 @can('lihat data proyek')
@@ -87,7 +99,7 @@ foreach ($items as $item) {
                 <tbody>
                     @foreach($grouped as $category => $data)
                       @php
-                            $categoryLetter = chr(65 + $loop->index);
+                            $categoryLetter = numberToLetters($loop->index);
                             $uraianNo = 1;
                             $categoryTotal = collect($data['items'])
                                 ->flatMap(fn($u) => $u['items'])

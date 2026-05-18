@@ -718,17 +718,25 @@ public function trialBalance(Request $request)
 /**
  * Ambil akun + group berdasarkan kategori dan sub-kategori
  */
-    private function getGroupedAccounts($startDate, $endDate, $licenseId)
+private function getGroupedAccounts($startDate, $endDate, $licenseId)
 {
     $accounts = AccountingAccount::where('license_id', $licenseId)
-        ->with(['details.journal' => function ($q) use ($startDate, $endDate, $licenseId) {
-                $q->whereBetween('transaction_date', [$startDate, $endDate])
-                   ->where('license_id', $licenseId);
+        ->with(['details' => function ($q) use ($startDate, $endDate, $licenseId) {
+
+            $q->whereHas('journal', function ($j) use ($startDate, $endDate, $licenseId) {
+
+                $j->whereBetween('transaction_date', [$startDate, $endDate])
+                  ->where('license_id', $licenseId);
+
+            });
+
         }])
         ->get()
         ->map(function ($account) {
-            $debit   = $account->details->sum('debit');
-            $credit  = $account->details->sum('credit');
+
+            $debit  = $account->details->sum('debit');
+            $credit = $account->details->sum('credit');
+
             $balance = $debit - $credit;
 
             return [
@@ -742,22 +750,23 @@ public function trialBalance(Request $request)
                 'credit'       => $balance < 0 ? abs($balance) : 0,
             ];
         })
-
         ->filter(function ($acc) {
             return !$acc['is_parent'] && $acc['category'] !== '-';
         });
 
-    // 🔹 Kelompokkan berdasarkan kategori & sub kategori
     return $accounts
         ->groupBy('category')
         ->map(function ($catGroup) {
+
             return $catGroup->groupBy('sub_category')->map(function ($subGroup) {
+
                 return [
                     'accounts'       => $subGroup,
                     'subtotalDebit'  => $subGroup->sum('debit'),
                     'subtotalCredit' => $subGroup->sum('credit'),
                 ];
             });
+
         });
 }
 
