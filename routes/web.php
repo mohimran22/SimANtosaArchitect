@@ -504,8 +504,11 @@ Route::post('/offers/{offer}/reject', [\App\Http\Controllers\OfferController::cl
 Route::post('projects/offer', [\App\Http\Controllers\OfferRABController::class, 'store'])
     ->name('projects.offer.store');
     
-Route::put('offer/{offer}', [\App\Http\Controllers\OfferRABController::class, 'update'])
-    ->name('offer.update');
+// Route::put('offer/{offer}', [\App\Http\Controllers\OfferRABController::class, 'update'])
+//     ->name('offer.update');
+
+Route::put('offer-rab/{offer}', [\App\Http\Controllers\OfferRABController::class, 'update']) 
+    ->name('offer-rab.update');
 
 Route::post('/offer/{offer}/approve', [\App\Http\Controllers\OfferRABController::class, 'approve'])
     ->name('offer.approve');
@@ -537,8 +540,11 @@ Route::get('/rab/autosave/{rab}', [\App\Http\Controllers\RabProcessController::c
 Route::post('projects/offerbuild', [\App\Http\Controllers\OfferBuildController::class, 'store'])
     ->name('projects.offerbuild.store');
     
-Route::put('offer/{offer}', [\App\Http\Controllers\OfferBuildController::class, 'update'])
-    ->name('offer.update');
+// Route::put('offer/{offer}', [\App\Http\Controllers\OfferBuildController::class, 'update'])
+//     ->name('offer.update');
+
+Route::put('offer-build/{offer}', [\App\Http\Controllers\OfferBuildController::class, 'update']) 
+    ->name('offer-build.update');
 
 Route::post('/offer/{offer}/approve', [\App\Http\Controllers\OfferBuildController::class, 'approve'])
     ->name('offer.approve');

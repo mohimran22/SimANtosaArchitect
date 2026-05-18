@@ -6,7 +6,7 @@
 <div class="card mb-4">
     <div class="card-header fw-bold"> Edit Data Penawaran</div>
     <div class="card-body">
-        <form action="{{ route('offer.update', $offer->id) }}" method="POST">
+        <form action="{{ route('offer-rab.update', $offer->id) }}" method="POST">
             @csrf
             @method('PUT')
 
@@ -50,7 +50,7 @@
             <div class="row mb-4 mt-4">
                 <div class="col-md-4">
                     <label class="form-label">Pilih Paket RAB</label>
-                    <select name="rab_package_id" class="form-select" id="rabPackageSelect" required>
+                    <select name="rab_package_id" class="form-select select2" id="rabPackageSelect" required>
                         <option value="">-- Pilih Paket --</option>
                         @foreach($rabPackages as $package)
                             <option value="{{ $package->id }}"
@@ -98,9 +98,6 @@
                 </div>
             </div>
 
-            {{-- ============================= --}}
-            {{-- TABLE EDIT ITEMS --}}
-            {{-- ============================= --}}
             <div class="row mb-4">
 
                 <h4 class="fw-bold mb-3">Rincian Pekerjaan</h4>
@@ -118,10 +115,6 @@
                     </thead>
 
                     <tbody id="edit_offerItemsBody">
-
-                        {{-- ========================= --}}
-                        {{--   LOAD EXISTING ITEMS    --}}
-                        {{-- ========================= --}}
                         @php 
                             $row = 1;
                             $index = 0;

@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-{{-- <title>Penawaran {{ $offer->offer_number }}</title> --}}
+<title>Draft Kontrakk {{ $project->project_name }}</title>
 
 <style>
 @page {

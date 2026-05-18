@@ -148,6 +148,18 @@ function formatNumber(n){
 function setRupiah(selector,val){
     $(selector).val(formatRupiah(val))
 }
+    function numberToLetters(num){
+        let letters = ''
+        num = num + 1 // karena A = 1, bukan 0
+
+        while(num > 0){
+            let rem = (num - 1) % 26
+            letters = String.fromCharCode(65 + rem) + letters
+            num = Math.floor((num - 1) / 26)
+        }
+
+        return letters
+    }
 
 function loadRabItems(){
 
@@ -165,7 +177,7 @@ function loadRabItems(){
 
         res.categories.forEach((category,cIndex)=>{
 
-            categoryLetter = String.fromCharCode(65 + cIndex)
+            categoryLetter = numberToLetters(cIndex)
 
             // CATEGORY
             tbody.append(`

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\OfferBuildRequest;
+use App\Http\Requests\OfferBuildUpdateRequest;
 use App\Models\Offer;
 use App\Models\OfferItem;
 use App\Models\RabProcess;
@@ -180,10 +181,15 @@ protected function generateOfferNumber(string $type): string
 }
 
 
-public function update(Request $request, $id)
+public function update(OfferBuildUpdateRequest $request, $id)
 {
     abort_if(auth()->user()->cannot('ubah data proyek'), 403);
 
+    $data = $request->validated();
+
+    $rab = RabProcess::with([
+        'categories.uraians.items'
+    ])->findOrFail($data['rab_process_id']);
     $offer = Offer::findOrFail($id);
 
     $request->validate([
@@ -192,7 +198,7 @@ public function update(Request $request, $id)
         'offer_date'        => 'required|date',
         'contact_name'      => 'nullable|string',
 
-        'build_package_id' => 'required|uuid|exists:build_packages,id',
+        'rab_process_id' => 'nullable|exists:rab_process,id',
         'volume'            => 'nullable|numeric',
         'satuan'            => 'nullable|string',
         'price_meter'       => 'nullable|numeric',
@@ -207,45 +213,48 @@ public function update(Request $request, $id)
     ]);
 
     $offer->update([
-        'project_id'               => $request->project_id,
+        'project_id'               => $data['project_id'],
         'offer_number'             => $request->offer_number,
-        'offer_date'               => $request->offer_date,
-        'contact_name'             => $request->contact_name,
-
-        'build_package_id'        => $request->build_package_id,
-        'volume'                   => $request->volume,
+        'offer_date'               => $data['offer_date'],
+        'contact_name'             => $data['contact_name'],
+        'rab_process_id'           => $rab->id,
+        'volume'                   => $rab->volume,
         'satuan'                   => $request->satuan,
-        'price_meter'              => $request->price_meter,
-        'total_price'              => $request->total_price,
+        'price_meter'              => $rab->price_meter,
+        'total_price'              => $rab->volume * $rab->price_meter,
 
-        'subtotal'                 => $request->total_price,
-        'discount'                 => $request->discount,
-        'subtotal_after_discount'  => $request->total_price - $request->discount,
+        'subtotal'                 => $request->subtotal ?? 0,
+        'discount'                 => $request->discount ?? 0,
+        'subtotal_after_discount'  => $request->subtotal_after_discount ?? 0,
 
-        'tax_rate'                 => $request->tax_rate,
-        'tax_total'                => ($request->total_price - $request->discount) * ($request->tax_rate / 100),
+        'tax_rate'                 => $request->tax_rate ?? 0,
+        'tax_total'                => $request->tax_total ?? 0,
 
-        'shipping'                 => $request->shipping,
-        'grand_total'              =>
-            ($request->total_price - $request->discount) +
-            (($request->total_price - $request->discount) * ($request->tax_rate / 100)) +
-            $request->shipping,
+        'shipping'                 => $request->shipping ?? 0,
+        'grand_total'              => $request->grand_total ?? 0,
 
-        'notes'                    => $request->notes,
+        'notes'                    => $data['notes'] ?? null,
     ]);
 
     $offer->items()->delete();
 
-    if ($request->items && count($request->items) > 0) {
-        foreach ($request->items as $item) {
-            $offer->items()->create([
-                'category'   => $item['category'],
-                'item_name'  => $item['item_name'],
-                'volume'     => $request->volume ?? 0,
-                'satuan'     => $request->satuan ?? '-',
-                'price'      => $request->price_meter ?? 0,
-                'total'      => $request->price_meter * $request->volume,
-            ]);
+    foreach ($rab->categories as $category) {
+
+        foreach ($category->uraians as $uraian) {
+
+            foreach ($uraian->items as $item) {
+
+                $offer->items()->create([
+                    'category_name' => $category->name,
+                    'uraian_name'   => $uraian->name,
+
+                    'item_name'     => $item->job_name,
+                    'volume'        => $item->volume,
+                    'satuan'        => $item->satuan,
+                    'price'         => $item->price,
+                    'total'         => $item->total,
+                ]);
+            }
         }
     }
 

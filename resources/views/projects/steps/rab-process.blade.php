@@ -931,7 +931,14 @@
 
         gallery.innerHTML = ''
 
-        uraianImages[activeUraian].forEach((img,index)=>{
+        const images = uraianImages[activeUraian] || []
+
+        if(images.length === 0){
+            gallery.innerHTML = '<div class="text-muted">Belum ada gambar</div>'
+            return
+        }
+
+        images.forEach((img,index)=>{
 
             gallery.insertAdjacentHTML('beforeend',`
 
@@ -939,12 +946,17 @@
 
                 <img src="${img.url}" class="img-thumbnail">
 
-                <button type="button" class="btn btn-sm remove-img"
+                <button type="button"
+                    class="btn btn-sm remove-img"
                     onclick="removeUraianImage(${index})">
+
                     ×
+
                 </button>
+
             </div>
             `)
+
         })
     }
     function removeUraianImage(index){
