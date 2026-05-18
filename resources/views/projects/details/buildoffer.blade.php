@@ -1,33 +1,6 @@
 @php
 $offer = $project->offer;
-$items = $offer?->items ?? collect();
-
-$grouped = [];
-
-foreach ($items as $item) {
-
-    $category = $item->category_name ?? 'Tanpa Kategori';
-    $uraian   = $item->uraian_name ?? 'Tanpa Uraian';
-
-    if (!isset($grouped[$category])) {
-        $grouped[$category] = [
-            'items' => [],
-            'subtotal' => 0
-        ];
-    }
-
-    if (!isset($grouped[$category]['items'][$uraian])) {
-        $grouped[$category]['items'][$uraian] = [
-            'items' => [],
-            'subtotal' => 0
-        ];
-    }
-
-    $grouped[$category]['items'][$uraian]['items'][] = $item;
-
-    $grouped[$category]['items'][$uraian]['subtotal'] += $item->total;
-    $grouped[$category]['subtotal'] += $item->total;
-}
+$rab = $offer?->rab;
 function numberToLetters($num) {
     $letters = '';
     $num = $num + 1;
@@ -96,47 +69,77 @@ function numberToLetters($num) {
                 </tr>
             </thead>
 
-                <tbody>
-                    @foreach($grouped as $category => $data)
-                      @php
-                            $categoryLetter = numberToLetters($loop->index);
-                            $uraianNo = 1;
-                            $categoryTotal = collect($data['items'])
-                                ->flatMap(fn($u) => $u['items'])
-                                ->sum('total');
-                        @endphp
-                        <tr class="table-secondary">
-                            <th>{{ $categoryLetter }}</th>
-                            <th colspan="4">{{ $category }}</th>
-                            <th class="text-end">
-                                Rp {{ number_format($categoryTotal,0,',','.') }}
-                            </th>
-                        </tr>
-                        @foreach($data['items'] as $uraian => $uraianData)
+            <tbody>
 
-                            <tr class="fw-bold">
-                                <td>{{ $uraianNo }}</td>
-                                <td colspan="5">{{ $uraian }}</td>
-                            </tr>
-                                @php $itemNo = 1; @endphp
-                            @foreach($uraianData['items'] as $item)
-                                <tr>
-                                    <td>{{ $uraianNo.'.'.$itemNo }}</td>
-                                    <td>{{ $item->item_name }}</td>
-                                    <td>{{ $item->satuan }}</td>
-                                    <td>{{ $item->volume }}</td>
-                                    <td>Rp {{ number_format($item->price,0,',','.') }}</td>
-                                    <td class="text-end">
-                                        Rp {{ number_format($item->total,0,',','.') }}
-                                    </td>
-                                </tr>
-                                @php $itemNo++; @endphp
-                            @endforeach
-                            @php $uraianNo++; @endphp
-                        @endforeach    
+            @foreach($rab->categories as $category)
+
+                @php
+                    $categoryLetter = numberToLetters($loop->index);
+
+                    $categoryTotal = $category->uraians
+                        ->flatMap(fn($u) => $u->items)
+                        ->sum('total');
+
+                    $uraianNo = 1;
+                @endphp
+
+                <tr class="table-secondary">
+                    <th>{{ $categoryLetter }}</th>
+
+                    <th colspan="4">
+                        {{ $category->name }}
+                    </th>
+
+                    <th class="text-end">
+                        Rp {{ number_format($categoryTotal,0,',','.') }}
+                    </th>
+                </tr>
+
+                @foreach($category->uraians as $uraian)
+
+                    <tr class="fw-bold">
+                        <td>{{ $uraianNo }}</td>
+
+                        <td colspan="5">
+                            {{ $uraian->name }}
+                        </td>
+                    </tr>
+
+                    @php $itemNo = 1; @endphp
+
+                    @foreach($uraian->items as $item)
+
+                        <tr>
+                            <td>
+                                {{ $uraianNo.'.'.$itemNo }}
+                            </td>
+
+                            <td>{{ $item->job_name }}</td>
+
+                            <td>{{ $item->satuan }}</td>
+
+                            <td>{{ number_format($item->volume,2,',','.') }}</td>
+
+                            <td>
+                                Rp {{ number_format($item->price,0,',','.') }}
+                            </td>
+
+                            <td class="text-end">
+                                Rp {{ number_format($item->total,0,',','.') }}
+                            </td>
+                        </tr>
+
+                        @php $itemNo++; @endphp
+
                     @endforeach
 
-                </tbody>
+                    @php $uraianNo++; @endphp
+
+                @endforeach
+
+            @endforeach
+
+            </tbody>
 
             <tfoot>
                 <tr>
