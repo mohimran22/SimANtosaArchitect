@@ -129,36 +129,66 @@
                             <th class="text-center">Harga<br>Total</th>
                         </tr>
                     </thead>
+                    @php
+
+                        function alphaIndex($n) {
+
+                            $result = '';
+
+                            while ($n >= 0) {
+
+                                $result = chr(($n % 26) + 65) . $result;
+
+                                $n = intdiv($n, 26) - 1;
+                            }
+
+                            return $result;
+                        }
+
+                    @endphp
                     <tbody>
-                        @foreach($groupedItems as $category => $uraians)
+                        @foreach($groupedItems as $categoryIndex => $uraians)
+                            @php
+                                $categoryNo = alphaIndex($categoryIndex);
+                            @endphp
                             <tr class="row-category"> 
-                                <td colspan="6"> {{ $category }} </td> 
+                                <td colspan="6">
+                                    {{ $categoryNo }}. {{ $category }}
+                                </td> 
                                 <td colspan="{{ $totalCols - 6 }}"></td> 
                             </tr>
 
                             @foreach($uraians as $uraian => $sub)
-
+                                @php
+                                    $uraianNo = $loop->iteration;
+                                @endphp
                                 <tr class="row-uraian">
-                                    <td colspan="6"> {{ $uraian }} </td> 
+                                    <td colspan="6"> {{ $uraianNo }}. {{ $uraian }} </td> 
                                     <td colspan="{{ $totalCols - 6 }}"></td> 
                                 </tr>
-                                
-                                @php $itemNo = 1; @endphp
 
-                                    @foreach($sub->whereNull('parent_id') as $item)
-                                        @php
-                                            $volKontrak = $item->volume;
+                                @foreach($sub as $namaPekerjaan => $itemsSub)
 
-                                            $volTerpakai = $item->weeklyProgresses->sum('volume');
+                                    @foreach($itemsSub->whereNull('parent_id') as $item)
 
-                                            $isFull = $volTerpakai >= $volKontrak;
-                                        @endphp
+                                            @php
+                                                $itemNo = $loop->iteration;
+                                            @endphp
+                                            @php
+                                                $volKontrak = $item->volume;
+
+                                                $volTerpakai = $item->weeklyProgresses->sum('volume');
+
+                                                $isFull = $volTerpakai >= $volKontrak;
+                                            @endphp
                                             <tr
                                                 data-item-id="{{ $item->id }}"
                                                 data-item-vol="{{ $item->volume }}"
                                                 data-item-bobot="{{ $item->bobot_percent }}"
                                                 data-full="{{ $isFull ? 1 : 0 }}">                              
-                                                <td>{{ $itemNo++ }}</td>
+                                                <td>
+                                                    {{ $uraianNo }}.{{ $itemNo }}
+                                                </td>
                                                 <td class="uraian-pekerjaan">
                                                     <div class="d-flex justify-content-between align-items-start">
                                                         <div>
@@ -360,6 +390,7 @@
 
                                             @endforeach
                                     @endforeach
+                                @endforeach
                             @endforeach
                         @endforeach
                     </tbody>

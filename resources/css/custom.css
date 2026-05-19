@@ -627,9 +627,7 @@ tr.row-tambahan-item td.sticky-col{
     z-index: 70;
     background: #f8f9fa !important;
 }
-.collapsed-tambahan {
-    display: none;
-}
+
 #rabItemsTableEdit col:nth-child(1){ width:50px }
 #rabItemsTableEdit col:nth-child(2){ width:35% }
 #rabItemsTableEdit col:nth-child(3){ width:90px }
