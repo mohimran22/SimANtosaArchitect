@@ -1,107 +1,50 @@
-<div class="p-3 bg-light border-bottom">
+@php
+    $colsFixed   = 6;
+    $colsPerWeek = 6;
+    $colsTotal   = 4;
 
-    <div class="row">
+    $totalCols = $colsFixed + (count($weekLabels) * $colsPerWeek) + $colsTotal;
+@endphp
 
-        <div class="col-md-4">
+<tr class="row-editor bg-light"
+    data-parent="{{ $item->id }}">
 
-            <label>Pekerjaan Tambahan</label>
+    <td colspan="{{ $colsFixed }}" class="p-2 sticky-editor">
 
-            <select class="form-select select2 job-tambahan"
-                    data-item="{{ $item->id }}">
+        <div class="d-flex gap-2 align-items-end">
 
-                <option value="">
-                    -- Pilih Pekerjaan --
-                </option>
+            <div style="min-width:300px; max-width:500px; width:100%;">
+                <label class="form-label mb-1">
+                    Pekerjaan Tambahan
+                </label>
 
-                @foreach($jobCategories as $job)
+                <select class="form-select select2 job-tambahan"
+                        data-item="{{ $item->id }}">
 
-                    <option value="{{ $job->id }}">
-                        {{ $job->nama_pekerjaan }}
+                    <option value="">
+                        -- Pilih Pekerjaan --
                     </option>
 
-                @endforeach
+                    @foreach($jobCategories as $job)
+                        <option value="{{ $job->id }}">
+                            {{ $job->nama_pekerjaan }}
+                        </option>
+                    @endforeach
 
-            </select>
+                </select>
+            </div>
+
+            <div>
+                <button type="button"
+                        class="btn btn-dark btn-simpan-tambahan"
+                        data-item="{{ $item->id }}">
+                    Tambahkan ke Kontrak
+                </button>
+            </div>
 
         </div>
 
-        <div class="col-md-auto d-flex align-items-end">
+    </td>
 
-            <button type="button"
-                    class="btn btn-dark btn-simpan-tambahan"
-                    data-item="{{ $item->id }}">
-
-                Tambahkan ke Kontrak
-
-            </button>
-
-        </div>
-
-    </div>
-
-</div>
-
-        @foreach($item->tambahan as $sub)
-
-        @php
-        $progressMap = $sub->weeklyProgresses->keyBy('week_no');
-        @endphp
-
-        <tr class="table-warning">
-            <td></td>
-
-            <td>
-                ↳ {{ $sub->uraian }}
-            </td>
-
-            <td>{{ $sub->satuan }}</td>
-
-            <td>{{ $sub->volume }}</td>
-
-            <td>
-                Rp {{ number_format($sub->price,0,',','.') }}
-            </td>
-
-            <td></td>
-
-            @foreach($weekLabels as $w)
-
-                @php
-                $prog = $progressMap[$w['week_no']] ?? null;
-                @endphp
-
-                <td>
-                    <input type="number"
-                        class="form-control week-vol"
-                        value="{{ $prog->volume ?? '' }}">
-                </td>
-
-                <td></td>
-
-                <td></td>
-
-                <td>
-                    <input class="form-control"
-                        value="{{ $prog->just_kurang ?? 0 }}">
-                </td>
-
-                <td>
-                    <input class="form-control"
-                        value="{{ $prog->just_tambah ?? 0 }}">
-                </td>
-
-                <td>
-                    <input class="form-control"
-                        value="{{ $prog->just_baru ?? 0 }}">
-                </td>
-
-            @endforeach
-
-            <td>0</td>
-            <td>{{ $sub->volume }}</td>
-            <td>Rp {{ number_format($sub->price,0,',','.') }}</td>
-            <td>0</td>
-
-        </tr>
-
-        @endforeach
+    <td colspan="{{ $totalCols - $colsFixed }}"></td>
+</tr>

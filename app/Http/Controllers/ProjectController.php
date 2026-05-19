@@ -237,10 +237,24 @@ if (
             ->get()
             ->groupBy('minggu');
 
+        $project?->buildItems->each(function ($item) {
+            $item->progress_map =
+                $item->weeklyProgresses
+                    ->keyBy('week_no');
+        });
+        $groupedItems = $project?->buildItems
+            ->groupBy('category_name')
+            ->map(function ($items) {
+
+                return $items
+                    ->groupBy('uraian_name');
+
+            });
+
         return view('projects.create', array_merge(
             $this->formData($project),
             compact('project', 'timelineSteps', 'activeStep', 'surveyInvoice',
-        'surveyApproved', 'nextDate', 'reports',
+        'surveyApproved', 'nextDate', 'reports', 'groupedItems',
         'isFreeSurvey', 'surveyWaiting', 'surveyRejected', 'invoiceDp', 'invoiceRab', 'invoiceBuild', 'canEdit', 'weeks')
         ));
     }

@@ -514,7 +514,7 @@ col.just-hidden {
     border-collapse: collapse !important;
     border-spacing: 0;
     margin: 0 !important;
-    table-layout: auto;
+    table-layout: fixed;
     width: 100%;
     min-width: max-content;
 }
@@ -560,8 +560,20 @@ col.just-hidden {
     padding: 0 !important;
     border: 0 !important;
 }
+.progress-table td.sticky-col,
+.progress-table th.sticky-col {
+    position: sticky !important;
+    z-index: 50;
+    background: #f8f9fa !important;
+    background-clip: padding-box;
+}
+
+.progress-table tbody td.sticky-col {
+    top: auto !important;
+}
 .progress-table tr.table-warning td.sticky-col {
     background-color: #fff3cd !important;
+    z-index: 55 !important;
 }
 
 /* sticky kolom kiri (class dari JS) */
@@ -594,6 +606,29 @@ col.just-hidden {
     margin: auto;
     padding: 4px 6px;
     font-size: 14px;
+}
+.row-editor td {
+    background: #f8f9fa !important;
+}
+
+.row-editor .freeze-col {
+    position: sticky;
+    left: 0;
+    z-index: 70;
+    background: #f8f9fa !important;
+}
+tr.row-tambahan-item td.sticky-col{
+    background:#fff3cd !important;
+    z-index:55;
+}
+.sticky-editor{
+    position: sticky;
+    left: 0;
+    z-index: 70;
+    background: #f8f9fa !important;
+}
+.collapsed-tambahan {
+    display: none;
 }
 #rabItemsTableEdit col:nth-child(1){ width:50px }
 #rabItemsTableEdit col:nth-child(2){ width:35% }
