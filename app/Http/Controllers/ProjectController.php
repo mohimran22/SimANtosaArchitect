@@ -237,24 +237,44 @@ if (
             ->get()
             ->groupBy('minggu');
 
-        $project?->buildItems->each(function ($item) {
+        $buildItems = BuildProcessItem::query()
+            ->where('project_id', $project?->id)
+            ->with([
+                'weeklyProgresses:id,build_process_item_id,week_no,volume,just_kurang,just_tambah,just_baru',
+                'tambahan.weeklyProgresses:id,build_process_item_id,week_no,volume,just_kurang,just_tambah,just_baru',
+            ])
+            ->get();
+        $buildItems->each(function ($item) {
+
             $item->progress_map =
-                $item->weeklyProgresses
-                    ->keyBy('week_no');
+                $item->weeklyProgresses->keyBy('week_no');
+
+            $item->tambahan->each(function ($sub) {
+
+                $sub->progress_map =
+                    $sub->weeklyProgresses->keyBy('week_no');
+            });
         });
-        $groupedItems = $project?->buildItems
+        $groupedItems = $buildItems
+            ->whereNull('parent_id')
             ->groupBy('category_name')
             ->map(function ($items) {
 
                 return $items
-                    ->groupBy('uraian_name');
+                    ->groupBy('uraian_name')
+                    ->map(function ($rows) {
 
+                        return $rows
+                            ->groupBy(fn($i) =>
+                                $i->category_name ?? 'Tanpa Kategori'
+                            );
+                    });
             });
 
         return view('projects.create', array_merge(
             $this->formData($project),
             compact('project', 'timelineSteps', 'activeStep', 'surveyInvoice',
-        'surveyApproved', 'nextDate', 'reports', 'groupedItems',
+        'surveyApproved', 'nextDate', 'reports', 'groupedItems', 'buildItems',
         'isFreeSurvey', 'surveyWaiting', 'surveyRejected', 'invoiceDp', 'invoiceRab', 'invoiceBuild', 'canEdit', 'weeks')
         ));
     }

@@ -170,7 +170,7 @@
 
                                 @foreach($sub as $namaPekerjaan => $itemsSub)
 
-                                    @foreach($sub->whereNull('parent_id') as $item)
+                                    @foreach($itemsSub->whereNull('parent_id') as $item)
 
                                             @php
                                                 $itemNo = $loop->iteration;
@@ -400,7 +400,7 @@
                             <th colspan="4" class="text-end">
                                 Total Pekerjaan Kumulatif (%)
                             </th>
-                            <th>Rp {{ number_format($project->buildItems->sum('total'),0,',','.') }}</th>
+                            <th>Rp {{ number_format($buildItems->sum('total'),0,',','.') }}</th>
                             <th class="totalBobotKontrak">0</th>
 
                             @foreach($project->week_labels as $w)
@@ -427,7 +427,7 @@
                             <th colspan="4" class="text-end">
                                 Realisasi kumulatif kemajuan Pekerjaan
                             </th>
-                            <th>Rp {{ number_format($project->buildItems->sum('total'),0,',','.') }}</th>
+                            <th>Rp {{ number_format($buildItems->sum('total'),0,',','.') }}</th>
                             <th class="totalBobotKontrak">0</th>
 
                             @foreach($project->week_labels as $w)
