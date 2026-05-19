@@ -129,27 +129,28 @@
                             <th class="text-center">Harga<br>Total</th>
                         </tr>
                     </thead>
-                    @php
+                   @php
 
-                        function alphaIndex($n) {
+                    function alphaIndex($n) {
 
-                            $result = '';
+                        $result = '';
 
-                            while ($n >= 0) {
+                        while ($n >= 0) {
 
-                                $result = chr(($n % 26) + 65) . $result;
+                            $result = chr(($n % 26) + 65) . $result;
 
-                                $n = intdiv($n, 26) - 1;
-                            }
-
-                            return $result;
+                            $n = intdiv($n, 26) - 1;
                         }
+
+                        return $result;
+                    }
 
                     @endphp
                     <tbody>
-                        @foreach($groupedItems as $categoryIndex => $uraians)
+                        @foreach($groupedItems as $category => $uraians)
+
                             @php
-                                $categoryNo = alphaIndex($categoryIndex);
+                                $categoryNo = alphaIndex($loop->index);
                             @endphp
                             <tr class="row-category"> 
                                 <td colspan="6">
@@ -169,7 +170,7 @@
 
                                 @foreach($sub as $namaPekerjaan => $itemsSub)
 
-                                    @foreach($itemsSub->whereNull('parent_id') as $item)
+                                    @foreach($sub->whereNull('parent_id') as $item)
 
                                             @php
                                                 $itemNo = $loop->iteration;
