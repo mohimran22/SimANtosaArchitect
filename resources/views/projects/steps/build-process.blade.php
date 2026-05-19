@@ -199,8 +199,8 @@
                                                 </td>
                                                     @foreach($project->week_labels as $w)
                                                         @php
-                                                            $prog = $item->weeklyProgresses
-                                                                ->firstWhere('week_no', $w['week_no']);
+                                                            $progressMap = $item->weeklyProgresses->keyBy('week_no');
+                                                            $prog = $progressMap[$w['week_no']] ?? null;
                                                         @endphp
                                                         <td class="week-col">
                                                             @if(!$isReadOnly)
@@ -258,120 +258,16 @@
                                                     <td class="harga-kontrak" data-price="{{ $item->price }}">Rp {{ number_format($item->price,0,',','.') }}</td>
                                                     <td class="nilai-pelaksanaan">0</td>
                                             </tr>
-                                            <tr class="row-tambahan d-none"
+                                            <tr class="tambahan-wrapper d-none"
                                                 data-item="{{ $item->id }}">
 
-                                                <td colspan="{{ $totalCols }}">
-                                                    <div class="p-3 bg-light rounded">
+                                                <td colspan="{{ $totalCols }}" class="p-0">
 
-                                                        <div class="row">
+                                                    <div class="tambahan-container"></div>
 
-                                                            <div class="col-auto" style="width:300px;">
-                                                                <label>Pekerjaan Tambahan</label>
-
-                                                                <select class="form-select select2 job-tambahan"
-                                                                        data-item="{{ $item->id }}">
-
-                                                                    <option value="">-- Pilih Pekerjaan --</option>
-
-                                                                    @foreach($jobCategories as $job)
-                                                                        <option value="{{ $job->id }}">
-                                                                            {{ $job->nama_pekerjaan }}
-                                                                        </option>
-                                                                    @endforeach
-
-                                                                </select>
-
-                                                                <button type="button"
-                                                                        class="btn btn-sm btn-dark btn-simpan-tambahan"
-                                                                        data-item="{{ $item->id }}">
-                                                                    Tambahkan ke Kontrak
-                                                                </button>
-
-                                                            </div>
-
-                                                        </div>
-
-                                                    </div>
                                                 </td>
 
                                             </tr>
-                                            @foreach($item->tambahan as $sub)
-                                                <tr class="table-warning"
-                                                    data-item-id="{{ $sub->id }}"
-                                                    data-item-vol="{{ $sub->volume }}"
-                                                    data-item-bobot="{{ $sub->bobot_percent ?? 0 }}">
-                                                    <td></td>
-                                                    <td>
-                                                        ↳ {{ $sub->uraian }}
-                                                        <span class="badge bg-warning text-dark">Tambahan</span>
-                                                    </td>
-                                                    <td>{{ $sub->satuan }}</td>
-                                                    <td>{{ $sub->volume }}</td>
-                                                    <td class="harga-kontrak" data-price="{{ $sub->price }}">
-                                                        Rp {{ number_format($sub->price,0,',','.') }}
-                                                    </td>
-                                                    <td></td>
-                                                @foreach($project->week_labels as $w)    
-                                                    @php
-                                                        $prog = $sub->weeklyProgresses->firstWhere('week_no', $w['week_no']);
-                                                    @endphp
-
-                                                    <td class="week-col">
-                                                        <input type="number"
-                                                            step="0.01"
-                                                            class="form-control week-vol"
-                                                            data-item="{{ $sub->id }}"
-                                                            data-week="{{ $w['week_no'] }}"
-                                                            data-last="{{ $prog->volume ?? 0 }}"
-                                                            value="{{ $prog->volume ?? '' }}">
-                                                    </td>
-
-                                                    <td class="week-progress week-col"
-                                                        data-week="{{ $w['week_no'] }}"
-                                                        id="prog-{{ $sub->id }}-{{ $w['week_no'] }}">
-                                                    </td>
-
-                                                    <td class="week-bobot week-col"
-                                                        data-week="{{ $w['week_no'] }}"
-                                                        id="bobot-{{ $sub->id }}-{{ $w['week_no'] }}">
-                                                    </td>
-
-                                                    <td class="just-col" data-week="{{ $w['week_no'] }}">
-                                                        <input class="form-control just-kurang"
-                                                            data-item="{{ $sub->id }}"
-                                                            data-week="{{ $w['week_no'] }}"
-                                                            value="{{ $prog->just_kurang ?? 0 }}">
-                                                    </td>
-
-                                                    <td class="just-col" data-week="{{ $w['week_no'] }}">
-                                                        <input class="form-control just-tambah"
-                                                            data-item="{{ $sub->id }}"
-                                                            data-week="{{ $w['week_no'] }}"
-                                                            value="{{ $prog->just_tambah ?? 0 }}">
-                                                    </td>
-
-                                                    <td class="just-col" data-week="{{ $w['week_no'] }}">
-                                                        <input class="form-control just-baru"
-                                                            data-item="{{ $sub->id }}"
-                                                            data-week="{{ $w['week_no'] }}"
-                                                            value="{{ $prog->just_baru ?? 0 }}">
-                                                    </td>
-                                                @endforeach
-                                                        <td class="total-justek" data-item="{{ $sub->id }}">0</td>
-                                                        <td class="total-pelaksanaan"
-                                                            data-item="{{ $sub->id }}"
-                                                            data-vol-kontrak="{{ $sub->volume }}">
-                                                            {{ $sub->volume }}
-                                                        </td>
-
-                                                        <td class="harga-kontrak" data-price="{{ $sub->price }}">
-                                                            Rp {{ number_format($sub->price, 0, ',', '.') }}
-                                                        </td>
-
-                                                        <td class="nilai-pelaksanaan">0</td>
-                                                </tr>
-                                            @endforeach
                                     @endforeach
                                 @endforeach
                             @endforeach
@@ -460,189 +356,189 @@
     </div>
 
 @push('js')
-<script>
-document.addEventListener('DOMContentLoaded', function() {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
 
-    const weeks = @json($project->week_labels);
-    let activeWeek = null;
+            const weeks = @json($project->week_labels);
+            let activeWeek = null;
 
-    const table = document.querySelector(".progress-table");
-    const colgroup = table.querySelectorAll("colgroup col");
-    const freezeCount = 6; 
-    const colsPerWeek = 6; 
-    const colsPerubahan = 4; 
-    
-    function formatRupiah(angka) {
-        angka = Number(angka || 0);
-        return new Intl.NumberFormat('id-ID').format(angka);
-    }
-    // UTILITY: recalc total volume & nilai
-    function recalcAll() {
-        table.querySelectorAll('tr[data-item-id]').forEach(row => {
-            const itemId = row.dataset.itemId;
-            let totalVolume = 0;
+            const table = document.querySelector(".progress-table");
+            const colgroup = table.querySelectorAll("colgroup col");
+            const freezeCount = 6; 
+            const colsPerWeek = 6; 
+            const colsPerubahan = 4; 
+            
+            function formatRupiah(angka) {
+                angka = Number(angka || 0);
+                return new Intl.NumberFormat('id-ID').format(angka);
+            }
+            // UTILITY: recalc total volume & nilai
+            function recalcAll() {
+                table.querySelectorAll('tr[data-item-id]').forEach(row => {
+                    const itemId = row.dataset.itemId;
+                    let totalVolume = 0;
 
-            if (activeWeek) {
-                const input = row.querySelector(`.week-vol[data-week="${activeWeek}"]`);
-                totalVolume = parseFloat(input?.value || 0);
-            } else {
-                row.querySelectorAll('.week-vol').forEach(inp => {
-                    totalVolume += parseFloat(inp.value || 0);
+                    if (activeWeek) {
+                        const input = row.querySelector(`.week-vol[data-week="${activeWeek}"]`);
+                        totalVolume = parseFloat(input?.value || 0);
+                    } else {
+                        row.querySelectorAll('.week-vol').forEach(inp => {
+                            totalVolume += parseFloat(inp.value || 0);
+                        });
+                    }
+
+                    const priceCell = row.querySelector('.harga-kontrak');
+                    const price = parseFloat(priceCell?.dataset.price || 0);
+
+                    const totalCell = row.querySelector('.nilai-pelaksanaan');
+                    if (totalCell) {
+                        totalCell.textContent = formatRupiah(totalVolume * price);
+                    }
                 });
             }
 
-            const priceCell = row.querySelector('.harga-kontrak');
-            const price = parseFloat(priceCell?.dataset.price || 0);
+            function applyAutoFreeze() {
+                if (!table) return;
 
-            const totalCell = row.querySelector('.nilai-pelaksanaan');
-            if (totalCell) {
-                totalCell.textContent = formatRupiah(totalVolume * price);
-            }
-        });
-    }
+                table.querySelectorAll(".sticky-col").forEach(cell => {
+                    cell.classList.remove("sticky-col");
+                    cell.style.left = "";
+                    cell.style.width = "";
+                });
 
-    function applyAutoFreeze() {
-        if (!table) return;
-
-        table.querySelectorAll(".sticky-col").forEach(cell => {
-            cell.classList.remove("sticky-col");
-            cell.style.left = "";
-            cell.style.width = "";
-        });
-
-        // hitung offset kiri untuk kolom freeze
-        const offsets = [];
-        let left = 0;
-        for (let i = 0; i < freezeCount; i++) {
-            offsets.push(left);
-            left += colgroup[i]?.offsetWidth || 0;
-        }
-
-        const rowspanMap = [];
-        table.querySelectorAll("tr").forEach(row => {
-            let colIndex = 0;
-            Array.from(row.children).forEach(cell => {
-                while (rowspanMap[colIndex] && rowspanMap[colIndex] > 0) {
-                    rowspanMap[colIndex]--;
-                    colIndex++;
+                // hitung offset kiri untuk kolom freeze
+                const offsets = [];
+                let left = 0;
+                for (let i = 0; i < freezeCount; i++) {
+                    offsets.push(left);
+                    left += colgroup[i]?.offsetWidth || 0;
                 }
 
-                const colspan = parseInt(cell.getAttribute("colspan")) || 1;
-                const rowspan = parseInt(cell.getAttribute("rowspan")) || 1;
+                const rowspanMap = [];
+                table.querySelectorAll("tr").forEach(row => {
+                    let colIndex = 0;
+                    Array.from(row.children).forEach(cell => {
+                        while (rowspanMap[colIndex] && rowspanMap[colIndex] > 0) {
+                            rowspanMap[colIndex]--;
+                            colIndex++;
+                        }
 
-                if (colIndex < freezeCount) {
+                        const colspan = parseInt(cell.getAttribute("colspan")) || 1;
+                        const rowspan = parseInt(cell.getAttribute("rowspan")) || 1;
+
+                        if (colIndex < freezeCount) {
+                            cell.classList.add("sticky-col");
+                            cell.style.left = offsets[colIndex] + "px";
+                            // batasi width jika colspan > 1
+                            let width = 0;
+                            for (let i = 0; i < colspan && (colIndex + i) < freezeCount; i++) {
+                                width += colgroup[colIndex + i]?.offsetWidth || 0;
+                            }
+                            cell.style.width = width + "px";
+                        }
+
+                        if (rowspan > 1) {
+                            for (let i = 0; i < colspan; i++) {
+                                rowspanMap[colIndex + i] = rowspan - 1;
+                            }
+                        }
+                        colIndex += colspan;
+                    });
+                });
+
+                // row-category: freeze td pertama
+                table.querySelectorAll("tr.row-category, tr.row-uraian").forEach(row => {
+                    const cell = row.querySelector("td");
+                    if (!cell) return;
+                    const width = Array.from(colgroup).slice(0, freezeCount).reduce((sum, c) => sum + c.offsetWidth, 0);
                     cell.classList.add("sticky-col");
-                    cell.style.left = offsets[colIndex] + "px";
-                    // batasi width jika colspan > 1
-                    let width = 0;
-                    for (let i = 0; i < colspan && (colIndex + i) < freezeCount; i++) {
-                        width += colgroup[colIndex + i]?.offsetWidth || 0;
-                    }
+                    cell.style.left = "0px";
                     cell.style.width = width + "px";
-                }
-
-                if (rowspan > 1) {
-                    for (let i = 0; i < colspan; i++) {
-                        rowspanMap[colIndex + i] = rowspan - 1;
-                    }
-                }
-                colIndex += colspan;
-            });
-        });
-
-        // row-category: freeze td pertama
-        table.querySelectorAll("tr.row-category, tr.row-uraian").forEach(row => {
-            const cell = row.querySelector("td");
-            if (!cell) return;
-            const width = Array.from(colgroup).slice(0, freezeCount).reduce((sum, c) => sum + c.offsetWidth, 0);
-            cell.classList.add("sticky-col");
-            cell.style.left = "0px";
-            cell.style.width = width + "px";
-        });
-    }
-
-    // FILTER WEEK
-        function filterWeek(weekNo) {
-            activeWeek = weekNo || null;
-
-            // toggle COLGROUP (ini kunci utama)
-            colgroup.forEach(col => {
-                const w = col.dataset.week;
-                if (!w) return;
-
-                if (!weekNo || w == weekNo) {
-                    col.classList.remove("col-hidden");
-                } else {
-                    col.classList.add("col-hidden");
-                }
-            });
-
-            // toggle header + body cell
-            table.querySelectorAll('[data-week]').forEach(cell => {
-                if (!weekNo || cell.dataset.week == weekNo) {
-                    cell.classList.remove("col-hidden");
-                } else {
-                    cell.classList.add("col-hidden");
-                }
-            });
-                table.style.display = "none";
-                table.offsetHeight; 
-                table.style.display = "";
-            requestAnimationFrame(() => {
-                applyAutoFreeze();
-                recalcAll();
-            });
-        }
-
-    // FILTER: select week
-    const weekSelect = document.getElementById('filter-week');
-    if (weekSelect) {
-        $('#filter-week').on('change', function () {
-            filterWeek(this.value);
-        });
-    }
-    // helper parse tanggal lokal (ANTI timezone shift)
-    function parseLocalDate(dateStr) {
-        if (!dateStr) return null;
-        const [y, m, d] = dateStr.split("-").map(Number);
-        return new Date(y, m - 1, d);
-    }
-
-    const dateInput = document.getElementById('filter-date');
-
-    if (dateInput) {
-        dateInput.addEventListener('change', function() {
-
-            const selectedDate = this.value;
-            if (!selectedDate) return;
-
-            const selected = parseLocalDate(selectedDate);
-            let foundWeek = null;
-
-            weeks.forEach(w => {
-                // SESUAIKAN NAMA FIELD DARI BACKEND
-                const start = parseLocalDate(w.start_date || w.start);
-                const end   = parseLocalDate(w.end_date || w.end);
-
-                if (selected >= start && selected <= end) {
-                    foundWeek = w.week_no;
-                }
-            });
-
-            if (foundWeek) {
-                $('#filter-week').val(foundWeek).trigger('change');
-                filterWeek(foundWeek);
+                });
             }
 
-            console.log("selected:", selected);
-            console.log("found:", foundWeek);
-        });
-    }
+            // FILTER WEEK
+                function filterWeek(weekNo) {
+                    activeWeek = weekNo || null;
 
-    // inisialisasi
-    applyAutoFreeze();
-});
-</script>
+                    // toggle COLGROUP (ini kunci utama)
+                    colgroup.forEach(col => {
+                        const w = col.dataset.week;
+                        if (!w) return;
+
+                        if (!weekNo || w == weekNo) {
+                            col.classList.remove("col-hidden");
+                        } else {
+                            col.classList.add("col-hidden");
+                        }
+                    });
+
+                    // toggle header + body cell
+                    table.querySelectorAll('[data-week]').forEach(cell => {
+                        if (!weekNo || cell.dataset.week == weekNo) {
+                            cell.classList.remove("col-hidden");
+                        } else {
+                            cell.classList.add("col-hidden");
+                        }
+                    });
+                        table.style.display = "none";
+                        table.offsetHeight; 
+                        table.style.display = "";
+                    requestAnimationFrame(() => {
+                        applyAutoFreeze();
+                        recalcAll();
+                    });
+                }
+
+            // FILTER: select week
+            const weekSelect = document.getElementById('filter-week');
+            if (weekSelect) {
+                $('#filter-week').on('change', function () {
+                    filterWeek(this.value);
+                });
+            }
+            // helper parse tanggal lokal (ANTI timezone shift)
+            function parseLocalDate(dateStr) {
+                if (!dateStr) return null;
+                const [y, m, d] = dateStr.split("-").map(Number);
+                return new Date(y, m - 1, d);
+            }
+
+            const dateInput = document.getElementById('filter-date');
+
+            if (dateInput) {
+                dateInput.addEventListener('change', function() {
+
+                    const selectedDate = this.value;
+                    if (!selectedDate) return;
+
+                    const selected = parseLocalDate(selectedDate);
+                    let foundWeek = null;
+
+                    weeks.forEach(w => {
+                        // SESUAIKAN NAMA FIELD DARI BACKEND
+                        const start = parseLocalDate(w.start_date || w.start);
+                        const end   = parseLocalDate(w.end_date || w.end);
+
+                        if (selected >= start && selected <= end) {
+                            foundWeek = w.week_no;
+                        }
+                    });
+
+                    if (foundWeek) {
+                        $('#filter-week').val(foundWeek).trigger('change');
+                        filterWeek(foundWeek);
+                    }
+
+                    console.log("selected:", selected);
+                    console.log("found:", foundWeek);
+                });
+            }
+
+            // inisialisasi
+            applyAutoFreeze();
+        });
+    </script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.plan-bobot')
@@ -1209,23 +1105,65 @@ document.addEventListener('DOMContentLoaded', function() {
     <script>
         document.addEventListener('DOMContentLoaded', function () {
 
-            document.addEventListener('click', function(e) {
+            document.addEventListener('click', async function(e) {
+
                 const btn = e.target.closest('.btn-add-tambah');
                 if (!btn) return;
 
                 const itemId = btn.dataset.item;
-                const rowTambahan = document.querySelector(
-                    `.row-tambahan[data-item="${itemId}"]`
+
+                const wrapper = document.querySelector(
+                    `.tambahan-wrapper[data-item="${itemId}"]`
                 );
 
-                rowTambahan.classList.toggle('d-none');
-                if (!rowTambahan.classList.contains('d-none')) {
-                    $(rowTambahan).find('.select2').select2({
+                const container = wrapper.querySelector(
+                    '.tambahan-container'
+                );
+
+                // toggle kalau sudah pernah load
+                if(wrapper.dataset.loaded === '1') {
+
+                    wrapper.classList.toggle('d-none');
+
+                    return;
+                }
+
+                try {
+
+                    btn.disabled = true;
+                    btn.innerHTML = '...';
+
+                    const response = await fetch(
+                        `/projects/items/${itemId}/tambahan`
+                    );
+
+                    const html = await response.text();
+
+                    container.innerHTML = html;
+
+                    wrapper.dataset.loaded = '1';
+
+                    wrapper.classList.remove('d-none');
+
+                    $(wrapper).find('.select2').select2({
                         width: '100%',
                         placeholder: '-- Pilih Pekerjaan --'
                     });
+
+                    setupJustekAccess();
+
+                } catch(err) {
+
+                    console.error(err);
+                    alert('Gagal load tambahan');
+
+                } finally {
+
+                    btn.disabled = false;
+                    btn.innerHTML = '+';
                 }
             });
+
             function buildWeekColumns(itemId) {
                 let cols = '';
 
@@ -1359,16 +1297,30 @@ document.addEventListener('DOMContentLoaded', function() {
                         <td class="nilai-pelaksanaan">0</td>
                     `;
 
-                    let insertAfter = parentRow;
+                    const wrapper = document.querySelector(
+                        `.tambahan-wrapper[data-item="${parentId}"]`
+                    );
 
-                    while (
-                        insertAfter.nextElementSibling &&
-                        insertAfter.nextElementSibling.classList.contains('table-warning')
-                    ) {
-                        insertAfter = insertAfter.nextElementSibling;
+                    const container = wrapper.querySelector(
+                        '.tambahan-container tbody'
+                    );
+
+                    // kalau tbody belum ada, buat table dulu
+                    if (!container) {
+
+                        wrapper.querySelector('.tambahan-container').innerHTML = `
+                            <table class="table table-bordered mb-0">
+                                <tbody></tbody>
+                            </table>
+                        `;
                     }
 
-                    insertAfter.after(newRow);
+                    wrapper
+                        .querySelector('.tambahan-container tbody')
+                        .appendChild(newRow);
+
+                    wrapper.classList.remove('d-none');
+                    wrapper.dataset.loaded = '1';
                     setupJustekAccess();
 
                     document.querySelector(

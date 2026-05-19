@@ -748,8 +748,8 @@ private function getGroupedAccounts($startDate, $endDate)
                 'sub_category' => $account->sub_category,
                 'parent_id'    => $account->parent_id,
                 'is_parent'    => $account->is_parent,
-                'debit'        => $balance > 0 ? $balance : 0,
-                'credit'       => $balance < 0 ? abs($balance) : 0,
+                'debit'        => $debit,
+                'credit'       => $credit,
             ];
         });
     return $accounts

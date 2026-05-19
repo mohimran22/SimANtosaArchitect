@@ -19,6 +19,7 @@ use App\Models\JobCategory;
 use App\Models\RabProcess;
 use App\Models\RabProcessItem;
 use App\Models\BuildDailyReport;
+use App\Models\BuildProcessItem;
 use App\Models\User;
 use App\Services\ProjectNotifier;
 use Illuminate\Http\Request;
@@ -477,5 +478,26 @@ public function show(Project $project)
 
     return view('projects.partials.invoice_panel',
     compact('project'));
+}
+
+public function loadTambahan(BuildProcessItem $item)
+{
+    $item->load([
+        'tambahan.weeklyProgresses'
+    ]);
+
+    $jobCategories = JobCategory::select(
+        'id',
+        'nama_pekerjaan'
+    )->get();
+
+    return view(
+        'projects.partials.tambahan_rows',
+        [
+            'item' => $item,
+            'jobCategories' => $jobCategories,
+            'weekLabels' => $item->project->week_labels,
+        ]
+    )->render();
 }
 }

@@ -7,7 +7,6 @@
             <a href="{{ route('trial.export', [
                     'start_date' => request('start_date'),
                     'end_date' => request('end_date'),
-                    'license_id' => request('license_id')
                 ]) }}" 
                 class="btn btn-success" target="_blank">
                 <i class="ti ti-file-export text-white"></i>Ekspor Excel

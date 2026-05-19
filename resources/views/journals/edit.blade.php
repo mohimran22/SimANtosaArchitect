@@ -86,7 +86,6 @@
                                     @if(isset($journal) && $journal->details)
                                         @foreach ($journal->details as $i => $detail)
                                             <tr>
-                                                {{-- Pilih Akun --}}
                                                 <td>
                                                     <select name="details[{{ $i }}][account_id]" 
                                                             class="form-select select2 account-select" 
@@ -240,30 +239,47 @@ $(document).ready(function () {
             accountsData = data;
 
             $('.account-select').each(function () {
-                if (!$(this).val()) {
-                    renderAccountOptions($(this));
+
+                let selected = $(this).data('selected');
+
+                renderAccountOptions($(this));
+
+                if (selected) {
+                    $(this).val(selected).trigger('change');
                 }
             });
         });
     }
 
     function renderAccountOptions($select) {
+
+        let selected = $select.data('selected') || $select.val();
+
         if ($select.hasClass("select2-hidden-accessible")) {
             $select.select2("destroy");
         }
-        $select.empty().append('<option value="">-- Pilih Akun --</option>');
+
+        $select.empty().append(`
+            <option value="">-- Pilih Akun --</option>
+        `);
 
         $.each(accountsData, function (_, account) {
+
             $select.append(`
-                <option value="${account.id}" 
-                        data-code="${account.account_code}" 
+                <option value="${account.id}"
+                        data-code="${account.account_code}"
                         data-person-type="${account.person_type}">
                     ${account.account_code} - ${account.account_name}
                 </option>
             `);
         });
 
-        $select.select2({ placeholder: "-- Pilih Akun --", width: '100%' });
+        $select.val(selected);
+
+        $select.select2({
+            placeholder: "-- Pilih Akun --",
+            width: '100%'
+        });
     }
 
     function renderUserOptions($select, personType, selected = null) {
@@ -295,18 +311,45 @@ $(document).ready(function () {
     const creditOnly = new Set(["2","3","4"]);  
 
     function applyDebitCreditRule($row, accountCode) {
+
         const firstDigit = accountCode.charAt(0);
 
         const $debit  = $row.find('.debit-input');
         const $credit = $row.find('.credit-input');
 
+        // reset dulu
         $debit.prop('disabled', false);
         $credit.prop('disabled', false);
 
+        // akun beban / biaya
         if (debitOnly.has(firstDigit)) {
-            $credit.prop('disabled', true).val('');
-        } else if (creditOnly.has(firstDigit)) {
-            $debit.prop('disabled', true).val('');
+
+            $credit.prop('disabled', true);
+
+        } 
+        // akun hutang / modal / pendapatan
+        else if (creditOnly.has(firstDigit)) {
+
+            $debit.prop('disabled', true);
+        }
+
+        syncHiddenInput($row);
+    }
+
+    function syncHiddenInput($row) {
+
+        let debit = $row.find('.debit-input').val();
+        let credit = $row.find('.credit-input').val();
+
+        $row.find('.hidden-debit').remove();
+        $row.find('.hidden-credit').remove();
+
+        if ($row.find('.debit-input').prop('disabled')) {
+            $row.append(`<input type="hidden" name="${$row.find('.debit-input').attr('name')}" value="${debit}" class="hidden-debit">`);
+        }
+
+        if ($row.find('.credit-input').prop('disabled')) {
+            $row.append(`<input type="hidden" name="${$row.find('.credit-input').attr('name')}" value="${credit}" class="hidden-credit">`);
         }
     }
 
@@ -319,6 +362,7 @@ $(document).ready(function () {
         renderUserOptions($row.find('.user-select'), personType);
 
         applyDebitCreditRule($row, accountCode);
+        syncHiddenInput($row);
     });
 
     $('.account-select').each(function () {
@@ -361,6 +405,14 @@ $(document).ready(function () {
         $('#detail-rows').append(newRow);
 
         renderAccountOptions($('#detail-rows tr:last .account-select'));
+        const $newRow = $('#detail-rows tr:last');
+
+        renderAccountOptions($newRow.find('.account-select'));
+
+        $newRow.find('.user-select').select2({
+            placeholder: "-- Pilih User --",
+            width: '100%'
+        });
     });
 
     $(document).on('click', '.remove-row', function () {
@@ -400,14 +452,16 @@ $(document).ready(function () {
 
     $(document).on('input', '.debit-input, .credit-input', function () {
 
+        let $row = $(this).closest('tr');
+
         let raw = $(this).val().replace(/[^\d]/g, '');
 
         $(this).val(formatRupiah(raw));
 
         if ($(this).hasClass('debit-input')) {
-            $(this).closest('tr').find('.credit-input').val('');
+            $row.find('.credit-input').val('');
         } else {
-            $(this).closest('tr').find('.debit-input').val('');
+            $row.find('.debit-input').val('');
         }
 
         calculateSubtotals();
@@ -419,6 +473,7 @@ $(document).ready(function () {
         let totalCredit = 0;
 
         $('#detail-rows tr').each(function () {
+            syncHiddenInput($(this));
 
             totalDebit += parseRupiah(
                 $(this).find('.debit-input').val()

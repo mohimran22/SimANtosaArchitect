@@ -655,7 +655,10 @@ Route::get('/reports/next-date/{project}', [BuildDailyController::class,'nextDat
 Route::get('/projects/{project}/invoice-panel',
 [ProjectController::class,'invoicePanel'])
 ->name('projects.invoice.panel');
-
+Route::get(
+    '/projects/items/{item}/tambahan',
+    [ProjectController::class, 'loadTambahan']
+);
 Route::middleware(['auth', 'permission:lihat daftar role'])->group(function () {
     Route::resource('/roles', RoleController::class);
     Route::post('/roles/{role}/update-permissions', [RoleController::class, 'updatePermissions'])->name('roles.updatePermissions');
