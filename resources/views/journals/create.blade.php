@@ -204,7 +204,19 @@ $(document).ready(function () {
             `);
         });
 
-        $select.select2({ placeholder: "-- Pilih Akun --", width: '100%' });
+        $select.select2({
+            placeholder: "-- Pilih Akun --",
+            width: '100%',
+
+            templateSelection: function (data) {
+
+                if (!data.text) return data.text;
+
+                return data.text.length > 50
+                    ? data.text.substring(0, 50) + '...'
+                    : data.text;
+            }
+        });
     }
 
     const userCache = {};

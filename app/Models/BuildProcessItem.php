@@ -20,7 +20,10 @@ class BuildProcessItem extends Model
         'total',
         'is_tambahan',
         'parent_id',
-        'sumber'
+        'sumber',
+        'category_order',
+        'uraian_order',
+        'item_order'
     ];
 
     protected $casts = [

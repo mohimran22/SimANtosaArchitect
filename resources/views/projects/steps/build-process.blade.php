@@ -147,35 +147,34 @@
 
                     @endphp
                     <tbody>
-                        @foreach($groupedItems as $category => $uraians)
+                        @foreach($groupedItems as $categoryData)
 
                             @php
                                 $categoryNo = alphaIndex($loop->index);
                             @endphp
                             <tr class="row-category"> 
                                 <td colspan="6">
-                                    {{ $categoryNo }}. {{ $category }}
+                                    {{ $categoryNo }}. {{ $categoryData['category_name'] }}
                                 </td> 
                                 <td colspan="{{ $totalCols - 6 }}"></td> 
                             </tr>
 
-                            @foreach($uraians as $uraian => $sub)
+                            @foreach($categoryData['uraians'] as $uraianData)
                                 @php
                                     $uraianNo = $loop->iteration;
                                 @endphp
                                 <tr class="row-uraian">
-                                    <td colspan="6"> {{ $uraianNo }}. {{ $uraian }} </td> 
+                                    <td colspan="6">
+                                        {{ $uraianNo }}.
+                                        {{ $uraianData['uraian_name'] }}
+                                    </td> 
                                     <td colspan="{{ $totalCols - 6 }}"></td> 
                                 </tr>
 
-                                @foreach($sub as $namaPekerjaan => $itemsSub)
-
-                                    @foreach($itemsSub->whereNull('parent_id') as $item)
-
+                                @foreach($uraianData['items'] as $item)
                                             @php
                                                 $itemNo = $loop->iteration;
-                                            @endphp
-                                            @php
+                        
                                                 $volKontrak = $item->volume;
 
                                                 $volTerpakai = $item->weeklyProgresses->sum('volume');
@@ -390,7 +389,7 @@
                                                 </tr>
 
                                             @endforeach
-                                    @endforeach
+                                    
                                 @endforeach
                             @endforeach
                         @endforeach

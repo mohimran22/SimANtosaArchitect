@@ -255,20 +255,47 @@ if (
                     $sub->weeklyProgresses->keyBy('week_no');
             });
         });
+        // $groupedItems = $buildItems
+        //     ->whereNull('parent_id')
+        //     ->groupBy('category_name')
+        //     ->map(function ($items) {
+
+        //         return $items
+        //             ->groupBy('uraian_name')
+        //             ->map(function ($rows) {
+
+        //                 return $rows
+        //                     ->groupBy(fn($i) =>
+        //                         $i->category_name ?? 'Tanpa Kategori'
+        //                     );
+        //             });
+        //     });
         $groupedItems = $buildItems
             ->whereNull('parent_id')
-            ->groupBy('category_name')
+            ->sortBy([
+                ['category_order', 'asc'],
+                ['uraian_order', 'asc'],
+                ['item_order', 'asc'],
+            ])
+            ->groupBy('category_order')
             ->map(function ($items) {
 
-                return $items
-                    ->groupBy('uraian_name')
-                    ->map(function ($rows) {
+                return [
+                    'category_name' => $items->first()->category_name,
 
-                        return $rows
-                            ->groupBy(fn($i) =>
-                                $i->category_name ?? 'Tanpa Kategori'
-                            );
-                    });
+                    'uraians' => $items
+                        ->groupBy('uraian_order')
+                        ->map(function ($rows) {
+
+                            return [
+                                'uraian_name' => $rows->first()->uraian_name,
+
+                                'items' => $rows
+                                    ->sortBy('item_order')
+                                    ->values()
+                            ];
+                        })
+                ];
             });
 
         return view('projects.create', array_merge(

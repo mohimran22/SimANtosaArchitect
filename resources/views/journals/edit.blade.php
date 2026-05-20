@@ -278,8 +278,22 @@ $(document).ready(function () {
 
         $select.select2({
             placeholder: "-- Pilih Akun --",
-            width: '100%'
+            width: '100%',
+
+            templateSelection: function (data) {
+
+                if (!data.text) return data.text;
+
+                return data.text.length > 50
+                    ? data.text.substring(0, 50) + '...'
+                    : data.text;
+            }
         });
+
+        let selectedText = $select.find(':selected').text();
+
+        $select.next('.select2-container')
+            .attr('title', selectedText);
     }
 
     function renderUserOptions($select, personType, selected = null) {
@@ -404,7 +418,6 @@ $(document).ready(function () {
 
         $('#detail-rows').append(newRow);
 
-        renderAccountOptions($('#detail-rows tr:last .account-select'));
         const $newRow = $('#detail-rows tr:last');
 
         renderAccountOptions($newRow.find('.account-select'));

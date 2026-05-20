@@ -139,9 +139,9 @@ class InvoiceBuildController extends Controller
 
                                 'bobot_percent' => 0,
 
-                                // 'category_order' => $cIndex,
-                                // 'uraian_order' => $uIndex,
-                                // 'item_order' => $iIndex,
+                                'category_order' => $cIndex,
+                                'uraian_order' => $uIndex,
+                                'item_order' => $iIndex,
 
                                 'created_at' => now(),
                                 'updated_at' => now(),

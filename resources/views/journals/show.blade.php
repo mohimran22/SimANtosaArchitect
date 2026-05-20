@@ -73,10 +73,10 @@
 
                         {{-- TABLE --}}
                         <div class="table-responsive mb-4">
-                            <table class="table table-hover align-middle">
+                            <table class="table table-hover align-middle jurnal-table">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>No. Akun</th>
+                                        <th>Kode Akun</th>
                                         <th>Nama Akun</th>
                                         <th>Deskripsi</th>
                                         <th>User</th>
@@ -98,8 +98,13 @@
 
                                         <tr>
                                             <td>{{ $detail->account->account_code ?? '-' }}</td>
-                                            <td>{{ $detail->account->account_name ?? '-' }}</td>
-                                            <td>{{ $detail->description ?? '-' }}</td>
+                                            <td title="{{ $detail->account->account_name ?? '-' }}">
+                                                {{ Str::limit($detail->account->account_name ?? '-', 45) }}
+                                            </td>
+
+                                            <td title="{{ $detail->description ?? '-' }}">
+                                                {{ Str::limit($detail->description ?? '-', 35) }}
+                                            </td>
                                             <td>{{ $detail->person_name ?? '-' }}</td>
                                             <td class="text-end text-success">
                                                 Rp {{ number_format($detail->debit, 0, ',', '.') }}
