@@ -23,13 +23,13 @@ body {
     background:
         linear-gradient(
             to bottom,
-            rgba(0,0,0,0.65),
-            rgba(0,0,0,0.35)
+            rgba(0,0,0,0.45),
+            rgba(0,0,0,0.20)
         ),
         url('{{ asset("bg-gedung.jpeg") }}');
     background-size: cover;
     background-repeat: no-repeat;
-    background-position: right bottom;
+    background-position: right 65%;
 }
 
 /* CONTENT */
@@ -40,14 +40,14 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 64px;
+    gap: 72px;
     transform: translateY(-40px);
 }
 
 /* LOGO */
 .brand-logo {
-    width: 120px;
-    opacity: 0.95;
+    width: 130px;
+    opacity: 0.96;
 }
 
 /* BUTTON */
@@ -98,17 +98,90 @@ body {
     transform: translateY(-20px);
 }
 
-/* MOBILE FIX */
-@media (max-width: 576px) {
-    .btn-hero {
-        min-width: 160px;
-        font-size: 16px;
-        padding: 12px 20px;
+@media (max-width: 992px) {
+
+    .hero-content {
+        gap: 40px;
     }
 
     .brand-logo {
-        width: 100px;
-        size: 40px;
+        width: 130px;
+    }
+
+    .btn-hero {
+        min-width: 180px;
+    }
+}
+
+@media (max-width: 576px) {
+
+    .hero {
+
+        background:
+            linear-gradient(
+                to bottom,
+                rgba(0,0,0,0.65),
+                rgba(0,0,0,0.35)
+            ),
+            url('{{ asset("bg-gedung.jpeg") }}');
+
+        background-size: cover;
+        background-repeat: no-repeat;
+
+        /* geser background */
+        background-position: 85% top;
+    }
+
+    .hero-content {
+
+        transform: translateY(-85px);
+
+        gap: 22px;
+        padding: 20px;
+    }
+
+    .brand-logo {
+
+        width: 120px;
+
+        margin-top: -25px;
+    }
+
+    .button-group {
+
+        display: flex;
+
+        flex-direction: column;
+
+        align-items: center;
+
+        width: 100%;
+
+        gap: 16px;
+    }
+
+    .btn-hero {
+
+        width: 100%;
+
+        max-width: 270px;
+
+        min-width: unset;
+
+        padding: 13px 20px;
+
+        font-size: 15px;
+
+        border-radius: 12px;
+    }
+
+    .footer-text {
+
+        font-size: 11px;
+
+        bottom: 18px;
+
+        padding: 0 18px;
     }
 }
 </style>
@@ -120,27 +193,25 @@ body {
 
 <div class="hero-content text-center">
 
-    <!-- LOGO -->
     <img src="{{ asset('logo-putih.png') }}" class="brand-logo">
 
-
-
-    <!-- BUTTON -->
-
-    <div class="button-group d-flex gap-4 justify-content-center">
+    <div class="button-group">
 
         @if (Route::has('login'))
             @auth
-                <a href="{{ url('/dashboard') }}" class="btn btn-light btn-hero fw-semibold">
+                <a href="{{ url('/dashboard') }}"
+                class="btn btn-light btn-hero">
                     Masuk ke Beranda
                 </a>
             @else
-                <a href="{{ route('login') }}" class="btn btn-light btn-hero fw-semibold">
+                <a href="{{ route('login') }}"
+                class="btn btn-light btn-hero">
                     Masuk
                 </a>
 
                 @if (Route::has('register'))
-                    <a href="{{ route('register') }}" class="btn btn-outline-light btn-hero fw-semibold">
+                    <a href="{{ route('register') }}"
+                    class="btn btn-outline-light btn-hero">
                         Daftar
                     </a>
                 @endif
