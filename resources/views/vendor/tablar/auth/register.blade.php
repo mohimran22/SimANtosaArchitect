@@ -35,7 +35,7 @@
         height: auto;
     }
 
-    .login-panel {
+    .register-panel {
 
         position: relative;
         z-index: 2;
@@ -65,7 +65,7 @@
         border: 1px solid rgba(255,255,255,0.35);
     }
 
-    .login-panel h3 {
+    .register-panel h3 {
         font-weight: 800;
         font-size: 24px;
         line-height: 1.2;
@@ -97,11 +97,6 @@
 
         box-shadow:
             0 0 0 4px rgba(0,0,0,0.05);
-    }
-    .btn-login {
-        border-radius: 10px;
-        padding: 0.75rem;
-        font-weight: 600;
     }
     .btn-dark {
 
@@ -151,13 +146,13 @@
             height: auto;
             margin-bottom: 10px;
         }
-        .login-panel {
+        .register-panel {
             max-width: 600px;
             margin-right: 0;
             margin-top: 0;
             padding: 35px 30px;
         }
-        .login-panel h3 {
+        .register-panel h3 {
             font-size: 24px;
             margin-bottom: 1.3rem;
             text-align: center;
@@ -166,10 +161,10 @@
 
     /* MOBILE */
     @media (max-width: 576px) {
-
+        .page {
+            margin-left: 0 !important;
+        }
         body {
-
-            /* iPhone fix */
             background-attachment: scroll;
 
             background-position: center;
@@ -217,7 +212,7 @@
             margin-bottom: 0;
         }
 
-        .login-panel {
+        .register-panel {
             width: 100%;
             max-width: 100%;
             margin-right: 0;
@@ -227,7 +222,7 @@
             background: rgba(255,255,255,0.96);
             backdrop-filter: blur(10px);
         }
-        .login-panel h3 {
+        .register-panel h3 {
             font-size: 24px;
             margin-bottom: 1.3rem;
             text-align: center;
@@ -243,7 +238,6 @@
             padding-right: 14px;
         }
 
-        .btn-login,
         .btn-dark {
 
             padding: 0.85rem;
@@ -265,8 +259,8 @@
             <img src="{{ asset('images/logo-putih.png') }}" alt="Logo Antosa">
         </div> 
 
-        <div class="login-panel">
-            <h3>Silakan buat akun baru</h3>
+        <div class="register-panel">
+            <h3>Silahkan buat akun baru</h3>
 
             <form action="{{route('register')}}" method="post" autocomplete="off" novalidate>
                 @csrf

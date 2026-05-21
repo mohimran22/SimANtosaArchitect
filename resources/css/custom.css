@@ -30,7 +30,7 @@ body {
 }
 
 .page-title {
-  padding-left: 20px !important;
+  padding-left: 20px;
 } 
 
 label.required::after {
@@ -168,7 +168,7 @@ label {
     font-family: 'Poppins', sans-serif !important;
     font-weight: 400 !important;
     font-style: italic;
-    font-size: 14px;
+    font-size: 1000px;
 }
 
 /* Styling untuk user menu di navbar */

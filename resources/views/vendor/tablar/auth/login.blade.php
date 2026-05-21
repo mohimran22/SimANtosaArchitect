@@ -100,7 +100,9 @@
     }
 
     @media (max-width: 576px) {
-
+        .page {
+            margin-left: 0 !important;
+        }
         body {
 
             /* iPhone fix */
@@ -114,7 +116,9 @@
             justify-content: center;
             align-items: center;
 
-            padding: 24px 16px;
+            flex-direction: column;
+
+            padding: 130px 20px 24px;
         }
 
         .overlay-dark {
@@ -153,12 +157,14 @@
 
         .login-panel {
             width: 100%;
-            max-width: 100%;
+            max-width: 390px;
             padding: 28px 22px;
             border-radius: 18px;
-            margin: 0px 70px;
             background: rgba(255,255,255,0.96);
             backdrop-filter: blur(10px);
+            position: relative;
+            z-index: 2;
+            transform: translateX(1px);
         }
 
         .login-panel h3 {
