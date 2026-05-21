@@ -39,13 +39,6 @@
                                 </div>
                                 <input type="file" id="photo" name="photo" class="d-none" accept="image/*">
                             </div>
-
-                            
-
-
-
-
-                            {{-- Informasi Pribadi --}}
                             <section class="pb-3 border-bottom mb-4">
                                 <h3 class="fw-bold text-dark mb-3">Informasi Pribadi</h3>
                                 <div class="row g-3">
@@ -61,7 +54,7 @@
                                     </div>
                                     <div class="col-md-6 mb-3">
                                             <label class="form-label required">Jenis Kelamin</label>
-                                            <select name="gender" class="form-select" required>
+                                            <select name="gender" class="form-select select2" required>
                                                 <option value="">-- Pilih Jenis Kelamin --</option>
                                                 <option value="1" {{ $user->gender == 1 ? 'selected' : '' }}>Laki - Laki</option>
                                                 <option value="2" {{ $user->gender == 2 ? 'selected' : '' }}>Perempuan</option>
@@ -76,11 +69,11 @@
                                         <label class="form-label required">Tanggal Lahir</label>
                                             <input type="date" name="birth_date" class="form-control" required
                                                 value="{{ old('birth_date', auth()->user()->birth_date) }}"
-                                                pattern="\d{4}-\d{2}-\d{2}" placeholder="YYYY-MM-DD">
+                                                pattern="\d{4}-\d{2}-\d{2}" placeholder="DD-MM-YYYY">
                                     </div>
                                     <div class="col-md-6 mb-3">
                                             <label class="form-label required" for="religion_id">Agama</label>
-                                            <select name="religion_id" class="form-select" required>
+                                            <select name="religion_id" class="form-select select2" required>
                                                 <option value="">-- Pilih Agama --</option>
                                                 @foreach($religions as $religion)
                                                     <option value="{{ $religion->id }}" {{ old('religion_id', auth()->user()->religion_id) == $religion->id ? 'selected' : '' }}>

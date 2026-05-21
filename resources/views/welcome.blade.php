@@ -58,6 +58,7 @@ body {
     min-width: 220px;
     letter-spacing: 0.6px;
     transition: all 0.25s ease;
+    margin: 0px 16px;
 }
 .btn-light {
     background: #ffffff;
@@ -99,15 +100,12 @@ body {
 }
 
 @media (max-width: 992px) {
-
     .hero-content {
         gap: 40px;
     }
-
     .brand-logo {
         width: 130px;
     }
-
     .btn-hero {
         min-width: 180px;
     }
