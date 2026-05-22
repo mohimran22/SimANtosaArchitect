@@ -1,13 +1,13 @@
-<header class="navbar navbar-expand-md d-none d-lg-flex d-print-none">
-    <div class="topbar container-xl">
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-menu"
+<header class="navbar d-none d-lg-flex d-print-none">
+    <div class="topbar px-3">
+        {{-- <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-menu"
                 aria-controls="navbar-menu" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
-        </button>
+        </button> --}}
         <!-- Tambahkan di header.blade.php atau di layout master -->
         
 
-        <div class="navbar-nav flex-row order-md-last">
+        <div class="navbar-nav flex-row">
             <div class="d-none d-md-flex">
                 @include('tablar::partials.header.notifications')
                 <div class="nav-item dropdown me-2">

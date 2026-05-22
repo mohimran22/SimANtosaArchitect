@@ -3,19 +3,33 @@
            data-bs-theme="{{ config('tablar.layout_light_sidebar') ? 'light' : 'dark' }}"
     @endif
 >
-    <div class="container-fluid">
-        <div class="sidebar-logo-wrapper">
+    <div class="sidebar-inner">
+        {{-- <div class="sidebar-logo-wrapper">
             <h5 class="navbar-brand navbar-brand-autodark d-flex justify-content-center">
                 @include('tablar::partials.common.logo')
             </h5>
+        </div> --}}
+        <div class="sidebar-logo-wrapper">
+
+            <img src="{{ asset('images/antosa.png') }}"
+                class="logo-expand"
+                alt="Logo Antosa">
+
+            <img src="{{ asset('images/logo-icon.png') }}"
+                class="logo-collapse"
+                alt="Logo Icon">
+
         </div>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#sidebar-menu"
+        {{-- <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#sidebar-menu"
                 aria-controls="sidebar-menu" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
-        </button>
-        <button class="btn btn-outline-secondary w-100" id="sidebarToggle">
+        </button> --}}
+        {{-- <button class="btn btn-outline-secondary" id="sidebarToggle">
             <i class="ti ti-menu-2"></i>
-        </button>
+        </button> --}}
+            <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox"id="sidebarToggle">
+            </div>
         <div class="navbar-nav flex-row d-lg-none">
             <div class="nav-item d-none d-lg-flex me-3">
                 <div class="btn-list">
@@ -29,7 +43,7 @@
             @include('tablar::partials.header.top-right')
         </div>
 
-        <div class="sidebar-menu-wrapper collapse navbar-collapse" id="sidebar-menu">
+        <div class="sidebar-menu-wrapper" id="sidebar-menu">
             <ul class="navbar-nav pt-lg-3">
                 @include('partials.menu_item', ['menus' => $menus ?? []])
             </ul>
@@ -39,8 +53,8 @@
         </div>
     </div>
 </aside>
-{{-- 
-@if(config('tablar.layout_enable_top_header'))
+
+{{-- @if(config('tablar.layout_enable_top_header'))
     @include('tablar::partials.header.sidebar-top')
 @endif --}}
 <script>

@@ -128,10 +128,11 @@ document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(el => {
 </script>
 @endpush
 <style>
-/* .navbar-nav .nav-item .nav-link {
+.navbar-nav .nav-item .nav-link {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
+    margin: 8px 6px;
     padding: 8px 12px;
     border-radius: 8px;
     color: #ffff;
@@ -143,20 +144,11 @@ document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(el => {
     background-color: #f1f5f9;
     color: #000;
 }
- */
+
 .navbar-nav > .nav-item > .nav-link.active {
     background-color: #000;
     color: white !important;
     position: relative;
-}
-
-/* .collapse .nav-link {
-    font-size: 0.9rem;
-    padding-left: 2rem;
-    color: #333;
-    border-radius: 6px;
-    white-space: normal !important;
-    word-break: break-word;
 }
 
 .collapse .nav-link.active {
@@ -168,7 +160,7 @@ document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(el => {
 .collapse .nav-link:hover {
     background-color: #e4e4e4;
     color: #000;
-} */
+}
 
 /* ===== SUBMENU CONTAINER ===== */
 .collapse .nav {
@@ -179,21 +171,36 @@ document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(el => {
 
 /* ===== SUBMENU ITEM ===== */
 .collapse .nav-item {
-    margin: 2px 6px;
+    margin: 2px 6x;
 }
 
-/* ===== SUBMENU LINK ===== */
 .collapse .nav-link {
-    font-size: 0.9rem;
-    padding: 6px 10px;
-    border-radius: 6px;
-    color: #374151;
     display: flex;
     align-items: center;
     gap: 10px;
-    white-space: normal !important;
-    word-break: break-word;
+
+    width: 100%;
+    min-width: 0;
+
+    padding: 8px 10px;
+    border-radius: 6px;
+
+    font-size: 0.9rem;
+    color: #374151;
+
+    overflow: hidden;
 }
+
+.collapse .nav-link span,
+.collapse .nav-link-title {
+    flex: 1;
+    min-width: 0;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap !important;
+}
+
 
 /* hover */
 .collapse .nav-link:hover {
@@ -206,34 +213,24 @@ document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(el => {
     background: #c4c4c4;
     color: #000;
     font-weight: 500;
-    margin: 5px 10px;
+    margin: 0;
 }
 
 /* icon anak */
 .collapse .nav-link i {
     font-size: 14px;
-    width: 18px;
+    width: 16px;
+    min-width: 16px;
     text-align: center;
 }
 
 .collapse {
     transition: height 0.2s ease;
 }
-.sidebar-collapsed .page-wrapper {
-    margin-left: 80px !important;
-} 
-.sidebar-collapsed .navbar.navbar-vertical {
-    width: 80px !important;
-}
 
-.sidebar-collapsed .nav-link {
-    justify-content: center !important;
-    padding: 10px 0 !important;
-    position: relative;
-}
 .nav-link-icon {
-    width: 26px;
-    min-width: 26px;
+    width: 10%;
+    min-width: 10%;
     text-align: center;
 }
 
@@ -242,16 +239,24 @@ document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(el => {
     font-size: 20px;
     display: inline-block !important;
 }
+.sidebar-collapsed .navbar-nav .nav-link {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center;
+    overflow: visible !important;
+}
 .sidebar-collapsed .nav-link-icon {
-    width: 26px !important;
-    min-width: 26px !important;
-    margin: 0 auto !important;
-    display: block !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: auto !important;
+    min-width: auto !important;
+    margin: 0;
 }
 
 .sidebar-collapsed .nav-link-icon i {
-    display: inline-block !important;
-    font-size: 20px !important;
+    font-size: 18px !important;
+    line-height: 1;
 }
 .sidebar-collapsed .nav-link-title {
     display: none !important;
@@ -270,25 +275,27 @@ document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(el => {
 /* Tooltip hidden default */
 .sidebar-collapsed .nav-link::before {
     content: attr(data-title);
-    position: fixed;
-    left: 80px;
-    top: calc(var(--mouse-y, 50%));
+    position: absolute;
+    left: 70px;
+    top: 50%;
     transform: translateY(-50%);
-    background: #000;
+    
+    background: #111827;
     color: #fff;
+
     padding: 6px 10px;
     border-radius: 6px;
     font-size: 13px;
     white-space: nowrap;
-    z-index: 9999;
 
     opacity: 0;
-    pointer-events: none;
-    transition: 0.15s;
+    visibility: hidden;
+
+    transition: .2s;
 }
 
-/* Show tooltip */
 .sidebar-collapsed .nav-link:hover::before {
     opacity: 1;
+    visibility: visible;
 }
 </style>
