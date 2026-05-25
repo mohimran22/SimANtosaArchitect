@@ -50,8 +50,8 @@
                                     <th>Title</th>
                                     <th>URL / Route Name</th>
                                     <th>Parent</th>
-                                    <th>Order</th>
-                                    <th>Active</th>
+                                    <th>Urutan</th>
+                                    <th>Status Aktif?</th>
                                     <th>Permission</th>
                                     <th>Aksi</th>
                                 </tr>

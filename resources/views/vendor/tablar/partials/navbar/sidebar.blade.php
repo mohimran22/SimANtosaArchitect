@@ -9,27 +9,23 @@
                 @include('tablar::partials.common.logo')
             </h5>
         </div> --}}
-        <div class="sidebar-logo-wrapper">
+        <div class="sidebar-header">
+            <div class="sidebar-logo-wrapper">
 
-            <img src="{{ asset('images/antosa.png') }}"
-                class="logo-expand"
-                alt="Logo Antosa">
+                <img src="{{ asset('images/antosa.png') }}"
+                    class="logo-expand"
+                    alt="Logo Antosa">
 
-            <img src="{{ asset('images/logo-icon.png') }}"
-                class="logo-collapse"
-                alt="Logo Icon">
+                <img src="{{ asset('images/logo-icon.png') }}"
+                    class="logo-collapse"
+                    alt="Logo Icon">
 
-        </div>
-        {{-- <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#sidebar-menu"
-                aria-controls="sidebar-menu" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button> --}}
-        {{-- <button class="btn btn-outline-secondary" id="sidebarToggle">
-            <i class="ti ti-menu-2"></i>
-        </button> --}}
-            <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox"id="sidebarToggle">
             </div>
+            <button id="sidebarToggle" class="sidebar-toggle-btn">
+                <i class="ti ti-layout-sidebar-left-collapse"></i>
+            </button>
+        </div>
+
         <div class="navbar-nav flex-row d-lg-none">
             <div class="nav-item d-none d-lg-flex me-3">
                 <div class="btn-list">
@@ -53,10 +49,7 @@
         </div>
     </div>
 </aside>
-
-{{-- @if(config('tablar.layout_enable_top_header'))
-    @include('tablar::partials.header.sidebar-top')
-@endif --}}
+@push('js')
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
@@ -77,11 +70,58 @@ document.addEventListener("DOMContentLoaded", function () {
 
 });
 </script>
-<script>
+{{-- <script>
 document.addEventListener("mousemove", function(e) {
     document.documentElement.style.setProperty(
         "--mouse-y",
         e.clientY + "px"
     );
 });
+</script> --}}
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    document.querySelectorAll('.has-dropdown').forEach(item => {
+
+        const submenu = item.querySelector('.submenu');
+
+        if (!submenu) return;
+
+        let timeout;
+
+        function showMenu() {
+
+            if (!document.documentElement.classList.contains('sidebar-collapsed')) {
+                return;
+            }
+
+            clearTimeout(timeout);
+
+            const rect = item.getBoundingClientRect();
+
+            submenu.style.top = rect.top + 'px';
+
+            submenu.classList.add('show-floating');
+        }
+
+        function hideMenu() {
+
+            timeout = setTimeout(() => {
+                submenu.classList.remove('show-floating');
+            }, 150);
+        }
+
+        // parent menu
+        item.addEventListener('mouseenter', showMenu);
+        item.addEventListener('mouseleave', hideMenu);
+
+        // floating submenu
+        submenu.addEventListener('mouseenter', showMenu);
+        submenu.addEventListener('mouseleave', hideMenu);
+
+    });
+
+});
 </script>
+@endpush

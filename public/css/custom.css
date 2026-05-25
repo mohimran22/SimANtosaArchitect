@@ -1,15 +1,3 @@
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
-
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
-
 body {
   font-family: 'Poppins', sans-serif !important;
   font-weight: 400 !important;
@@ -29,13 +17,6 @@ label.required::after {
   color: #db2827;
 }
 
-/* Hilangkan bayangan untuk kolom yang di-fixed di kiri */
-table.dataTable th.dtfc-fixed-left,
-table.dataTable td.dtfc-fixed-left {
-    box-shadow: none !important;
-    background-color: white !important;
-    z-index: 2 !important;
-}
 
 /* Pastikan juga scroll header-nya tidak memberi efek aneh */
 .dataTables_scrollHeadInner {

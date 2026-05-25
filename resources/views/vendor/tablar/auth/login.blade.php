@@ -5,6 +5,14 @@
     body {
         background: url('{{ asset('images/bg-login.png') }}') no-repeat center center fixed;
         background-size: cover;
+        font-family: 'Poppins', sans-serif !important;
+        font-weight: 400 !important;
+        background-color: #f8f9fc;
+    }
+
+    input, select, textarea, button {
+        font-family: 'Poppins', sans-serif !important;
+        font-weight: 400 !important;
     }
 
     .auth-wrapper {
@@ -55,6 +63,7 @@
 
     .form-control {
         border-radius: 10px;
+        font-weight: 400;
         padding: 0.75rem 1rem;
     }
 
@@ -176,7 +185,7 @@
         .form-control {
 
             padding: 0.85rem 1rem;
-
+            font-weight: 400;
             font-size: 15px;
         }
 

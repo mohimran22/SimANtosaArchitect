@@ -5,6 +5,9 @@
     body {
         background: url('{{ asset('images/bg-login.png') }}') no-repeat center center fixed;
         background-size: cover;
+        font-family: 'Poppins', sans-serif !important;
+        font-weight: 400 !important;
+        background-color: #f8f9fc;
     }
 
     .auth-wrapper {
@@ -271,7 +274,7 @@
                         <span class="input-group-text bg-transparent border-end-0">
                             <i class="ti ti-user"></i>
                         </span>
-                        <input id="fullname" type="text" name="fullname"
+                        <input type="text" name="fullname"
                             class="form-control border-start-0 @error('fullname') is-invalid @enderror"
                             placeholder="Masukkan nama Anda" autofocus>
                     </div>
@@ -286,7 +289,7 @@
                         <span class="input-group-text bg-transparent border-end-0">
                             <i class="ti ti-user"></i>
                         </span>
-                        <input id="fullname" type="tel" name="phone"
+                        <input type="tel" name="phone"
                             class="form-control border-start-0 @error('fullname') is-invalid @enderror"
                             placeholder="Masukkan nomor HP Anda" autofocus>
                     </div>

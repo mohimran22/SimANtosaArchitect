@@ -63,31 +63,34 @@
                     }
                 }
             }
+            $submenuId = 'submenu-' . md5($menu['text'] . $loop->index);
         @endphp
 
         @if($canViewParent)
             <li class="nav-item {{ $hasChildren ? 'has-dropdown' : '' }}"
                 data-title="{{ $menu['text'] }}">
-                <a class="nav-link {{ $isActive ? 'active' : '' }} {{ $hasChildren ? 'dropdown-toggle' : '' }}"
+                <a class="nav-link {{ $isActive ? 'active open' : '' }}"
                 data-title="{{ $menu['text'] }}"
-                href="{{ $hasChildren ? '#' : ($menu['type'] === 'route' ? route($menu['url']) : url($menu['url'])) }}" role="button"
-                @if($hasChildren) 
-                data-bs-toggle="collapse"
-                data-bs-target="#submenu-{{ $loop->index }}"
-                @endif
-                aria-controls="submenu-{{ $loop->index }}"
-                aria-expanded="{{ $isActive ? 'true' : 'false' }}"
+                data-submenu="{{ $submenuId }}"
+                href="{{ $hasChildren 
+                ? 'javascript:void(0)' 
+                : ($menu['type'] === 'route' 
+                    ? route($menu['url']) 
+                    : url($menu['url'])) }}"
                 >
                     <span class="nav-link-icon">
                         <i class="{{ $menu['icon'] ?? 'ti ti-circle' }}"></i>
                     </span>
 
                     <span class="nav-link-title">{{ $menu['text'] }}</span>
+                    @if($hasChildren)
+                        <span class="submenu-arrow"></span>
+                    @endif
                 </a>
 
                 @if($hasChildren)
-                    <div class="collapse {{ $isActive ? 'show' : '' }}"
-                        id="submenu-{{ $loop->index }}">
+                    <div class="submenu {{ $isActive ? 'show' : '' }}"
+                        id="{{ $submenuId }}">
                         <ul class="nav nav-sm flex-column ms-4">
                             @foreach($filteredChildren as $child)
                                 @php
@@ -111,23 +114,50 @@
             </li>
         @endif
     @endforeach
-@push('js')
+    @push('js')
 <script>
-document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(el => {
-    el.addEventListener('click', function (e) {
+document.querySelectorAll('[data-submenu]').forEach(menu => {
 
-        const target = document.querySelector(this.getAttribute('data-bs-target'));
+    menu.addEventListener('click', function(){
 
-        if(target.classList.contains('show')){
-            e.preventDefault();
-            target.classList.remove('show');
-        }
+        const submenuId = this.dataset.submenu;
+
+        if(!submenuId) return;
+
+        const submenu = document.getElementById(submenuId);
+
+        submenu.classList.toggle('show');
+                this.classList.toggle('open');
 
     });
+
 });
 </script>
 @endpush
 <style>
+.submenu-arrow {
+    margin-left: auto;
+
+    width: 8px;
+    height: 8px;
+
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+
+    transform: rotate(45deg);
+
+    transition: .2s ease;
+}
+
+/* rotate */
+.nav-link.open .submenu-arrow {
+    transform: rotate(-135deg);
+}
+
+/* hide saat collapsed */
+.sidebar-collapsed .submenu-arrow {
+    display: none;
+}
 .navbar-nav .nav-item .nav-link {
     display: flex;
     align-items: center;
@@ -141,7 +171,7 @@ document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(el => {
 }
 
 .navbar-nav .nav-item .nav-link:hover {
-    background-color: #f1f5f9;
+    background-color: #c4c4c4;
     color: #000;
 }
 
@@ -151,30 +181,32 @@ document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(el => {
     position: relative;
 }
 
-.collapse .nav-link.active {
+.submenu .nav-link.active {
     background-color: #c4c4c4;
     color: #000;
-    font-weight: 500;
+    font-weight: 400;
+    border-radius: 8px;
+    margin: 0;
+    position: relative;
 }
 
-.collapse .nav-link:hover {
+.submenu .nav-link:hover {
     background-color: #e4e4e4;
     color: #000;
 }
 
 /* ===== SUBMENU CONTAINER ===== */
-.collapse .nav {
+.submenu .nav {
     margin-left: 0 !important;
     padding-left: 8px;
-    border-left: 2px solid #e5e7eb;
 }
 
 /* ===== SUBMENU ITEM ===== */
-.collapse .nav-item {
-    margin: 2px 6x;
+.submenu .nav-item {
+    margin: 2px 6px;
 }
 
-.collapse .nav-link {
+.submenu .nav-link {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -183,49 +215,45 @@ document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(el => {
     min-width: 0;
 
     padding: 8px 10px;
-    border-radius: 6px;
+    border-radius: 8px;
 
     font-size: 0.9rem;
     color: #374151;
 
-    overflow: hidden;
+    overflow: visible;
 }
 
-.collapse .nav-link span,
-.collapse .nav-link-title {
+.submenu .nav-link span,
+.submenu .nav-link-title {
     flex: 1;
     min-width: 0;
 
-    overflow: hidden;
+    overflow: visible;
     text-overflow: ellipsis;
     white-space: nowrap !important;
 }
 
-
-/* hover */
-.collapse .nav-link:hover {
-    background: #c4c4c4;
-    color: #000;
-}
-
-/* ===== ACTIVE SUBMENU (rapi, tidak besar) ===== */
-.collapse .nav-link.active {
-    background: #c4c4c4;
-    color: #000;
-    font-weight: 500;
-    margin: 0;
-}
-
 /* icon anak */
-.collapse .nav-link i {
+.submenu .nav-link i {
     font-size: 14px;
     width: 16px;
     min-width: 16px;
     text-align: center;
 }
+.submenu {
+    max-height: 0;
+    overflow: visible;
 
-.collapse {
-    transition: height 0.2s ease;
+    transition:
+        max-height .25s ease,
+        opacity .2s ease;
+
+    opacity: 0;
+}
+
+.submenu.show {
+    max-height: 500px;
+    opacity: 1;
 }
 
 .nav-link-icon {
@@ -239,18 +267,20 @@ document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(el => {
     font-size: 20px;
     display: inline-block !important;
 }
+
 .sidebar-collapsed .navbar-nav .nav-link {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center;
+    display: flex ;
+    align-items: center ;
+    justify-content: center !important;
     overflow: visible !important;
+    padding: 12px 16px !important;
 }
 .sidebar-collapsed .nav-link-icon {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: auto !important;
-    min-width: auto !important;
+    width: auto;
+    min-width: 20px;
     margin: 0;
 }
 
@@ -258,44 +288,82 @@ document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(el => {
     font-size: 18px !important;
     line-height: 1;
 }
-.sidebar-collapsed .nav-link-title {
-    display: none !important;
-}
-
-/* Hilangkan submenu */
-.sidebar-collapsed .collapse {
-    display: none !important;
-}
-
 /* Tooltip custom */
-.sidebar-collapsed .nav-item {
+.sidebar-collapsed .nav-item,
+.sidebar-collapsed .nav-link {
+    overflow: visible !important;
     position: relative;
 }
 
-/* Tooltip hidden default */
 .sidebar-collapsed .nav-link::before {
     content: attr(data-title);
-    position: absolute;
-    left: 70px;
-    top: 50%;
+
+    position: fixed;
+
+    left: 78px;
+
     transform: translateY(-50%);
-    
+
     background: #111827;
     color: #fff;
 
-    padding: 6px 10px;
-    border-radius: 6px;
-    font-size: 13px;
+    padding: 8px 12px;
+
+    border-radius: 8px;
+
     white-space: nowrap;
 
     opacity: 0;
     visibility: hidden;
 
-    transition: .2s;
+    transition: .2s ease;
+
+    z-index: 999999;
+
+    pointer-events: none;
 }
 
 .sidebar-collapsed .nav-link:hover::before {
     opacity: 1;
     visibility: visible;
+}
+.sidebar-collapsed .nav-link-title {
+    display: none !important;
+}
+
+.sidebar-collapsed .submenu {
+    position: fixed;
+
+    left: 78px;
+
+    min-width: 220px;
+
+    background: white;
+
+    border-radius: 12px;
+
+    padding: 10px;
+
+    box-shadow: 0 10px 30px rgba(0,0,0,.12);
+
+    z-index: 99999;
+
+    opacity: 0;
+    visibility: hidden;
+
+    transform: translateX(10px);
+
+    transition: .2s ease;
+
+    pointer-events: none;
+}
+
+.sidebar-collapsed .submenu.show-floating {
+    opacity: 1;
+    visibility: visible;
+
+    transform: translateX(0);
+
+    pointer-events: auto;
 }
 </style>
