@@ -15,11 +15,17 @@ body {
 .page-wrapper {
     padding-top: 90px;
     padding-left: 20px;
+    padding-right: 10px;
     transition: padding-left .3s ease;
 }
 
 .sidebar-collapsed .page-wrapper {
-    padding-left: 20px;
+    margin-left: 50px !important;
+    margin-right: 5px !important;
+}
+
+.page-header {
+    padding: 5px 0px;
 }
 
 
@@ -448,45 +454,10 @@ z-index: 1035;
     width: 80px;
 }
 
-/* .navbar-expand-md {
-  border-radius: 12px;
-  background: #fff;
-  box-shadow: 0 4px 14px rgba(0,0,0,.05);
-} */
-
 .nav-link {
   white-space: nowrap !important;
   color:#000 !important;
 }
-/* header.navbar {
-    position: fixed !important;
-
-    top: 10px;
-    left: 60px;
-    right: 20px;
-    height: 70px;
-
-    display: flex;
-    align-items: center;
-
-    padding: 0 16px;
-    justify-content: flex-end;
-    z-index: 9999;
-
-    border-radius: 12px;
-    background: #fff;
-
-    box-shadow: 0 4px 14px rgba(0,0,0,.05);
-}
-
-header.navbar .navbar-nav {
-    flex-wrap: nowrap !important;
-}
-header.navbar .d-none.d-md-flex {
-    align-items: center;
-    gap: 10px;
-    flex-wrap: nowrap !important;
-} */
 
 .btn,
 .btn-sm
@@ -497,7 +468,7 @@ header.navbar .d-none.d-md-flex {
     color:#000 !important;
 }
 footer {
-  margin-left: 20px;
+  margin-left: 16px !important;
 }
 
 .avatar {

@@ -71,14 +71,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
 });
 </script>
-{{-- <script>
+<script>
 document.addEventListener("mousemove", function(e) {
     document.documentElement.style.setProperty(
         "--mouse-y",
         e.clientY + "px"
     );
 });
-</script> --}}
+</script>
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
@@ -98,7 +98,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             clearTimeout(timeout);
-
+            item.classList.add('floating-active');
             const rect = item.getBoundingClientRect();
 
             // reset dulu
@@ -133,8 +133,13 @@ document.addEventListener("DOMContentLoaded", function () {
         function hideMenu() {
 
             timeout = setTimeout(() => {
+
                 submenu.classList.remove('show-floating');
-            }, 150);
+
+                // AKTIFKAN LAGI TOOLTIP
+                item.classList.remove('floating-active');
+
+            }, 0);
 
         }
 

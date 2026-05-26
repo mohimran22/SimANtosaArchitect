@@ -1,35 +1,42 @@
+@media (min-width: 992px) {
 header.navbar {
     position: fixed !important;
 
     top: 10px;
-    left: 60px;
-    right: 20px;
-    height: 70px;
 
+    left: 50px !important;
+
+    right: 20px;
+
+    height: 70px;
     display: flex;
     align-items: center;
+    justify-content: flex-end !important;
 
-    padding: 0 16px;
-    justify-content: flex-end;
+    padding: 0 20px;
+
     z-index: 9999;
 
     border-radius: 12px;
     background: #fff;
-
     box-shadow: 0 4px 14px rgba(0,0,0,.05);
 }
 
-header.navbar .navbar-nav {
-    flex-wrap: nowrap !important;
+/* saat sidebar COLLAPSED */
+.sidebar-collapsed header.navbar {
+    margin-left: 50px !important;
 }
+
 header.navbar .d-none.d-md-flex {
     align-items: center;
     gap: 10px;
-    flex-wrap: nowrap !important;
 }
+
 .topbar {
     display: grid;
     grid-template-columns: 1fr auto;
+    justify-content: flex-end !important;
+}
 }
 @media (max-width: 576px) {
     .mobile-header {

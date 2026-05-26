@@ -1,5 +1,5 @@
-@import "./custom.css";
 @import "./layout/header.css";
+@import "./custom.css";
 @import "bootstrap/dist/css/bootstrap.min.css";
 @import '@tabler/core/dist/css/tabler.min.css';
 

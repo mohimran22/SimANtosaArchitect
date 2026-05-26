@@ -299,7 +299,7 @@ document.querySelectorAll('[data-submenu]').forEach(menu => {
     content: attr(data-title);
 
     position: fixed;
-    
+    top: var(--mouse-y);
     left: 78px;
 
     transform: translateY(-50%);
@@ -352,7 +352,7 @@ document.querySelectorAll('[data-submenu]').forEach(menu => {
 
     transform: translateX(10px);
 
-    transition: .2s ease;
+    transition: none !important;
 
     pointer-events: none;
 }
@@ -362,13 +362,11 @@ document.querySelectorAll('[data-submenu]').forEach(menu => {
     visibility: visible;
     transform: translateX(0);
     pointer-events: auto;
-}
-.sidebar-collapsed .submenu.show-floating {
+
     min-width: 190px;
-    max-width: 220px;
-
+    max-width: 260px;
     padding: 10px;
-
+    overflow: hidden;
     border-radius: 10px;
 }
 
@@ -408,5 +406,8 @@ document.querySelectorAll('[data-submenu]').forEach(menu => {
 
 .sidebar-collapsed .submenu.show-floating .nav-link-title {
     font-size: 13px;
+}
+.sidebar-collapsed .floating-active > .nav-link::before {
+    display: none !important;
 }
 </style>
