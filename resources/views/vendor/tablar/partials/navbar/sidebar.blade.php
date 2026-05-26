@@ -3,6 +3,7 @@
            data-bs-theme="{{ config('tablar.layout_light_sidebar') ? 'light' : 'dark' }}"
     @endif
 >
+<div class="sidebar-backdrop"></div>
     <div class="sidebar-inner">
         {{-- <div class="sidebar-logo-wrapper">
             <h5 class="navbar-brand navbar-brand-autodark d-flex justify-content-center">
@@ -100,9 +101,33 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const rect = item.getBoundingClientRect();
 
-            submenu.style.top = rect.top + 'px';
+            // reset dulu
+            submenu.style.top = '0px';
 
             submenu.classList.add('show-floating');
+
+            // tinggi submenu
+            const submenuHeight = submenu.offsetHeight;
+
+            // posisi default
+            let top = rect.top;
+
+            // viewport
+            const viewportHeight = window.innerHeight;
+
+            // kalau kebawah keluar layar
+            if (top + submenuHeight > viewportHeight - 20) {
+
+                top = viewportHeight - submenuHeight - 20;
+
+            }
+
+            // jangan minus
+            if (top < 10) {
+                top = 10;
+            }
+
+            submenu.style.top = top + 'px';
         }
 
         function hideMenu() {
@@ -110,13 +135,12 @@ document.addEventListener("DOMContentLoaded", function () {
             timeout = setTimeout(() => {
                 submenu.classList.remove('show-floating');
             }, 150);
+
         }
 
-        // parent menu
         item.addEventListener('mouseenter', showMenu);
         item.addEventListener('mouseleave', hideMenu);
 
-        // floating submenu
         submenu.addEventListener('mouseenter', showMenu);
         submenu.addEventListener('mouseleave', hideMenu);
 
@@ -125,3 +149,51 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 </script>
 @endpush
+<style>
+@media (max-width: 1200px) {
+
+    .navbar.navbar-vertical.navbar-expand-lg {
+        width: 80px;
+    }
+
+    .page-wrapper {
+        margin-left: 80px;
+    }
+
+    .nav-link-title,
+    .logo-expand,
+    .submenu-arrow {
+        display: none !important;
+    }
+
+    .logo-collapse {
+        display: block !important;
+    }
+
+    .submenu {
+        position: fixed;
+        left: 80px;
+    }
+}
+@media (max-width: 576px) {
+
+    .navbar.navbar-vertical.navbar-expand-lg {
+
+        transform: translateX(-100%);
+        transition: .3s ease;
+
+        width: 260px !important;
+
+        z-index: 2000;
+    }
+
+    .navbar.navbar-vertical.navbar-expand-lg.mobile-open {
+        transform: translateX(0);
+    }
+
+    .page-wrapper {
+        margin-left: 0 !important;
+    }
+
+}
+</style>

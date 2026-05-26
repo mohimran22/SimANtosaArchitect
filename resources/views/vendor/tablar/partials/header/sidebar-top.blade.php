@@ -1,12 +1,10 @@
-<header class="navbar d-none d-lg-flex d-print-none">
-    <div class="topbar px-3">
+<header class="navbar d-lg-flex d-none d-print-none">
+    <div class="topbar">
         {{-- <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-menu"
                 aria-controls="navbar-menu" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button> --}}
-        <!-- Tambahkan di header.blade.php atau di layout master -->
         
-
         <div class="navbar-nav flex-row">
             <div class="d-none d-md-flex">
                 @include('tablar::partials.header.notifications')
@@ -76,8 +74,59 @@
             </div>
             
         </div>
-        <div class="collapse navbar-collapse" id="navbar-menu">
-            
-        </div>
     </div>
+</header>
+<header class="mobile-header d-flex d-lg-none">
+
+    <!-- LEFT -->
+    <div class="mobile-left">
+        <button id="mobileSidebarToggle">
+            <i class="ti ti-menu-2"></i>
+        </button>
+    </div>
+        {{-- <div class="mobile-logo">
+            <img src="{{ asset('images/logo-icon.png') }}"
+                    class="logo-collapse"
+                    alt="Logo Icon">
+        </div> --}}
+
+
+    <!-- RIGHT -->
+    <div class="mobile-right">
+
+        <!-- notification -->
+        @include('tablar::partials.header.notifications')
+
+        <!-- switch role -->
+        <div class="mobile-role-switch">
+            <form id="switchRoleFormMobile"
+                action="{{ route('switch.role') }}"
+                method="POST">
+
+                @csrf
+
+                <select name="role_id"
+                        class="form-select form-select-sm"
+                        onchange="document.getElementById('switchRoleFormMobile').submit()">
+
+                    @foreach(auth()->user()->roles as $role)
+
+                        <option value="{{ $role->id }}"
+                            {{ auth()->user()->activeRole?->id === $role->id ? 'selected' : '' }}>
+
+                            {{ $role->name }}
+
+                        </option>
+
+                    @endforeach
+
+                </select>
+
+            </form>
+        </div>
+
+        @include('tablar::partials.header.top-right')
+
+    </div>
+
 </header>

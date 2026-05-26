@@ -299,7 +299,7 @@ document.querySelectorAll('[data-submenu]').forEach(menu => {
     content: attr(data-title);
 
     position: fixed;
-
+    
     left: 78px;
 
     transform: translateY(-50%);
@@ -333,11 +333,10 @@ document.querySelectorAll('[data-submenu]').forEach(menu => {
 
 .sidebar-collapsed .submenu {
     position: fixed;
-
     left: 78px;
-
+    max-height: calc(100vh - 20px);
+    overflow-y: auto;
     min-width: 220px;
-
     background: white;
 
     border-radius: 12px;
@@ -361,9 +360,53 @@ document.querySelectorAll('[data-submenu]').forEach(menu => {
 .sidebar-collapsed .submenu.show-floating {
     opacity: 1;
     visibility: visible;
-
     transform: translateX(0);
-
     pointer-events: auto;
+}
+.sidebar-collapsed .submenu.show-floating {
+    min-width: 190px;
+    max-width: 220px;
+
+    padding: 10px;
+
+    border-radius: 10px;
+}
+
+.sidebar-collapsed .submenu.show-floating .nav {
+    padding-left: 0 !important;
+}
+
+.sidebar-collapsed .submenu.show-floating .nav-item {
+    margin: 2px 0;
+}
+
+.sidebar-collapsed .submenu.show-floating .nav-link {
+
+    justify-content: flex-start !important;
+
+    padding: 6px 8px !important;
+
+    gap: 8px;
+
+    min-height: 34px;
+
+    border-radius: 8px;
+
+    font-size: 13px;
+    font-weight: 400;
+}
+
+.sidebar-collapsed .submenu.show-floating .nav-link-icon {
+    width: 14px !important;
+    min-width: 14px !important;
+}
+
+.sidebar-collapsed .submenu.show-floating .nav-link-icon i,
+.sidebar-collapsed .submenu.show-floating .nav-link i {
+    font-size: 13px !important;
+}
+
+.sidebar-collapsed .submenu.show-floating .nav-link-title {
+    font-size: 13px;
 }
 </style>

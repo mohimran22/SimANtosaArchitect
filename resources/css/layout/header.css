@@ -1,23 +1,104 @@
-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+header.navbar {
+    position: fixed !important;
+
+    top: 10px;
+    left: 60px;
+    right: 20px;
     height: 70px;
-    padding: 0 20px;
-    background: #fff;
-    border-bottom: 1px solid #e5e5e5;
-    margin-left: 250px;
-}
 
-header .right {
     display: flex;
     align-items: center;
-    gap: 20px;
+
+    padding: 0 16px;
+    justify-content: flex-end;
+    z-index: 9999;
+
+    border-radius: 12px;
+    background: #fff;
+
+    box-shadow: 0 4px 14px rgba(0,0,0,.05);
 }
 
-header .profile {
-    display: flex;
+header.navbar .navbar-nav {
+    flex-wrap: nowrap !important;
+}
+header.navbar .d-none.d-md-flex {
     align-items: center;
     gap: 10px;
+    flex-wrap: nowrap !important;
+}
+.topbar {
+    display: grid;
+    grid-template-columns: 1fr auto;
+}
+@media (max-width: 576px) {
+    .mobile-header {
+        position: fixed;
+
+        top: 0;
+        left: 0;
+        right: 0;
+
+        height: 60px;
+
+        background: #fff;
+
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        padding: 0 12px;
+
+        z-index: 9999;
+
+        box-shadow: 0 2px 10px rgba(0,0,0,.08);
+    }
+
+    .mobile-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .mobile-right {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    #mobileSidebarToggle {
+        border: none;
+        background: transparent;
+
+        font-size: 24px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .mobile-logo {
+        position: absolute;
+
+        left: 30%;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .logo-collapse {
+        width: 36px;
+        height: 36px;
+
+        display: block;
+
+        object-fit: contain;
+    }
+
+    .mobile-role-switch select {
+        min-width: 90px;
+        font-size: 12px;
+    }
 }
 
