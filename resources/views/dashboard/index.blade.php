@@ -4,7 +4,7 @@
 
 <div class="page-body">
     <div class="container-xl dashboard-container">
-        <div id="alertCarousel" class="position-relative mb-4">
+        <div id="alertCarousel" class="position-relative">
             <div class="overflow-hidden rounded-4 shadow-sm bg-white position-relative">
                 <div class="alert-wrapper d-flex" style="width: max-content;">
                     {{-- 🔸 Alert 1 --}}
@@ -43,8 +43,8 @@
             </div>
         </div>
 
-        <div class="pt-3 pb-2 text-center">
-            <h2 class="fw-bold mb-3">
+        <div class="pt-5 pb-7 text-center">
+            <h2 class="fw-bold g-4">
                 Selamat Datang {{ auth()->user()->fullname ?? 'Admin Utama' }} di Sistem Antosa Architect
             </h2>
         </div>
@@ -80,22 +80,22 @@ document.addEventListener('DOMContentLoaded', function () {
     updateSlide();
 });
 </script>
-@endpush
+
 <style>
 .alert-wrapper {
     transition: transform 0.6s ease-in-out;
     display: flex;
 }
-
+/* ✅ Border radius halus dan jarak antar komponen */
 #alertCarousel .overflow-hidden {
     border-radius: 0.75rem;
 }
 
 .dashboard-container {
-    margin: 0;
-    padding-left: 30px !important;
+    margin: 80px 10px;
 }
 
+/* Tombol panah elegan */
 #alertCarousel button#nextAlert {
     transition: all 0.2s ease-in-out;
     z-index: 10;
@@ -105,7 +105,10 @@ document.addEventListener('DOMContentLoaded', function () {
     transform: translateY(-50%) scale(1.1);
 }
 
+/* Bayangan lembut agar floating */
 #alertCarousel .alert {
     box-shadow: inset 0 -1px 0 rgba(0,0,0,0.05);
 }
+
 </style>
+@endpush

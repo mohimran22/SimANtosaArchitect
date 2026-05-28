@@ -1,4 +1,4 @@
-<header class="navbar d-lg-flex d-none d-print-none">
+<header class="navbar d-lg-flex d-none d-print-none mb-4">
     <div class="topbar">
         {{-- <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-menu"
                 aria-controls="navbar-menu" aria-expanded="false" aria-label="Toggle navigation">
@@ -120,15 +120,15 @@
 
     </div>
 
-</header> --}}
-{{-- <div class="sidebar-overlay" id="sidebarOverlay"></div>
+</header>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
 
 
 <div class="sidebar-menu-wrapper" id="sidebarmobile-menu">
     <ul class="navbar-nav pt-lg-3">
         @include('partials.menu_item', ['menus' => $menus ?? []])
     </ul>
-</div> --}}
+</div>
 @push('js')
 <script>
 document.addEventListener("DOMContentLoaded", function(){
@@ -159,4 +159,4 @@ document.addEventListener("DOMContentLoaded", function(){
 
 });
 </script>
-@endpush
+@endpush --}}
