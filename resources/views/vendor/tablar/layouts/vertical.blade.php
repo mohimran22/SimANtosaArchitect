@@ -4,7 +4,6 @@
 @section('body')
     <body>
         <div class="page">
-            <!-- Sidebar -->
             @include('tablar::partials.navbar.sidebar')
             @include('tablar::partials.header.sidebar-top') 
             <div class="page-wrapper">

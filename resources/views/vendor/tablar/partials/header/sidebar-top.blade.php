@@ -76,7 +76,7 @@
         </div>
     </div>
 </header>
-<header class="mobile-header d-flex d-lg-none">
+{{-- <header class="mobile-header d-flex d-lg-none">
 
     <!-- LEFT -->
     <div class="mobile-left">
@@ -84,17 +84,8 @@
             <i class="ti ti-menu-2"></i>
         </button>
     </div>
-        {{-- <div class="mobile-logo">
-            <img src="{{ asset('images/logo-icon.png') }}"
-                    class="logo-collapse"
-                    alt="Logo Icon">
-        </div> --}}
-
-
-    <!-- RIGHT -->
     <div class="mobile-right">
 
-        <!-- notification -->
         @include('tablar::partials.header.notifications')
 
         <!-- switch role -->
@@ -129,20 +120,21 @@
 
     </div>
 
-</header>
-<div class="sidebar-overlay" id="sidebarOverlay"></div>
+</header> --}}
+{{-- <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-<!-- SIDEBAR -->
-<div class="sidebar-menu-wrapper" id="sidebar-menu">
+
+<div class="sidebar-menu-wrapper" id="sidebarmobile-menu">
     <ul class="navbar-nav pt-lg-3">
         @include('partials.menu_item', ['menus' => $menus ?? []])
     </ul>
-</div>
+</div> --}}
+@push('js')
 <script>
 document.addEventListener("DOMContentLoaded", function(){
 
     const toggleBtn = document.getElementById("mobileSidebarToggle");
-    const sidebar = document.getElementById("sidebar-menu");
+    const sidebar = document.getElementById("sidebarmobile-menu");
     const overlay = document.getElementById("sidebarOverlay");
 
     if(toggleBtn && sidebar && overlay){
@@ -167,3 +159,4 @@ document.addEventListener("DOMContentLoaded", function(){
 
 });
 </script>
+@endpush

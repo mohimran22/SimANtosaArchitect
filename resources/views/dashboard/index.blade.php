@@ -80,25 +80,22 @@ document.addEventListener('DOMContentLoaded', function () {
     updateSlide();
 });
 </script>
-
+@endpush
 <style>
 .alert-wrapper {
     transition: transform 0.6s ease-in-out;
     display: flex;
 }
 
-/* ✅ Border radius halus dan jarak antar komponen */
 #alertCarousel .overflow-hidden {
     border-radius: 0.75rem;
 }
 
-/* ✅ Tambah jarak dari sidebar kiri via container-xl bawaan Tablar */
 .dashboard-container {
-    margin-top: 16px;
+    margin: 0;
     padding-left: 30px !important;
 }
 
-/* Tombol panah elegan */
 #alertCarousel button#nextAlert {
     transition: all 0.2s ease-in-out;
     z-index: 10;
@@ -108,9 +105,7 @@ document.addEventListener('DOMContentLoaded', function () {
     transform: translateY(-50%) scale(1.1);
 }
 
-/* Bayangan lembut agar floating */
 #alertCarousel .alert {
     box-shadow: inset 0 -1px 0 rgba(0,0,0,0.05);
 }
 </style>
-@endpush

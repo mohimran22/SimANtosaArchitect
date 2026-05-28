@@ -23,6 +23,7 @@ body {
 .page-header {
     padding: 5px 0px !important;
 }
+
 /* saat sidebar collapsed */
 .sidebar-collapsed .page-wrapper {
     padding-left: 80px;
