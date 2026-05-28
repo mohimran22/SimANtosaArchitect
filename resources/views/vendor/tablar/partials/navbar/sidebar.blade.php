@@ -3,7 +3,6 @@
            data-bs-theme="{{ config('tablar.layout_light_sidebar') ? 'light' : 'dark' }}"
     @endif
 >
-<div class="sidebar-backdrop"></div>
     <div class="sidebar-inner">
         {{-- <div class="sidebar-logo-wrapper">
             <h5 class="navbar-brand navbar-brand-autodark d-flex justify-content-center">
@@ -139,7 +138,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 // AKTIFKAN LAGI TOOLTIP
                 item.classList.remove('floating-active');
 
-            }, 0);
+            }, 20);
 
         }
 

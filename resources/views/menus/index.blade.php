@@ -4,7 +4,7 @@
 
 <div class="page-header d-print-none">
     <div class="container-xl">
-        <div class="row g-2 align-items-center">
+        <div class="row align-items-center">
             <div class="col-12 col-md-auto ms-auto d-print-none">
                 <div class="btn-list">
                     {{-- @can('tambah data karyawan')        --}}

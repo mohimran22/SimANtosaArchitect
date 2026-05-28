@@ -295,7 +295,7 @@ document.querySelectorAll('[data-submenu]').forEach(menu => {
     position: relative;
 }
 
-.sidebar-collapsed .nav-link::before {
+.sidebar-collapsed .navbar-nav > .nav-item > .nav-link::before {
     content: attr(data-title);
 
     position: fixed;
@@ -323,7 +323,7 @@ document.querySelectorAll('[data-submenu]').forEach(menu => {
     pointer-events: none;
 }
 
-.sidebar-collapsed .nav-link:hover::before {
+.sidebar-collapsed .navbar-nav > .nav-item > .nav-link:hover::before {
     opacity: 1;
     visibility: visible;
 }
@@ -407,7 +407,7 @@ document.querySelectorAll('[data-submenu]').forEach(menu => {
 .sidebar-collapsed .submenu.show-floating .nav-link-title {
     font-size: 13px;
 }
-.sidebar-collapsed .floating-active > .nav-link::before {
+.sidebar-collapsed .nav-item.floating-active > .nav-link::before {
     display: none !important;
 }
 </style>

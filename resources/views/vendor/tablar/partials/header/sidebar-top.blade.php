@@ -130,3 +130,40 @@
     </div>
 
 </header>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- SIDEBAR -->
+<div class="sidebar-menu-wrapper" id="sidebar-menu">
+    <ul class="navbar-nav pt-lg-3">
+        @include('partials.menu_item', ['menus' => $menus ?? []])
+    </ul>
+</div>
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+
+    const toggleBtn = document.getElementById("mobileSidebarToggle");
+    const sidebar = document.getElementById("sidebar-menu");
+    const overlay = document.getElementById("sidebarOverlay");
+
+    if(toggleBtn && sidebar && overlay){
+
+        // buka/tutup sidebar
+        toggleBtn.addEventListener("click", function(){
+
+            sidebar.classList.toggle("show-sidebar");
+            overlay.classList.toggle("show");
+
+        });
+
+        // klik overlay = tutup sidebar
+        overlay.addEventListener("click", function(){
+
+            sidebar.classList.remove("show-sidebar");
+            overlay.classList.remove("show");
+
+        });
+
+    }
+
+});
+</script>
