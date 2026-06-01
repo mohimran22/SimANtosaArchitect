@@ -50,7 +50,7 @@ Route::get('/', function () {
 });
 
 require __DIR__.'/auth.php';
-Auth::routes();
+// Auth::routes();
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
@@ -674,7 +674,7 @@ Route::middleware(['auth', 'permission:kelola akun'])->group(function () {
 // });
 Route::middleware(['auth'])->group(function () {
     // sinkronisasi lisensi aktif dari navbar (POST dari form/navbar)
-    Route::post('/active-license', [LicenseSessionController::class, 'set'])->name('active-license.set');
+    // Route::post('/active-license', [LicenseSessionController::class, 'set'])->name('active-license.set');
 
     // data untuk form jurnal
     Route::get('/get-accounts', [AjaxController::class, 'getAccounts']);

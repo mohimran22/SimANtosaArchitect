@@ -27,6 +27,7 @@ RUN chown -R www-data:www-data /var/www \
 
 EXPOSE 8080
 COPY docker/php.ini /usr/local/etc/php/conf.d/uploads.ini
-CMD php artisan optimize && \
-    php artisan storage:link || true && \
+
+CMD php artisan optimize || true; \
+    php artisan storage:link || true; \
     php artisan serve --host=0.0.0.0 --port=8080
