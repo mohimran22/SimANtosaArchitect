@@ -1,4 +1,4 @@
-<header class="navbar d-lg-flex d-print-none">
+<header class="navbar d-lg-flex d-none d-print-none">
     <div class="topbar">
         {{-- <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-menu"
                 aria-controls="navbar-menu" aria-expanded="false" aria-label="Toggle navigation">
@@ -6,7 +6,7 @@
         </button> --}}
         
         <div class="navbar-nav flex-row">
-            <div class="d-lg-flex">
+                <div class="d-flex align-items-center">
                 @include('tablar::partials.header.notifications')
                 <div class="nav-item dropdown me-2">
                     <form id="switchRoleForm" action="{{ route('switch.role') }}" method="POST" class="px-3 mb-2">
@@ -122,29 +122,33 @@
 
 </header>
 {{-- <div class="sidebar-overlay" id="sidebarOverlay"></div>
-
+<div class="sidebar-menu-wrapper" id="sidebar-mobile-menu">
     <ul class="navbar-nav pt-lg-3">
         @include('partials.menu_item', ['menus' => $menus ?? []])
-    </ul> --}}
+    </ul>
+</div> --}}
 @push('js')
 <script>
-document.addEventListener("DOMContentLoaded", function(){
 
-    const toggleBtn = document.getElementById("mobileSidebarToggle");
-    const sidebar = document.getElementById("sidebarmobile-menu");
-    const overlay = document.getElementById("sidebarOverlay");
+document.addEventListener("DOMContentLoaded", function () {
 
-    if(toggleBtn && sidebar && overlay){
+    const btn = document.getElementById("mobileSidebarToggle");
+    const sidebar = document.querySelector(".sidebar-menu-wrapper");
+    const overlay = document.querySelector(".sidebar-overlay");
 
-        // buka/tutup sidebar
-        toggleBtn.addEventListener("click", function(){
+    if(btn){
+
+        btn.addEventListener("click", function () {
 
             sidebar.classList.toggle("show-sidebar");
             overlay.classList.toggle("show");
 
         });
 
-        // klik overlay = tutup sidebar
+    }
+
+    if(overlay){
+
         overlay.addEventListener("click", function(){
 
             sidebar.classList.remove("show-sidebar");

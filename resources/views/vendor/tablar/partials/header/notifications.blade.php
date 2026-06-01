@@ -1,5 +1,5 @@
 @auth
-    <div class="nav-item dropdown d-none d-md-flex me-3">
+    <div class="nav-item dropdown d-md-flex me-3">
         <a href="#" class="nav-link px-0" data-bs-toggle="dropdown" tabindex="-1"
            aria-label="Show notifications">
 

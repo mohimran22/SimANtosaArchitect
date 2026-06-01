@@ -469,6 +469,7 @@ document.querySelectorAll('[data-submenu]').forEach(menu => {
         max-height: calc(100vh - 40px);
 
         overflow-y: auto;
+        z-index: 99999;
     }
 
     .sidebar-collapsed .submenu.show-floating{

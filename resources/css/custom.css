@@ -41,7 +41,7 @@ body {
 @media (max-width: 1200px) {
 
     .page-wrapper {
-        padding-left: 90px;
+        padding-left: 80px;
         padding-right: 20px;
         margin-left: 0 !important;
         margin-right: 0 !important;
@@ -152,7 +152,7 @@ table.dataTable tbody td {
 .dt-search, .dt-length {
     margin: 10px 12px;
     position: relative;
-    z-index: 1 !important;
+    z-index: 1;
 }
 
 button.bg-transparent {
@@ -775,7 +775,7 @@ col.just-hidden {
     z-index: 60;
 }
 .d-none {
-    display: none !important;
+    display: none;
 }
 .week-foot.d-none,
 .just-foot.d-none {

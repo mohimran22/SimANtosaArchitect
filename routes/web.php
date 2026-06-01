@@ -51,7 +51,9 @@ Route::get('/', function () {
 
 require __DIR__.'/auth.php';
 // Auth::routes();
-
+Route::get('/home', function () {
+    return redirect('/dashboard');
+})->name('home');
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
