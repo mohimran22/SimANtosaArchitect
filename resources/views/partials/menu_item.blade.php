@@ -299,7 +299,7 @@ document.querySelectorAll('[data-submenu]').forEach(menu => {
     content: attr(data-title);
 
     position: fixed;
-    top: var(--mouse-y);
+    top: 50%;
     left: 78px;
 
     transform: translateY(-50%);
@@ -331,12 +331,14 @@ document.querySelectorAll('[data-submenu]').forEach(menu => {
     display: none !important;
 }
 
-.sidebar-collapsed .submenu {
+/* .sidebar-collapsed .submenu {
     position: fixed;
     left: 78px;
     max-height: calc(100vh - 20px);
     overflow-y: auto;
+    overflow-x: hidden;
     min-width: 220px;
+    max-width: 260px;
     background: white;
 
     border-radius: 12px;
@@ -345,7 +347,7 @@ document.querySelectorAll('[data-submenu]').forEach(menu => {
 
     box-shadow: 0 10px 30px rgba(0,0,0,.12);
 
-    z-index: 99999;
+    z-index: 1050;
 
     opacity: 0;
     visibility: hidden;
@@ -355,9 +357,33 @@ document.querySelectorAll('[data-submenu]').forEach(menu => {
     transition: none !important;
 
     pointer-events: none;
+} */
+.sidebar-collapsed .submenu {
+    position: fixed;
+    top: 0;
+    left: 78px;
+
+    min-width: 220px;
+    max-width: 260px;
+    width: 220px;
+
+    background: #fff;
+    border-radius: 12px;
+    padding: 10px;
+
+    box-shadow: 0 10px 30px rgba(0,0,0,.12);
+
+    z-index: 99999;
+
+    opacity: 0;
+    visibility: hidden;
+
+    pointer-events: none;
+
+    transition: opacity .15s ease;
 }
 
-.sidebar-collapsed .submenu.show-floating {
+/* .sidebar-collapsed .submenu.show-floating {
     opacity: 1;
     visibility: visible;
     transform: translateX(0);
@@ -366,8 +392,19 @@ document.querySelectorAll('[data-submenu]').forEach(menu => {
     min-width: 190px;
     max-width: 260px;
     padding: 10px;
-    overflow: hidden;
     border-radius: 10px;
+    overflow-y: auto;
+    max-height: calc(100vh - 20px);
+} */
+.sidebar-collapsed .submenu.show-floating {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    max-height: calc(100vh - 20px);
 }
 
 .sidebar-collapsed .submenu.show-floating .nav {
@@ -409,5 +446,40 @@ document.querySelectorAll('[data-submenu]').forEach(menu => {
 }
 .sidebar-collapsed .nav-item.floating-active > .nav-link::before {
     display: none !important;
+}
+@media (max-width: 1200px){
+
+    .sidebar-collapsed .submenu{
+
+        position: fixed;
+
+        left: 72px !important;
+
+        min-width: 200px;
+        max-width: 220px;
+
+        width: 220px;
+
+        border-radius: 10px;
+
+        padding: 8px;
+
+        transform: none !important;
+
+        max-height: calc(100vh - 40px);
+
+        overflow-y: auto;
+    }
+
+    .sidebar-collapsed .submenu.show-floating{
+        transform: none !important;
+    }
+
+    /* kecilin item */
+    .sidebar-collapsed .submenu .nav-link{
+        padding: 6px 8px !important;
+        font-size: 13px;
+    }
+
 }
 </style>

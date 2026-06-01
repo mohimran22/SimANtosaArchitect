@@ -26,7 +26,7 @@ header.navbar {
     margin-left: 50px !important;
 }
 
-header.navbar .d-none.d-md-flex {
+header.navbar .d-none.d-lg-flex {
     align-items: center;
     gap: 10px;
 }
@@ -35,6 +35,13 @@ header.navbar .d-none.d-md-flex {
     display: grid;
     grid-template-columns: 1fr auto;
     justify-content: flex-end !important;
+}
+
+@media (max-width: 1200px) {
+    header.navbar {
+        margin-left: 60px !important;
+        border-radius: 12px;
+    }
 }
 
 @media (max-width: 576px) {

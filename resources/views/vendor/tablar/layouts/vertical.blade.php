@@ -7,12 +7,9 @@
             @include('tablar::partials.navbar.sidebar')
             @include('tablar::partials.header.sidebar-top') 
             <div class="page-wrapper">
-               
-                <!-- Page Content -->
                 @hasSection('content')
                     @yield('content')
                 @endif
-                <!-- Page Error -->
                 @include('tablar::error')
                 @include('tablar::partials.footer.bottom')
                 

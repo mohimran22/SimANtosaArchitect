@@ -1,4 +1,4 @@
-<header class="navbar d-lg-flex d-none d-print-none mb-4">
+<header class="navbar d-lg-flex d-print-none">
     <div class="topbar">
         {{-- <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-menu"
                 aria-controls="navbar-menu" aria-expanded="false" aria-label="Toggle navigation">
@@ -6,7 +6,7 @@
         </button> --}}
         
         <div class="navbar-nav flex-row">
-            <div class="d-none d-md-flex">
+            <div class="d-lg-flex">
                 @include('tablar::partials.header.notifications')
                 <div class="nav-item dropdown me-2">
                     <form id="switchRoleForm" action="{{ route('switch.role') }}" method="POST" class="px-3 mb-2">
@@ -76,7 +76,7 @@
         </div>
     </div>
 </header>
-{{-- <header class="mobile-header d-flex d-lg-none">
+<header class="mobile-header d-flex d-lg-none">
 
     <!-- LEFT -->
     <div class="mobile-left">
@@ -121,14 +121,11 @@
     </div>
 
 </header>
-<div class="sidebar-overlay" id="sidebarOverlay"></div>
+{{-- <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-
-<div class="sidebar-menu-wrapper" id="sidebarmobile-menu">
     <ul class="navbar-nav pt-lg-3">
         @include('partials.menu_item', ['menus' => $menus ?? []])
-    </ul>
-</div>
+    </ul> --}}
 @push('js')
 <script>
 document.addEventListener("DOMContentLoaded", function(){
@@ -159,4 +156,4 @@ document.addEventListener("DOMContentLoaded", function(){
 
 });
 </script>
-@endpush --}}
+@endpush

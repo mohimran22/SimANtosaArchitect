@@ -21,7 +21,7 @@
                     alt="Logo Icon">
 
             </div>
-            <button id="sidebarToggle" class="sidebar-toggle-btn">
+            <button id="sidebarToggle" class="sidebar-toggle-btn d-none d-lg-flex">
                 <i class="ti ti-layout-sidebar-left-collapse"></i>
             </button>
         </div>
@@ -126,7 +126,16 @@ document.addEventListener("DOMContentLoaded", function () {
                 top = 10;
             }
 
-            submenu.style.top = top + 'px';
+            // submenu.style.top = top + 'px';
+            submenu.style.top = `${top}px`;
+            submenu.style.left = `${rect.right + 8}px`;
+
+            const submenuWidth = submenu.offsetWidth;
+
+            if(rect.right + submenuWidth > window.innerWidth){
+                submenu.style.left =
+                    (window.innerWidth - submenuWidth - 10) + 'px';
+            }
         }
 
         function hideMenu() {
@@ -149,6 +158,30 @@ document.addEventListener("DOMContentLoaded", function () {
         submenu.addEventListener('mouseleave', hideMenu);
 
     });
+
+});
+</script>
+<script>
+document.addEventListener('click', function(e){
+
+    // klik area luar sidebar
+    if(!e.target.closest('.navbar-vertical')){
+
+        document.querySelectorAll('.submenu.show-floating')
+            .forEach(el => {
+
+                el.classList.remove('show-floating');
+
+            });
+
+        document.querySelectorAll('.floating-active')
+            .forEach(el => {
+
+                el.classList.remove('floating-active');
+
+            });
+
+    }
 
 });
 </script>
@@ -178,6 +211,9 @@ document.addEventListener("DOMContentLoaded", function () {
         position: fixed;
         left: 80px;
     }
+    .d-none {
+        display: none !important;
+    }
 }
 @media (max-width: 576px) {
 
@@ -188,7 +224,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         width: 260px !important;
 
-        z-index: 2000;
+        z-index: 3;
     }
 
     .navbar.navbar-vertical.navbar-expand-lg.mobile-open {

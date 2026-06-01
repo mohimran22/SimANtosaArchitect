@@ -7,33 +7,23 @@
         <div class="row align-items-center">
             <div class="col-12 col-md-auto ms-auto d-print-none">
                 <div class="btn-list">
-                    {{-- @can('tambah data karyawan')        --}}
-                    <span class="d-none d-sm-inline">
-                        <a href="{{ route('menus.create') }}"
-                        class="btn btn-dark">
 
-                            <svg xmlns="http://www.w3.org/2000/svg"
-                                class="icon"
-                                width="24"
-                                height="24"
-                                viewBox="0 0 24 24"
-                                stroke-width="2"
-                                stroke="currentColor"
-                                fill="none"
-                                stroke-linecap="round"
-                                stroke-linejoin="round">
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                                <line x1="12" y1="5" x2="12" y2="19"/>
-                                <line x1="5" y1="12" x2="19" y2="12"/>
-                            </svg>
+                    @can('tambah data menu')
+                        <span>
+                            <a href="{{ route('menus.create') }}" class="btn btn-dark">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24"
+                                    viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                                    stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                                    <line x1="12" y1="5" x2="12" y2="19"/>
+                                    <line x1="5" y1="12" x2="19" y2="12"/>
+                                </svg>
 
-                            <span class="d-none d-sm-inline">
-                                Tambah Data Menu
-                            </span>
-                        </a>
-                    </span>
-                    {{-- @endcan --}}
-                    
+                                Tambah Menu Baru
+                            </a>
+                        </span>
+                    @endcan
+
                 </div>
             </div>
         </div>
@@ -76,9 +66,118 @@
         </div>
     </div>
 </div>
-</div>
 @endsection
 @push('js')
+    <script>
+        $(function() {
+            const table = $('#menuTable').DataTable({
+                serverSide: true,
+                processing: true,
+                ajax: '{{ route("menus.index") }}',
+
+                columns: [
+                    { data: 'DT_RowIndex', orderable:false, searchable:false },
+                    { data: 'text' },
+                    { data: 'url' },
+                    { data: 'parent_name' },
+                    { data: 'order' },
+                    { data: 'active_badge', orderable:false, searchable:false },
+                    { data: 'permission_name' },
+                    { data: 'actions', orderable:false, searchable:false },
+                ],
+                language: {
+                    search: "",
+                    searchPlaceholder: "Cari menu...",
+                    lengthMenu: "Tampilkan _MENU_ data",
+                    info: "Menampilkan _START_ - _END_ dari _TOTAL_ data",
+                    infoEmpty: "Tidak ada data",
+                    infoFiltered: "(difilter dari _MAX_ total data)",
+                    zeroRecords: "Data tidak ditemukan",
+                    paginate: {
+                        first: "Awal",
+                        last: "Akhir",
+                        next: "›",
+                        previous: "‹"
+                    }
+                },
+
+                initComplete: function () {
+                    const input = $('.dt-search input');
+                    input.removeClass('form-control-sm')
+                        .addClass('form-control');
+                }
+            });
+
+            // Delete user functionally
+            $('table').on('click', '.delete-menu', function () {
+            const menuId = $(this).data('id');
+
+            Swal.fire({
+            title: 'Yakin ingin menghapus?',
+            text: "Data akan hilang secara permanen.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Ya, hapus!',
+            cancelButtonText: 'Batal'
+
+            }).then((result) => {
+
+                if (result.isConfirmed) {
+                    $.ajax({
+
+                        url: `/menus/${menuId}`,
+                        method: 'DELETE',
+                        data: {
+                            _token: '{{ csrf_token() }}',
+                        },
+
+                        success: function (response) {
+                            if (response.status === 'success') {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Berhasil!',
+                                    text: 'User telah dihapus.',
+                                    timer: 2000,
+                                    showConfirmButton: false
+                            });
+
+                        table.ajax.reload(null, false); // refresh datatable
+                        } else {
+
+                            Swal.fire('Gagal', response.message || 'Tidak bisa menghapus data.', 'error');
+                        }
+                        },
+
+                    error: function () {
+
+                    Swal.fire('Error', 'Terjadi kesalahan saat menghapus.', 'error');
+                    }
+
+                    });
+                }
+            });
+            });
+
+
+           
+        });
+    </script>
+
+    @if (session('success'))
+    <script>
+        Swal.fire({
+            icon: 'success',
+            title: 'Sukses!',
+            text: '{{ session('success') }}',
+            timer: 2000,
+            showConfirmButton: false
+        });
+    </script>
+    @endif
+@endpush
+{{-- @push('js')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
@@ -122,4 +221,4 @@ $('#menuTable').DataTable({
 
 });
 </script>
-@endpush
+@endpush --}}

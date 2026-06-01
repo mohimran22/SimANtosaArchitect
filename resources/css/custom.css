@@ -1,7 +1,3 @@
-input, select, textarea, button {
-    font-family: 'Poppins', sans-serif !important;
-    font-weight: 400 !important;
-}
 body {
   font-family: 'Poppins', sans-serif !important;
   font-weight: 400 !important;
@@ -15,30 +11,61 @@ body {
     padding-right: 0 !important;
     padding-left: 0 !important;
     margin-left: 0 !important;
+    min-height: 100vh;
 }
 
 .page-wrapper {
+    min-height: 100vh;
+    display: flex;
+    margin-left: 260px;
+    flex-direction: column;
     padding: 20px 20px 20px 16px;
     transition: all .3s ease;
+}
+.page-body {
+    flex: 1;
 }
 .page-header {
     padding: 70px 5px 0px;
 }
 
 .sidebar-collapsed .page-wrapper {
-    padding-left: 70px;
+    padding-left: 80px;
     padding-right: 18px;
     margin-left: 0 !important;
     margin-right: 0 !important;
 }
-
 .nav-link-title {
     transition: opacity 0.2s ease;
 }
+@media (max-width: 1200px) {
 
-.page-title {
+    .page-wrapper {
+        padding-left: 90px;
+        padding-right: 20px;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+}
+
+@media (max-width: 576px) {
+
+    .page-wrapper {
+        padding: 12px;
+    }
+
+    .page-header {
+        padding-top: 70px;
+    }
+
+    .container-xl {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+}
+/* .page-title {
   padding-left: 20px;
-} 
+}  */
 
 label.required::after {
   content: " *";
@@ -91,8 +118,8 @@ table.dataTable .badge {
 /* ===== Length Select ===== */
 .dt-length select {
     height: 44px !important;
-    padding: 6px 10px !important;
-    border-radius: 10px !important;
+    padding: 6px 12px !important;
+    border-radius: 12px !important;
     font-size: 16px !important;
 }
 
@@ -117,8 +144,6 @@ table.dataTable tbody td {
     color: #fff !important;
 }
 
-
-/* ===== Info Text ===== */
 .dt-info {
     font-size: 16px;
     margin: 10px 12px;
@@ -126,6 +151,8 @@ table.dataTable tbody td {
 
 .dt-search, .dt-length {
     margin: 10px 12px;
+    position: relative;
+    z-index: 1 !important;
 }
 
 button.bg-transparent {
@@ -468,17 +495,20 @@ z-index: 1035;
     color:#000 !important;
 }
 .footer.footer-transparent {
-    padding-left: 260px;
-    padding-right: 16px;
-    max-width: 100%;
+    margin-top: auto;
+    padding: 16px 10px;
+}
+/* .footer.footer-transparent {
+    margin-top: auto;
+    padding: 16px;
     transition: all .3s ease;
 }
 
-/* Saat sidebar collapse */
+
 .sidebar-collapsed .footer {
     padding-left: 80px;
     padding-right: 18px;
-}
+} */
 
 .avatar {
     display: inline-block;
@@ -663,7 +693,6 @@ col.just-hidden {
 
 .table-responsive {
     overflow-x: auto;
-    position: relative;
 }
 
 /* tabel utama */
@@ -752,7 +781,6 @@ col.just-hidden {
 .just-foot.d-none {
     display: none !important;
 }
-/* benar-benar menghapus kolom dari layout */
 
 .table-warning .badge.bg-warning {
     background-color: #ffca2c; /* lebih pekat dari cell */
@@ -928,7 +956,6 @@ cursor:pointer;
 
 .viewer-prev{ left:20px }
 .viewer-next{ right:20px }
-/* Hilangkan spinner biar lebih rapi */
 input[type=number]::-webkit-inner-spin-button,
 input[type=number]::-webkit-outer-spin-button {
     -webkit-appearance: none;
