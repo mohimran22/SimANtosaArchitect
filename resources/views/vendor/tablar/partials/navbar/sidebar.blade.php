@@ -139,22 +139,23 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         function hideMenu() {
-
+            console.log('HIDE');
             timeout = setTimeout(() => {
 
                 submenu.classList.remove('show-floating');
-
-                // AKTIFKAN LAGI TOOLTIP
                 item.classList.remove('floating-active');
 
-            }, 20);
+            }, 200);
 
         }
-
         item.addEventListener('mouseenter', showMenu);
+
+        submenu.addEventListener('mouseenter', () => {
+            clearTimeout(timeout);
+        });
+
         item.addEventListener('mouseleave', hideMenu);
 
-        submenu.addEventListener('mouseenter', showMenu);
         submenu.addEventListener('mouseleave', hideMenu);
 
     });

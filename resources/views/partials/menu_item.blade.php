@@ -447,7 +447,7 @@ document.querySelectorAll('[data-submenu]').forEach(menu => {
 .sidebar-collapsed .nav-item.floating-active > .nav-link::before {
     display: none !important;
 }
-@media (max-width: 1200px){
+@media (min-width: 992px){
 
     .sidebar-collapsed .submenu{
 

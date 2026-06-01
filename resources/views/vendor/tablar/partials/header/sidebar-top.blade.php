@@ -121,33 +121,32 @@
     </div>
 
 </header>
-{{-- <div class="sidebar-overlay" id="sidebarOverlay"></div>
-<div class="sidebar-menu-wrapper" id="sidebar-mobile-menu">
-    <ul class="navbar-nav pt-lg-3">
-        @include('partials.menu_item', ['menus' => $menus ?? []])
-    </ul>
-</div> --}}
+<div class="sidebar-overlay"></div>
 @push('js')
-<script>
+    
 
+<script>
 document.addEventListener("DOMContentLoaded", function () {
 
     const btn = document.getElementById("mobileSidebarToggle");
-    const sidebar = document.querySelector(".sidebar-menu-wrapper");
+    const sidebar = document.querySelector(".navbar-vertical");
     const overlay = document.querySelector(".sidebar-overlay");
 
-    if(btn){
+    if(btn && sidebar){
 
-        btn.addEventListener("click", function () {
+        btn?.addEventListener("click", function () {
 
             sidebar.classList.toggle("show-sidebar");
-            overlay.classList.toggle("show");
+            console.log(sidebar.className);
+            if(overlay){
+                overlay.classList.toggle("show");
+            }
 
         });
 
     }
 
-    if(overlay){
+    if(overlay && sidebar){
 
         overlay.addEventListener("click", function(){
 

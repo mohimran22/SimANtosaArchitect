@@ -63,7 +63,7 @@ header.navbar .d-flex {
         align-items: center;
         justify-content: space-between;
         padding: 0 12px;
-        z-index: 9999;
+        z-index: 1060;
         box-shadow: 0 2px 10px rgba(0,0,0,.08);
     }
 
@@ -113,19 +113,37 @@ header.navbar .d-flex {
         min-width: 90px;
         font-size: 12px;
     }
+    .navbar-vertical{
+        position: fixed !important;
+        top: 0;
+        left: 0 !important;
 
-    .sidebar-menu-wrapper.show-sidebar{
-        left: 0;
+        width: 280px !important;
+        height: 100vh !important;
+        transform: translateX(-100%) !important;
+        background: #fff !important;
+        z-index: 1050 !important;
+
+        transition: .3s ease !important;
+
+        overflow-y: auto;
     }
 
-    /* OVERLAY */
+    .navbar-vertical.show-sidebar{
+        transform: translateX(0) !important;
+    }
+
     .sidebar-overlay{
         position: fixed;
         inset: 0;
+
         background: rgba(0,0,0,.4);
+
         opacity: 0;
         visibility: hidden;
-        transition: .3s;
+
+        transition: .3s ease;
+
         z-index: 1040;
     }
 
@@ -133,5 +151,7 @@ header.navbar .d-flex {
         opacity: 1;
         visibility: visible;
     }
-
+    .navbar-vertical .navbar-nav.flex-row.d-lg-none{
+        display: none !important;
+    }
 }
