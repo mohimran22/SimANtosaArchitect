@@ -29,6 +29,29 @@
                             : $project?->finalBuild;
                     
                     $ReadOnly = !$canEdit;
+                        $offerTitle =
+                            $project->project_type == 1
+                                ? '4. Penawaran Jasa Desain'
+                                : ($project->project_type == 2
+                                    ? '4. Penawaran Jasa RAB'
+                                    : '4. Penawaran Jasa Build');
+                        $contractTitle = '5. Draft Kontrak Pelaksanaan Pekerjaan';
+                            $invoiceTitle =
+                                $project->project_type == 1
+                                    ? '6. Invoice Pembayaran Desain (DP)'
+                                    : ($project->project_type == 2
+                                        ? '5. Invoice Jasa Pembuatan RAB'
+                                        : '6. Invoice Pembayaran Tahap 1');
+                            $workTitle =
+                                $project->project_type == 1
+                                    ? '7. Form Pengerjaan'
+                                    : ($project->project_type == 2
+                                        ? '6. Form Pembuatan RAB'
+                                        : '7. Form Kemajuan Pekerjaan');
+                            $finalTitle =
+                                $project->project_type == 1
+                                    ? '9. Hasil Proyek'
+                                    : '8. Serah Terima';
                 @endphp
             @if($activeStep == 1)
             <div id="project" class="step-section">
@@ -41,10 +64,8 @@
             </div>
             @endif
             @if($activeStep >= 2)
-                <div class="card shadow-sm border-0 mb-4">
-                    <div class="card-body px-5 py-4">
-                        <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h3 class="fw-bold m-0">Proyek</h3>
+                    <x-collapse-card title="Proyek" target="project-body">
+                        <x-slot:actions>
                             @can('ubah data proyek')
                             <div class="btn-group">
                                 <button type="button" id="btn-edit-project"
@@ -52,24 +73,16 @@
                                     title="Edit Data">
                                     <i class="ti ti-edit"></i>
                                 </button>
-                                {{-- 
-                                <a href="{{ route('projects.pdf', $project->id) }}"
-                                class="btn btn-sm btn-dark"
-                                target="_blank"
-                                title="Download PDF">
-                                    <i class="ti ti-download"></i>
-                                </a> --}}
                             </div>
                             @endcan
-                        </div>
+                        </x-slot:actions>
                         <div id="project-view">
                             @include('projects.details.project')
                         </div>
                         <div id="project-edit" style="display:none;">
                             @include('projects.edit.project-form')    
                         </div>
-                    </div>
-                </div>
+                    </x-collapse-card>
 
                 @if($activeStep == 2)
                 <div id="form-konsultasi" class="step-section">
@@ -84,10 +97,8 @@
             @endif
             @if($activeStep >= 3)   
             <div id="detail-konsultasi" class="step-section">      
-                <div class="card shadow-sm border-0 mb-4">
-                    <div class="card-body px-5 py-4">
-                        <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h3 class="fw-bold m-0">1. Tahap Konsultasi</h3>
+                <x-collapse-card title="1. Tahap Konsultasi" target="consultation-body">
+                        <x-slot:actions>
                             @can('ubah data proyek')
                             <div class="btn-group">
                                 <button type="button" id="btn-edit-consultation" 
@@ -95,30 +106,20 @@
                                     title="Edit Data">
                                     <i class="ti ti-edit"></i>
                                 </button>
-
-                                {{-- <a href="{{ route('projects.pdf', $project->id) }}"
-                                    class="btn btn-sm btn-dark"
-                                    target="_blank"
-                                    title="Download PDF">
-                                    <i class="ti ti-download"></i>
-                                </a> --}}
                             </div>
                             @endcan
-                        </div>
+                        </x-slot:actions>
                         <div id="consultation-view">
                             @include('projects.details.consultation')
                         </div>
                         <div id="consultation-edit" style="display:none;">
                             @include('projects.edit.consultation-form')    
                         </div>
-                    </div>
-                </div>
-            </div>
+                </x-collapse-card>
+                
             <div id="planning" class="step-section">
-                <div class="card shadow-sm border-0 mb-4">
-                    <div class="card-body px-5 py-4">
-                        <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h3 class="fw-bold mb-0">2. Rencana Survei</h3>
+                    <x-collapse-card title="2. Tahap Rencana Survei" target="planning-body">
+                        <x-slot:actions>
                             @if($project->planning)
                                 @can('ubah data proyek')
                                 <button type="button"
@@ -130,7 +131,7 @@
                                 </button>
                                 @endcan
                             @endif
-                        </div>
+                        </x-slot:actions>
 
                         @if(!$project->planning)
                             
@@ -158,8 +159,7 @@
                             </div>
                         @endif
 
-                    </div>
-                </div>
+                    </x-collapse-card>
             </div>
             @endif
             <div id="survei" class="step-section">
@@ -178,10 +178,8 @@
                     </div>
                 @endif
                 @if($activeStep >= 5)
-                    <div class="card shadow-sm border-0 mb-4">
-                        <div class="card-body px-5 py-4">       
-                            <div class="d-flex justify-content-between align-items-center mb-4">
-                                <h3 class="fw-bold m-0">3. Survei</h3>
+                    <x-collapse-card  title="3. Tahap Survei" target="survei-body">   
+                            <x-slot:actions>
                                 @can('ubah data proyek')
                                 <div class="btn-group">
                                     <button type="button" id="btn-edit-survey"
@@ -191,15 +189,14 @@
                                     </button>
                                 </div>
                                 @endcan
-                            </div>
+                            </x-slot:actions>
                             <div id="survey-view">
                                 @include('projects.details.survey')
                             </div>
                             <div id="survey-edit" style="display:none;">
                                 @include('projects.edit.survey-form')
                             </div>
-                        </div>
-                    </div>
+                    </x-collapse-card>
                 @endif
             </div>
             <div id="offer" class="step-section">
@@ -220,19 +217,8 @@
                     </div>
                 @endif
                 @if($project && $project->offer)
-                    <div class="card shadow-sm border-0 mb-4">
-                        <div class="card-body px-5 py-4">
-
-                            <div class="d-flex justify-content-between align-items-center mb-4">
-                                <h3 class="mb-3 fw-bold">
-                                    @if($project->project_type == 1)
-                                        4. Penawaran Jasa Desain
-                                    @elseif($project->project_type == 2)
-                                        4. Penawaran Jasa RAB
-                                    @elseif($project->project_type == 3)
-                                        4. Penawaran Jasa Build
-                                    @endif
-                                </h3>
+                    <x-collapse-card :title="$offerTitle" target="offer-body">
+                            <x-slot:actions>
                                 @can('ubah data proyek')
                                 <div class="btn-group">
                                     <button type="button"
@@ -244,7 +230,7 @@
                                     </button>
                                 </div>
                                 @endcan
-                            </div>
+                            </x-slot:actions>
                             @if($project->offer)
                                 <div id="offer-view">
                                     @if($project->project_type == 1)
@@ -266,17 +252,12 @@
                                     @endif
                                 </div>
                             @endif
-                        </div>
-                    </div>    
+                    </x-collapse-card>    
                 @endif
             </div>
             @if($activeStep >= 6 && $project->offer && in_array($project->project_type, [1, 3]))
             <div id="kontrak" class="step-section">
-                <div class="card shadow-sm border-0 mb-4">
-                    <div class="card-body px-5 py-4">
-                        <h3 class="mb-3 fw-bold">
-                            5. Draft Kontrak Pelaksanaan Pekerjaan
-                        </h3>
+                <x-collapse-card :title="$contractTitle" target="kontrak-body">
                         <div class="d-flex gap-2">
 
                             @if($project->project_type == 1)
@@ -322,8 +303,7 @@
                                 </span>
                             @endif
                         </div>
-                    </div>
-                </div>
+                </x-collapse-card>
             </div>    
             @endif
             @if(
@@ -334,17 +314,7 @@
                 ($project?->project_type == 3 && $activeStep >= 7 && $project->offer->approved_at)
             )
             <div id="invoice" class="step-section">
-                <div class="card shadow-sm border-0 mb-4">
-                    <div class="card-body px-5 py-4">
-                        <h3 class="mb-3 fw-bold">
-                            @if($project->project_type == 1)
-                                6. Invoice Pembayaran Desain (DP)
-                            @elseif($project->project_type == 2)
-                                5. Invoice Jasa Pembuatan RAB
-                            @elseif($project->project_type == 3)
-                                6. Invoice Pembayaran Tahap 1
-                            @endif
-                        </h3>
+                <x-collapse-card :title="$invoiceTitle" target="invoice-body">
                         @php
                             $termin = $project->build_progress < 30 ? 1 :
                                     ($project->build_progress < 60 ? 2 :
@@ -418,8 +388,7 @@
                             </form>
                             @endif
                         </div>
-                    </div>
-                </div>
+                </x-collapse-card>
             </div>
             @endif
 
@@ -431,35 +400,32 @@
                 ($project?->project_type == 3 && $activeStep >= 8 && $project->offer->approved_at)
             )
             <div id="work" class="step-section">
-                <div class="card shadow-sm border-0 mb-4">
-                    <div class="card-body px-5 py-4">
+                <x-collapse-card :title="$workTitle" target="work-body">
                         @if($project->project_type == 1)
-                            <h3 class="mb-3 fw-bold">7. Form Pengerjaan</h3>
                             @include('projects.steps.work-process')
                         @elseif($project->project_type == 2)
-                        <div class="d-flex justify-content-between align-items-center mb-4 sticky-rab-header">
+                            <div class="d-flex justify-content-between align-items-center mb-4 sticky-rab-header">
 
-                    <h3 class="fw-bold mb-0">
-                        6. Form Pembuatan RAB
-                    </h3>
+                                <h3 class="fw-bold mb-0">
+                                    6. Form Pembuatan RAB
+                                </h3>
 
-                    <button
-                        type="submit"
-                        form="rabForm"
-                        class="btn btn-dark">
-                        <i class="ti ti-device-floppy me-1"></i>
-                        Simpan RAB
-                    </button>
+                                <button
+                                    type="submit"
+                                    form="rabForm"
+                                    class="btn btn-dark">
+                                    <i class="ti ti-device-floppy me-1"></i>
+                                    Simpan RAB
+                                </button>
 
-                </div>
+                            </div>
 
-                @include('projects.steps.rab-process')
+                            @include('projects.steps.rab-process')
                         @elseif($project->project_type == 3)
-                            <h3 class="mb-3 fw-bold">7. Form Kemajuan Pekerjaan</h3>
                             @include('projects.steps.build-process')
                         @endif
-                    </div>
-                </div>
+                    
+                </x-collapse-card>
             </div>
             @endif
             
@@ -487,12 +453,6 @@
                                     title="Edit Data">
                                     <i class="ti ti-edit"></i>
                                 </button>
-                                    {{-- <a href="{{ route('projects.rab.pdf', $project->id) }}"
-                                        class="btn btn-sm btn-dark"
-                                        target="_blank"
-                                        title="Download PDF">
-                                            <i class="ti ti-download"></i>
-                                    </a> --}}
                             </div>
                             @endcan
                             @endif
@@ -563,16 +523,9 @@
                 )
             )
             <div id="final" class="step-section">
-                <div class="card shadow-sm border-0 mb-4">
-                    <div class="card-body px-5 py-4">
-                        <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h3 class="mb-3 fw-bold">
-                                @if($project->project_type == 1)
-                                    9. Hasil Proyek
-                                @elseif($project->project_type == 3)
-                                    8. Serah terima
-                                @endif
-                            </h3>
+                    <x-collapse-card :title="$finalTitle" target="final-body">
+                        <x-slot:actions>
+                            
                             @if($project->finalDocument)
                                 @can('ubah data proyek')
                                 <div class="btn-group">
@@ -592,7 +545,7 @@
                                 </div>
                                 @endcan
                             @endif
-                        </div>
+                        </x-slot:actions>
                         @if($project->project_type == 1)
                             @include('projects.steps.upload-final')
                         @elseif($project->project_type == 3)
@@ -636,8 +589,7 @@
                             </div>
                         </form>
                         @endif
-                    </div>
-                </div>
+                    </x-collapse-card>
             </div>
             @endif
         </div>
@@ -1288,5 +1240,41 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 </script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
 
+    document.querySelectorAll(".btn-toggle-card").forEach(btn => {
+
+        btn.addEventListener("click", function () {
+
+            const target = document.querySelector(
+                this.dataset.target
+            );
+
+            if(!target) return;
+
+            // TOGGLE
+            target.classList.toggle("d-none");
+
+            // ICON
+            const icon = this.querySelector("i");
+
+            if(target.classList.contains("d-none")){
+
+                icon.classList.remove("ti-chevron-up");
+                icon.classList.add("ti-chevron-down");
+
+            }else{
+
+                icon.classList.remove("ti-chevron-down");
+                icon.classList.add("ti-chevron-up");
+
+            }
+
+        });
+
+    });
+
+});
+</script>
 @endpush
