@@ -1,7 +1,7 @@
 <div class="card shadow-sm border-0 mb-4">
 
     {{-- HEADER --}}
-    <div class="card-header">
+    <div class="card-header {{ $sticky ? 'sticky-rab-header' : '' }}">
 
         <div class="d-flex align-items-center w-100">
 
@@ -21,7 +21,7 @@
                         class="btn btn-sm btn-icon btn-toggle-card"
                         data-target="#{{ $target }}">
 
-                    <i class="ti ti-chevron-up"></i>
+                    <i class="ti ti-chevron-down"></i>
 
                 </button>
 
@@ -32,7 +32,7 @@
     </div>
 
     {{-- BODY --}}
-    <div id="{{ $target }}" class="collapse-card-body">
+    <div id="{{ $target }}" class="collapse-card-body d-none">
 
         <div class="card-body">
 

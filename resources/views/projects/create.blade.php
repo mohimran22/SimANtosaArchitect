@@ -52,6 +52,13 @@
                                 $project->project_type == 1
                                     ? '9. Hasil Proyek'
                                     : '8. Serah Terima';
+                            $invoiceFinalTitle =
+                                $project->project_type == 1
+                                    ? '8. Invoice Pelunasan Desain'
+                                    : '6. Rencana Anggaran Biaya';
+                            $invoiceFinal = $project->invoices
+                                ->where('invoice_type', 'final')
+                                ->first();
                 @endphp
             @if($activeStep == 1)
             <div id="project" class="step-section">
@@ -405,21 +412,13 @@
                             @include('projects.steps.work-process')
                         @elseif($project->project_type == 2)
                             <div class="d-flex justify-content-between align-items-center mb-4 sticky-rab-header">
-
-                                <h3 class="fw-bold mb-0">
-                                    6. Form Pembuatan RAB
-                                </h3>
-
                                 <button
                                     type="submit"
                                     form="rabForm"
-                                    class="btn btn-dark">
+                                    class="btn btn-dark" title="Simpan RAB">
                                     <i class="ti ti-device-floppy me-1"></i>
-                                    Simpan RAB
                                 </button>
-
                             </div>
-
                             @include('projects.steps.rab-process')
                         @elseif($project->project_type == 3)
                             @include('projects.steps.build-process')
@@ -434,81 +433,111 @@
                 ||
                 ($project?->project_type == 2 && $activeStep >= 9)
             )
+
             <div id="invoice-final" class="step-section">
-                <div class="card shadow-sm border-0 mb-4">
-                    <div class="card-body px-5 py-4">
-                        <div class="sticky-rab-header d-flex justify-content-between align-items-center mb-4">
-                            <h3 class="mb-3 fw-bold">
-                                @if($project->project_type == 1)
-                                    8. Invoice Pelunasan Desain
-                                @elseif($project->project_type == 2)
-                                    6. Rencana Anggaran Biaya
-                                @endif
-                            </h3>
-                            @if($project->project_type == 2)
+
+                <x-collapse-card :title="$invoiceFinalTitle" target="invoice-final-body" :sticky="true">
+
+                    {{-- ACTION BUTTON --}}
+                    <x-slot:actions>
+
+                        @if($project->project_type == 2)
                             @can('ubah data proyek')
+
                             <div class="btn-group">
-                                <button type="button" id="btn-edit-rab"
-                                    class="btn btn-sm btn-dark me-2"
-                                    title="Edit Data">
+
+                                <button type="button"
+                                        id="btn-edit-rab"
+                                        class="btn btn-sm btn-dark me-2"
+                                        title="Edit Data">
+
                                     <i class="ti ti-edit"></i>
+
                                 </button>
+
                             </div>
+
                             @endcan
-                            @endif
-                        </div>
-                        <div id="rab-view">
-                            @if($project->project_type == 2)
-                                @include('projects.details.rab-process')
-                            @endif
-                        </div>
-
-                        <div id="rab-edit" style="display:none;">
-                            @if($project->project_type == 2)
-                                @include('projects.edit.rab-process')
-                            @endif
-                        </div>
-                        @php
-                            $invoiceFinal = $project->invoices
-                                ->where('invoice_type', 'final')
-                                ->first();
-                        @endphp
-                        @if($project->project_type == 1)
-                        <div class="d-flex gap-2">
-                            <a href="{{ route('projects.invoice.final', $project->id) }}"
-                            class="btn btn-dark"
-                            target="_blank">
-                                <i class="ti ti-download"></i> Download Invoice Pelunasan
-                            </a>
-
-                            @if(
-                                $invoiceFinal &&
-                                $invoiceFinal->downloaded_at &&
-                                !$invoiceFinal->approved_at
-                            )
-                                <form action="{{ route('projects.invoice.final.approve', $project->id) }}"
-                                    method="POST"
-                                    class="approve-form"
-                                    data-title="Lanjut ke Tahap Berikutnya?"
-                                    data-text="Invoice Pelunasan akan disetujui dan proses berlanjut.">
-                                    @csrf
-                                    <button type="submit" class="btn btn-dark">
-                                        <i class="ti ti-check"></i> Konfirmasi Pelunasan
-                                    </button>
-                                </form>
-                            @endif
-
-                            @if($invoiceFinal?->approved_at)
-                                <span class="text-muted fst-italic d-flex align-items-center gap-1">
-                                    <i class="ti ti-check"></i>
-                                    Pelunasan Selesai
-                                </span>
-                            @endif
-                        </div>
                         @endif
+
+                    </x-slot:actions>
+
+                    {{-- VIEW --}}
+                    <div id="rab-view">
+
+                        @if($project->project_type == 2)
+                            @include('projects.details.rab-process')
+                        @endif
+
                     </div>
-                </div>
+
+                    {{-- EDIT --}}
+                    <div id="rab-edit" style="display:none;">
+
+                        @if($project->project_type == 2)
+                            @include('projects.edit.rab-process')
+                        @endif
+
+                    </div>
+
+                    {{-- INVOICE DESIGN --}}
+                    @if($project->project_type == 1)
+
+                    <div class="d-flex gap-2">
+
+                        <a href="{{ route('projects.invoice.final', $project->id) }}"
+                        class="btn btn-dark"
+                        target="_blank">
+
+                            <i class="ti ti-download"></i>
+                            Download Invoice Pelunasan
+
+                        </a>
+
+                        @if(
+                            $invoiceFinal &&
+                            $invoiceFinal->downloaded_at &&
+                            !$invoiceFinal->approved_at
+                        )
+
+                        <form action="{{ route('projects.invoice.final.approve', $project->id) }}"
+                            method="POST"
+                            class="approve-form"
+                            data-title="Lanjut ke Tahap Berikutnya?"
+                            data-text="Invoice Pelunasan akan disetujui dan proses berlanjut.">
+
+                            @csrf
+
+                            <button type="submit" class="btn btn-dark">
+
+                                <i class="ti ti-check"></i>
+                                Konfirmasi Pelunasan
+
+                            </button>
+
+                        </form>
+
+                        @endif
+
+                        @if($invoiceFinal?->approved_at)
+
+                        <span class="text-muted fst-italic d-flex align-items-center gap-1">
+
+                            <i class="ti ti-check"></i>
+                            Pelunasan Selesai
+
+                        </span>
+
+                        @endif
+
+                    </div>
+
+                    @endif
+
+                </x-collapse-card>
+
             </div>
+
             @endif
             
             @if(

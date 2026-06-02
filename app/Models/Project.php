@@ -304,8 +304,8 @@ public function getWeekLabelsAttribute()
 
         $labels[] = [
             'week_no' => $w,
-            'start'   => $start->format('Y-m-d'),   // untuk JS
-            'end'     => $weekEnd->format('Y-m-d'), // untuk JS
+            'start'   => $start->format('d/m/Y'),   
+            'end'     => $weekEnd->format('d/m/Y'), 
             'label'   => $start->format('d M') . ' - ' . $weekEnd->format('d M Y'),
         ];
 

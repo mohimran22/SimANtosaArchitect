@@ -5,7 +5,7 @@
     $colsFixed   = 6;
     $colsNormal  = 3;
     $colsJustek  = 3;
-    $colsPerWeek = $colsNormal + $colsJustek; // = 6
+    $colsPerWeek = $colsNormal + $colsJustek;
     $colsTotal   = 4;
 
     $weekCount = count($project->week_labels);
@@ -389,7 +389,6 @@
                                                 </tr>
 
                                             @endforeach
-                                    
                                 @endforeach
                             @endforeach
                         @endforeach

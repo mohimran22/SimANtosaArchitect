@@ -8,13 +8,16 @@ class CollapseCard extends Component
 {
     public $title;
     public $target;
+    public $sticky;
 
     public function __construct(
         $title = '',
-        $target = ''
+        $target = '',
+        $sticky = false
     ) {
         $this->title = $title;
         $this->target = $target;
+        $this->sticky = $sticky;
     }
 
     public function render()
