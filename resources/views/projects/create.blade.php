@@ -407,18 +407,18 @@
                 ($project?->project_type == 3 && $activeStep >= 8 && $project->offer->approved_at)
             )
             <div id="work" class="step-section">
-                <x-collapse-card :title="$workTitle" target="work-body">
+                <x-collapse-card :title="$workTitle" target="work-body" :sticky="true">
                         @if($project->project_type == 1)
                             @include('projects.steps.work-process')
                         @elseif($project->project_type == 2)
-                            <div class="d-flex justify-content-between align-items-center mb-4 sticky-rab-header">
+                            <x-slot:actions>
                                 <button
                                     type="submit"
                                     form="rabForm"
                                     class="btn btn-dark" title="Simpan RAB">
                                     <i class="ti ti-device-floppy me-1"></i>
                                 </button>
-                            </div>
+                            </x-slot:actions>
                             @include('projects.steps.rab-process')
                         @elseif($project->project_type == 3)
                             @include('projects.steps.build-process')
@@ -433,111 +433,67 @@
                 ||
                 ($project?->project_type == 2 && $activeStep >= 9)
             )
-
             <div id="invoice-final" class="step-section">
-
                 <x-collapse-card :title="$invoiceFinalTitle" target="invoice-final-body" :sticky="true">
-
-                    {{-- ACTION BUTTON --}}
                     <x-slot:actions>
-
                         @if($project->project_type == 2)
                             @can('ubah data proyek')
-
                             <div class="btn-group">
-
                                 <button type="button"
                                         id="btn-edit-rab"
                                         class="btn btn-sm btn-dark me-2"
                                         title="Edit Data">
-
                                     <i class="ti ti-edit"></i>
-
                                 </button>
-
                             </div>
-
                             @endcan
                         @endif
-
                     </x-slot:actions>
-
-                    {{-- VIEW --}}
                     <div id="rab-view">
-
                         @if($project->project_type == 2)
                             @include('projects.details.rab-process')
                         @endif
-
                     </div>
-
-                    {{-- EDIT --}}
                     <div id="rab-edit" style="display:none;">
-
                         @if($project->project_type == 2)
                             @include('projects.edit.rab-process')
                         @endif
-
                     </div>
-
-                    {{-- INVOICE DESIGN --}}
                     @if($project->project_type == 1)
-
                     <div class="d-flex gap-2">
-
                         <a href="{{ route('projects.invoice.final', $project->id) }}"
                         class="btn btn-dark"
                         target="_blank">
-
                             <i class="ti ti-download"></i>
                             Download Invoice Pelunasan
-
                         </a>
-
                         @if(
                             $invoiceFinal &&
                             $invoiceFinal->downloaded_at &&
                             !$invoiceFinal->approved_at
                         )
-
                         <form action="{{ route('projects.invoice.final.approve', $project->id) }}"
                             method="POST"
                             class="approve-form"
                             data-title="Lanjut ke Tahap Berikutnya?"
                             data-text="Invoice Pelunasan akan disetujui dan proses berlanjut.">
-
                             @csrf
-
                             <button type="submit" class="btn btn-dark">
-
                                 <i class="ti ti-check"></i>
                                 Konfirmasi Pelunasan
-
                             </button>
-
                         </form>
-
                         @endif
-
                         @if($invoiceFinal?->approved_at)
-
                         <span class="text-muted fst-italic d-flex align-items-center gap-1">
-
                             <i class="ti ti-check"></i>
                             Pelunasan Selesai
-
                         </span>
-
                         @endif
-
                     </div>
-
                     @endif
-
                 </x-collapse-card>
-
             </div>
-
             @endif
             
             @if(
