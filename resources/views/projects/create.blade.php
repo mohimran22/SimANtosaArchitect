@@ -407,7 +407,7 @@
                 ($project?->project_type == 3 && $activeStep >= 8 && $project->offer->approved_at)
             )
             <div id="work" class="step-section">
-                <x-collapse-card :title="$workTitle" target="work-body" :sticky="true">
+                <x-collapse-card :title="$workTitle" target="work-body" :sticky="false">
                         @if($project->project_type == 1)
                             @include('projects.steps.work-process')
                         @elseif($project->project_type == 2)

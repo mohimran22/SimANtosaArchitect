@@ -480,8 +480,8 @@
             function applyAutoFreeze() {
                 if (!table) return;
 
-                table.querySelectorAll(".sticky-col").forEach(cell => {
-                    cell.classList.remove("sticky-col");
+                table.querySelectorAll(".sticky-col, .sticky-last").forEach(cell => {
+                    cell.classList.remove("sticky-col", "sticky-last");
                     cell.style.left = "";
                     cell.style.width = "";
                 });
@@ -491,7 +491,9 @@
                 let left = 0;
                 for (let i = 0; i < freezeCount; i++) {
                     offsets.push(left);
-                    left += colgroup[i]?.offsetWidth || 0;
+                    left += Math.round(
+                        parseFloat(getComputedStyle(colgroup[i]).width)
+                    );
                 }
 
                 const rowspanMap = [];
@@ -511,11 +513,16 @@
                                 cell.classList.contains('freeze-col')
                             ) {
                             cell.classList.add("sticky-col");
-                            cell.style.left = offsets[colIndex] + "px";
+                            if (colIndex === freezeCount - 1) {
+                                cell.classList.add("sticky-last");
+                            }
+                            cell.style.left = Math.round(offsets[colIndex]) + "px";
                             // batasi width jika colspan > 1
                             let width = 0;
                             for (let i = 0; i < colspan && (colIndex + i) < freezeCount; i++) {
-                                width += colgroup[colIndex + i]?.offsetWidth || 0;
+                                width += Math.round(parseFloat(
+                                    getComputedStyle(colgroup[colIndex + i]).width)
+                                );
                             }
                             cell.style.width = width + "px";
                         }
@@ -533,10 +540,14 @@
                 table.querySelectorAll("tr.row-category, tr.row-uraian").forEach(row => {
                     const cell = row.querySelector("td");
                     if (!cell) return;
-                    const width = Array.from(colgroup).slice(0, freezeCount).reduce((sum, c) => sum + c.offsetWidth, 0);
+                    const width = Array.from(colgroup).slice(0, freezeCount).reduce((sum, c) => {
+                        return sum + (parseFloat(getComputedStyle(c).width) || 0);
+                    }, 0);
                     cell.classList.add("sticky-col");
+                    cell.classList.add("sticky-last");
+
                     cell.style.left = "0px";
-                    cell.style.width = width + "px";
+                    cell.style.width = Math.round(width) + "px";
                 });
                 // row tambahan (kuning)
                 table.querySelectorAll("tr.row-tambahan-item").forEach(row => {
@@ -549,13 +560,19 @@
 
                             cell.classList.add("sticky-col");
 
-                            cell.style.left = left + "px";
+                            if (index === freezeCount - 1) {
+                                cell.classList.add("sticky-last");
+                            }
+
+                            cell.style.left = Math.round(left) + "px";
 
                             cell.style.zIndex = 55;
 
                             cell.style.background = "#fff3cd";
 
-                            left += colgroup[index]?.offsetWidth || 0;
+                            left += Math.round(parseFloat(
+                                getComputedStyle(colgroup[index]).width)
+                            );
                         }
                     });
                 });
@@ -1586,46 +1603,5 @@
         });
 
     }
-    </script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-
-            function initStickyHeader() {
-
-                const table = document.querySelector('.progress-table')
-                if (!table) return
-
-                const rows = table.querySelectorAll('thead tr')
-
-                let topOffset = 0
-
-                rows.forEach((row, index) => {
-
-                    const height = row.offsetHeight
-
-                    row.querySelectorAll('th').forEach(th => {
-                        th.style.top = topOffset + 'px'
-                    })
-
-                    topOffset += height
-                })
-            }
-
-            initStickyHeader()
-
-            window.addEventListener('resize', initStickyHeader)
-
-            // kalau kolom hide/show berubah
-            const observer = new MutationObserver(() => {
-                initStickyHeader()
-            })
-
-            observer.observe(document.querySelector('.progress-table thead'), {
-                childList: true,
-                subtree: true,
-                attributes: true
-            })
-
-        })
     </script>
 @endpush

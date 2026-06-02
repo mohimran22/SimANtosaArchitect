@@ -66,7 +66,7 @@ p {
     <!-- KIRI -->
     <td width="60%" valign="top">
         <table class="no-border">
-            <tr><td>CP</td><td>: +62 852-3687-3007</td></tr>
+            <tr><td>CP</td><td>: +62 851-8952-3863</td></tr>
             <tr><td>Email</td><td>: antosaarchitect@gmail.com</td></tr>
             <tr><td>Website</td><td>: antosaarchitect.com</td></tr>
         </table>
