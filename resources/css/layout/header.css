@@ -151,7 +151,21 @@ header.navbar .d-flex {
         opacity: 1;
         visibility: visible;
     }
-    .navbar-vertical .navbar-nav.flex-row.d-lg-none{
+    .sidebar-logo-wrapper{
         display: none !important;
+    }
+
+    .sidebar-header{
+        display: none !important;
+    }
+
+    .sidebar-menu-wrapper{
+        padding-top: 10px;
+    }
+
+    .navbar-nav .nav-link{
+        min-height: 48px;
+        border-radius: 10px;
+        margin: 2px 8px;
     }
 }

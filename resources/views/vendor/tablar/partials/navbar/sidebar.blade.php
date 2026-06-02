@@ -36,7 +36,6 @@
                 @include('tablar::partials.header.theme-mode')
                 @include('tablar::partials.header.notifications')
             </div>
-            @include('tablar::partials.header.top-right')
         </div>
 
         <div class="sidebar-menu-wrapper" id="sidebar-menu">
@@ -70,14 +69,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
 });
 </script>
-<script>
+{{-- <script>
 document.addEventListener("mousemove", function(e) {
     document.documentElement.style.setProperty(
         "--mouse-y",
         e.clientY + "px"
     );
 });
-</script>
+</script> --}}
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
@@ -216,14 +215,14 @@ document.addEventListener('click', function(e){
         display: none !important;
     }
 }
-@media (max-width: 576px) {
+@media (max-width: 991.98px) {
 
     .navbar.navbar-vertical.navbar-expand-lg {
 
         transform: translateX(-100%);
         transition: .3s ease;
 
-        width: 260px !important;
+        width: 210px !important;
 
         z-index: 3;
     }
@@ -233,7 +232,10 @@ document.addEventListener('click', function(e){
     }
 
     .page-wrapper {
-        margin-left: 0 !important;
+        margin: 0 !important;
+    }
+    .nav-link-title {
+        display: block !important;
     }
 
 }

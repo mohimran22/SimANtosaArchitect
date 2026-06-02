@@ -3,7 +3,7 @@
 @section('content')
 
     <div class="page-header d-print-none mb-4">
-        <div class="container-lg">
+        <div class="container-xl">
             <div class="row align-items-center">
                 <div class="col d-flex align-items-center">
                     <a href="{{ route('projects.index') }}" class="btn btn-dark d-flex align-items-center">
@@ -16,7 +16,7 @@
     </div>
 
     <div class="page-body">
-        <div class="container-lg">
+        <div class="container-xl">
             @include('projects.components.timeline-horizontal')
                 @php
                     $rab = $project?->rab;

@@ -487,10 +487,7 @@ public function update(Request $request, Project $project)
     
     $project->update($request->all());
 
-    return redirect()
-        ->route('projects.index', ['project_id' => $project->id]) 
-        ->withFragment('project-' . $project->number)
-        ->with('success', 'Updated!');
+    return back()->with('success', 'Data proyek berhasil diperbarui!');
 }
 public function show(Project $project)
 {

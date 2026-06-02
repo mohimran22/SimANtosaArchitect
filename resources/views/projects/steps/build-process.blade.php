@@ -449,14 +449,11 @@
     </div>
 <div class="card shadow-sm border-0">
 
-    <div class="card-body px-5 py-3 kurva-header"
-         style="cursor:pointer">
-
+    <div class="card-body px-5 py-3 kurva-header" style="cursor:pointer">
         <h4 class="fw-bold mb-0 d-flex justify-content-between align-items-center">
             Kurva S Progress Proyek
             <span id="kurvaIcon">▼</span>
         </h4>
-
     </div>
 
     <div id="kurvaSCollapse">

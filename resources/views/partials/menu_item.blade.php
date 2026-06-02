@@ -483,4 +483,43 @@ document.querySelectorAll('[data-submenu]').forEach(menu => {
     }
 
 }
+@media (min-width: 991,98px){
+
+    .sidebar-collapsed .submenu{
+
+        position: fixed;
+
+        left: 72px !important;
+
+        min-width: 200px;
+        max-width: 220px;
+
+        width: 220px;
+
+        border-radius: 10px;
+
+        padding: 8px;
+
+        transform: none !important;
+
+        max-height: calc(100vh - 40px);
+
+        overflow-y: auto;
+        z-index: 99999;
+    }
+
+    .sidebar-collapsed .submenu.show-floating{
+        transform: none !important;
+    }
+
+    /* kecilin item */
+    .sidebar-collapsed .submenu .nav-link{
+        padding: 6px 8px !important;
+        font-size: 13px;
+    }
+     .nav-link-title {
+        display: inline !important;
+     }
+
+}
 </style>
