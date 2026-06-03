@@ -446,7 +446,7 @@
             </div>
         </div>
     </div>
-<div class="card shadow-sm border-0">
+{{-- <div class="card shadow-sm border-0">
 
     <div class="card-body px-5 py-3 kurva-header" style="cursor:pointer">
         <h4 class="fw-bold mb-0 d-flex justify-content-between align-items-center">
@@ -461,7 +461,14 @@
         </div>
     </div>
 
-</div>
+</div> --}}
+<x-collapse-card
+    title="Kurva S Progress Proyek"
+    target="kurva-body">
+
+    <canvas id="kurvaSChart" height="120"></canvas>
+
+</x-collapse-card>
     <div id="invoice-panel">
         @include('projects.partials.invoice_panel')
     </div>

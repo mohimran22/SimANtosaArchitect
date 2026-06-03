@@ -133,7 +133,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         function hideMenu() {
-            console.log('HIDE');
             timeout = setTimeout(() => {
 
                 submenu.classList.remove('show-floating');

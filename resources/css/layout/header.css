@@ -35,13 +35,14 @@ header.navbar .d-flex {
     justify-content:flex-end;
     align-items:center;
 }
-@media (min-width: 992px){
+@media (max-width: 1200px){
 
     .mobile-header{
         display:none !important;
     }
 
     header.navbar{
+        margin-left: 50px !important;
         border-radius: 12px;
         display:flex !important;
     }

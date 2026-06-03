@@ -129,13 +129,15 @@
                         <x-slot:actions>
                             @if($project->planning)
                                 @can('ubah data proyek')
-                                <button type="button"
-                                    id="btn-edit-planning"
-                                    class="btn btn-sm btn-dark {{ $disableEdit ? 'disabled' : '' }}"
-                                    {{ $disableEdit ? 'disabled' : '' }}
-                                    title="{{ $disableEdit ? 'Menunggu persetujuan biaya survei' : 'Edit Data' }}">
-                                    <i class="ti ti-edit"></i>
-                                </button>
+                                <div class="btn-group">
+                                    <button type="button"
+                                        id="btn-edit-planning"
+                                        class="btn btn-sm btn-dark me-2 {{ $disableEdit ? 'disabled' : '' }}"
+                                        {{ $disableEdit ? 'disabled' : '' }}
+                                        title="{{ $disableEdit ? 'Menunggu persetujuan biaya survei' : 'Edit Data' }}">
+                                        <i class="ti ti-edit"></i>
+                                    </button>
+                                </div>
                                 @endcan
                             @endif
                         </x-slot:actions>

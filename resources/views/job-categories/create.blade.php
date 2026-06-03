@@ -1,17 +1,33 @@
 @extends('tablar::page')
 
 @section('content')
+<div class="page-header d-print-none mb-4">
+    <div class="container-xl">
+        <div class="row align-items-center">
+            <div class="col d-flex align-items-center">
+                <a href="{{ route('job-categories.index') }}" class="btn btn-dark d-flex align-items-center">
+                    <i class="ti ti-arrow-left"></i>
+                </a>
+                    <h2 class="page-title mb-0">Tambah Data AHSP</h2>
+            </div>
+        </div>
+    </div>
+</div>
 <div class="page-body">
     <div class="container-xl">
-
         <div class="card shadow-sm border-0">
-            <div class="card-body p-5">
-
-                <h2 class="fw-bold mb-4">Tambah Data Pekerjaan</h2>
-
+            <div class="card-body px-5 py-4">
                 <form action="{{ route('job-categories.store') }}" method="POST">
                     @csrf
-
+                     @if ($errors->any())
+                                <div class="alert alert-danger">
+                                    <ul class="mb-0">
+                                        @foreach ($errors->all() as $error)
+                                            <li>{{ $error }}</li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                        @endif
                     <div class="row g-4">
 
                         {{-- Bidang --}}
@@ -122,22 +138,15 @@
 
                     </div>
 
-                    <div class="d-flex justify-content-end mt-4">
-                        <a href="{{ route('job-categories.index') }}"
-                           class="btn btn-outline-secondary me-2">
-                            Batal
-                        </a>
-
-                        <button class="btn btn-dark px-4">
-                            Simpan
+                    <div class="text-end mt-5">
+                        <button type="submit" class="btn btn-dark px-4">
+                            <i class="ti ti-device-floppy me-1"></i> Simpan Data
                         </button>
                     </div>
 
                 </form>
-
             </div>
         </div>
-
     </div>
 </div>
 @endsection

@@ -1,20 +1,37 @@
 @extends('tablar::page')
 
 @section('content')
+<div class="page-header d-print-none mb-4">
+    <div class="container-xl">
+        <div class="row align-items-center">
+            <div class="col d-flex align-items-center">
+                <a href="{{ route('job-categories.index') }}" class="btn btn-dark d-flex align-items-center">
+                    <i class="ti ti-arrow-left"></i>
+                </a>
+                    <h2 class="page-title mb-0">Edit Data AHSP</h2>
+            </div>
+        </div>
+    </div>
+</div>
 <div class="page-body">
     <div class="container-xl">
-
         <div class="card shadow-sm border-0 mb-4">
-            <div class="card-body p-5">
+            <div class="card-body px-5 py-4">
 
-                <h2 class="fw-bold mb-4">Edit Grup: {{ $jobCategory->nama_group }}</h2>
-
-                {{-- Update paket --}}
+                {{-- <h2 class="fw-bold mb-4">Edit Grup: {{ $jobCategory->nama_group }}</h2> --}}
                 <form action="{{ route('job-categories.update', $jobCategory->id) }}"
                       method="POST" class="mb-5">
 
                     @csrf @method('PUT')
-
+                     @if ($errors->any())
+                                <div class="alert alert-danger">
+                                    <ul class="mb-0">
+                                        @foreach ($errors->all() as $error)
+                                            <li>{{ $error }}</li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                        @endif
                     <div class="row g-4">
                         <div class="col-md-2 mb-4">
                             <label class="form-label fw-bold">Bidang</label>
@@ -86,7 +103,7 @@
                         <div class="col-md-2">
                             <label class="form-label">Kategori</label>
                             <select name="category" id="categorySelect" class="form-select select2" required>
-                                <option value="">-- Pilih --</option>
+                                <option value="">-- Pilih Kategori --</option>
                                 <option value="product">Produk</option>
                                 <option value="labor">Tenaga</option>
                                 <option value="equipment">Peralatan</option>
@@ -166,7 +183,6 @@
 
             </div>
         </div>
-
     </div>
 </div>
 @endsection
@@ -175,7 +191,6 @@
 <script>
 $(document).ready(function() {
     $('.select2').select2({
-        placeholder: "-- Pilih --",
         width: '100%'
     });
 });

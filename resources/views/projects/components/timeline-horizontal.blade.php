@@ -1,5 +1,5 @@
 <div class="card shadow-sm border-0 mb-4">
-    <div class="card-body py-4">
+    <div class="card-body">
 
         <h3 class="fw-bold mb-3">Progress Proyek</h3>
 
@@ -10,20 +10,12 @@
                     @php $number = $index + 1; @endphp
 
                     <div class="step-item" data-step="{{ $step['id'] }}">
-
-                        
-                        {{-- CIRCLE --}}
                         <div class="step-circle
                             @if($step['completed']) completed
                             @elseif($step['current']) current
                             @endif">
                             {{ $number }}
                         </div>
-
-                        {{-- LABEL --}}
-                        {{-- <div class="step-label">
-                            {{ $step['label'] }}
-                        </div> --}}
                         <div class="step-label"
                             data-target="{{ $step['id'] }}">
                             {{ $step['label'] }}
@@ -36,7 +28,6 @@
 
     </div>
 </div>
-
 
 <style>
 /* WRAPPER SCROLL */
@@ -133,7 +124,7 @@
 </style>
 
 <script>
-// Enable drag-to-scroll
+
 document.addEventListener('DOMContentLoaded', function () {
     const el = document.querySelector('.timeline-scroll-wrapper');
     let isDown = false;
@@ -164,32 +155,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 </script>
-
-{{-- <script>
-document.addEventListener("DOMContentLoaded", function () {
-
-    // Auto-scroll to current step
-    const currentCircle = document.querySelector(".step-circle.current");
-    if (currentCircle) {
-        currentCircle.scrollIntoView({ behavior: "smooth", inline: "center" });
-    }
-
-    // Click step scroll to card
-    document.querySelectorAll(".step-item").forEach(item => {
-        item.addEventListener("click", function () {
-            const step = this.dataset.step;
-            const target = document.querySelector("#step-" + step);
-
-            if (target) {
-                target.scrollIntoView({ behavior: "smooth", block: "start" });
-            }
-
-            this.scrollIntoView({ behavior: "smooth", inline: "center" });
-        });
-    });
-
-});
-</script> --}}
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {

@@ -15,7 +15,7 @@
         </div>
     </div>
     <div id="{{ $target }}" class="collapse-card-body d-none">
-        <div class="card-body">
+        <div class="card-body px-5 py-3">
             {{ $slot }}
         </div>
     </div>
