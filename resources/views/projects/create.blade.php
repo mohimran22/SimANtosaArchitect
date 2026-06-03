@@ -19,44 +19,44 @@
         <div class="container-xl">
             @include('projects.components.timeline-horizontal')
                 @php
+                use Illuminate\Support\Facades\Storage;
                     $rab = $project?->rab;
                     $planning = $project?->planning;
                     $disableEdit = $surveyWaiting;
-                    use Illuminate\Support\Facades\Storage;
-    
+                    
                         $final = $project?->project_type == 1 
                             ? $project?->finalDocument 
                             : $project?->finalBuild;
                     
                     $ReadOnly = !$canEdit;
                         $offerTitle =
-                            $project->project_type == 1
+                            $project?->project_type == 1
                                 ? '4. Penawaran Jasa Desain'
-                                : ($project->project_type == 2
+                                : ($project?->project_type == 2
                                     ? '4. Penawaran Jasa RAB'
                                     : '4. Penawaran Jasa Build');
                         $contractTitle = '5. Draft Kontrak Pelaksanaan Pekerjaan';
                             $invoiceTitle =
-                                $project->project_type == 1
+                                $project?->project_type == 1
                                     ? '6. Invoice Pembayaran Desain (DP)'
-                                    : ($project->project_type == 2
+                                    : ($project?->project_type == 2
                                         ? '5. Invoice Jasa Pembuatan RAB'
                                         : '6. Invoice Pembayaran Tahap 1');
                             $workTitle =
-                                $project->project_type == 1
+                                $project?->project_type == 1
                                     ? '7. Form Pengerjaan'
-                                    : ($project->project_type == 2
+                                    : ($project?->project_type == 2
                                         ? '6. Form Pembuatan RAB'
                                         : '7. Form Kemajuan Pekerjaan');
                             $finalTitle =
-                                $project->project_type == 1
+                                $project?->project_type == 1
                                     ? '9. Hasil Proyek'
                                     : '8. Serah Terima';
                             $invoiceFinalTitle =
-                                $project->project_type == 1
+                                $project?->project_type == 1
                                     ? '8. Invoice Pelunasan Desain'
                                     : '6. Rencana Anggaran Biaya';
-                            $invoiceFinal = $project->invoices
+                            $invoiceFinal = $project?->invoices
                                 ->where('invoice_type', 'final')
                                 ->first();
                 @endphp

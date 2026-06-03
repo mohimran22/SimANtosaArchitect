@@ -123,8 +123,6 @@
 </header>
 <div class="sidebar-overlay"></div>
 @push('js')
-    
-
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 

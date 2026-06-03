@@ -1014,25 +1014,16 @@ input[type=number]::-webkit-outer-spin-button {
 .sticky-rab-header{
     position: sticky;
     top: 90px;
-
-    z-index: 999;
-
+    z-index: 12;
     background-color: #fff;
-
     padding: 12px 0;
-
     border-bottom: 1px solid #eee;
-
     width: 100%;
 }
 .sticky-rab-header::before{
     content: "";
-
     position: absolute;
-
     inset: 0;
-
     background: #fff;
-
     z-index: -1;
 }

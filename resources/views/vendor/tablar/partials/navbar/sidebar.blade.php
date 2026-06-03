@@ -4,11 +4,6 @@
     @endif
 >
     <div class="sidebar-inner">
-        {{-- <div class="sidebar-logo-wrapper">
-            <h5 class="navbar-brand navbar-brand-autodark d-flex justify-content-center">
-                @include('tablar::partials.common.logo')
-            </h5>
-        </div> --}}
         <div class="sidebar-header">
             <div class="sidebar-logo-wrapper">
 

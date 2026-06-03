@@ -483,7 +483,7 @@ document.querySelectorAll('[data-submenu]').forEach(menu => {
     }
 
 }
-@media (min-width: 991,98px){
+/* @media (min-width: 991,98px){
 
     .sidebar-collapsed .submenu{
 
@@ -512,7 +512,6 @@ document.querySelectorAll('[data-submenu]').forEach(menu => {
         transform: none !important;
     }
 
-    /* kecilin item */
     .sidebar-collapsed .submenu .nav-link{
         padding: 6px 8px !important;
         font-size: 13px;
@@ -520,6 +519,93 @@ document.querySelectorAll('[data-submenu]').forEach(menu => {
      .nav-link-title {
         display: inline !important;
      }
+
+} */
+@media (max-width: 991.98px){
+
+    .navbar-vertical{
+        position: fixed !important;
+        top: 0;
+        left: 0;
+
+        width: 280px !important;
+        height: 100vh !important;
+
+        background: #fff !important;
+
+        transform: translateX(-100%);
+        transition: .3s ease;
+
+        z-index: 1050;
+
+        overflow-y: auto;
+    }
+
+    .navbar-vertical.show-sidebar{
+        transform: translateX(0);
+    }
+
+    /* submenu jangan floating */
+    .navbar-vertical .dropdown-menu{
+        position: static !important;
+        transform: none !important;
+
+        inset: unset !important;
+
+        width: 100% !important;
+
+        margin: 0 !important;
+        padding-left: 15px !important;
+
+        border: none !important;
+        box-shadow: none !important;
+
+        background: transparent !important;
+
+        display: none;
+    }
+
+    /* tampil saat open */
+    .navbar-vertical .dropdown-menu.show{
+        display: block !important;
+    }
+
+    /* item submenu */
+    .navbar-vertical .dropdown-menu .dropdown-item{
+        padding: 10px 16px;
+        border-radius: 8px;
+        font-size: 14px;
+    }
+
+    /* disable floating desktop */
+    .sidebar-collapsed .dropdown-menu{
+        position: static !important;
+    }
+
+    /* disable tooltip */
+    .sidebar-tooltip{
+        display:none !important;
+    }
+
+    /* overlay */
+    .sidebar-overlay{
+        position: fixed;
+        inset: 0;
+
+        background: rgba(0,0,0,.4);
+
+        opacity: 0;
+        visibility: hidden;
+
+        transition: .3s ease;
+
+        z-index: 1040;
+    }
+
+    .sidebar-overlay.show{
+        opacity: 1;
+        visibility: visible;
+    }
 
 }
 </style>

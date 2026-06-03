@@ -15,7 +15,6 @@ header.navbar {
     padding: 0 20px;
 
     z-index: 70;
-
     border-radius: 12px;
     background: #fff;
     box-shadow: 0 4px 14px rgba(0,0,0,.05);
@@ -48,6 +47,9 @@ header.navbar .d-flex {
     }
 }
 @media (max-width: 991.98px) {
+    body{
+        overflow-x: hidden;
+    }
     header.navbar{
         display:none !important;
     }
@@ -81,7 +83,7 @@ header.navbar .d-flex {
 
     #mobileSidebarToggle {
         border: none;
-        background: transparent;
+        background: #fff;
 
         font-size: 24px;
 
@@ -90,49 +92,42 @@ header.navbar .d-flex {
         justify-content: center;
     }
 
-    .mobile-logo {
-        position: absolute;
-
-        left: 30%;
-
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .logo-collapse {
-        width: 36px;
-        height: 36px;
-
-        display: block;
-
-        object-fit: contain;
-    }
-
     .mobile-role-switch select {
         min-width: 90px;
         font-size: 12px;
     }
     .navbar-vertical{
         position: fixed !important;
-        top: 0;
+        top: 0 !important;
         left: 0 !important;
 
         width: 280px !important;
+        max-width: 280px !important;
+        min-width: 280px !important;
+
         height: 100vh !important;
+
         transform: translateX(-100%) !important;
+
         background: #fff !important;
+
         z-index: 1050 !important;
 
-        transition: .3s ease !important;
+        transition: transform .3s ease !important;
 
-        overflow-y: auto;
+        overflow-y: auto !important;
+
+        margin: 0 !important;
+
+        display: block !important;
     }
 
     .navbar-vertical.show-sidebar{
         transform: translateX(0) !important;
     }
-
+    .navbar-vertical .collapse:not(.show){
+        display: block !important;
+    }
     .sidebar-overlay{
         position: fixed;
         inset: 0;
@@ -163,9 +158,25 @@ header.navbar .d-flex {
         padding-top: 10px;
     }
 
-    .navbar-nav .nav-link{
-        min-height: 48px;
-        border-radius: 10px;
-        margin: 2px 8px;
+    .navbar-vertical.navbar-expand-lg{
+        flex-direction: column !important;
+        align-items: stretch !important;
+    }
+
+    .navbar-vertical .navbar-nav{
+        width: 100% !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+
+    .navbar-vertical .nav-item{
+        width: 100% !important;
+    }
+
+    .navbar-vertical .nav-link{
+        width: 100% !important;
+    }
+    .navbar-collapse{
+        display: block !important;
     }
 }

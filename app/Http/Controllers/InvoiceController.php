@@ -19,24 +19,39 @@ class InvoiceController extends Controller
     public function invoiceDp(Project $project)
     {
         abort_if(!$project->offer, 404);
+
         Carbon::setLocale('id');
 
         $invoice = DB::transaction(function () use ($project) {
 
+            $offer = $project->offer;
+            $newAmount = $offer->grand_total * 0.7;
+
             $invoice = Invoice::where('project_id', $project->id)
                 ->where('invoice_type', Invoice::TYPE_DP)
                 ->lockForUpdate()
+                ->latest()
                 ->first();
 
             if (!$invoice) {
+
                 $invoice = Invoice::create([
                     'project_id'     => $project->id,
                     'invoice_type'   => Invoice::TYPE_DP,
                     'invoice_number' => InvoiceNumberGenerator::generate(Invoice::TYPE_DP),
                     'invoice_date'   => now(),
-                    'amount'         => $project->offer->grand_total * 0.7,
+                    'amount'         => $newAmount,
                     'status'         => Invoice::STATUS_WAITING,
                 ]);
+
+            } else {
+
+                // update amount jika total offer berubah
+                if ($invoice->amount != $newAmount) {
+                    $invoice->update([
+                        'amount' => $newAmount,
+                    ]);
+                }
             }
 
             if (!$invoice->invoice_dp_downloaded_at) {
@@ -45,7 +60,7 @@ class InvoiceController extends Controller
                 ]);
             }
 
-            return $invoice;
+            return $invoice->fresh();
         });
 
         $offer = $project->offer;
@@ -60,9 +75,13 @@ class InvoiceController extends Controller
     public function invoiceFinal(Project $project)
     {
         abort_if(!$project->offer, 404);
+
         Carbon::setLocale('id');
 
         $invoice = DB::transaction(function () use ($project) {
+
+            $offer = $project->offer;
+            $newAmount = $offer->grand_total * 0.3;
 
             $invoice = Invoice::where('project_id', $project->id)
                 ->where('invoice_type', Invoice::TYPE_FINAL)
@@ -70,14 +89,24 @@ class InvoiceController extends Controller
                 ->first();
 
             if (!$invoice) {
+
                 $invoice = Invoice::create([
                     'project_id'     => $project->id,
                     'invoice_type'   => Invoice::TYPE_FINAL,
                     'invoice_number' => InvoiceNumberGenerator::generate(Invoice::TYPE_FINAL),
                     'invoice_date'   => now(),
-                    'amount'         => $project->offer->grand_total * 0.3,
+                    'amount'         => $newAmount,
                     'status'         => Invoice::STATUS_WAITING,
                 ]);
+
+            } else {
+
+                // sync ulang jika total offer berubah
+                if ($invoice->amount != $newAmount) {
+                    $invoice->update([
+                        'amount' => $newAmount,
+                    ]);
+                }
             }
 
             if (!$invoice->downloaded_at) {
@@ -86,10 +115,11 @@ class InvoiceController extends Controller
                 ]);
             }
 
-            return $invoice;
+            return $invoice->fresh();
         });
-            $offer = $project->offer;
-            
+
+        $offer = $project->offer;
+
         return Pdf::loadView('invoice.final', compact('invoice', 'project', 'offer'))
             ->stream('Invoice-Pelunasan-' . $project->project_name . '.pdf');
     }

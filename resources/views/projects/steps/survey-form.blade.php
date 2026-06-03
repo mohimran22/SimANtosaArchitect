@@ -91,7 +91,7 @@
     <div class="section-block mt-4"> 
         <div class="row g-4">
             <div class="col-md-6 mb-4">
-                <label class="fw-bold required">Foto Hasil Survei / Denah</label>
+                <label class="fw-bold">Foto Hasil Survei / Denah</label>
                 <div class="text-muted mb-2">Foto hasil survei seperti sketsa, denah, atau kondisi lapangan</div>
                 <input type="file"
                     name="result_images[]"
