@@ -86,9 +86,6 @@
                                 </select>
                             </div>
                             <div class="col-12 text-end mt-3">
-                                <a href="{{ route('menus.index') }}" class="btn btn-light">
-                                    <i class="ti ti-arrow-left me-1"></i> Batal
-                                </a>
                                 <button type="submit" class="btn btn-dark">
                                     <i class="ti ti-check me-1"></i> Simpan Menu
                                 </button>

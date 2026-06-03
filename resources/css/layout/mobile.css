@@ -1,0 +1,149 @@
+.mobile-fab{
+
+    position: fixed;
+
+    right: 18px;
+    bottom: 20px;
+
+    width: 56px;
+    height: 56px;
+
+    border-radius: 50%;
+
+    background: #111827;
+    color: #fff;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    box-shadow: 0 10px 25px rgba(0,0,0,.18);
+
+    z-index: 999;
+
+    transition: .2s ease;
+
+    text-decoration: none;
+}
+
+.mobile-fab:hover{
+
+    transform: scale(1.05);
+
+    color: #fff;
+}
+@media (max-width: 768px){
+
+    .page-header{
+        display:none;
+    }
+    .page-header .btn-list{
+        display:none;
+    }
+
+    .page-header .btn{
+        display:none;
+    }
+
+    .page-header .btn svg{
+        display:none;
+    }
+
+    .card{
+        border-radius: 14px;
+        overflow: hidden !important;
+    }
+
+    .card-header{
+        padding: 14px 16px;
+    }
+
+    .card-header p{
+        font-size: 18px !important;
+        margin-bottom: 0 !important;
+        text-align: left !important;
+    }
+
+    .table-responsive{
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    #menuTable{
+        min-width: 900px;
+    }
+
+    #menuTable th,
+    #menuTable td{
+        font-size: 13px;
+        padding: 10px 12px;
+        vertical-align: middle;
+    }
+
+    .dt-container .row{
+        display:flex !important;
+        align-items:center;
+        gap:10px;
+
+        flex-wrap:nowrap;
+    }
+
+    .dt-length{
+        margin:0 !important;
+        flex-shrink:0;
+    }
+
+    .dt-length label{
+        font-size:0;
+        margin:0;
+    }
+
+    .dt-length select{
+        font-size:14px !important;
+
+        min-width:70px;
+
+        height:38px;
+
+        border-radius:8px;
+    }
+
+    /* search */
+    .dt-search{
+        margin:0 !important;
+        flex:1;
+    }
+
+    .dt-search label{
+        width:100%;
+        margin:0;
+    }
+
+    .dt-search input{
+
+        width:100% !important;
+
+        margin-left:0 !important;
+
+        height:38px;
+
+        border-radius:10px;
+    }
+
+    /* pagination */
+    .dt-paging{
+        margin-top:12px;
+
+        overflow-x:auto;
+
+        white-space:nowrap;
+    }
+
+}
+@media (min-width: 768px){
+
+    .mobile-fab{
+        display:none !important;
+    }
+
+}

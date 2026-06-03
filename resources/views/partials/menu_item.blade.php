@@ -464,4 +464,37 @@ document.querySelectorAll('[data-submenu]').forEach(menu => {
     }
 
 }
+@media (max-width: 576px){
+
+    .submenu{
+
+        position: static !important;
+
+        width: 100% !important;
+
+        left: unset !important;
+        top: unset !important;
+
+        background: transparent !important;
+
+        box-shadow: none !important;
+
+        border-radius: 0 !important;
+
+        padding: 0 !important;
+
+        display: none;
+    }
+
+    .submenu.show{
+        display:block;
+    }
+
+    .nav-link-title{
+        display:inline !important;
+        opacity:1 !important;
+        visibility:visible !important;
+    }
+
+}
 </style>

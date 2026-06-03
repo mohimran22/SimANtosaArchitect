@@ -189,7 +189,6 @@ document.addEventListener('click', function(e){
 
     .navbar.navbar-vertical.navbar-expand-lg {
         width: 80px;
-        z-index:20;
     }
 
     .page-wrapper {
@@ -257,6 +256,15 @@ document.addEventListener('click', function(e){
         display:block !important;
     }
 
+    /* logo expand tampil lagi */
+    .logo-expand{
+        display:block !important;
+    }
+
+    .logo-collapse{
+        display:none !important;
+    }
+
     /* submenu mobile jadi accordion */
     .submenu{
 
@@ -275,17 +283,6 @@ document.addEventListener('click', function(e){
 
         padding: 0 !important;
 
-        display: none;
-    }
-
-    .submenu.show{
-        display:block;
-    }
-
-    .nav-link-title{
-        display:inline !important;
-        opacity:1 !important;
-        visibility:visible !important;
     }
 
 }

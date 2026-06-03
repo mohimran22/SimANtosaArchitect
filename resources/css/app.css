@@ -1,6 +1,7 @@
 @import "./layout/header.css";
 @import "./layout/dashboard.css";
 @import "./custom.css";
+@import "./layout/mobile.css";
 @import "bootstrap/dist/css/bootstrap.min.css";
 @import '@tabler/core/dist/css/tabler.min.css';
 
