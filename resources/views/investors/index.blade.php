@@ -38,7 +38,7 @@
                             </p>
                         </div>
                         <div class="table-responsive">
-                            <table id="tableInvestors" class="table card-table table-vcenter text-nowrap" >
+                            <table id="tableInvestors" class="table card-table table-vcenter text-nowrap">
                                 <thead>
                                     <tr>
                                         <th width="5%">No</th>

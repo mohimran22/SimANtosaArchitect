@@ -498,17 +498,6 @@ z-index: 1035;
     margin-top: auto;
     padding: 16px 10px;
 }
-/* .footer.footer-transparent {
-    margin-top: auto;
-    padding: 16px;
-    transition: all .3s ease;
-}
-
-
-.sidebar-collapsed .footer {
-    padding-left: 80px;
-    padding-right: 18px;
-} */
 
 .avatar {
     display: inline-block;
@@ -545,27 +534,9 @@ z-index: 1035;
   border-bottom: 1px solid #eee;
   font-size: 12px !important;
     white-space: nowrap;
+     vertical-align: middle;
 
 }
-/* .sidebar-backdrop {
-
-    position: fixed;
-    inset: 0;
-
-    background: rgba(0,0,0,.4);
-
-    opacity: 0;
-    visibility: hidden;
-
-    transition: .2s ease;
-
-    z-index: 1999;
-}
-
-.sidebar-backdrop.show {
-    opacity: 1;
-    visibility: visible;
-} */
 
 .table-fixed {
     table-layout: fixed;

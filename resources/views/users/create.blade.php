@@ -242,7 +242,6 @@
 @push('js')
 <script>
 $('.select2').select2({
-            placeholder: "-- Pilih --",
             width: '100%'
         });
 </script>

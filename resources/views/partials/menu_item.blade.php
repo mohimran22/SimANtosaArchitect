@@ -1,124 +1,126 @@
+@php
+    use App\Helpers\ActiveRole;
+    use Spatie\Permission\Models\Permission;
+
+    $user = auth()->user();
+    if (!$user) return;
+    $isSuperAdmin = $user->hasRole('Super-Admin');
+
+    $userPermissions = $isSuperAdmin
+        ? Permission::pluck('name')->toArray()     
+        : (ActiveRole::permissions() ?? []);              
+@endphp
+
+@foreach($menus as $menu)
     @php
-        use App\Helpers\ActiveRole;
-        use Spatie\Permission\Models\Permission;
+        // Jangan ubah $menu['children'] langsung, simpan dulu
+        $children = isset($menu['children']) ? $menu['children'] : [];
 
-        $user = auth()->user();
-        if (!$user) return;
-        $isSuperAdmin = $user->hasRole('Super-Admin');
+        // Filter child tanpa mengubah variabel asli
+        $filteredChildren = array_filter($children, function ($child) use ($userPermissions) {
+            if (empty($child['permission_name'])) return true;
 
-        $userPermissions = $isSuperAdmin
-            ? Permission::pluck('name')->toArray()     
-            : (ActiveRole::permissions() ?? []);              
+            foreach (explode('|', $child['permission_name']) as $perm) {
+                if (in_array(trim($perm), $userPermissions)) {
+                    return true;
+                }
+            }
+            return false;
+        });
+
+        $hasChildren = count($filteredChildren) > 0;
+
+        // Permission parent
+        $canViewParent = true;
+        if (!empty($menu['permission_name'])) {
+            $canViewParent = false;
+            foreach (explode('|', $menu['permission_name']) as $perm) {
+                if (in_array(trim($perm), $userPermissions)) {
+                    $canViewParent = true;
+                    break;
+                }
+            }
+        }
+
+        // Detect active
+        $isActive = false;
+
+        if ($menu['type'] === 'route') {
+            $isActive = request()->routeIs($menu['url']);
+        } elseif ($menu['type'] === 'url') {
+            $isActive = request()->is(ltrim($menu['url'], '/').'*');
+        }
+
+        if (!$isActive && $hasChildren) {
+            foreach ($filteredChildren as $child) {
+                if ($child['type'] === 'route' && request()->routeIs($child['url'])) {
+                    $isActive = true;
+                    break;
+                }
+                if ($child['type'] === 'url' && request()->is(ltrim($child['url'], '/').'*')) {
+                    $isActive = true;
+                    break;
+                }
+            }
+        }
+        $submenuId = 'submenu-' . md5($menu['text'] . $loop->index);
     @endphp
 
-    @foreach($menus as $menu)
-        @php
-            // Jangan ubah $menu['children'] langsung, simpan dulu
-            $children = isset($menu['children']) ? $menu['children'] : [];
-
-            // Filter child tanpa mengubah variabel asli
-            $filteredChildren = array_filter($children, function ($child) use ($userPermissions) {
-                if (empty($child['permission_name'])) return true;
-
-                foreach (explode('|', $child['permission_name']) as $perm) {
-                    if (in_array(trim($perm), $userPermissions)) {
-                        return true;
-                    }
-                }
-                return false;
-            });
-
-            $hasChildren = count($filteredChildren) > 0;
-
-            // Permission parent
-            $canViewParent = true;
-            if (!empty($menu['permission_name'])) {
-                $canViewParent = false;
-                foreach (explode('|', $menu['permission_name']) as $perm) {
-                    if (in_array(trim($perm), $userPermissions)) {
-                        $canViewParent = true;
-                        break;
-                    }
-                }
-            }
-
-            // Detect active
-            $isActive = false;
-
-            if ($menu['type'] === 'route') {
-                $isActive = request()->routeIs($menu['url']);
-            } elseif ($menu['type'] === 'url') {
-                $isActive = request()->is(ltrim($menu['url'], '/').'*');
-            }
-
-            if (!$isActive && $hasChildren) {
-                foreach ($filteredChildren as $child) {
-                    if ($child['type'] === 'route' && request()->routeIs($child['url'])) {
-                        $isActive = true;
-                        break;
-                    }
-                    if ($child['type'] === 'url' && request()->is(ltrim($child['url'], '/').'*')) {
-                        $isActive = true;
-                        break;
-                    }
-                }
-            }
-            $submenuId = 'submenu-' . md5($menu['text'] . $loop->index);
-        @endphp
-
-        @if($canViewParent)
-            <li class="nav-item {{ $hasChildren ? 'has-dropdown' : '' }}"
-                data-title="{{ $menu['text'] }}">
-                <a class="nav-link {{ $isActive ? 'active open' : '' }}"
-                data-title="{{ $menu['text'] }}"
+    @if($canViewParent)
+        <li class="nav-item {{ $hasChildren ? 'has-dropdown' : '' }}"
+            data-title="{{ $menu['text'] }}">
+            <a class="nav-link {{ $isActive ? 'active open' : '' }}"
+            data-title="{{ $menu['text'] }}"
+            @if($hasChildren)
                 data-submenu="{{ $submenuId }}"
-                href="{{ $hasChildren 
-                ? 'javascript:void(0)' 
-                : ($menu['type'] === 'route' 
-                    ? route($menu['url']) 
-                    : url($menu['url'])) }}"
-                >
-                    <span class="nav-link-icon">
-                        <i class="{{ $menu['icon'] ?? 'ti ti-circle' }}"></i>
-                    </span>
+            @endif
+            href="{{ $hasChildren 
+            ? 'javascript:void(0)' 
+            : ($menu['type'] === 'route' 
+                ? route($menu['url']) 
+                : url($menu['url'])) }}"
+            >
+                <span class="nav-link-icon">
+                    <i class="{{ $menu['icon'] ?? 'ti ti-circle' }}"></i>
+                </span>
 
-                    <span class="nav-link-title">{{ $menu['text'] }}</span>
-                    @if($hasChildren)
-                        <span class="submenu-arrow"></span>
-                    @endif
-                </a>
-
+                <span class="nav-link-title">{{ $menu['text'] }}</span>
                 @if($hasChildren)
-                    <div class="submenu {{ $isActive ? 'show' : '' }}"
-                        id="{{ $submenuId }}">
-                        <ul class="nav nav-sm flex-column ms-4">
-                            @foreach($filteredChildren as $child)
-                                @php
-                                    $childActive = $child['type'] === 'route'
-                                        ? request()->routeIs($child['url'])
-                                        : request()->is(ltrim($child['url'], '/').'*');
-                                @endphp
-
-                                <li class="nav-item">
-                                    <a href="{{ $child['type'] === 'route' ? route($child['url']) : url($child['url']) }}"
-                                    class="nav-link {{ $childActive ? 'active' : '' }}"
-                                    data-title="{{ $child['text'] }}">
-                                        <i class="{{ $child['icon'] ?? 'ti ti-point' }} me-2"></i>
-                                        {{ $child['text'] }}
-                                    </a>
-                                </li>
-                            @endforeach
-                        </ul>
-                    </div>
+                    <span class="submenu-arrow"></span>
                 @endif
-            </li>
-        @endif
-    @endforeach
-    @push('js')
+            </a>
+
+            @if($hasChildren)
+                <div class="submenu {{ $isActive ? 'show' : '' }}"
+                    id="{{ $submenuId }}">
+                    <ul class="nav nav-sm flex-column ms-4">
+                        @foreach($filteredChildren as $child)
+                            @php
+                                $childActive = $child['type'] === 'route'
+                                    ? request()->routeIs($child['url'])
+                                    : request()->is(ltrim($child['url'], '/').'*');
+                            @endphp
+
+                            <li class="nav-item">
+                                <a href="{{ $child['type'] === 'route' ? route($child['url']) : url($child['url']) }}"
+                                class="nav-link {{ $childActive ? 'active' : '' }}"
+                                data-title="{{ $child['text'] }}">
+                                    <i class="{{ $child['icon'] ?? 'ti ti-point' }} me-2"></i>
+                                    {{ $child['text'] }}
+                                </a>
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+        </li>
+    @endif
+@endforeach
+@push('js')
 <script>
 document.querySelectorAll('[data-submenu]').forEach(menu => {
 
-    menu.addEventListener('click', function(){
+    menu.addEventListener('click', function(e){
 
         const submenuId = this.dataset.submenu;
 
@@ -126,8 +128,34 @@ document.querySelectorAll('[data-submenu]').forEach(menu => {
 
         const submenu = document.getElementById(submenuId);
 
+        if(!submenu) return;
+
+        const isMobile = window.innerWidth <= 576;
+
+        const isCollapsed =
+            document.documentElement.classList.contains('sidebar-collapsed');
+
+        if(isMobile){
+
+            e.preventDefault();
+
+            submenu.classList.toggle('show');
+
+            this.classList.toggle('open');
+
+            return;
+        }
+
+        if(isCollapsed){
+
+            return;
+        }
+
+        e.preventDefault();
+
         submenu.classList.toggle('show');
-                this.classList.toggle('open');
+
+        this.classList.toggle('open');
 
     });
 
@@ -330,46 +358,18 @@ document.querySelectorAll('[data-submenu]').forEach(menu => {
 .sidebar-collapsed .nav-link-title {
     display: none !important;
 }
-
-/* .sidebar-collapsed .submenu {
-    position: fixed;
-    left: 78px;
-    max-height: calc(100vh - 20px);
-    overflow-y: auto;
-    overflow-x: hidden;
-    min-width: 220px;
-    max-width: 260px;
-    background: white;
-
-    border-radius: 12px;
-
-    padding: 10px;
-
-    box-shadow: 0 10px 30px rgba(0,0,0,.12);
-
-    z-index: 1050;
-
-    opacity: 0;
-    visibility: hidden;
-
-    transform: translateX(10px);
-
-    transition: none !important;
-
-    pointer-events: none;
-} */
 .sidebar-collapsed .submenu {
     position: fixed;
     top: 0;
     left: 78px;
-
-    min-width: 220px;
-    max-width: 260px;
     width: 220px;
+    min-width: 220px;
+    max-width: 220px;
+    
 
     background: #fff;
     border-radius: 12px;
-    padding: 10px;
+    padding: 8px;
 
     box-shadow: 0 10px 30px rgba(0,0,0,.12);
 
@@ -382,20 +382,6 @@ document.querySelectorAll('[data-submenu]').forEach(menu => {
 
     transition: opacity .15s ease;
 }
-
-/* .sidebar-collapsed .submenu.show-floating {
-    opacity: 1;
-    visibility: visible;
-    transform: translateX(0);
-    pointer-events: auto;
-
-    min-width: 190px;
-    max-width: 260px;
-    padding: 10px;
-    border-radius: 10px;
-    overflow-y: auto;
-    max-height: calc(100vh - 20px);
-} */
 .sidebar-collapsed .submenu.show-floating {
     opacity: 1;
     visibility: visible;
@@ -416,19 +402,14 @@ document.querySelectorAll('[data-submenu]').forEach(menu => {
 }
 
 .sidebar-collapsed .submenu.show-floating .nav-link {
-
     justify-content: flex-start !important;
-
     padding: 6px 8px !important;
-
     gap: 8px;
-
     min-height: 34px;
-
     border-radius: 8px;
-
     font-size: 13px;
     font-weight: 400;
+    width: 100%;
 }
 
 .sidebar-collapsed .submenu.show-floating .nav-link-icon {
@@ -447,13 +428,13 @@ document.querySelectorAll('[data-submenu]').forEach(menu => {
 .sidebar-collapsed .nav-item.floating-active > .nav-link::before {
     display: none !important;
 }
-@media (max-width: 1200px){
+@media (min-width: 992px) and (max-width: 1200px) {
 
     .sidebar-collapsed .submenu{
 
         position: fixed;
 
-        left: 72px !important;
+        left: 72px;
 
         min-width: 200px;
         max-width: 220px;
@@ -469,7 +450,7 @@ document.querySelectorAll('[data-submenu]').forEach(menu => {
         max-height: calc(100vh - 40px);
 
         overflow-y: auto;
-        z-index: 99999;
+        z-index: 100;
     }
 
     .sidebar-collapsed .submenu.show-floating{
@@ -483,42 +464,4 @@ document.querySelectorAll('[data-submenu]').forEach(menu => {
     }
 
 }
-/* @media (min-width: 991,98px){
-
-    .sidebar-collapsed .submenu{
-
-        position: fixed;
-
-        left: 72px !important;
-
-        min-width: 200px;
-        max-width: 220px;
-
-        width: 220px;
-
-        border-radius: 10px;
-
-        padding: 8px;
-
-        transform: none !important;
-
-        max-height: calc(100vh - 40px);
-
-        overflow-y: auto;
-        z-index: 99999;
-    }
-
-    .sidebar-collapsed .submenu.show-floating{
-        transform: none !important;
-    }
-
-    .sidebar-collapsed .submenu .nav-link{
-        padding: 6px 8px !important;
-        font-size: 13px;
-    }
-     .nav-link-title {
-        display: inline !important;
-     }
-
-} */
 </style>

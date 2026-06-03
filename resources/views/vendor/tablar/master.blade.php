@@ -7,13 +7,13 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     {{-- <link rel="icon" type="image/png" sizes="96x96" href="{{ asset('favicon-96x96.png') }}"> --}}
     <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
-<script>
-(function() {
-    if (localStorage.getItem('sidebarCollapsed') === 'true') {
-        document.documentElement.classList.add('sidebar-collapsed');
-    }
-})();
-</script>
+    <script>
+    (function() {
+        if (localStorage.getItem('sidebarCollapsed') === 'true') {
+            document.documentElement.classList.add('sidebar-collapsed');
+        }
+    })();
+    </script>
 
     @yield('meta_tags')
 
