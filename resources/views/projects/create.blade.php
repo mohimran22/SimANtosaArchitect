@@ -287,8 +287,7 @@
                             @if(!$project->offer?->approved_at)
                                     @if($project->project_type == 1)
                                         <form action="{{ route('projects.contract.approve', $project->id) }}"
-                                            method="POST"
-                                            class="approve-form">
+                                            method="POST" class="approve-form">
                                             @csrf
                                             <button type="submit" class="btn btn-dark">
                                                 <i class="ti ti-check"></i> Approve Kontrak
@@ -296,7 +295,7 @@
                                         </form>
                                     @elseif($project->project_type == 3)
                                         <form action="{{ route('projects.contract.build.approve', $project->id) }}"
-                                            method="POST">
+                                            method="POST" class="approve-form">
                                             @csrf
                                             <button type="submit" class="btn btn-dark">
                                                 <i class="ti ti-check"></i> Approve Kontrak Build
@@ -369,7 +368,9 @@
                             )
                                 <form action="{{ route('projects.invoice.approve', $project->id) }}"
                                     method="POST"
-                                    onsubmit="return confirm('Lanjut ke tahap pengerjaan?')">
+                                    class="approve-form"
+                                    data-title="Lanjut ke Tahap Berikutnya?"
+                                    data-text="Invoice DP akan disetujui dan proses berlanjut.">
                                     @csrf
                                     <button class="btn btn-dark">
                                         <i class="ti ti-arrow-right"></i> Lanjut ke tahap berikutnya
@@ -377,7 +378,10 @@
                                 </form>
                             @endif
                             @if($invoiceRab && $invoiceRab->downloaded_at && !$invoiceRab->approved_at)
-                                <form action="{{ route('projects.invoice.rab.approve', $project->id) }}" method="POST">
+                                <form action="{{ route('projects.invoice.rab.approve', $project->id) }}" method="POST"
+                                    class="approve-form"
+                                    data-title="Lanjut ke Tahap Berikutnya?"
+                                    data-text="Invoice RAB akan disetujui dan proses berlanjut.">
                                     @csrf
                                     <button class="btn btn-dark">
                                         <i class="ti ti-arrow-right"></i>
@@ -386,7 +390,10 @@
                                 </form>
                             @endif
                             @if($invoice && $termin < 4)
-                            <form action="{{ route('projects.invoice.build.approve', [$project->id, $invoice->id]) }}" method="POST">
+                            <form action="{{ route('projects.invoice.build.approve', [$project->id, $invoice->id]) }}" method="POST"
+                                class="approve-form"
+                                data-title="Lanjut ke Tahap Berikutnya?"
+                                data-text="Invoice termin I akan disetujui dan progres proyek dilanjutkan.">
                                 @csrf
                                 <button class="btn btn-dark">
                                     <i class="ti ti-arrow-right"></i>
