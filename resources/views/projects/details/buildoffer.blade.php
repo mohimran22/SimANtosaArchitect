@@ -140,44 +140,55 @@ function numberToLetters($num) {
             @endforeach
 
             </tbody>
-
+            @php
+                $subtotal = $rab->categories
+                    ->flatMap(fn($c) => $c->uraians)
+                    ->flatMap(fn($u) => $u->items)
+                    ->sum(fn($i) => $i->volume * $i->price);
+                $discount = $offer->discount ?? 0;
+                $subtotalAfterDiscount = $subtotal - $discount;
+                $taxRate = $offer->tax_rate ?? 0;
+                $totalTax = $subtotalAfterDiscount * ($taxRate / 100);
+                $shipping = $offer->shipping ?? 0;
+                $grandTotal = $subtotalAfterDiscount + $totalTax + $shipping;
+            @endphp
             <tfoot>
                 <tr>
                     <th colspan="5" class="text-end">SUBTOTAL</th>
-                    <th>Rp {{ number_format($offer->subtotal, 0, ',', '.') }}</th>
+                    <th>Rp {{ number_format($subtotal, 0, ',', '.') }}</th>
                 </tr>
 
                 <tr>
                     <th colspan="5" class="text-end">DISCOUNT</th>
-                    <th>Rp {{ number_format($offer->discount, 0, ',', '.') }}</th>
+                    <th>Rp {{ number_format($discount, 0, ',', '.') }}</th>
                 </tr>
 
                 <tr>
                     <th colspan="5" class="text-end">SUBTOTAL AFTER DISCOUNT</th>
                     <th>
-                        Rp {{ number_format($offer->subtotal_after_discount, 0, ',', '.') }}
+                        Rp {{ number_format($subtotalAfterDiscount, 0, ',', '.') }}
                     </th>
                 </tr>
 
                 <tr>
                     <th colspan="5" class="text-end">TAX RATE (%)</th>
-                    <th>{{ $offer->tax_rate }}%</th>
+                    <th>{{ $taxRate }}%</th>
                 </tr>
 
                 <tr>
                     <th colspan="5" class="text-end">TOTAL TAX</th>
-                    <th>Rp {{ number_format($offer->total_tax, 0, ',', '.') }}</th>
+                    <th>Rp {{ number_format($totalTax, 0, ',', '.') }}</th>
                 </tr>
 
                 <tr>
                     <th colspan="5" class="text-end">SHIPPING / HANDLING</th>
-                    <th>Rp {{ number_format($offer->shipping, 0, ',', '.') }}</th>
+                    <th>Rp {{ number_format($shipping, 0, ',', '.') }}</th>
                 </tr>
 
                 <tr>
                     <th colspan="5" class="text-end">GRAND TOTAL</th>
                     <th class="fw-bold">
-                        Rp {{ number_format($offer->grand_total, 0, ',', '.') }}
+                        Rp {{ number_format($grandTotal, 0, ',', '.') }}
                     </th>
                 </tr>
             </tfoot>

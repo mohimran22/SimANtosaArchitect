@@ -33,11 +33,14 @@
                 </tr>
                 </table>
 
-            <div class="row mb-3" style="margin-left:20px;">
+            <div class="row mb-3 ps-3 align-items-end">
+
                 <div class="col-md-3">
-                    <label>Filter Minggu</label>
+                    <label class="form-label">Filter Minggu</label>
+
                     <select id="filter-week" class="form-select select2">
                         <option value="">Semua</option>
+
                         @foreach($project->week_labels as $w)
                             <option value="{{ $w['week_no'] }}">
                                 M{{ $w['week_no'] }} ({{ $w['label'] }})
@@ -47,9 +50,28 @@
                 </div>
 
                 <div class="col-md-3">
-                    <label>Filter Tanggal</label>
-                    <input type="date" id="filter-date" class="form-control">
+                    <label class="form-label">Filter Tanggal</label>
+
+                    <input type="date"
+                        id="filter-date"
+                        class="form-control">
                 </div>
+
+                <div class="col-md-3">
+                    <form action="{{ route('projects.sync-build', $project->id) }}"
+                        method="POST"
+                        onsubmit="return confirm('Update form kemajuan pekerjaan dengan RAB terbaru?')">
+
+                        @csrf
+
+                        <button type="submit" class="btn btn-danger w-100">
+                            <i class="ti ti-refresh"></i>
+                            Update Form Kemajuan Pekerjaan
+                        </button>
+
+                    </form>
+                </div>
+
             </div>
 
             <div class="table-responsive">
@@ -446,22 +468,6 @@
             </div>
         </div>
     </div>
-{{-- <div class="card shadow-sm border-0">
-
-    <div class="card-body px-5 py-3 kurva-header" style="cursor:pointer">
-        <h4 class="fw-bold mb-0 d-flex justify-content-between align-items-center">
-            Kurva S Progress Proyek
-            <span id="kurvaIcon">▼</span>
-        </h4>
-    </div>
-
-    <div id="kurvaSCollapse">
-        <div class="card-body px-5 pt-0 pb-4">
-            <canvas id="kurvaSChart" height="120"></canvas>
-        </div>
-    </div>
-
-</div> --}}
 <x-collapse-card
     title="Kurva S Progress Proyek"
     target="kurva-body">

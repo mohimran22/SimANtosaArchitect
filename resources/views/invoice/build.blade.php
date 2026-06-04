@@ -158,7 +158,7 @@ Progress Pekerjaan {{ $invoice->progress_start }}% - {{ $invoice->progress_end }
 
     
     <td class="text-center">{{ $invoice->payment_percentage }}%</td>
-    <td class="text-right">{{ number_format($offer->grand_total,0,',','.') }}</td>
+    <td class="text-right">{{ number_format($grandTotal,0,',','.') }}</td>
     <td class="text-right">{{ number_format($invoice->amount,0,',','.') }}</td>
 </tr>
 </tbody>
@@ -198,7 +198,7 @@ Progress Pekerjaan {{ $invoice->progress_start }}% - {{ $invoice->progress_end }
 <li>
 Pembayaran Termin {{ $inv->termin }}
 sebesar {{ $inv->payment_percentage }}%
-x Rp {{ number_format($offer->grand_total,0,',','.') }}
+x Rp {{ number_format($grandTotal,0,',','.') }}
 =
 Rp {{ number_format($inv->amount,0,',','.') }}
 </li>

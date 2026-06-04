@@ -23,7 +23,6 @@ class InvoiceBuildController extends Controller
 
         Carbon::setLocale('id');
 
-        // Mapping termin
         $terminMap = [
             1 => ['start' => 0,  'end' => 30,  'percent' => 30],
             2 => ['start' => 30, 'end' => 60,  'percent' => 30],
@@ -34,8 +33,29 @@ class InvoiceBuildController extends Controller
         abort_if(!isset($terminMap[$termin]), 404);
 
         $conf = $terminMap[$termin];
+        $offer = $project->offer;
+        $rab = $offer->rab;
 
-        $invoice = DB::transaction(function () use ($project, $termin, $conf) {
+        $result = DB::transaction(function () use ($project, $termin, $conf, $rab, $offer) {
+
+            $subtotal = $rab->categories
+                ->flatMap(fn($c) => $c->uraians)
+                ->flatMap(fn($u) => $u->items)
+                ->sum(fn($i) => $i->volume * $i->price);
+
+            $discount = $offer->discount ?? 0;
+
+            $subtotalAfterDiscount = $subtotal - $discount;
+
+            $taxRate = $offer->tax_rate ?? 0;
+
+            $totalTax = $subtotalAfterDiscount * ($taxRate / 100);
+
+            $shipping = $offer->shipping ?? 0;
+
+            $grandTotal = $subtotalAfterDiscount + $totalTax + $shipping;
+
+            $newAmount = $grandTotal * ($conf['percent'] / 100);
 
             $invoice = InvoiceBuild::where('project_id', $project->id)
                 ->where('termin', $termin)
@@ -43,6 +63,7 @@ class InvoiceBuildController extends Controller
                 ->first();
 
             if (!$invoice) {
+
                 $invoice = InvoiceBuild::create([
                     'project_id'          => $project->id,
                     'invoice_type'        => InvoiceBuild::TYPE_BUILD,
@@ -52,25 +73,38 @@ class InvoiceBuildController extends Controller
                     'progress_start'      => $conf['start'],
                     'progress_end'        => $conf['end'],
                     'payment_percentage'  => $conf['percent'],
-                    'amount'              => $project->offer->grand_total * ($conf['percent'] / 100),
+                    'amount'              => $newAmount,
                     'status'              => 'waiting',
                 ]);
 
+            } else {
+
+                if ($invoice->amount != $newAmount) {
+
+                    $invoice->update([
+                        'amount' => $newAmount,
+                    ]);
+                }
             }
 
             if (!$invoice->downloaded_at) {
+
                 $invoice->update([
                     'downloaded_at' => now(),
                 ]);
             }
 
-            return $invoice;
+            return [
+                'invoice' => $invoice->fresh(),
+                'grandTotal' => $grandTotal,
+            ];
         });
 
         return Pdf::loadView('invoice.build', [
-            'invoice' => $invoice,
+            'invoice' => $result['invoice'],
             'project' => $project,
-            'offer'   => $project->offer,
+            'offer'   => $offer,
+            'grandTotal' => $result['grandTotal']
         ])
         ->setPaper('A4', 'portrait')
         ->stream(
@@ -106,52 +140,62 @@ class InvoiceBuildController extends Controller
                 'approved_ip' => request()->ip(),
             ]);
 
-            if (
-                $invoice->termin == 1 &&
-                BuildProcessItem::where('project_id', $project->id)->doesntExist()
-            ) {
+            $project->load('offer.rab.categories.uraians.items');
 
-                $project->load('offer.rab.categories.uraians.items');
+            $currentRabItemIds = $project->offer->rab
+                ->categories
+                ->flatMap(fn($c) => $c->uraians)
+                ->flatMap(fn($u) => $u->items)
+                ->pluck('id')
+                ->toArray();
 
-                $rows = [];
-
+            BuildProcessItem::where('project_id', $project->id)
+                ->whereNotIn('rab_item_id', $currentRabItemIds)
+                ->whereDoesntHave('weeklyProgresses')
+                ->delete();
+            $existing = BuildProcessItem::where([
+                'project_id' => $project->id,
+                'rab_item_id' => $item->id,
+            ])->first();
+            $hasProgress =
+                $existing &&
+                $existing->weeklyProgresses()->exists();
                 foreach ($project->offer->rab->categories as $cIndex => $category) {
-                      
+
                     foreach ($category->uraians as $uIndex => $uraian) {
 
                         foreach ($uraian->items as $iIndex => $item) {
 
-                            $rows[] = [
+                            BuildProcessItem::updateOrCreate(
 
-                                'project_id' => $project->id,
-                                'rab_item_id' => $item->id,
+                                [
+                                    'project_id' => $project->id,
+                                    'rab_item_id' => $item->id,
+                                ],
 
-                                'category_name' => $category->name,
-                                'uraian_name' => $uraian->name,
+                                [
+                                    'category_name' => $category->name,
+                                    'uraian_name' => $uraian->name,
 
-                                'job_category_id' => $item->job_category_id,
-                                'uraian' => $item->job_name,
+                                    'job_category_id' => $item->job_category_id,
+                                    'uraian' => $item->job_name,
 
-                                'price' => $item->price,
-                                'volume' => $item->volume,
-                                'total' => $item->total,
-                                'satuan' => $item->satuan,
+                                    'price' => $hasProgress ? $existing->price : $item->price,
+                                    'volume' => $hasProgress ? $existing->volume : $item->volume,
+                                    'total' => $hasProgress ? $existing->total : ($item->volume * $item->price),
+                                    'satuan' => $item->satuan,
 
-                                'bobot_percent' => 0,
+                                    'category_order' => $cIndex,
+                                    'uraian_order' => $uIndex,
+                                    'item_order' => $iIndex,
 
-                                'category_order' => $cIndex,
-                                'uraian_order' => $uIndex,
-                                'item_order' => $iIndex,
-
-                                'created_at' => now(),
-                                'updated_at' => now(),
-                            ];
+                                    'updated_at' => now(),
+                                ]
+                            );
                         }
                     }
                 }
-
-                BuildProcessItem::insert($rows);
-            }
+            
             $lastTermin = 4;
 
             // TERMIN AWAL (biasanya 1)
@@ -393,3 +437,49 @@ public function autoJustek(Project $project)
     return response()->json(['ok'=>true]);
 }
 }
+            // if (
+            //     $invoice->termin == 1 &&
+            //     BuildProcessItem::where('project_id', $project->id)->doesntExist()
+            // ) {
+
+            //     $project->load('offer.rab.categories.uraians.items');
+
+            //     $rows = [];
+
+            //     foreach ($project->offer->rab->categories as $cIndex => $category) {
+                      
+            //         foreach ($category->uraians as $uIndex => $uraian) {
+
+            //             foreach ($uraian->items as $iIndex => $item) {
+
+            //                 $rows[] = [
+
+            //                     'project_id' => $project->id,
+            //                     'rab_item_id' => $item->id,
+
+            //                     'category_name' => $category->name,
+            //                     'uraian_name' => $uraian->name,
+
+            //                     'job_category_id' => $item->job_category_id,
+            //                     'uraian' => $item->job_name,
+
+            //                     'price' => $item->price,
+            //                     'volume' => $item->volume,
+            //                     'total' => $item->total,
+            //                     'satuan' => $item->satuan,
+
+            //                     'bobot_percent' => 0,
+
+            //                     'category_order' => $cIndex,
+            //                     'uraian_order' => $uIndex,
+            //                     'item_order' => $iIndex,
+
+            //                     'created_at' => now(),
+            //                     'updated_at' => now(),
+            //                 ];
+            //             }
+            //         }
+            //     }
+
+            //     BuildProcessItem::insert($rows);
+            // }

@@ -11,6 +11,7 @@ use App\Models\RabUraianImage;
 use App\Models\RabProcessUraian;
 use App\Models\RabProcessCategory;
 use App\Services\ProjectNotifier;
+use App\Services\BuildProcessSyncService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
@@ -273,19 +274,45 @@ public function items($id)
         'categories.uraians.images.image'
     ])->findOrFail($id);
 
-        return response()->json([
-            'categories' => $rab->categories,
-            'header' => [
-                'tax_rate' => $rab->tax_rate,
-                'discount' => $rab->discount,
-                'shipping' => $rab->shipping,
-                'subtotal' => $rab->subtotal,
-                'subtotal_after_discount' => $rab->subtotal_after_discount,
-                'tax_total' => $rab->tax_total,
-                'grand_total' => $rab->grand_total,
-                'notes' => $rab->notes,
-            ],
-        ]);
+    $subtotal = 0;
+
+    foreach ($rab->categories as $category) {
+
+        foreach ($category->uraians as $uraian) {
+
+            foreach ($uraian->items as $item) {
+
+                $subtotal += ($item->volume * $item->price);
+            }
+        }
+    }
+
+    $discount = $rab->discount ?? 0;
+    $shipping = $rab->shipping ?? 0;
+    $taxRate = $rab->tax_rate ?? 0;
+
+    $subtotalAfterDiscount = $subtotal - $discount;
+
+    $taxTotal = $subtotalAfterDiscount * ($taxRate / 100);
+
+    $grandTotal = $subtotalAfterDiscount + $taxTotal + $shipping;
+
+    return response()->json([
+        'categories' => $rab->categories,
+
+        'header' => [
+            'tax_rate' => $taxRate,
+            'discount' => $discount,
+            'shipping' => $shipping,
+
+            'subtotal' => $subtotal,
+            'subtotal_after_discount' => $subtotalAfterDiscount,
+            'tax_total' => $taxTotal,
+            'grand_total' => $grandTotal,
+
+            'notes' => $rab->notes,
+        ],
+    ]);
 }
 
 public function upload(Request $request)
@@ -801,6 +828,11 @@ public function autosave(Request $request, RabProcess $rab)
             'grand_total' => $grandTotal,
             'updated_by' => auth()->id(),
         ]);
+        if ($rab->project?->buildItems()->exists()) {
+
+            app(BuildProcessSyncService::class)
+                ->syncLight($rab->project);
+        }
     });
 
     return response()->json([

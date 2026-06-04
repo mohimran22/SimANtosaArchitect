@@ -22,6 +22,7 @@ use App\Models\BuildDailyReport;
 use App\Models\BuildProcessItem;
 use App\Models\User;
 use App\Services\ProjectNotifier;
+use App\Services\BuildProcessSyncService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
@@ -255,21 +256,6 @@ if (
                     $sub->weeklyProgresses->keyBy('week_no');
             });
         });
-        // $groupedItems = $buildItems
-        //     ->whereNull('parent_id')
-        //     ->groupBy('category_name')
-        //     ->map(function ($items) {
-
-        //         return $items
-        //             ->groupBy('uraian_name')
-        //             ->map(function ($rows) {
-
-        //                 return $rows
-        //                     ->groupBy(fn($i) =>
-        //                         $i->category_name ?? 'Tanpa Kategori'
-        //                     );
-        //             });
-        //     });
         $groupedItems = $buildItems
             ->whereNull('parent_id')
             ->sortBy([
@@ -557,5 +543,15 @@ public function loadTambahan(BuildProcessItem $item)
             'weekLabels' => $item->project->week_labels,
         ]
     )->render();
+}
+public function syncBuildProcess(Project $project)
+{
+    app(BuildProcessSyncService::class)
+        ->syncFull($project);
+
+    return back()->with(
+        'success',
+        'Build process berhasil disinkronkan.'
+    );
 }
 }

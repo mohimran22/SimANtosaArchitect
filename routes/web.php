@@ -661,6 +661,10 @@ Route::get(
     '/projects/items/{item}/tambahan',
     [ProjectController::class, 'loadTambahan']
 );
+Route::post(
+    '/projects/{project}/sync-build',
+    [ProjectController::class, 'syncBuildProcess']
+)->name('projects.sync-build');
 Route::middleware(['auth', 'permission:lihat daftar role'])->group(function () {
     Route::resource('/roles', RoleController::class);
     Route::post('/roles/{role}/update-permissions', [RoleController::class, 'updatePermissions'])->name('roles.updatePermissions');

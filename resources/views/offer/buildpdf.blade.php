@@ -241,6 +241,9 @@ berikut kami sampaikan penawaran harga untuk pelaksanaan pekerjaan:
     <th colspan="5" align="right">SHIPPING</th>
     <th align="right">{{ number_format($rab->shipping,0,',','.') }}</th>
 </tr>
+@php
+    $dibulatkan = round($rab->grand_total, -5);
+@endphp
 <tr style="font-weight:bold;">
     <th colspan="5" align="right">GRAND TOTAL</th>
     <th align="right">{{ number_format($rab->grand_total,0,',','.') }}</th>
@@ -255,7 +258,7 @@ berikut kami sampaikan penawaran harga untuk pelaksanaan pekerjaan:
 
 </table>
 
-<p><strong>TERBILANG :</strong> {{ strtoupper(terbilang($offer->grand_total)) }} RUPIAH</p>
+<p><strong>TERBILANG :</strong> {{ strtoupper(terbilang($dibulatkan)) }} RUPIAH</p>
 
 <div class="closing-block">
     <h4>Keterangan:</h4>
