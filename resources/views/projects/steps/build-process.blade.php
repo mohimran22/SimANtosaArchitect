@@ -135,7 +135,6 @@
                             <th class="align-middle">Jumlah<br>Harga</th>
                             <th class="align-middle text-center">Bobot<br>(%)</th>
 
-
                             @foreach($project->week_labels as $w)
                                 <th class="align-middle text-center">Vol</th>
                                 <th class="align-middle text-center">Progres<br>(%)</th>
@@ -235,8 +234,8 @@
                                                         step="0.001"
                                                         class="form-control bobot-input"
                                                         data-id="{{ $item->id }}"
-                                                        value="{{ $item->bobot_percent }}"
-                                                        @if($project->bobot_locked) disabled @endif>
+                                                        value="{{ number_format($item->bobot_percent, 3, '.', '') }}"
+                                                        readonly>
                                                 </td>
                                                     @foreach($project->week_labels as $w)
                                                         @php
@@ -853,91 +852,40 @@
         validatePlanTotal();
     </script>
     <script>
-        let saveTimer = null;
 
-        function collectBobot() {
-            const rows = [];
+    function updateTotalDisplay(total) {
 
-            document.querySelectorAll('.bobot-input').forEach(el=>{
-                rows.push({
-                    id: el.dataset.id,
-                    bobot: parseFloat(el.value || 0)
-                });
+        document.querySelectorAll('.totalBobotKontrak')
+            .forEach(el => {
+
+                el.innerText = total.toFixed(3);
             });
+    }
 
-            return rows;
-        }
+    function calcTotal() {
 
-        function updateTotalDisplay(total) {
-            document.querySelectorAll('.totalBobotKontrak')
-                .forEach(el => {
-                    el.innerText = total.toFixed(2);
-                });
-        }
+        let total = 0;
 
-        function calcTotal() {
-            let t = 0;
-            document.querySelectorAll('.bobot-input').forEach(el=>{
-                t += parseFloat(el.value || 0);
-            });
-            updateTotalDisplay(t);
-            return t;
-        }
+        document.querySelectorAll('.bobot-input').forEach(el => {
 
-        function autosaveBobot() {
+            const val = parseFloat(el.value);
 
-            const items = collectBobot();
-            const total = calcTotal();
-
-            if (Math.abs(total - 100) > 0.01) {
-                document.querySelectorAll('.totalBobotKontrak')
-                    .forEach(el => el.classList.add('text-danger'));
-                return; // stop autosave
-            } else {
-                document.querySelectorAll('.totalBobotKontrak')
-                    .forEach(el => el.classList.remove('text-danger'));
+            if (!isNaN(val)) {
+                total += val;
             }
-
-            fetch("{{ route('build-items.update-bobot') }}", {
-                method: "POST",
-                headers: {
-                    "Content-Type":"application/json",
-                    "X-CSRF-TOKEN": document.querySelector('meta[name=csrf-token]').content
-                },
-                body: JSON.stringify({
-                    project_id: "{{ $project->id }}",
-                    items
-                })
-            })
-            .then(r=>{
-                if(!r.ok) throw new Error('HTTP '+r.status);
-                return r.json();
-            })
-            .then(res=>{
-                if(res.locked){
-                    document.querySelectorAll('.bobot-input')
-                        .forEach(el=>el.disabled = true);
-                    alert('Bobot sudah 100% dan dikunci');
-                }
-            })
-            .catch(err=>{
-                console.error("autosaveBobot gagal:", err);
-            });
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-
-            document.querySelectorAll('.bobot-input').forEach(el=>{
-                el.addEventListener('input', ()=>{
-                    console.log("INPUT CHANGED");
-                    calcTotal();
-                    clearTimeout(saveTimer);
-                    saveTimer = setTimeout(autosaveBobot, 800);
-                });
-            });
-
-            calcTotal();
         });
+
+        total = Number(total.toFixed(3));
+
+        updateTotalDisplay(total);
+
+        return total;
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+
+        calcTotal();
+    });
 
     </script>
     <script>

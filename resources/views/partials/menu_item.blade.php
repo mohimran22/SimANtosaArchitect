@@ -346,7 +346,7 @@ document.querySelectorAll('[data-submenu]').forEach(menu => {
 
     transition: .2s ease;
 
-    z-index: 999999;
+    z-index: 100;
 
     pointer-events: none;
 }
@@ -373,7 +373,7 @@ document.querySelectorAll('[data-submenu]').forEach(menu => {
 
     box-shadow: 0 10px 30px rgba(0,0,0,.12);
 
-    z-index: 99999;
+    z-index: 101;
 
     opacity: 0;
     visibility: hidden;
@@ -450,7 +450,7 @@ document.querySelectorAll('[data-submenu]').forEach(menu => {
         max-height: calc(100vh - 40px);
 
         overflow-y: auto;
-        z-index: 100;
+        z-index: 102;
     }
 
     .sidebar-collapsed .submenu.show-floating{

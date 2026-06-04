@@ -142,63 +142,79 @@ class InvoiceBuildController extends Controller
 
             $project->load('offer.rab.categories.uraians.items');
 
+            $grandTotal = $project->offer->grand_total;
+
             $currentRabItemIds = $project->offer->rab
                 ->categories
                 ->flatMap(fn($c) => $c->uraians)
                 ->flatMap(fn($u) => $u->items)
                 ->pluck('id')
                 ->toArray();
-
             BuildProcessItem::where('project_id', $project->id)
                 ->whereNotIn('rab_item_id', $currentRabItemIds)
                 ->whereDoesntHave('weeklyProgresses')
                 ->delete();
-            $existing = BuildProcessItem::where([
-                'project_id' => $project->id,
-                'rab_item_id' => $item->id,
-            ])->first();
-            $hasProgress =
-                $existing &&
-                $existing->weeklyProgresses()->exists();
-                foreach ($project->offer->rab->categories as $cIndex => $category) {
 
-                    foreach ($category->uraians as $uIndex => $uraian) {
+            foreach ($project->offer->rab->categories as $cIndex => $category) {
 
-                        foreach ($uraian->items as $iIndex => $item) {
+                foreach ($category->uraians as $uIndex => $uraian) {
 
-                            BuildProcessItem::updateOrCreate(
+                    foreach ($uraian->items as $iIndex => $item) {
 
-                                [
-                                    'project_id' => $project->id,
-                                    'rab_item_id' => $item->id,
-                                ],
+                        $existing = BuildProcessItem::where([
+                            'project_id' => $project->id,
+                            'rab_item_id' => $item->id,
+                        ])->first();
 
-                                [
-                                    'category_name' => $category->name,
-                                    'uraian_name' => $uraian->name,
+                        $hasProgress =
+                            $existing &&
+                            $existing->weeklyProgresses()->exists();
 
-                                    'job_category_id' => $item->job_category_id,
-                                    'uraian' => $item->job_name,
+                        $bobot = $grandTotal > 0
+                            ? ($item->total / $grandTotal) * 100
+                            : 0;
 
-                                    'price' => $hasProgress ? $existing->price : $item->price,
-                                    'volume' => $hasProgress ? $existing->volume : $item->volume,
-                                    'total' => $hasProgress ? $existing->total : ($item->volume * $item->price),
-                                    'satuan' => $item->satuan,
+                        BuildProcessItem::updateOrCreate(
 
-                                    'category_order' => $cIndex,
-                                    'uraian_order' => $uIndex,
-                                    'item_order' => $iIndex,
+                            [
+                                'project_id' => $project->id,
+                                'rab_item_id' => $item->id,
+                            ],
 
-                                    'updated_at' => now(),
-                                ]
-                            );
-                        }
+                            [
+                                'category_name' => $category->name,
+                                'uraian_name' => $uraian->name,
+
+                                'job_category_id' => $item->job_category_id,
+                                'uraian' => $item->job_name,
+
+                                'price' => $hasProgress
+                                    ? $existing->price
+                                    : $item->price,
+
+                                'volume' => $hasProgress
+                                    ? $existing->volume
+                                    : $item->volume,
+
+                                'total' => $hasProgress
+                                    ? $existing->total
+                                    : ($item->volume * $item->price),
+
+                                'satuan' => $item->satuan,
+
+                                'bobot_percent' => round($bobot, 3),
+
+                                'category_order' => $cIndex,
+                                'uraian_order' => $uIndex,
+                                'item_order' => $iIndex,
+                            ]
+                        );
                     }
                 }
-            
+            }
+
             $lastTermin = 4;
 
-            // TERMIN AWAL (biasanya 1)
             if ($invoice->termin == 1) {
 
                 ProjectLevel::where([
@@ -216,7 +232,6 @@ class InvoiceBuildController extends Controller
                 ]);
             }
 
-            // TERMIN TERAKHIR
             elseif ($invoice->termin == $lastTermin) {
 
                 ProjectLevel::where([

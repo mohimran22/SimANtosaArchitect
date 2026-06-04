@@ -189,6 +189,7 @@ document.addEventListener('click', function(e){
 
     .navbar.navbar-vertical.navbar-expand-lg {
         width: 80px;
+        z-index: 200;
     }
 
     .page-wrapper {
@@ -216,7 +217,7 @@ document.addEventListener('click', function(e){
     }
 }
 
-@media (max-width: 991.98px) {
+@media (max-width: 576px) {
 
     .navbar.navbar-vertical.navbar-expand-lg {
 
@@ -233,7 +234,7 @@ document.addEventListener('click', function(e){
 
         height: 100vh;
 
-        z-index: 1050;
+        z-index: 104;
 
         overflow-y: auto;
     }
@@ -285,10 +286,6 @@ document.addEventListener('click', function(e){
 
     }
 
-}
-
-@media (min-width: 992px){
-
     .sidebar-collapsed .submenu.show-floating{
 
         display:block !important;
@@ -305,7 +302,7 @@ document.addEventListener('click', function(e){
 
         box-shadow:0 10px 30px rgba(0,0,0,.08);
 
-        z-index:99999;
+        z-index:105;
 
         padding:8px;
     }

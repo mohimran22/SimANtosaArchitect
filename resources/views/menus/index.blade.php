@@ -95,7 +95,6 @@
                 serverSide: true,
                 processing: true,
                 ajax: '{{ route("menus.index") }}',
-
                 columns: [
                     { data: 'DT_RowIndex', orderable:false, searchable:false },
                     { data: 'text' },

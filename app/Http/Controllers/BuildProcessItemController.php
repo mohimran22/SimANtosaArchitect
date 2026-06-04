@@ -16,39 +16,36 @@ public function updateBobot(Request $request)
 
     if ($project->bobot_locked) {
         return response()->json([
-            'ok'=>false,
-            'message'=>'Bobot sudah dikunci'
-        ],423);
+            'ok' => false,
+            'message' => 'Bobot sudah dikunci'
+        ], 423);
     }
 
     $items = $request->input('items', []);
     $total = collect($items)->sum('bobot');
 
-    if (round($total,2) != 100) {
-        return response()->json([
-            'ok'=>false,
-            'message'=>'Total bobot harus 100%'
-        ],422);
-    }
-
-    DB::transaction(function() use ($items,$project){
+    DB::transaction(function () use ($items, $project, $total) {
 
         foreach ($items as $row) {
-            BuildProcessItem::where('id',$row['id'])
+
+            BuildProcessItem::where('id', $row['id'])
                 ->update([
                     'bobot_percent' => $row['bobot']
                 ]);
         }
 
-        // 🔒 LOCK
-        $project->update([
-            'bobot_locked' => true
-        ]);
+        // lock otomatis saat total 100%
+        if (round($total, 2) == 100) {
+
+            $project->update([
+                'bobot_locked' => true
+            ]);
+        }
     });
 
     return response()->json([
-        'ok'=>true,
-        'locked'=>true
+        'ok' => true,
+        'locked' => round($total, 2) == 100
     ]);
 }
 public function storeTambahan(Request $request)

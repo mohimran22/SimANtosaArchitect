@@ -8,24 +8,22 @@ use Illuminate\Support\Facades\DB;
 
 class BuildProcessSyncService
 {
-    /*
-    |--------------------------------------------------------------------------
-    | SAFE AUTO SYNC
-    |--------------------------------------------------------------------------
-    */
-
     public function syncLight(Project $project): void
     {
         $project->load(
             'offer.rab.categories.uraians.items'
         );
 
+        $grandTotal = $project->offer->grand_total;
+
         foreach ($project->offer->rab->categories as $cIndex => $category) {
 
             foreach ($category->uraians as $uIndex => $uraian) {
 
                 foreach ($uraian->items as $iIndex => $item) {
-
+                    $bobot = $grandTotal > 0
+                        ? ($item->total / $grandTotal) * 100
+                        : 0;
                     BuildProcessItem::updateOrCreate(
 
                         [
@@ -44,7 +42,7 @@ class BuildProcessSyncService
                             'volume' => $item->volume,
                             'total' => $item->total,
                             'satuan' => $item->satuan,
-
+                            'bobot_percent' => round($bobot, 3), 
                             'category_order' => $cIndex,
                             'uraian_order' => $uIndex,
                             'item_order' => $iIndex,
@@ -55,12 +53,6 @@ class BuildProcessSyncService
         }
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | FULL MANUAL SYNC
-    |--------------------------------------------------------------------------
-    */
-
     public function syncFull(Project $project): void
     {
         DB::transaction(function () use ($project) {
@@ -69,9 +61,12 @@ class BuildProcessSyncService
                 'offer.rab.categories.uraians.items'
             );
 
+            $grandTotal =
+                $project->offer->grand_total;
+
             /*
             |--------------------------------------------------------------------------
-            | Ambil semua rab item terbaru
+            | Ambil data RAB terbaru
             |--------------------------------------------------------------------------
             */
 
@@ -82,6 +77,11 @@ class BuildProcessSyncService
                 foreach ($category->uraians as $uIndex => $uraian) {
 
                     foreach ($uraian->items as $iIndex => $item) {
+
+                        $bobot =
+                            $grandTotal > 0
+                                ? ($item->total / $grandTotal) * 100
+                                : 0;
 
                         $rabItems->push([
 
@@ -98,6 +98,8 @@ class BuildProcessSyncService
                             'total' => $item->total,
                             'satuan' => $item->satuan,
 
+                            'bobot_percent' => round($bobot, 3),
+
                             'category_order' => $cIndex,
                             'uraian_order' => $uIndex,
                             'item_order' => $iIndex,
@@ -112,7 +114,7 @@ class BuildProcessSyncService
 
             /*
             |--------------------------------------------------------------------------
-            | Existing build items
+            | Existing Build Items
             |--------------------------------------------------------------------------
             */
 
@@ -142,7 +144,7 @@ class BuildProcessSyncService
 
                 /*
                 |--------------------------------------------------------------------------
-                | Jangan hapus item yang punya progress
+                | Jangan hapus item yang sudah ada progress
                 |--------------------------------------------------------------------------
                 */
 
@@ -166,12 +168,6 @@ class BuildProcessSyncService
                     'rab_item_id' => $row['rab_item_id'],
                 ]);
 
-                /*
-                |--------------------------------------------------------------------------
-                | Protect item yang sudah punya progress
-                |--------------------------------------------------------------------------
-                */
-
                 $hasProgress =
                     $buildItem->exists
                     &&
@@ -179,12 +175,17 @@ class BuildProcessSyncService
 
                 /*
                 |--------------------------------------------------------------------------
-                | Kalau sudah ada progress:
-                | update ringan saja
+                | ITEM SUDAH ADA PROGRESS
                 |--------------------------------------------------------------------------
                 */
 
                 if ($hasProgress) {
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Metadata aman boleh update
+                    |--------------------------------------------------------------------------
+                    */
 
                     $buildItem->update([
 
@@ -193,21 +194,19 @@ class BuildProcessSyncService
 
                         'uraian' => $row['uraian'],
 
-                        'price' => $row['price'],
-
-                        /*
-                        |--------------------------------------------------------------------------
-                        | volume jangan disentuh
-                        |--------------------------------------------------------------------------
-                        */
-
-                        // 'volume' => $row['volume'],
-
                         'satuan' => $row['satuan'],
 
                         'category_order' => $row['category_order'],
                         'uraian_order' => $row['uraian_order'],
                         'item_order' => $row['item_order'],
+
+                        /*
+                        |--------------------------------------------------------------------------
+                        | Bobot tetap update mengikuti RAB terbaru
+                        |--------------------------------------------------------------------------
+                        */
+
+                        'bobot_percent' => $row['bobot_percent'],
                     ]);
 
                     continue;
@@ -215,8 +214,7 @@ class BuildProcessSyncService
 
                 /*
                 |--------------------------------------------------------------------------
-                | Kalau belum ada progress:
-                | boleh full update
+                | BELUM ADA PROGRESS
                 |--------------------------------------------------------------------------
                 */
 
@@ -233,7 +231,10 @@ class BuildProcessSyncService
                     'price' => $row['price'],
                     'volume' => $row['volume'],
                     'total' => $row['total'],
+
                     'satuan' => $row['satuan'],
+
+                    'bobot_percent' => $row['bobot_percent'],
 
                     'category_order' => $row['category_order'],
                     'uraian_order' => $row['uraian_order'],

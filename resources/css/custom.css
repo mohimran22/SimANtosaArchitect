@@ -152,7 +152,7 @@ table.dataTable tbody td {
 .dt-search, .dt-length {
     margin: 10px 12px;
     position: relative;
-    z-index: 1;
+    z-index: 1 !important;
 }
 
 button.bg-transparent {
