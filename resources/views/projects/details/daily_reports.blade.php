@@ -1,5 +1,5 @@
 @php
-    $dailies = $project->dailyReports;
+    $dailies = $project?->dailyReports;
 @endphp
 
 @if($dailies->count())
@@ -305,7 +305,39 @@ document.addEventListener('DOMContentLoaded', function(){
             fetch(`/daily/${id}/detail`)
             .then(res => res.json())
             .then(data => {
+                let workTimeRows = '';
 
+                (data.work_times || []).forEach((t, i) => {
+
+                    let badge = 'bg-secondary';
+
+                    if(t.cuaca === 'Baik'){
+                        badge = 'bg-success';
+                    }else if(t.cuaca === 'Mendung'){
+                        badge = 'bg-warning text-dark';
+                    }else if(t.cuaca === 'Hujan'){
+                        badge = 'bg-primary';
+                    }
+
+                    workTimeRows += `
+                    <tr>
+                        <td>${i + 1}</td>
+
+                        <td>${t.jam_mulai ?? '-'}</td>
+
+                        <td>${t.jam_selesai ?? '-'}</td>
+
+                        <td>${parseFloat(t.total_jam ?? 0).toFixed(2)} Jam</td>
+
+                        <td>
+                            <span class="badge ${badge}">
+                                ${t.cuaca ?? '-'}
+                            </span>
+                        </td>
+
+                        <td>${t.keterangan ?? '-'}</td>
+                    </tr>`;
+                });
                 let pekerjaanRows = '';
                 data.works.forEach((w,i)=>{
                     pekerjaanRows += `
@@ -347,76 +379,34 @@ document.addEventListener('DOMContentLoaded', function(){
                 modalBody.innerHTML = `
 
                 <div id="viewMode">
-                        @if($report?->workTimes->count())
+                <h6>Jam Kerja & Cuaca</h6>
 
-                            <table class="table table-bordered mb-0">
+                <table class="table table-bordered mb-4">
 
-                                <thead class="table-light">
-                                    <tr>
-                                        <th width="50">No</th>
-                                        <th width="150">Jam Mulai</th>
-                                        <th width="150">Jam Selesai</th>
-                                        <th width="120">Total Jam</th>
-                                        <th width="150">Cuaca</th>
-                                        <th>Keterangan</th>
-                                    </tr>
-                                </thead>
+                    <thead class="table-light">
+                        <tr>
+                            <th width="50">No</th>
+                            <th width="150">Jam Mulai</th>
+                            <th width="150">Jam Selesai</th>
+                            <th width="120">Total Jam</th>
+                            <th width="150">Cuaca</th>
+                            <th>Keterangan</th>
+                        </tr>
+                    </thead>
 
-                                <tbody>
+                    <tbody>
+                        ${
+                            workTimeRows || `
+                            <tr>
+                                <td colspan="6" class="text-center text-muted">
+                                    Tidak ada data jam kerja
+                                </td>
+                            </tr>
+                            `
+                        }
+                    </tbody>
 
-                                    @foreach($report?->workTimes as $time)
-                                        @php
-                                            $badge = match($time->cuaca) {
-                                                'Baik' => 'bg-success',
-                                                'Mendung' => 'bg-warning text-dark',
-                                                'Hujan' => 'bg-primary',
-                                                default => 'bg-secondary'
-                                            };
-                                        @endphp
-                                        <tr>
-                                            <td>{{ $loop->iteration }}</td>
-
-                                            <td>
-                                                {{ $time->jam_mulai
-                                                    ? \Carbon\Carbon::parse($time->jam_mulai)->format('H:i')
-                                                    : '-' }}
-                                            </td>
-
-                                            <td>
-                                                {{ $time->jam_selesai
-                                                    ? \Carbon\Carbon::parse($time->jam_selesai)->format('H:i')
-                                                    : '-' }}
-                                            </td>
-
-                                            <td>
-                                                {{ number_format($time->total_jam, 2) }}
-                                                Jam
-                                            </td>
-
-                                            <td>
-                                                <span class="badge {{ $badge }}">
-                                                    {{ $time->cuaca }}
-                                                </span>
-                                            </td>
-
-                                            <td>
-                                                {{ $time->keterangan ?? '-' }}
-                                            </td>
-                                        </tr>
-
-                                    @endforeach
-
-                                </tbody>
-
-                            </table>
-
-                        @else
-
-                            <div class="p-4 text-muted text-center">
-                                Tidak ada data jam kerja
-                            </div>
-
-                        @endif
+                </table>
                
                 <hr>
                 <h6>Pekerjaan</h6>

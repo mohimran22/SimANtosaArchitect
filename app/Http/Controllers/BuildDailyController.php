@@ -298,6 +298,7 @@ class BuildDailyController extends Controller
 public function detail($id)
 {
     $daily = BuildDailyReport::with([
+        'workTimes',
         'works.rabProcessItem',
         'workers.worker.user',
         'materials',

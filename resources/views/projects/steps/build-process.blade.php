@@ -40,7 +40,7 @@
                         <label class="form-label">Filter Minggu</label>
 
                         <select id="filter-week" class="form-select select2">
-                            <option value="">Semua</option>
+                            <option value="">-- Semua --</option>
 
                             @foreach($project->week_labels as $w)
                                 <option value="{{ $w['week_no'] }}">
@@ -65,7 +65,7 @@
 
                             @csrf
 
-                            <button type="submit" class="btn btn-danger w-100">
+                            <button type="submit" class="btn btn-danger">
                                 <i class="ti ti-refresh"></i>
                                 Update Form Kemajuan Pekerjaan
                             </button>
@@ -654,7 +654,7 @@
                         table.offsetHeight; 
                         table.style.display = "";
                     requestAnimationFrame(() => {
-                        applyAutoFreeze();
+                        // applyAutoFreeze();
                         recalcAll();
                     });
                 }
@@ -668,39 +668,79 @@
             }
             // helper parse tanggal lokal (ANTI timezone shift)
             function parseLocalDate(dateStr) {
+
                 if (!dateStr) return null;
-                const [y, m, d] = dateStr.split("-").map(Number);
-                return new Date(y, m - 1, d);
+
+                // format input date native: yyyy-mm-dd
+                if (dateStr.includes("-")) {
+
+                    const [y, m, d] = dateStr.split("-").map(Number);
+
+                    return new Date(y, m - 1, d);
+                }
+
+                // format backend: dd/mm/yyyy
+                if (dateStr.includes("/")) {
+
+                    const [d, m, y] = dateStr.split("/").map(Number);
+
+                    return new Date(y, m - 1, d);
+                }
+
+                return null;
             }
 
             const dateInput = document.getElementById('filter-date');
 
             if (dateInput) {
+
                 dateInput.addEventListener('change', function() {
 
                     const selectedDate = this.value;
-                    if (!selectedDate) return;
+
+                    // reset kalau kosong
+                    if (!selectedDate) {
+
+                        $('#filter-week').val('').trigger('change');
+                        filterWeek(null);
+
+                        return;
+                    }
 
                     const selected = parseLocalDate(selectedDate);
+
                     let foundWeek = null;
 
                     weeks.forEach(w => {
-                        // SESUAIKAN NAMA FIELD DARI BACKEND
-                        const start = parseLocalDate(w.start_date || w.start);
-                        const end   = parseLocalDate(w.end_date || w.end);
+
+                        const start = parseLocalDate(w.start_date ?? w.start);
+                        const end   = parseLocalDate(w.end_date ?? w.end);
+
+                        if (!start || !end) return;
 
                         if (selected >= start && selected <= end) {
                             foundWeek = w.week_no;
                         }
+
                     });
+                    console.log(weeks);
 
                     if (foundWeek) {
-                        $('#filter-week').val(foundWeek).trigger('change');
-                        filterWeek(foundWeek);
-                    }
 
-                    console.log("selected:", selected);
-                    console.log("found:", foundWeek);
+                        $('#filter-week')
+                            .val(foundWeek)
+                            .trigger('change');
+
+                        filterWeek(foundWeek);
+
+                    } else {
+
+                        $('#filter-week')
+                            .val('')
+                            .trigger('change');
+
+                        filterWeek(null);
+                    }
                 });
             }
 
@@ -1319,7 +1359,6 @@
 
                     $(editorRow).find('.select2').select2({
                         width: '100%',
-                        placeholder: '-- Pilih Pekerjaan --'
                     });
 
                     setupJustekAccess();

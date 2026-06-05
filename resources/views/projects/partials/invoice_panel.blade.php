@@ -1,4 +1,7 @@
-<x-collapse-card title="Invoice Termin Proyek" target="invoice-termin-body">
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-header fw-bold">
+        Invoice Termin Proyek
+    </div>
     <div class="card-body">
         <div class="row">
             @foreach([1,2,3,4] as $t)
@@ -99,4 +102,4 @@
             @endif
         </div>
     </div>
-</x-collapse-card>
+</div>
