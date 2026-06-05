@@ -115,9 +115,8 @@
                 @foreach($weeks as $w)
 
                     @php
-                        $prog =
-                            $item->progress_map[$w['week_no']]
-                            ?? null;
+                        $prog = $item->progress_map[$w['week_no']] ?? null;
+                        $volMinggu = $prog->volume ?? 0; $bobotMinggu = $item->volume > 0 ? ($volMinggu / $item->volume) * $item->bobot_percent : 0;
                     @endphp
 
                     <td align="right">
@@ -125,10 +124,7 @@
                     </td>
 
                     <td align="right">
-                        {{ number_format(
-                            $prog->bobot_percent ?? 0,
-                            2
-                        ) }}%
+                        {{ number_format($bobotMinggu, 2) }}%
                     </td>
 
                 @endforeach

@@ -115,15 +115,9 @@ public function exportPdf(Request $request, Project $project)
     ->orderBy('item_order')
     ->get();
 
-
+    $buildItems->each(function ($item) { $item->progress_map = $item->weeklyProgresses ->keyBy('week_no'); });
 
     $groupedItems = $this->groupItems($buildItems);
-
-    /*
-    |--------------------------------------------------------------------------
-    | FILTER WEEK
-    |--------------------------------------------------------------------------
-    */
 
     $filteredWeeks = collect($project->week_labels);
 
@@ -133,12 +127,6 @@ public function exportPdf(Request $request, Project $project)
             ->where('week_no', $week);
 
     }
-
-    /*
-    |--------------------------------------------------------------------------
-    | FILTER DATE
-    |--------------------------------------------------------------------------
-    */
 
     if ($date) {
 
@@ -162,19 +150,7 @@ public function exportPdf(Request $request, Project $project)
 
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | TOTAL COLS
-    |--------------------------------------------------------------------------
-    */
-
     $totalCols = 6 + ($filteredWeeks->count() * 3);
-
-    /*
-    |--------------------------------------------------------------------------
-    | REKAP
-    |--------------------------------------------------------------------------
-    */
 
     $rekap = collect($groupedItems)->map(function ($cat) use ($filteredWeeks) {
 
@@ -188,11 +164,16 @@ public function exportPdf(Request $request, Project $project)
             return collect($filteredWeeks)
                 ->sum(function ($w) use ($item) {
 
-                    $prog =
-                        $item->progress_map[$w['week_no']]
-                        ?? null;
+                    $prog = $item->progress_map[$w['week_no']] ?? null;
 
-                    return $prog->bobot_percent ?? 0;
+                    $volMinggu = $prog->volume ?? 0;
+
+                    return $item->volume > 0
+                        ? ($volMinggu / $item->volume)
+                            * $item->bobot_percent
+                        : 0;
+
+
                 });
 
         });
