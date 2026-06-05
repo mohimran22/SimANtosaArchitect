@@ -46,7 +46,7 @@ class BuildProcessSyncService
                             'volume' => $item->volume,
                             'total' => $item->total,
                             'satuan' => $item->satuan,
-                            'bobot_percent' => round($bobot, 3), 
+                            'bobot_percent' => $bobot, 
                             'category_order' => $cIndex,
                             'uraian_order' => $uIndex,
                             'item_order' => $iIndex,
@@ -104,7 +104,7 @@ class BuildProcessSyncService
                             'total' => $item->total,
                             'satuan' => $item->satuan,
 
-                            'bobot_percent' => round($bobot, 3),
+                            'bobot_percent' => $bobot,
 
                             'category_order' => $cIndex,
                             'uraian_order' => $uIndex,

@@ -16,11 +16,7 @@
         ->keyBy('week_no');
 @endphp
 
-    {{-- <div class="card shadow-sm border-0 mb-4"> --}}
         <x-collapse-card title="Tahap Pelaksanaan Proyek" target="proyek-build-body">
-            {{-- <div class="card-header fw-bold">
-                Tahap Pelaksanaan Proyek
-            </div> --}}
             <div class="card-body">
                 
                     <table width="100%" style="margin-bottom:20px; margin-left:20px;">
@@ -468,7 +464,6 @@
                 </div>
             </div>
         </x-collapse-card>
-    {{-- </div> --}}
         <x-collapse-card title="Kurva S Progress Proyek" target="kurva-body">
 
             <canvas id="kurvaSChart" height="120"></canvas>
@@ -898,7 +893,7 @@
         document.querySelectorAll('.totalBobotKontrak')
             .forEach(el => {
 
-                el.innerText = total.toFixed(3);
+                el.innerText = total.toFixed(1);
             });
     }
 
