@@ -477,7 +477,7 @@
     <div id="invoice-panel">
         @include('projects.partials.invoice_panel')
     </div>
-        <div id="details-daily-reports">
+    <div id="details-daily-reports">
         @include('projects.details.daily_reports')
     </div>
     <div id="daily-reports">

@@ -347,7 +347,7 @@ document.addEventListener('DOMContentLoaded', function(){
                 modalBody.innerHTML = `
 
                 <div id="viewMode">
-                        @if($report->workTimes->count())
+                        @if($report?->workTimes->count())
 
                             <table class="table table-bordered mb-0">
 
@@ -364,7 +364,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
                                 <tbody>
 
-                                    @foreach($report->workTimes as $time)
+                                    @foreach($report?->workTimes as $time)
                                         @php
                                             $badge = match($time->cuaca) {
                                                 'Baik' => 'bg-success',

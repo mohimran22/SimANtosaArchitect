@@ -93,7 +93,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             if (
                 !document.documentElement.classList.contains('sidebar-collapsed')
-                || window.innerWidth <= 1200
+                || window.innerWidth <= 576
             ) {
                 return;
             }
@@ -190,34 +190,69 @@ document.addEventListener('click', function(e){
 
 @media (min-width: 992px) and (max-width: 1200px) {
 
-    .navbar.navbar-vertical.navbar-expand-lg {
-        width: 80px;
-        z-index: 200;
+    .navbar.navbar-vertical.navbar-expand-lg{
+        width:80px;
+        z-index:300;
     }
 
-    .page-wrapper {
-        margin-left: 80px;
+    .page-wrapper{
+        margin-left:80px;
     }
 
     .nav-link-title,
     .logo-expand,
-    .submenu-arrow {
-        display: none !important;
+    .submenu-arrow{
+        display:none !important;
     }
 
-    .logo-collapse {
-        display: block !important;
+    .logo-collapse{
+        display:block !important;
     }
 
     /* floating submenu */
-    .submenu {
-        position: fixed;
-        left: 80px;
+    .sidebar-collapsed .submenu{
+
+        position:fixed !important;
+
+        left:88px !important;
+
+        width:230px !important;
+
+        min-width:230px !important;
+        max-width:230px !important;
+
+        background:#fff;
+
+        border-radius:12px;
+
+        padding:8px;
+
+        box-shadow:0 10px 30px rgba(0,0,0,.12);
+
+        z-index:9999;
+
+        opacity:0;
+        visibility:hidden;
+
+        pointer-events:none;
+
+        overflow-y:auto;
+        overflow-x:hidden;
+
+        max-height:calc(100vh - 20px);
     }
 
-    .d-none {
-        display: none !important;
+    .sidebar-collapsed .submenu.show-floating{
+        opacity:1;
+        visibility:visible;
+        pointer-events:auto;
     }
+
+    /* tooltip off */
+    .sidebar-collapsed .navbar-nav > .nav-item > .nav-link::before{
+        display:none !important;
+    }
+
 }
 
 @media (max-width: 576px) {

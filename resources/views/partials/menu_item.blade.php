@@ -428,7 +428,7 @@ document.querySelectorAll('[data-submenu]').forEach(menu => {
 .sidebar-collapsed .nav-item.floating-active > .nav-link::before {
     display: none !important;
 }
-@media (min-width: 992px) and (max-width: 1200px) {
+/* @media (min-width: 992px) and (max-width: 1200px) {
 
     .navbar.navbar-vertical.navbar-expand-lg{
         width:80px;
@@ -449,7 +449,7 @@ document.querySelectorAll('[data-submenu]').forEach(menu => {
         display:block !important;
     }
 
-    /* floating submenu */
+
     .sidebar-collapsed .submenu{
 
         position:fixed !important;
@@ -487,12 +487,11 @@ document.querySelectorAll('[data-submenu]').forEach(menu => {
         pointer-events:auto;
     }
 
-    /* tooltip dimatikan di tablet */
     .sidebar-collapsed .navbar-nav > .nav-item > .nav-link::before{
         display:none !important;
     }
 
-}
+} */
 @media (max-width: 576px){
 
     .submenu{
