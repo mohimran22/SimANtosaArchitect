@@ -60,6 +60,11 @@ class BuildDailyReport extends Model
 {
     return $this->hasMany(DailyDocumentation::class);
 }
+
+public function workTimes()
+{
+    return $this->hasMany(BuildDailyWorkTime::class);
+}
 public function mkEmployee()
 {
     return $this->belongsTo(Employee::class, 'mk_id');

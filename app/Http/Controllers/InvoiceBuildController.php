@@ -142,7 +142,11 @@ class InvoiceBuildController extends Controller
 
             $project->load('offer.rab.categories.uraians.items');
 
-            $grandTotal = $project->offer->grand_total;
+            $subtotalPekerjaan = $project->offer->rab
+                ->categories
+                ->flatMap(fn($c) => $c->uraians)
+                ->flatMap(fn($u) => $u->items)
+                ->sum('total');
 
             $currentRabItemIds = $project->offer->rab
                 ->categories
@@ -170,8 +174,8 @@ class InvoiceBuildController extends Controller
                             $existing &&
                             $existing->weeklyProgresses()->exists();
 
-                        $bobot = $grandTotal > 0
-                            ? ($item->total / $grandTotal) * 100
+                        $bobot = $subtotalPekerjaan > 0
+                            ? ($item->total / $subtotalPekerjaan) * 100
                             : 0;
 
                         BuildProcessItem::updateOrCreate(

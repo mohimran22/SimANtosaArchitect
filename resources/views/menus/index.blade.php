@@ -64,7 +64,6 @@
         </div>
     </div>
 </div>
-{{-- FLOATING ADD BUTTON MOBILE --}}
 @can('tambah data menu')
 <a href="{{ route('menus.create') }}"
    class="mobile-fab d-md-none">

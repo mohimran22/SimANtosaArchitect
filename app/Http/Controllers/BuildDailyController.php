@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\BuildDailyReport;
 use App\Models\BuildDailyWorker;
 use App\Models\BuildDailyWork;
+use App\Models\BuildDailyWorkTime;
 use App\Models\BuildDailyMaterial;
 use App\Models\BuildProcessItem;
 use App\Models\DailyDocumentation;
@@ -23,10 +24,20 @@ class BuildDailyController extends Controller
     
     $request->validate([
         'project_id' => 'required|exists:projects,id',
-        'jam_mulai' => 'nullable|date_format:H:i',
-        'jam_selesai' => 'nullable|date_format:H:i',
-        'total_jam' => 'nullable|numeric|min:0',
-        'cuaca' => 'nullable|string|max:50',
+        'jam_mulai' => 'nullable|array',
+        'jam_mulai.*' => 'nullable|date_format:H:i',
+        'tanggal' => 'required|date',
+        'jam_selesai' => 'nullable|array',
+        'jam_selesai.*' => 'nullable|date_format:H:i',
+
+        'total_jam' => 'nullable|array',
+        'total_jam.*' => 'nullable|numeric|min:0',
+
+        'cuaca' => 'nullable|array',
+        'cuaca.*' => 'nullable|string|max:50',
+
+        'cuaca_keterangan' => 'nullable|array',
+        'cuaca_keterangan.*' => 'nullable|string|max:255',
         'catatan' => 'nullable|string',
         'mk_id' => 'nullable|string|max:100',
         'kontraktor_ttd_id' => 'nullable|string|max:100',
@@ -77,13 +88,15 @@ class BuildDailyController extends Controller
 
         $project = Project::findOrFail($request->project_id);
 
-        $lastReport = BuildDailyReport::where('project_id', $project->id)
-                        ->orderBy('tanggal', 'desc')
-                        ->first();
-
-        $tanggal = $lastReport
-                    ? Carbon::parse($lastReport->tanggal)->addDay()
-                    : Carbon::parse($project->start_date);
+        $tanggal = Carbon::parse($request->tanggal);
+        if (
+            $tanggal->lt($project->start_date) ||
+            $tanggal->gt($project->end_date)
+        ) {
+            return back()
+                ->with('error', 'Tanggal di luar periode proyek.')
+                ->withInput();
+        }
 
         $exists = BuildDailyReport::where('project_id', $project->id)
                     ->whereDate('tanggal', $tanggal)
@@ -100,16 +113,55 @@ class BuildDailyController extends Controller
             'pekerjaan' => $project->project_name,
             'tanggal' => $tanggal,
             'is_libur' => $isLibur,
-            'jam_mulai' => $isLibur ? null : $request->jam_mulai,
-            'jam_selesai' => $isLibur ? null : $request->jam_selesai,
-            'total_jam' => $isLibur ? 0 : $request->total_jam,
-            'cuaca' => $isLibur ? null : $request->cuaca,
             'catatan' => $isLibur ? 'Tidak ada kegiatan (Hari Libur)' : $request->catatan,
             'mk_id' => $isLibur ? null : $request->mk_id,
             'kontraktor_ttd_id' => $isLibur ? null : $request->kontraktor_ttd_id,
             'created_by' => auth()->id(),
         ]);
+        $jamMulai = $isLibur
+            ? []
+            : ($request->jam_mulai ?? []);
 
+        $jamSelesai = $isLibur
+            ? []
+            : ($request->jam_selesai ?? []);
+
+        $totalJam = $isLibur
+            ? []
+            : ($request->total_jam ?? []);
+
+        $cuaca = $isLibur
+            ? []
+            : ($request->cuaca ?? []);
+
+        $keteranganCuaca = $isLibur
+            ? []
+            : ($request->cuaca_keterangan ?? []);
+        if (!$isLibur) {
+            foreach ($jamMulai as $i => $mulai) {
+
+                if (
+                    empty($mulai) &&
+                    empty($jamSelesai[$i]) &&
+                    empty($cuaca[$i])
+                ) {
+                    continue;
+                }
+
+                BuildDailyWorkTime::create([
+                    'build_daily_report_id' => $report->id,
+
+                    'jam_mulai' => $mulai,
+                    'jam_selesai' => $jamSelesai[$i] ?? null,
+
+                    'total_jam' => $totalJam[$i] ?? 0,
+
+                    'cuaca' => $cuaca[$i] ?? null,
+
+                    'keterangan' => $keteranganCuaca[$i] ?? null,
+                ]);
+            }
+        }
         if ($isLibur) {
             DB::commit();
 
@@ -118,47 +170,47 @@ class BuildDailyController extends Controller
                 ->with('success','Laporan hari libur berhasil disimpan');
         }
 
-    if($request->hasFile('documentation_tenaga')){
-        foreach($request->file('documentation_tenaga') as $file){
+        if($request->hasFile('documentation_tenaga')){
+            foreach($request->file('documentation_tenaga') as $file){
 
-            $path = $file->store('daily/tenaga','public');
+                $path = $file->store('daily/tenaga','public');
 
-            $report->documentations()->create([
-                'category' => 'tenaga',
-                'file_path' => $path,
-                'file_name' => $file->getClientOriginalName(),
-                'file_type' => $file->getClientMimeType(),
-            ]);
+                $report->documentations()->create([
+                    'category' => 'tenaga',
+                    'file_path' => $path,
+                    'file_name' => $file->getClientOriginalName(),
+                    'file_type' => $file->getClientMimeType(),
+                ]);
+            }
         }
-    }
 
-    if($request->hasFile('documentation_pekerjaan')){
-        foreach($request->file('documentation_pekerjaan') as $file){
+        if($request->hasFile('documentation_pekerjaan')){
+            foreach($request->file('documentation_pekerjaan') as $file){
 
-            $path = $file->store('daily/pekerjaan','public');
+                $path = $file->store('daily/pekerjaan','public');
 
-            $report->documentations()->create([
-                'category' => 'pekerjaan',
-                'file_path' => $path,
-                'file_name' => $file->getClientOriginalName(),
-                'file_type' => $file->getClientMimeType(),
-            ]);
+                $report->documentations()->create([
+                    'category' => 'pekerjaan',
+                    'file_path' => $path,
+                    'file_name' => $file->getClientOriginalName(),
+                    'file_type' => $file->getClientMimeType(),
+                ]);
+            }
         }
-    }
 
-    if($request->hasFile('documentation_material')){
-        foreach($request->file('documentation_material') as $file){
+        if($request->hasFile('documentation_material')){
+            foreach($request->file('documentation_material') as $file){
 
-            $path = $file->store('daily/material','public');
+                $path = $file->store('daily/material','public');
 
-            $report->documentations()->create([
-                'category' => 'material',
-                'file_path' => $path,
-                'file_name' => $file->getClientOriginalName(),
-                'file_type' => $file->getClientMimeType(),
-            ]);
+                $report->documentations()->create([
+                    'category' => 'material',
+                    'file_path' => $path,
+                    'file_name' => $file->getClientOriginalName(),
+                    'file_type' => $file->getClientMimeType(),
+                ]);
+            }
         }
-    }
 
         foreach($request->worker_id ?? [] as $i => $worker){
 

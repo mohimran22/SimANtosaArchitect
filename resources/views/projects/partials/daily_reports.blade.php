@@ -12,170 +12,228 @@
 
     <input type="hidden" name="project_id" value="{{ $project->id }}">
 
-<div class="card shadow-sm border-0 mb-3">
-    <div class="card-header fw-bold d-flex justify-content-between align-items-center">
-        Informasi Laporan Harian
+    <div class="card shadow-sm border-0 mb-3">
+        <div class="card-header fw-bold d-flex justify-content-between align-items-center">
+            Informasi Laporan Harian
 
-        <button type="submit"
-            name="is_libur"
-            value="1"
-            class="btn btn-dark btn-sm">
-            Simpan Sebagai Hari Libur
-        </button>
-    </div>
-    <div class="card-body">
-        <div class="row">
-            <div class="col-md-3">
-                <label class="form-label">Proyek</label>
-                    <input class="form-control" value="{{ $project->project_name }}" readonly>
-            </div>
-            <div class="col-md-3">
-                <label class="form-label">Lokasi</label>
-                    <input class="form-control" value="{{ $project->city?->name }}" readonly>
-            </div>
-            <div class="col-md-3">
-                <label class="form-label required">Tanggal</label>
-                    <input id="nextDate" class="form-control" 
-                        value="{{ $nextDate->translatedFormat('d F Y') }}" readonly>
-            </div>
-            <div class="col-md-3">
-                <label>Kontraktor</label>
-                    <input name="kontraktor" class="form-control" value="Antosa Architect">
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="card shadow-sm border-0 mb-3">
-    <div class="card-header fw-bold d-flex justify-content-between">
-        <span>Tenaga Kerja & Alat Bantu</span>
-            <button type="button" class="btn btn-sm btn-dark" id="addTenaga">
-                + Tambah Tenaga
+            <button type="submit"
+                name="is_libur"
+                value="1"
+                class="btn btn-dark btn-sm">
+                Simpan Sebagai Hari Libur
             </button>
-    </div>
-    <div class="card-body p-0">
-        <table class="table table-bordered mb-4">
-            <thead class="table-light">
-                <tr>
-                    <th width="300">Keahlian</th>
-                    <th width="150">Jumlah (Org)</th>
-                    <th>Alat Bantu</th>
-                    <th width="40"></th>
-                </tr>
-            </thead>
-
-            <tbody id="tenagaTable">
-                <!-- BARIS DEFAULT -->
-                <tr>
-                    <td>
-                        <select name="worker_id[]" class="form-select select2 worker-select">
-                            <option value="">-- Pilih Tenaga Kerja --</option>
-
-                            @foreach($workers as $worker)
-                                <option value="{{ $worker->id }}">
-                                    {{ $worker->user->fullname }}
-                                </option>
-                            @endforeach
-
-                            <option value="manual">+ Manual Input</option>
-                        </select>
-
-                        <input type="text"
-                            name="keahlian[]"
-                            class="form-control mt-2 manual-input d-none"
-                            placeholder="Isi keahlian manual">
-                    </td>
-
-                    <td>
-                        <input type="number" name="jumlah[]" class="form-control">
-                    </td>
-
-                    <td>
-                        <input name="alat[]" class="form-control">
-                    </td>
-
-                    <td>
-                        <button type="button" class="btn btn-danger btn-sm removeTenaga">
-                            ×
-                        </button>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-        <template id="tenagaTemplate">
-            <tr>
-                <td>
-                    <select name="worker_id[]" class="form-select select2 worker-select">
-                        <option value="">-- Pilih Tenaga Kerja --</option>
-
-                        @foreach($workers as $worker)
-                            <option value="{{ $worker->id }}">
-                                {{ $worker->user->fullname }}
-                            </option>
-                        @endforeach
-
-                        <option value="manual">+ Manual Input</option>
-                    </select>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <label class="form-label">Proyek</label>
+                        <input class="form-control" value="{{ $project->project_name }}" readonly>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Lokasi</label>
+                        <input class="form-control" value="{{ $project->city?->name }}" readonly>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label required">Tanggal</label>
 
                     <input type="text"
-                        name="keahlian[]"
-                        class="form-control mt-2 manual-input d-none"
-                        placeholder="Isi keahlian manual">
-                </td>
-
-                <td>
-                    <input type="number" name="jumlah[]" class="form-control">
-                </td>
-
-                <td>
-                    <input name="alat[]" class="form-control">
-                </td>
-
-                <td>
-                    <button type="button" class="btn btn-danger btn-sm removeTenaga">
-                        ×
-                    </button>
-                </td>
-            </tr>
-        </template>
-        <div class="md-6 mb-4">
-            <label class="fw-bold">File Upload</label>
-            <div class="text-muted mb-2">Bisa berupa foto atau dokumen</div>
-            <input type="file"
-                name="documentation_tenaga[]"
-                class="form-control image-input"
-                data-preview="preview-tenaga"
-                accept="image/*,application/pdf"
-                multiple>
-
-                <div id="preview-tenaga"
-                    class="mt-3 d-flex flex-wrap gap-3"></div>
+                        id="nextDate"
+                        name="tanggal"
+                        class="form-control"
+                        value="{{ $nextDate->format('Y-m-d') }}">
+                </div>
+                <div class="col-md-3">
+                    <label>Kontraktor</label>
+                        <input name="kontraktor" class="form-control" value="Antosa Architect">
+                </div>
+            </div>
         </div>
     </div>
-</div>
 
-<div class="card shadow-sm border-0 mb-3">
-    <div class="card-header fw-bold d-flex justify-content-between">
-        <span>Pekerjaan Yang Diselenggarakan Hari Ini</span>
-        <button type="button" class="btn btn-sm btn-dark" id="addWork">
-            + Tambah Pekerjaan
-        </button>
-    </div>
-    <div class="card-body p-0">
-        <div class="mb-3 mt-4">
-            <table class="table table-bordered mb-4">
-                <thead class="table-light">
+    <div class="card shadow-sm border-0 mb-3">
+        <div class="card-header fw-bold d-flex justify-content-between">
+            <span>Tenaga Kerja & Alat Bantu</span>
+                <button type="button" class="btn btn-sm btn-dark" id="addTenaga">
+                    + Tambah Tenaga
+                </button>
+        </div>
+        <div class="card-body p-0">
+            <div class="mb-3 mt-4 ps-4">
+                <div class="table-responsive">
+                    <table class="table table-bordered mb-4">
+                        <thead class="table-light">
+                            <tr>
+                                <th width="300">Keahlian</th>
+                                <th width="150">Jumlah (Org)</th>
+                                <th>Alat Bantu</th>
+                                <th width="40"></th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="tenagaTable">
+                            <!-- BARIS DEFAULT -->
+                            <tr>
+                                <td>
+                                    <select name="worker_id[]" class="form-select select2 worker-select">
+                                        <option value="">-- Pilih Tenaga Kerja --</option>
+
+                                        @foreach($workers as $worker)
+                                            <option value="{{ $worker->id }}">
+                                                {{ $worker->user->fullname }}
+                                            </option>
+                                        @endforeach
+
+                                        <option value="manual">+ Manual Input</option>
+                                    </select>
+
+                                    <input type="text"
+                                        name="keahlian[]"
+                                        class="form-control mt-2 manual-input d-none"
+                                        placeholder="Isi keahlian manual">
+                                </td>
+
+                                <td>
+                                    <input type="number" name="jumlah[]" class="form-control">
+                                </td>
+
+                                <td>
+                                    <input name="alat[]" class="form-control">
+                                </td>
+
+                                <td>
+                                    <button type="button" class="btn btn-danger btn-sm removeTenaga">
+                                        ×
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <template id="tenagaTemplate">
                     <tr>
-                        <th>Uraian Pekerjaan</th>
-                        <th width="120">Satuan</th>
-                        <th width="120">Volume</th>
-                        <th>Keterangan</th>
-                        <th width="40"></th>
-                    </tr>
-                </thead>
+                        <td>
+                            <select name="worker_id[]" class="form-select select2 worker-select">
+                                <option value="">-- Pilih Tenaga Kerja --</option>
 
-                <tbody id="workTable">
-                    <!-- BARIS DEFAULT -->
+                                @foreach($workers as $worker)
+                                    <option value="{{ $worker->id }}">
+                                        {{ $worker->user->fullname }}
+                                    </option>
+                                @endforeach
+
+                                <option value="manual">+ Manual Input</option>
+                            </select>
+
+                            <input type="text"
+                                name="keahlian[]"
+                                class="form-control mt-2 manual-input d-none"
+                                placeholder="Isi keahlian manual">
+                        </td>
+
+                        <td>
+                            <input type="number" name="jumlah[]" class="form-control">
+                        </td>
+
+                        <td>
+                            <input name="alat[]" class="form-control">
+                        </td>
+
+                        <td>
+                            <button type="button" class="btn btn-danger btn-sm removeTenaga">
+                                ×
+                            </button>
+                        </td>
+                    </tr>
+                </template>
+            </div>
+            <div class="md-6 mb-4 ps-4">
+                <label class="fw-bold">File Upload Foto Tukang</label>
+                <div class="text-muted mb-2">Bisa berupa foto atau dokumen</div>
+                <input type="file"
+                    name="documentation_tenaga[]"
+                    class="form-control image-input"
+                    data-preview="preview-tenaga"
+                    accept="image/*,application/pdf"
+                    multiple>
+
+                    <div id="preview-tenaga"
+                        class="mt-3 d-flex flex-wrap gap-3"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 mb-3">
+        <div class="card-header fw-bold d-flex justify-content-between">
+            <span>Pekerjaan Yang Diselenggarakan Hari Ini</span>
+            <button type="button" class="btn btn-sm btn-dark" id="addWork">
+                + Tambah Pekerjaan
+            </button>
+        </div>
+        <div class="card-body p-0">
+            <div class="mb-3 mt-4 ps-4">
+                <div class="table-responsive">
+                    <table class="table table-bordered mb-4">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Uraian Pekerjaan</th>
+                                <th width="120">Satuan</th>
+                                <th width="120">Volume</th>
+                                <th>Keterangan</th>
+                                <th width="40"></th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="workTable">
+                            <!-- BARIS DEFAULT -->
+                            <tr>
+                                <td>
+                                    <select name="rab_process_item_id[]" 
+                                            class="form-select select2 rab-select">
+                                        <option value="">-- Pilih Dari RAB --</option>
+
+                                        @foreach($rabs as $rab)
+                                            <option value="{{ $rab->id }}"
+                                                data-volume="{{ $rab->volume }}"
+                                                data-satuan="{{ $rab->satuan }}">
+                                                {{ $rab->job_name }} ({{ $rab->rab->job_location }})
+                                            </option>
+                                        @endforeach
+
+                                        <option value="manual">+ Manual Input</option>
+                                    </select>
+
+                                    <input type="text"
+                                        name="uraian_manual[]"
+                                        class="form-control mt-2 manual-rab d-none"
+                                        placeholder="Isi uraian manual">
+                                </td>
+                                <td>
+                                    <input name="daily[satuan][]" 
+                                        type="text"
+                                        class="form-control satuan-input">
+                                </td>
+                                <td>
+                                    <input name="daily[volume][]" 
+                                        type="number" 
+                                        step="0.01"
+                                        class="form-control volume-input">
+                                </td>
+
+                                <td>
+                                    <input name="ket[]" class="form-control">
+                                </td>
+
+                                <td>
+                                    <button type="button" 
+                                            class="btn btn-danger btn-sm removeWork">
+                                        ×
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <template id="kerjaTemplate">
                     <tr>
                         <td>
                             <select name="rab_process_item_id[]" 
@@ -221,205 +279,275 @@
                             </button>
                         </td>
                     </tr>
-                </tbody>
-            </table>
-            <template id="kerjaTemplate">
-                <tr>
-                    <td>
-                        <select name="rab_process_item_id[]" 
-                                class="form-select select2 rab-select">
-                            <option value="">-- Pilih Dari RAB --</option>
-
-                            @foreach($rabs as $rab)
-                                <option value="{{ $rab->id }}"
-                                    data-volume="{{ $rab->volume }}"
-                                    data-satuan="{{ $rab->satuan }}">
-                                    {{ $rab->job_name }} ({{ $rab->rab->job_location }})
-                                </option>
-                            @endforeach
-
-                            <option value="manual">+ Manual Input</option>
-                        </select>
-
-                        <input type="text"
-                            name="uraian_manual[]"
-                            class="form-control mt-2 manual-rab d-none"
-                            placeholder="Isi uraian manual">
-                    </td>
-                    <td>
-                        <input name="daily[satuan][]" 
-                            type="text"
-                            class="form-control satuan-input">
-                    </td>
-                    <td>
-                        <input name="daily[volume][]" 
-                            type="number" 
-                            step="0.01"
-                            class="form-control volume-input">
-                    </td>
-
-                    <td>
-                        <input name="ket[]" class="form-control">
-                    </td>
-
-                    <td>
-                        <button type="button" 
-                                class="btn btn-danger btn-sm removeWork">
-                            ×
-                        </button>
-                    </td>
-                </tr>
-            </template>
-        </div>
-        <div class="md-6 mb-4">
-            <label class="fw-bold">File Upload</label>
-            <div class="text-muted mb-2">Bisa berupa foto atau dokumen</div>
-            <input type="file"
-                name="documentation_pekerjaan[]"
-                class="form-control image-input"
-                data-preview="preview-pekerjaan"
-                accept="image/*,application/pdf"
-                multiple>
-
-            <div id="preview-pekerjaan"
-                class="mt-3 d-flex flex-wrap gap-3"></div>
-        </div>
-    </div>
-</div>
-
-<div class="card shadow-sm border-0 mb-3">
-    <div class="card-header fw-bold d-flex justify-content-between">
-        <span>Bahan Yang Masuk</span>
-        <button type="button" class="btn btn-sm btn-dark" id="addMaterial">
-            + Tambah Bahan
-        </button>
-    </div>
-    <div class="card-body p-0">
-        <table class="table table-bordered mb-4">
-            <thead class="table-light">
-                <tr>
-                    <th>Jenis Bahan</th>
-                    <th width="150">Diterima</th>
-                    <th width="150">Ditolak</th>
-                    <th width="40"></th>
-                </tr>
-            </thead>
-            <tbody id="materialTable">
-                <tr>
-                    <td>
-                        <input name="bahan[]" class="form-control">
-                    </td>
-                    <td>
-                        <input type="number" name="diterima[]" class="form-control">
-                    </td>
-                    <td>
-                        <input type="number" name="ditolak[]" class="form-control">
-                    </td>
-                    <td>
-                        <button type="button" class="btn btn-danger btn-sm removeMaterial">
-                            ×
-                        </button>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-        <div class="md-6 mb-4">
-            <label class="fw-bold">File Upload</label>
-            <div class="text-muted mb-2">Bisa berupa foto atau dokumen</div>
-            <input type="file"
-    name="documentation_material[]"
-    class="form-control image-input"
-    data-preview="preview-material"
-    accept="image/*,application/pdf"
-    multiple>
-
-<div id="preview-material"
-    class="mt-3 d-flex flex-wrap gap-3"></div>
-        </div>
-    </div>
-</div>
-
-<div class="card shadow-sm border-0 mb-3">
-    <div class="card-header fw-bold">
-        Jam Kerja & Cuaca
-    </div>
-    <div class="card-body">
-        <div class="row">
-            <div class="col-md-3">
-                <label>Mulai</label>
-                    <input type="time" name="jam_mulai" class="form-control">
+                </template>
             </div>
-            <div class="col-md-3">
-                <label>Selesai</label>
-                    <input type="time" name="jam_selesai" class="form-control">
-            </div>
+            <div class="md-6 mb-4 ps-4">
+                <label class="fw-bold">File Upload Foto Pekerjaan</label>
+                <div class="text-muted mb-2">Bisa berupa foto atau dokumen</div>
+                <input type="file"
+                    name="documentation_pekerjaan[]"
+                    class="form-control image-input"
+                    data-preview="preview-pekerjaan"
+                    accept="image/*,application/pdf"
+                    multiple>
 
-            <div class="col-md-3">
-                <label>Total Jam</label>
-                    <input type="number" name="total_jam" class="form-control" readonly>
-            </div>
-
-            <div class="col-md-3">
-                <label>Cuaca</label>
-                    <select name="cuaca" class="form-select select2">
-                        <option value="cuaca">-- Pilih Cuaca --</option>
-                        <option>Baik</option>
-                        <option>Mendung</option>
-                        <option>Hujan</option>
-                    </select>
+                <div id="preview-pekerjaan" class="mt-3 d-flex flex-wrap gap-3"></div>
             </div>
         </div>
     </div>
-</div>
 
-<div class="card shadow-sm border-0 mb-3">
-    <div class="card-header fw-bold">
-        Catatan / Perintah Konsultan MK
-    </div>
-    <div class="card-body">
-        <textarea name="catatan" class="form-control" rows="5"></textarea>
-    </div>
-</div>
-
-<div class="card shadow-sm border-0 mb-4">
-    <div class="card-header fw-bold">
-        Pengesahan
-    </div>
-    <div class="card-body">
-        <div class="row text-center">
-            <div class="col-md-6">
-                Side Manager
-                <br><br><br><br>
-                <select name="mk_id" class="form-select select2">
-                    <option value="mk_id">-- Pilih Side Manager --</option>
-                    @foreach($employees as $emp)
-                        <option value="{{ $emp->id }}">
-                            {{ $emp->user->fullname }}
-                        </option>
-                    @endforeach
-                </select>
+    <div class="card shadow-sm border-0 mb-3">
+        <div class="card-header fw-bold d-flex justify-content-between">
+            <span>Bahan Yang Masuk</span>
+            <button type="button" class="btn btn-sm btn-dark" id="addMaterial">
+                + Tambah Bahan
+            </button>
+        </div>
+        <div class="card-body p-0">
+            <div class="mb-3 mt-4 ps-4">
+                <div class="table-responsive">
+                    <table class="table table-bordered mb-4">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Jenis Bahan</th>
+                                <th width="150">Diterima</th>
+                                <th width="150">Ditolak</th>
+                                <th width="40"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="materialTable">
+                            <tr>
+                                <td>
+                                    <input name="bahan[]" class="form-control">
+                                </td>
+                                <td>
+                                    <input type="number" name="diterima[]" class="form-control">
+                                </td>
+                                <td>
+                                    <input type="number" name="ditolak[]" class="form-control">
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-danger btn-sm removeMaterial">
+                                        ×
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
+            <div class="md-6 mb-4 ps-4">
+                <label class="fw-bold">File Upload Foto Bahan</label>
+                <div class="text-muted mb-2">Bisa berupa foto atau dokumen</div>
+                <input type="file"
+                    name="documentation_material[]"
+                    class="form-control image-input"
+                    data-preview="preview-material"
+                    accept="image/*,application/pdf"
+                    multiple>
 
-            <div class="col-md-6">
-                Project Manager
+                <div id="preview-material" class="mt-3 d-flex flex-wrap gap-3"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 mb-3">
+        <div class="card-header fw-bold d-flex justify-content-between">
+            <span>Jam Kerja & Cuaca</span>
+
+            <button type="button"
+                    class="btn btn-sm btn-dark"
+                    id="addJamKerja">
+                + Tambah Baris
+            </button>
+        </div>
+
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-bordered mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th width="180">Jam Mulai</th>
+                            <th width="180">Jam Selesai</th>
+                            <th width="150">Total Jam</th>
+                            <th>Cuaca</th>
+                            <th>Keterangan</th>
+                            <th width="40"></th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="jamKerjaTable">
+
+                        {{-- BARIS DEFAULT --}}
+                        <tr>
+                            <td>
+                                <input type="time"
+                                    name="jam_mulai[]"
+                                    class="form-control jam-mulai">
+                            </td>
+
+                            <td>
+                                <input type="time"
+                                    name="jam_selesai[]"
+                                    class="form-control jam-selesai">
+                            </td>
+
+                            <td>
+                                <input type="number"
+                                    name="total_jam[]"
+                                    class="form-control total-jam"
+                                    step="0.01"
+                                    readonly>
+                            </td>
+
+                            <td>
+                                <select name="cuaca[]"
+                                        class="form-select select2">
+                                    <option value="">-- Pilih Cuaca --</option>
+                                    <option value="Baik">Baik</option>
+                                    <option value="Mendung">Mendung</option>
+                                    <option value="Hujan">Hujan</option>
+                                </select>
+                            </td>
+
+                            <td>
+                                <input type="text"
+                                    name="cuaca_keterangan[]"
+                                    class="form-control"
+                                    placeholder="Keterangan tambahan">
+                            </td>
+
+                            <td>
+                                <button type="button"
+                                        class="btn btn-danger btn-sm removeJamKerja">
+                                    ×
+                                </button>
+                            </td>
+                        </tr>
+
+                    </tbody>
+                </table>
+                <template id="jamKerjaTemplate">
+                    <tr>
+
+                        <td>
+                            <input type="time"
+                                name="jam_mulai[]"
+                                class="form-control jam-mulai">
+                        </td>
+
+                        <td>
+                            <input type="time"
+                                name="jam_selesai[]"
+                                class="form-control jam-selesai">
+                        </td>
+
+                        <td>
+                            <input type="number"
+                                name="total_jam[]"
+                                class="form-control total-jam"
+                                step="0.01"
+                                readonly>
+                        </td>
+
+                        <td>
+                            <select name="cuaca[]"
+                                    class="form-select select2">
+                                <option value="">-- Pilih Cuaca --</option>
+                                <option value="Baik">Baik</option>
+                                <option value="Mendung">Mendung</option>
+                                <option value="Hujan">Hujan</option>
+                            </select>
+                        </td>
+
+                        <td>
+                            <input type="text"
+                                name="cuaca_keterangan[]"
+                                class="form-control"
+                                placeholder="Keterangan tambahan">
+                        </td>
+
+                        <td>
+                            <button type="button"
+                                    class="btn btn-danger btn-sm removeJamKerja">
+                                ×
+                            </button>
+                        </td>
+
+                    </tr>
+                </template>
+            </div>
+        </div>
+    </div>
+    <div class="card shadow-sm border-0 mb-3">
+        <div class="card-header fw-bold">
+            Catatan / Perintah Konsultan MK
+        </div>
+        <div class="card-body">
+            <textarea name="catatan" class="form-control" rows="5"></textarea>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header fw-bold">
+            Pengesahan
+        </div>
+        <div class="card-body">
+            <div class="row text-center">
+                <div class="col-md-6">
+                    Side Manager
                     <br><br><br><br>
-                <select name="kontraktor_ttd_id" class="form-select select2">
-                    <option value="kontraktor_ttd_id">-- Pilih Project Manager --</option>
-                    @foreach($employees as $emp)
-                        <option value="{{ $emp->id }}">
-                            {{ $emp->user->fullname }}
-                        </option>
-                    @endforeach
-                </select>
+                    <select name="mk_id" class="form-select select2">
+                        <option value="mk_id">-- Pilih Side Manager --</option>
+                        @foreach($employees as $emp)
+                            <option value="{{ $emp->id }}">
+                                {{ $emp->user->fullname }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="col-md-6">
+                    Project Manager
+                        <br><br><br><br>
+                    <select name="kontraktor_ttd_id" class="form-select select2">
+                        <option value="kontraktor_ttd_id">-- Pilih Project Manager --</option>
+                        @foreach($employees as $emp)
+                            <option value="{{ $emp->id }}">
+                                {{ $emp->user->fullname }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
             </div>
         </div>
     </div>
-</div>
     <div class="text-end mt-4">
         <button class="btn btn-dark">Simpan Laporan Harian</button>
     </div>
 </form>
 @push('js')
+<script>
+
+flatpickr("#nextDate", {
+
+    locale: "id",
+
+    dateFormat: "Y-m-d",
+    altInput: true,
+    altFormat: "d F Y",
+
+    defaultDate: "{{ $nextDate->format('Y-m-d') }}",
+
+    minDate: "{{ \Carbon\Carbon::parse($project->start_date)->format('Y-m-d') }}",
+
+    maxDate: "{{ \Carbon\Carbon::parse($project->end_date)->format('Y-m-d') }}",
+
+    disable: @json($usedDates)
+
+});
+
+</script>
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     $('.select2').select2({ width:'100%' });
@@ -604,23 +732,59 @@ document.addEventListener("change", function(e){
 });
 </script>
 <script>
-document.querySelectorAll('[name="jam_mulai"], [name="jam_selesai"]')
-.forEach(input => {
-    input.addEventListener('change', function(){
+document.getElementById('addJamKerja')
+    ?.addEventListener('click', function () {
 
-        let mulai = document.querySelector('[name="jam_mulai"]').value;
-        let selesai = document.querySelector('[name="jam_selesai"]').value;
+    const template = document
+        .getElementById('jamKerjaTemplate')
+        .content
+        .cloneNode(true);
 
-        if(mulai && selesai){
-            let start = new Date(`1970-01-01T${mulai}`);
-            let end = new Date(`1970-01-01T${selesai}`);
+    document
+        .getElementById('jamKerjaTable')
+        .appendChild(template);
 
-            let diff = (end - start) / 3600000;
-
-            document.querySelector('[name="total_jam"]').value = diff;
-        }
-
+    $('.select2').select2({
+        width: '100%'
     });
+});
+
+document.addEventListener('click', function(e){
+
+    if (e.target.classList.contains('removeJamKerja')) {
+        e.target.closest('tr').remove();
+    }
+});
+
+document.addEventListener('input', function(e){
+
+    const row = e.target.closest('tr');
+
+    if (!row) return;
+
+    if (
+        e.target.classList.contains('jam-mulai') ||
+        e.target.classList.contains('jam-selesai')
+    ) {
+
+        const mulai = row.querySelector('.jam-mulai').value;
+        const selesai = row.querySelector('.jam-selesai').value;
+
+        if (mulai && selesai) {
+
+            const start = new Date(`2000-01-01 ${mulai}`);
+            const end   = new Date(`2000-01-01 ${selesai}`);
+
+            let diff = (end - start) / 1000 / 60 / 60;
+
+            if (diff < 0) {
+                diff += 24;
+            }
+
+            row.querySelector('.total-jam').value =
+                diff.toFixed(2);
+        }
+    }
 });
 </script>
 @endpush

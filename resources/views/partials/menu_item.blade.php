@@ -430,37 +430,66 @@ document.querySelectorAll('[data-submenu]').forEach(menu => {
 }
 @media (min-width: 992px) and (max-width: 1200px) {
 
+    .navbar.navbar-vertical.navbar-expand-lg{
+        width:80px;
+        z-index:200;
+    }
+
+    .page-wrapper{
+        margin-left:80px;
+    }
+
+    .nav-link-title,
+    .logo-expand,
+    .submenu-arrow{
+        display:none !important;
+    }
+
+    .logo-collapse{
+        display:block !important;
+    }
+
+    /* floating submenu */
     .sidebar-collapsed .submenu{
 
-        position: fixed;
+        position:fixed !important;
 
-        left: 72px;
+        left:88px !important;
 
-        min-width: 200px;
-        max-width: 220px;
+        width:230px !important;
+        min-width:230px !important;
+        max-width:230px !important;
 
-        width: 220px;
+        background:#fff;
 
-        border-radius: 10px;
+        border-radius:12px;
 
-        padding: 8px;
+        padding:8px;
 
-        transform: none !important;
+        box-shadow:0 10px 30px rgba(0,0,0,.12);
 
-        max-height: calc(100vh - 40px);
+        z-index:9999;
 
-        overflow-y: auto;
-        z-index: 102;
+        opacity:0;
+        visibility:hidden;
+
+        pointer-events:none;
+
+        overflow-y:auto;
+        overflow-x:hidden;
+
+        max-height:calc(100vh - 20px);
     }
 
     .sidebar-collapsed .submenu.show-floating{
-        transform: none !important;
+        opacity:1;
+        visibility:visible;
+        pointer-events:auto;
     }
 
-    /* kecilin item */
-    .sidebar-collapsed .submenu .nav-link{
-        padding: 6px 8px !important;
-        font-size: 13px;
+    /* tooltip dimatikan di tablet */
+    .sidebar-collapsed .navbar-nav > .nav-item > .nav-link::before{
+        display:none !important;
     }
 
 }

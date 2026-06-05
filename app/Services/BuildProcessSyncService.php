@@ -14,15 +14,19 @@ class BuildProcessSyncService
             'offer.rab.categories.uraians.items'
         );
 
-        $grandTotal = $project->offer->grand_total;
+        $subtotalPekerjaan = $project->offer->rab
+            ->categories
+            ->flatMap(fn($c) => $c->uraians)
+            ->flatMap(fn($u) => $u->items)
+            ->sum('total');
 
         foreach ($project->offer->rab->categories as $cIndex => $category) {
 
             foreach ($category->uraians as $uIndex => $uraian) {
 
                 foreach ($uraian->items as $iIndex => $item) {
-                    $bobot = $grandTotal > 0
-                        ? ($item->total / $grandTotal) * 100
+                    $bobot = $subtotalPekerjaan > 0
+                        ? ($item->total / $subtotalPekerjaan) * 100
                         : 0;
                     BuildProcessItem::updateOrCreate(
 
@@ -61,8 +65,11 @@ class BuildProcessSyncService
                 'offer.rab.categories.uraians.items'
             );
 
-            $grandTotal =
-                $project->offer->grand_total;
+            $subtotalPekerjaan = $project->offer->rab
+                ->categories
+                ->flatMap(fn($c) => $c->uraians)
+                ->flatMap(fn($u) => $u->items)
+                ->sum('total');
 
             /*
             |--------------------------------------------------------------------------
@@ -78,10 +85,9 @@ class BuildProcessSyncService
 
                     foreach ($uraian->items as $iIndex => $item) {
 
-                        $bobot =
-                            $grandTotal > 0
-                                ? ($item->total / $grandTotal) * 100
-                                : 0;
+                        $bobot = $subtotalPekerjaan > 0
+                            ? ($item->total / $subtotalPekerjaan) * 100
+                            : 0;
 
                         $rabItems->push([
 

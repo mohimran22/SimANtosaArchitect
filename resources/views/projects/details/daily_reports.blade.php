@@ -3,12 +3,7 @@
 @endphp
 
 @if($dailies->count())
-    <div class="card shadow-sm border-0 mt-4">
-
-        <div class="card-header fw-bold mb-0">
-        Riwayat Laporan Harian
-        </div>
-
+    <x-collapse-card title="Riwayat Laporan Harian" target="detail-daily-body">
         <div class="card-body">
             <div class="border rounded p-3 mb-4">
                 <div id="daily-report-page" data-project="{{ $project->id }}">
@@ -104,7 +99,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </x-collapse-card>
 @endif
 @push('js')
 <script>
@@ -352,30 +347,76 @@ document.addEventListener('DOMContentLoaded', function(){
                 modalBody.innerHTML = `
 
                 <div id="viewMode">
-                <div class="row mb-3">
+                        @if($report->workTimes->count())
 
-                    <div class="col-md-3">
-                        <strong>Tanggal:</strong><br>
-                        ${new Date(data.tanggal_formatted).toLocaleDateString('id-ID')}
-                    </div>
+                            <table class="table table-bordered mb-0">
 
-                    <div class="col-md-3">
-                        <strong>Jam Kerja:</strong><br>
-                        ${data.jam_mulai ?? '-'} 
-                        s/d 
-                        ${data.jam_selesai ?? '-'}
-                    </div>
-                    <div class="col-md-3">
-                        <strong>Total Jam:</strong><br>
-                        ${parseFloat(data.total_jam).toFixed(2)} 
-                    </div>
+                                <thead class="table-light">
+                                    <tr>
+                                        <th width="50">No</th>
+                                        <th width="150">Jam Mulai</th>
+                                        <th width="150">Jam Selesai</th>
+                                        <th width="120">Total Jam</th>
+                                        <th width="150">Cuaca</th>
+                                        <th>Keterangan</th>
+                                    </tr>
+                                </thead>
 
-                    <div class="col-md-3">
-                        <strong>Cuaca:</strong><br>
-                        ${data.cuaca ?? '-'}
-                    </div>
+                                <tbody>
 
-                </div>
+                                    @foreach($report->workTimes as $time)
+                                        @php
+                                            $badge = match($time->cuaca) {
+                                                'Baik' => 'bg-success',
+                                                'Mendung' => 'bg-warning text-dark',
+                                                'Hujan' => 'bg-primary',
+                                                default => 'bg-secondary'
+                                            };
+                                        @endphp
+                                        <tr>
+                                            <td>{{ $loop->iteration }}</td>
+
+                                            <td>
+                                                {{ $time->jam_mulai
+                                                    ? \Carbon\Carbon::parse($time->jam_mulai)->format('H:i')
+                                                    : '-' }}
+                                            </td>
+
+                                            <td>
+                                                {{ $time->jam_selesai
+                                                    ? \Carbon\Carbon::parse($time->jam_selesai)->format('H:i')
+                                                    : '-' }}
+                                            </td>
+
+                                            <td>
+                                                {{ number_format($time->total_jam, 2) }}
+                                                Jam
+                                            </td>
+
+                                            <td>
+                                                <span class="badge {{ $badge }}">
+                                                    {{ $time->cuaca }}
+                                                </span>
+                                            </td>
+
+                                            <td>
+                                                {{ $time->keterangan ?? '-' }}
+                                            </td>
+                                        </tr>
+
+                                    @endforeach
+
+                                </tbody>
+
+                            </table>
+
+                        @else
+
+                            <div class="p-4 text-muted text-center">
+                                Tidak ada data jam kerja
+                            </div>
+
+                        @endif
                
                 <hr>
                 <h6>Pekerjaan</h6>
@@ -1096,6 +1137,10 @@ $(document).on('click','.btn-hapus',function(){
                 url:'/reports/'+id,
                 type:'DELETE',
 
+                headers:{
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+
                 success:function(res){
 
                     row.remove();
@@ -1110,6 +1155,15 @@ $(document).on('click','.btn-hapus',function(){
                         showConfirmButton:false
                     });
 
+                },
+
+                error:function(xhr){
+                    console.log(xhr.responseText);
+
+                    Swal.fire({
+                        icon:'error',
+                        title:'Gagal hapus'
+                    });
                 }
 
             });

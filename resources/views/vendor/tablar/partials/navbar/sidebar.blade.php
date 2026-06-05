@@ -91,7 +91,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
         function showMenu() {
 
-            if (!document.documentElement.classList.contains('sidebar-collapsed')) {
+            if (
+                !document.documentElement.classList.contains('sidebar-collapsed')
+                || window.innerWidth <= 1200
+            ) {
                 return;
             }
 

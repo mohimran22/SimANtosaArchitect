@@ -226,13 +226,19 @@ if (
 
         $canEdit = auth()->user()->can('lihat daftar proyek'); 
         $weeks = $project->rab->job_duration ?? 0;
-        $lastReport = BuildDailyReport::where('project_id',$project?->id)
-            ->orderByDesc('tanggal')
-            ->first();
+        $usedDates = BuildDailyReport::where('project_id', $project->id)
+            ->pluck('tanggal')
+            ->map(fn($d) => Carbon::parse($d)->format('Y-m-d'))
+            ->toArray();
 
-        $nextDate = $lastReport
-            ? Carbon::parse($lastReport->tanggal)->addDay()
-            : Carbon::parse($project?->start_date);
+        $nextDate = Carbon::parse($project->start_date);
+
+        while (
+            in_array($nextDate->format('Y-m-d'), $usedDates)
+            && $nextDate->lte($project->end_date)
+        ) {
+            $nextDate->addDay();
+        }
         $reports = BuildDailyReport::where('project_id', $project?->id)
             ->orderBy('tanggal')
             ->get()
@@ -286,8 +292,8 @@ if (
 
         return view('projects.create', array_merge(
             $this->formData($project),
-            compact('project', 'timelineSteps', 'activeStep', 'surveyInvoice',
-        'surveyApproved', 'nextDate', 'reports', 'groupedItems', 'buildItems',
+            compact('project', 'timelineSteps', 'activeStep', 'surveyInvoice', 'nextDate',
+        'surveyApproved', 'usedDates', 'reports', 'groupedItems', 'buildItems',
         'isFreeSurvey', 'surveyWaiting', 'surveyRejected', 'invoiceDp', 'invoiceRab', 'invoiceBuild', 'canEdit', 'weeks')
         ));
     }
