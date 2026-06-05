@@ -54,21 +54,32 @@
                             class="form-control">
                     </div>
 
-                    <div class="col-md-3">
+                    <div class="col-md-3 d-flex gap-2">
+
                         <form action="{{ route('projects.sync-build', $project->id) }}"
                             method="POST"
+                            class="d-inline"
                             onsubmit="return confirm('Update form kemajuan pekerjaan dengan RAB terbaru?')">
 
                             @csrf
 
-                            <button type="submit" class="btn btn-danger">
+                            <button type="submit" class="btn btn-secondary">
                                 <i class="ti ti-refresh"></i>
-                                Update Form Kemajuan Pekerjaan
+                                Update Form
                             </button>
 
                         </form>
-                    </div>
 
+                        <a href="{{ route('projects.export-pdf', $project->id) }}"
+                            target="_blank"
+                            id="btn-export-pdf"
+                            class="btn btn-dark">
+
+                            <i class="ti ti-file-export"></i>
+                            Export PDF
+                        </a>
+
+                    </div>
                 </div>
 
                 <div class="table-responsive">
@@ -1599,4 +1610,30 @@
 
     }
     </script>
+    <script>
+
+document.getElementById('btn-export-pdf')
+.addEventListener('click', function(){
+
+    const week = document.getElementById('filter-week').value;
+    const date = document.getElementById('filter-date').value;
+
+    let url =
+        "{{ route('projects.export-pdf', $project->id) }}";
+
+    const params = new URLSearchParams();
+
+    if(week){
+        params.append('week', week);
+    }
+
+    if(date){
+        params.append('date', date);
+    }
+
+    window.open(url + '?' + params.toString(), '_blank');
+
+});
+
+</script>
 @endpush

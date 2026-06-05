@@ -11,21 +11,27 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www
 
-COPY . .
+# copy dependency dulu
+COPY composer.json composer.lock ./
 
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-# build frontend
+# baru copy source
+COPY . .
+
+# frontend
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
  && apt-get install -y nodejs \
  && npm install \
  && npm run build \
  && rm -rf node_modules
 
-RUN chown -R www-data:www-data /var/www \
+# permission hanya yg perlu
+RUN chown -R www-data:www-data storage bootstrap/cache \
  && chmod -R 775 storage bootstrap/cache
 
 EXPOSE 8080
+
 COPY docker/php.ini /usr/local/etc/php/conf.d/uploads.ini
 
 CMD php artisan optimize || true; \
