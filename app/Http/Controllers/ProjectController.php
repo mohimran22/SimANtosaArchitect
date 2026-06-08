@@ -226,16 +226,16 @@ if (
 
         $canEdit = auth()->user()->can('lihat daftar proyek'); 
         $weeks = $project->rab->job_duration ?? 0;
-        $usedDates = BuildDailyReport::where('project_id', $project->id)
+        $usedDates = BuildDailyReport::where('project_id', $project?->id)
             ->pluck('tanggal')
             ->map(fn($d) => Carbon::parse($d)->format('Y-m-d'))
             ->toArray();
 
-        $nextDate = Carbon::parse($project->start_date);
+        $nextDate = Carbon::parse($project?->start_date);
 
         while (
             in_array($nextDate->format('Y-m-d'), $usedDates)
-            && $nextDate->lte($project->end_date)
+            && $nextDate->lte($project?->end_date)
         ) {
             $nextDate->addDay();
         }
@@ -273,6 +273,7 @@ if (
             ->map(function ($items) {
 
                 return [
+                     'category_id' => $items->first()->category_order,
                     'category_name' => $items->first()->category_name,
 
                     'uraians' => $items

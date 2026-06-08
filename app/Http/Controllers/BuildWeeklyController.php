@@ -150,7 +150,7 @@ public function exportPdf(Request $request, Project $project)
 
     }
 
-    $totalCols = 6 + ($filteredWeeks->count() * 3);
+    $totalCols = 5 + ($filteredWeeks->count() * 2);
 
     $rekap = collect($groupedItems)->map(function ($cat) use ($filteredWeeks) {
 
@@ -199,9 +199,7 @@ public function exportPdf(Request $request, Project $project)
 
     $pdf->setPaper('a4', 'potrait');
 
-    return $pdf->stream(
-        'Laporan Mingguan.pdf'
-    );
+    return $pdf->stream('LAPORAN MINGGUAN-'.$project->project_name.'.pdf');
 }
 
 private function groupItems($buildItems)

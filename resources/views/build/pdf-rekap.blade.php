@@ -47,23 +47,74 @@
 
 <table>
 
-<thead>
+    <thead>
 
-<tr>
+        <tr style="background:#e5e5e5; text-align:center; font-weight:bold;">
+            <th rowspan="3" width="4%">
+                NO
+            </th>
+            <th rowspan="3">
+                Jenis Pekerjaan
+            </th>
+            <th rowspan="3" width="7%">
+                Bobot (%)
+            </th>
+            <th rowspan="3" width="8%">
+                Rencana s/d Minggu ini (%)
+            </th>
+            <th colspan="6">
+                Realisasi
+            </th>
+            <th rowspan="3" width="8%">
+                Deviasi (%)
+            </th>
+        </tr>
 
-    <th>No</th>
+        <tr style="background:#f2f2f2; text-align:center; font-weight:bold;">
 
-    <th>Jenis Pekerjaan</th>
+            <th colspan="2">
+                s/d Minggu Lalu
+            </th>
 
-    <th>Bobot (%)</th>
+            <th colspan="2">
+                Minggu ini
+            </th>
 
-    <th>Realisasi (%)</th>
+            <th colspan="2">
+                s/d Minggu ini
+            </th>
 
-    <th>Deviasi</th>
+        </tr>
 
-</tr>
+        <tr style="background:#f9f9f9; text-align:center; font-weight:bold;">
 
-</thead>
+            <th width="7%">
+                Prestasi (%)
+            </th>
+
+            <th width="7%">
+                Bobot (%)
+            </th>
+
+            <th width="7%">
+                Prestasi (%)
+            </th>
+
+            <th width="7%">
+                Bobot (%)
+            </th>
+
+            <th width="7%">
+                Prestasi (%)
+            </th>
+
+            <th width="7%">
+                Bobot (%)
+            </th>
+
+        </tr>
+
+    </thead>
 
 <tbody>
 

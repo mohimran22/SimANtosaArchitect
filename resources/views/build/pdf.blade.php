@@ -40,6 +40,8 @@ table{
 th,td{
     border:1px solid #000;
     padding:4px;
+    vertical-align: middle;
+    word-wrap: break-word;
 }
 
 th{
@@ -79,6 +81,14 @@ th{
 <div class="page-break"></div>
 
 @include('build.pdf-detail')
+
+{{-- <div class="page-break"></div>
+
+@include('build.pdf-detail')
+
+<div class="page-break"></div>
+
+@include('build.pdf-detail') --}}
 
 </body>
 </html>

@@ -379,36 +379,6 @@ document.addEventListener('DOMContentLoaded', function(){
                 modalBody.innerHTML = `
 
                 <div id="viewMode">
-                <h6>Jam Kerja & Cuaca</h6>
-
-                <table class="table table-bordered mb-4">
-
-                    <thead class="table-light">
-                        <tr>
-                            <th width="50">No</th>
-                            <th width="150">Jam Mulai</th>
-                            <th width="150">Jam Selesai</th>
-                            <th width="120">Total Jam</th>
-                            <th width="150">Cuaca</th>
-                            <th>Keterangan</th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
-                        ${
-                            workTimeRows || `
-                            <tr>
-                                <td colspan="6" class="text-center text-muted">
-                                    Tidak ada data jam kerja
-                                </td>
-                            </tr>
-                            `
-                        }
-                    </tbody>
-
-                </table>
-               
-                <hr>
                 <h6>Pekerjaan</h6>
                 <table class="table table-bordered mb-4">
                     <thead class="table-light">
@@ -452,6 +422,35 @@ document.addEventListener('DOMContentLoaded', function(){
                 </table>
                 <h6 class="mt-4">File Upload</h6>
                 ${renderDocumentation(data, 'material')}
+                                <hr>
+                <h6>Jam Kerja & Cuaca</h6>
+
+                <table class="table table-bordered mb-4">
+
+                    <thead class="table-light">
+                        <tr>
+                            <th width="50">No</th>
+                            <th width="150">Jam Mulai</th>
+                            <th width="150">Jam Selesai</th>
+                            <th width="120">Total Jam</th>
+                            <th width="150">Cuaca</th>
+                            <th>Keterangan</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        ${
+                            workTimeRows || `
+                            <tr>
+                                <td colspan="6" class="text-center text-muted">
+                                    Tidak ada data jam kerja
+                                </td>
+                            </tr>
+                            `
+                        }
+                    </tbody>
+
+                </table>
                 <div class="mt-3">
                     <label class="fw-semibold">Catatan</label>
                     <textarea class="form-control" readonly>${data.catatan ?? ''}</textarea>

@@ -95,67 +95,79 @@
 @endsection
 
 @push('js')
-    <script>
-        $(function() {
-            const table = $('#tableUsers').DataTable({
-                scrollY: '500px',
-                scrollX: true,
-                scrollCollapse: true,
-                fixedColumns: {
-                    leftColumns: 3
-                },
-                serverSide: true,
-                processing: true,
-                ajax: '{{ route("users.index") }}',
+<script>
+$(function () {
 
-                columns: [
-                    { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
-                    { data: 'fullname', name: 'fullname' },
-                    { data: 'nickname', name: 'nickname' },
-                    { data: 'gender', name: 'gender' },
-                    { data: 'birth_place', name: 'birth_place' },
-                    { data: 'birth_date', name: 'birth_date' },
-                    { data: 'religion_name', name: 'religion.name' },
-                    { data: 'identity_number', name: 'identity_number' },
-                    { data: 'npwp', name: 'npwp' },
-                    { data: 'email', name: 'email' },
-                    { data: 'address', name: 'address'},
-                    { data: 'province_name', name: 'province.name' },
-                    { data: 'city_name', name: 'city.name'},
-                    { data: 'district_name', name: 'district.name' },
-                    { data: 'sub_district_name', name: 'sub_district_name' },
-                    { data: 'postal_code', name: 'postal_code' },
-                    { data: 'phone', name: 'phone' },
-                    { data: 'action', name: 'action', orderable: false, searchable: false },
-                ],
-                language: {
-                    search: "",
-                    searchPlaceholder: "Cari pengguna...",
-                    lengthMenu: "Tampilkan _MENU_ data",
-                    info: "Menampilkan _START_ - _END_ dari _TOTAL_ data",
-                    infoEmpty: "Tidak ada data",
-                    infoFiltered: "(difilter dari _MAX_ total data)",
-                    zeroRecords: "Data tidak ditemukan",
-                    paginate: {
-                        first: "Awal",
-                        last: "Akhir",
-                        next: "›",
-                        previous: "‹"
-                    }
-                },
+    const isMobile = window.innerWidth < 576;
 
-                initComplete: function () {
-                    const input = $('.dt-search input');
-                    input.removeClass('form-control-sm')
-                        .addClass('form-control');
-                }
-            });
+    const table = $('#tableUsers').DataTable({
 
-            // Delete user functionally
-            $('table').on('click', '.delete-user', function () {
-            const userId = $(this).data('id');
+        scrollY: '500px',
+        scrollX: true,
+        scrollCollapse: true,
 
-            Swal.fire({
+        fixedColumns: !isMobile ? {
+            leftColumns: 3
+        } : false,
+
+        serverSide: true,
+        processing: true,
+        responsive: false,
+
+        ajax: '{{ route("users.index") }}',
+
+        columns: [
+            { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
+            { data: 'fullname', name: 'fullname' },
+            { data: 'nickname', name: 'nickname' },
+            { data: 'gender', name: 'gender' },
+            { data: 'birth_place', name: 'birth_place' },
+            { data: 'birth_date', name: 'birth_date' },
+            { data: 'religion_name', name: 'religion.name' },
+            { data: 'identity_number', name: 'identity_number' },
+            { data: 'npwp', name: 'npwp' },
+            { data: 'email', name: 'email' },
+            { data: 'address', name: 'address' },
+            { data: 'province_name', name: 'province.name' },
+            { data: 'city_name', name: 'city.name' },
+            { data: 'district_name', name: 'district.name' },
+            { data: 'sub_district_name', name: 'sub_district_name' },
+            { data: 'postal_code', name: 'postal_code' },
+            { data: 'phone', name: 'phone' },
+            { data: 'action', name: 'action', orderable: false, searchable: false },
+        ],
+
+        language: {
+            search: "",
+            searchPlaceholder: "Cari pengguna...",
+            lengthMenu: "Tampilkan _MENU_ data",
+            info: "Menampilkan _START_ - _END_ dari _TOTAL_ data",
+            infoEmpty: "Tidak ada data",
+            infoFiltered: "(difilter dari _MAX_ total data)",
+            zeroRecords: "Data tidak ditemukan",
+            paginate: {
+                first: "Awal",
+                last: "Akhir",
+                next: "›",
+                previous: "‹"
+            }
+        },
+
+        initComplete: function () {
+
+            $('.dataTables_filter input')
+                .removeClass('form-control-sm')
+                .addClass('form-control');
+
+        }
+    });
+
+    // DELETE USER
+    $('#tableUsers').on('click', '.delete-user', function () {
+
+        const userId = $(this).data('id');
+
+        Swal.fire({
             title: 'Yakin ingin menghapus?',
             text: "Data akan hilang secara permanen.",
             icon: 'warning',
@@ -165,48 +177,59 @@
             confirmButtonText: 'Ya, hapus!',
             cancelButtonText: 'Batal'
 
-            }).then((result) => {
+        }).then((result) => {
 
-                if (result.isConfirmed) {
-                    $.ajax({
+            if (result.isConfirmed) {
 
-                        url: `/users/${userId}`,
-                        method: 'DELETE',
-                        data: {
-                            _token: '{{ csrf_token() }}',
-                        },
+                $.ajax({
 
-                        success: function (response) {
-                            if (response.status === 'success') {
-                                Swal.fire({
-                                    icon: 'success',
-                                    title: 'Berhasil!',
-                                    text: 'User telah dihapus.',
-                                    timer: 2000,
-                                    showConfirmButton: false
+                    url: `/users/${userId}`,
+                    method: 'DELETE',
+
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                    },
+
+                    success: function (response) {
+
+                        if (response.status === 'success') {
+
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Berhasil!',
+                                text: 'User telah dihapus.',
+                                timer: 2000,
+                                showConfirmButton: false
                             });
 
-                        table.ajax.reload(null, false); // refresh datatable
+                            table.ajax.reload(null, false);
+
                         } else {
 
-                            Swal.fire('Gagal', response.message || 'Tidak bisa menghapus data.', 'error');
+                            Swal.fire(
+                                'Gagal',
+                                response.message || 'Tidak bisa menghapus data.',
+                                'error'
+                            );
                         }
-                        },
+                    },
 
                     error: function () {
 
-                    Swal.fire('Error', 'Terjadi kesalahan saat menghapus.', 'error');
+                        Swal.fire(
+                            'Error',
+                            'Terjadi kesalahan saat menghapus.',
+                            'error'
+                        );
                     }
 
-                    });
-                }
-            });
-            });
-
-
-           
+                });
+            }
         });
-    </script>
+    });
+
+});
+</script>
 
     @if (session('success'))
     <script>

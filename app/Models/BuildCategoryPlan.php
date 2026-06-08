@@ -4,15 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class BuildWeeklyPlan extends Model
+class BuildCategoryPlan extends Model
 {
     protected $fillable = [
         'project_id',
         'week_no',
-        'bobot_percent'
+        'bobot_percent',
+        'category_order'
     ];
-
-    // ======================
 
     public function project()
     {

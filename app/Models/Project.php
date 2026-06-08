@@ -148,7 +148,7 @@ public function dailyReports()
 
 public function weeklyPlans()
 {
-    return $this->hasMany(BuildWeeklyPlan::class);
+    return $this->hasMany(BuildCategoryPlan::class);
 }
 
 public function progressSnapshots()
