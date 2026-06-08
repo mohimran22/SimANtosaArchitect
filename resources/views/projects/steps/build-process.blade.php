@@ -197,7 +197,12 @@
                                                 class="form-control category-plan"
                                                 data-category="{{ $categoryData['category_id'] }}"
                                                 data-week="{{ $w['week_no'] }}"
-                                                value="{{ $categoryPlans[$categoryData['category_id']][$w['week_no']] ?? 0 }}">
+                                                value="{{
+                                                    $categoryPlans[
+                                                        $categoryData['category_id']
+                                                    ][$w['week_no']]->bobot_percent ?? 0
+                                                }}"
+                                                >
 
                                         </td>
 
@@ -467,7 +472,6 @@
                                     <th class="week-foot text-center fw-bold"
                                         data-week="{{ $w['week_no'] }}"
                                         id="total-plan-{{ $w['week_no'] }}">
-                                        value="{{ $categoryPlans[ $categoryData['category_id'] ][$w['week_no']]->bobot_percent ?? '' }}"
                                         0
                                     </th>
                                     <th class="week-foot" data-week="{{ $w['week_no'] }}"></th>

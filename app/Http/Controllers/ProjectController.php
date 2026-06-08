@@ -291,9 +291,23 @@ if (
                 ];
             });
 
+$categoryPlans = \App\Models\BuildCategoryPlan::query()
+
+    ->where('project_id', $project->id)
+
+    ->get()
+
+    ->groupBy('category_order')
+
+    ->map(function($rows){
+
+        return $rows->keyBy('week_no');
+
+    });
+
         return view('projects.create', array_merge(
             $this->formData($project),
-            compact('project', 'timelineSteps', 'activeStep', 'surveyInvoice', 'nextDate',
+            compact('project', 'timelineSteps', 'activeStep', 'surveyInvoice', 'nextDate', 'categoryPlans',
         'surveyApproved', 'usedDates', 'reports', 'groupedItems', 'buildItems',
         'isFreeSurvey', 'surveyWaiting', 'surveyRejected', 'invoiceDp', 'invoiceRab', 'invoiceBuild', 'canEdit', 'weeks')
         ));
