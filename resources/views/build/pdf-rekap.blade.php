@@ -141,12 +141,10 @@ $totalRealisasi += $r['realisasi_sd_minggu_ini'];
 @endphp
 
 <tr>
-
-    {{-- NO --}}
-    <td class="text-center">
-        {{ $loop->iteration }}
+    <td align="center">
+    {{ \PhpOffice\PhpSpreadsheet\Cell\Coordinate
+        ::stringFromColumnIndex($loop->iteration) }}
     </td>
-
     {{-- JENIS --}}
     <td>
         {{ $r['category'] }}

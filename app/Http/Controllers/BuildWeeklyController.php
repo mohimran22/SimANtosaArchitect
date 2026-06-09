@@ -385,22 +385,31 @@ $chartUrl =
 private function groupItems($buildItems)
 {
     return $buildItems
-        ->groupBy('category_name')
-        ->map(function ($categoryItems, $categoryName) {
+        ->groupBy('category_order')
+        ->map(function ($categoryItems) {
+
+            $firstCategory = $categoryItems->first();
 
             return [
-                'category_name' => $categoryName,
+
+                'category_name' => $firstCategory->category_name,
+                'category_order' => $firstCategory->category_order,
 
                 'uraians' => $categoryItems
-                    ->groupBy('uraian_name')
-                    ->map(function ($uraianItems, $uraianName) {
+                    ->groupBy('uraian_order')
+                    ->map(function ($uraianItems) {
+
+                        $firstUraian = $uraianItems->first();
 
                         return [
-                            'uraian_name' => $uraianName,
+
+                            'uraian_name' => $firstUraian->uraian_name,
+                            'uraian_order' => $firstUraian->uraian_order,
 
                             'items' => $uraianItems
                                 ->sortBy('item_order')
                                 ->values(),
+
                         ];
 
                     })->values()
