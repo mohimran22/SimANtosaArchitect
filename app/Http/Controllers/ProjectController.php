@@ -293,7 +293,7 @@ if (
 
 $categoryPlans = \App\Models\BuildCategoryPlan::query()
 
-    ->where('project_id', $project->id)
+    ->where('project_id', $project?->id)
 
     ->get()
 
