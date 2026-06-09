@@ -76,19 +76,15 @@ th{
          width="100%">
 </div>
 
+@include('build.pdf-kurvas')
+
+<div class="page-break"></div>
+
 @include('build.pdf-rekap')
 
 <div class="page-break"></div>
 
 @include('build.pdf-detail')
-
-{{-- <div class="page-break"></div>
-
-@include('build.pdf-detail')
-
-<div class="page-break"></div>
-
-@include('build.pdf-detail') --}}
 
 </body>
 </html>

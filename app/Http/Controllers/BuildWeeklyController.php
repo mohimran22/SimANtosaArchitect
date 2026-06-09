@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use App\Models\Project;
 use App\Models\BuildWeeklyProgress;
 use App\Models\BuildProcessItem;
+use App\Models\BuildCategoryPlan;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use DB;
@@ -104,7 +106,7 @@ public function exportPdf(Request $request, Project $project)
 {
     $week = $request->week;
     $date = $request->date;
-
+    
     $buildItems = BuildProcessItem::with([
         'weeklyProgresses',
         'tambahan',
@@ -150,41 +152,218 @@ public function exportPdf(Request $request, Project $project)
 
     }
 
-    $totalCols = 5 + ($filteredWeeks->count() * 2);
-
-    $rekap = collect($groupedItems)->map(function ($cat) use ($filteredWeeks) {
-
-        $items = collect($cat['uraians'])
-            ->flatMap(fn($u) => $u['items']);
-
-        $bobot = $items->sum('bobot_percent');
-
-        $realisasi = $items->sum(function ($item) use ($filteredWeeks) {
-
-            return collect($filteredWeeks)
-                ->sum(function ($w) use ($item) {
-
-                    $prog = $item->progress_map[$w['week_no']] ?? null;
-
-                    $volMinggu = $prog->volume ?? 0;
-
-                    return $item->volume > 0
-                        ? ($volMinggu / $item->volume)
-                            * $item->bobot_percent
-                        : 0;
+    $totalCols = 5 + ($filteredWeeks->count() * 9);
 
 
-                });
+$rekap = collect($groupedItems)->map(function ($cat) use ($filteredWeeks, $project, $week) {
 
+    $items = collect($cat['uraians'])
+        ->flatMap(fn($u) => $u['items']);
+
+    // Bobot kontrak kategori
+    $bobot = $items->sum('bobot_percent');
+
+    // category id
+    $categoryId =
+        $items->first()->category_order;
+
+    // minggu aktif
+    $weekNow =
+        $filteredWeeks->max('week_no');
+
+    // minggu lalu
+    $weekPrev =
+        max($weekNow - 1, 0);
+
+    $rencana = BuildCategoryPlan::query()
+
+        ->where('project_id', $project->id)
+
+        ->where('category_order', $categoryId)
+
+        ->where('week_no', '<=', $weekNow)
+
+        ->sum('bobot_percent');
+
+    $prestasiLalu = $items->avg(function ($item)
+        use ($weekPrev) {
+
+            $vol = 0;
+
+            for($w = 1; $w <= $weekPrev; $w++){
+
+                $prog =
+                    $item->progress_map[$w]
+                    ?? null;
+
+                $vol +=
+                    $prog->volume ?? 0;
+
+            }
+
+            return $item->volume > 0
+
+                ? ($vol / $item->volume) * 100
+
+                : 0;
         });
 
-        return [
-            'category' => $cat['category_name'],
-            'bobot' => $bobot,
-            'realisasi' => $realisasi,
-        ];
+    $bobotLalu = $items->sum(function ($item)
+    use ($weekPrev) {
+
+        $sum = 0;
+
+        for($w = 1; $w <= $weekPrev; $w++){
+
+            $prog =
+                $item->progress_map[$w]
+                ?? null;
+
+            $vol =
+                $prog->volume ?? 0;
+
+            $sum += $item->volume > 0
+
+                ? ($vol / $item->volume)
+                    * $item->bobot_percent
+
+                : 0;
+
+        }
+
+        return $sum;
+    });
+    
+    $prestasiMingguIni = $items->avg(function ($item) use ($weekNow) {
+
+        $prog =
+            $item->progress_map[$weekNow]
+            ?? null;
+
+        $vol =
+            $prog->volume ?? 0;
+
+        return $item->volume > 0
+
+            ? ($vol / $item->volume) * 100
+
+            : 0;
 
     });
+    $bobotMingguIni = $items->sum(function ($item) use ($weekNow) {
+
+        $prog = $item->progress_map[$weekNow] ?? null;
+
+        $vol = $prog->volume ?? 0;
+
+        return $item->volume > 0
+
+            ? ($vol / $item->volume)
+                * $item->bobot_percent
+
+            : 0;
+
+    });
+    $prestasiKumulatif = $prestasiLalu + $prestasiMingguIni;
+
+    $realisasiKumulatif = $bobotLalu + $bobotMingguIni;
+
+    return [
+
+        'category' => $cat['category_name'],
+
+        // kontrak
+        'bobot' => $bobot,
+
+        // plan
+        'rencana' => $rencana,
+
+        // SD minggu lalu
+        'prestasi_lalu' => $prestasiLalu,
+        'bobot_lalu' => $bobotLalu,
+
+        // minggu ini
+        'prestasi_minggu_ini' => $prestasiMingguIni,
+
+        'bobot_minggu_ini' => $bobotMingguIni,
+
+        // SD minggu ini
+        'prestasi_sd_minggu_ini' => $prestasiKumulatif,
+
+        'realisasi_sd_minggu_ini' => $realisasiKumulatif,
+    ];
+
+});
+    $kurvaS = $project->getKurvaSData();
+
+$labels = collect($kurvaS)
+    ->pluck('week')
+    ->map(fn($w) => 'M'.$w)
+    ->values();
+
+$realisasi = collect($kurvaS)
+    ->pluck('progress')
+    ->values();
+$kurvaS = $project->getKurvaSData() ?? [];
+$labels = collect($kurvaS)
+    ->pluck('week')
+    ->map(fn($w) => 'M'.$w)
+    ->values()
+    ->toArray();
+
+$realisasi = collect($kurvaS)
+    ->pluck('progress')
+    ->values()
+    ->toArray();
+$plan = [];
+
+$jalan = 0;
+
+foreach($project->week_labels as $w){
+
+    $mingguan =
+        \App\Models\BuildCategoryPlan::query()
+
+        ->where('project_id', $project->id)
+
+        ->where('week_no', $w['week_no'])
+
+        ->sum('bobot_percent');
+
+    $jalan += $mingguan;
+
+    $plan[] = round($jalan, 2);
+
+}
+$chartConfig = [
+
+    'type' => 'line',
+
+    'data' => [
+
+        'labels' => $labels,
+
+        'datasets' => [
+
+            [
+                'label' => 'Rencana',
+                'data' => $plan,
+            ],
+
+            [
+                'label' => 'Realisasi',
+                'data' => $realisasi,
+            ]
+
+        ]
+
+    ]
+
+];
+
+$chartUrl =
+    'https://quickchart.io/chart?c=' .
+    urlencode(json_encode($chartConfig));
 
     $pdf = Pdf::loadView(
         'build.pdf',
@@ -194,6 +373,7 @@ public function exportPdf(Request $request, Project $project)
             'weeks' => $filteredWeeks,
             'totalCols' => $totalCols,
             'rekap' => $rekap,
+            'chartUrl' => $chartUrl,
         ]
     );
 

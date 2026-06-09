@@ -70,15 +70,16 @@
 
                         </form>
 
-                        <a href="{{ route('projects.export-pdf', $project->id) }}"
-                            target="_blank"
-                            id="btn-export-pdf"
-                            class="btn btn-dark">
+                        <button type="button" id="btn-export-pdf" class="btn btn-dark"> 
+                            <i class="ti ti-file-export"></i> Ekspor PDF 
+                        </button>
 
-                            <i class="ti ti-file-export"></i>
-                            Export PDF
-                        </a>
-
+                        <form id="exportPdfForm" method="POST" action="{{ route('projects.export-pdf', $project->id) }}" target="_blank">
+                            @csrf
+                            <input type="hidden" name="week" id="pdf_week">
+                            <input type="hidden" name="date" id="pdf_date">
+                            <input type="hidden" name="chart_image" id="chart_image">
+                        </form>
                     </div>
                 </div>
 
@@ -844,7 +845,9 @@
 
             }
 
-            const dataAwal = @json($project->getKurvaSData());
+            const dataAwal = @json($project->getKurvaSData() ?? []);
+            const labels = []; for(let i = 1; i <= {{ $weekCount }}; i++){ labels.push('Minggu ' + i); }
+            const realisasi = []; for(let i = 1; i <= {{ $weekCount }}; i++){ const found = dataAwal.find(d => d.week == i); realisasi.push( found ? found.progress : 0 ); }
 
             window.kurvaChart = new Chart(ctx, {
 
@@ -852,13 +855,13 @@
 
                 data: {
 
-                    labels: dataAwal.map(d => 'Minggu ' + d.week),
+                    labels: labels,
 
                     datasets: [
 
                         {
                             label:'Realisasi (%)',
-                            data:dataAwal.map(d=>d.progress),
+                            data: realisasi,
                             tension:0.3
                         },
 
@@ -1790,13 +1793,17 @@
     <script>
 
 document.getElementById('btn-export-pdf')
-.addEventListener('click', function(){
+.addEventListener('click', function(e){
 
-    const week = document.getElementById('filter-week').value;
-    const date = document.getElementById('filter-date').value;
+    e.preventDefault();
 
-    let url =
-        "{{ route('projects.export-pdf', $project->id) }}";
+    const week =
+        document.getElementById('filter-week').value;
+
+    const date =
+        document.getElementById('filter-date').value;
+
+    let url = "{{ route('projects.export-pdf', $project->id) }}";
 
     const params = new URLSearchParams();
 
@@ -1808,9 +1815,11 @@ document.getElementById('btn-export-pdf')
         params.append('date', date);
     }
 
-    window.open(url + '?' + params.toString(), '_blank');
+    window.open(
+        url + '?' + params.toString(),
+        '_blank'
+    );
 
 });
-
-</script>
+    </script>
 @endpush
