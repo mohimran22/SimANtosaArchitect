@@ -14,256 +14,250 @@
         ->keyBy('week_no');
 @endphp
 
-        <x-collapse-card title="Tahap Perencanaan Proyek" target="proyek-build-plan-body">
-            <div class="card-body">
-                
-                    <table width="100%" style="margin-bottom:20px; margin-left:20px;">
-                    <tr>
-                        <td width="20%">PEKERJAAN</td>
-                        <td>: {{ $project->project_name ?? '-' }}</td>
-                    </tr>
-                    <tr>
-                        <td>LOKASI</td>
-                        <td>: {{ $project->city->name ?? '-' }}</td>
-                    </tr>
-                    </table>
+    <x-collapse-card title="Tahap Perencanaan Proyek" target="proyek-build-plan-body">
+        <div class="card-body">
+            
+                <table width="100%" style="margin-bottom:20px; margin-left:20px;">
+                <tr>
+                    <td width="20%">PEKERJAAN</td>
+                    <td>: {{ $project->project_name ?? '-' }}</td>
+                </tr>
+                <tr>
+                    <td>LOKASI</td>
+                    <td>: {{ $project->city->name ?? '-' }}</td>
+                </tr>
+                </table>
 
-                {{-- <div class="row mb-3 ps-3 align-items-end">
+            {{-- <div class="row mb-3 ps-3 align-items-end">
 
-                    <div class="col-md-3">
-                        <label class="form-label">Filter Minggu</label>
+                <div class="col-md-3">
+                    <label class="form-label">Filter Minggu</label>
 
-                        <select id="filter-week" class="form-select select2">
-                            <option value="">-- Semua --</option>
-
-                            @foreach($project->week_labels as $w)
-                                <option value="{{ $w['week_no'] }}">
-                                    M{{ $w['week_no'] }} ({{ $w['label'] }})
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <div class="col-md-3">
-                        <label class="form-label">Filter Tanggal</label>
-
-                        <input type="date"
-                            id="filter-date"
-                            class="form-control">
-                    </div>
-
-                    <div class="col-md-3 d-flex gap-2">
-
-                        <form action="{{ route('projects.sync-build', $project->id) }}"
-                            method="POST"
-                            class="d-inline"
-                            onsubmit="return confirm('Update form kemajuan pekerjaan dengan RAB terbaru?')">
-
-                            @csrf
-
-                            <button type="submit" class="btn btn-secondary">
-                                <i class="ti ti-refresh"></i>
-                                Update Form
-                            </button>
-
-                        </form>
-
-                        <button type="button" id="btn-export-pdf" class="btn btn-dark"> 
-                            <i class="ti ti-file-export"></i> Ekspor PDF 
-                        </button>
-
-                        <form id="exportPdfForm" method="POST" action="{{ route('projects.export-pdf', $project->id) }}" target="_blank">
-                            @csrf
-                            <input type="hidden" name="week" id="pdf_week">
-                            <input type="hidden" name="date" id="pdf_date">
-                            <input type="hidden" name="chart_image" id="chart_image">
-                        </form>
-                    </div>
-                </div> --}}
-
-                <div class="table-responsive">
-                    <table class="table table-bordered">
-                    <colgroup>
-                        <col style="width:60px">
-                        <col style="width:320px">
-                        <col style="width:80px">
-                        <col style="width:90px">
-                        <col style="width:140px">
-                        <col style="width:100px">
+                    <select id="filter-week" class="form-select select2">
+                        <option value="">-- Semua --</option>
 
                         @foreach($project->week_labels as $w)
-                            <col style="width:95px">
+                            <option value="{{ $w['week_no'] }}">
+                                M{{ $w['week_no'] }} ({{ $w['label'] }})
+                            </option>
                         @endforeach
-                    </colgroup>
-                        <thead class="table-light">
-                            <tr>
-                                <th rowspan="2" class="align-middle text-center">No</th>
-                                <th rowspan="2" class="align-middle text-center">Uraian Pekerjaan</th>
+                    </select>
+                </div>
 
-                                <th colspan="4" class="align-middle text-center">TERKONTRAK</th>
+                <div class="col-md-3">
+                    <label class="form-label">Filter Tanggal</label>
 
-                                @foreach($project->week_labels as $w)
-                                    <th class="text-center week-head" data-week="{{ $w['week_no'] }}">
-                                            <div>M{{ $w['week_no'] }}</div>
-                                            {{-- <small class="text-muted d-block text-nowrap">
-                                                {{ $w['start'] }} - {{ $w['end'] }}
-                                            </small> --}}
-                                    </th>
-                                @endforeach
-                            </tr>
+                    <input type="date"
+                        id="filter-date"
+                        class="form-control">
+                </div>
 
-                            <tr>
-                                <th class="align-middle">Satuan</th>
-                                <th class="align-middle text-center">Vol</th>
-                                <th class="align-middle">Jumlah<br>Harga</th>
+                <div class="col-md-3 d-flex gap-2">
+
+                    <form action="{{ route('projects.sync-build', $project->id) }}"
+                        method="POST"
+                        class="d-inline"
+                        onsubmit="return confirm('Update form kemajuan pekerjaan dengan RAB terbaru?')">
+
+                        @csrf
+
+                        <button type="submit" class="btn btn-secondary">
+                            <i class="ti ti-refresh"></i>
+                            Update Form
+                        </button>
+
+                    </form>
+
+                    <button type="button" id="btn-export-pdf" class="btn btn-dark"> 
+                        <i class="ti ti-file-export"></i> Ekspor PDF 
+                    </button>
+
+                    <form id="exportPdfForm" method="POST" action="{{ route('projects.export-pdf', $project->id) }}" target="_blank">
+                        @csrf
+                        <input type="hidden" name="week" id="pdf_week">
+                        <input type="hidden" name="date" id="pdf_date">
+                        <input type="hidden" name="chart_image" id="chart_image">
+                    </form>
+                </div>
+            </div> --}}
+
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                <colgroup>
+                    <col style="width:60px">
+                    <col style="width:320px">
+                    <col style="width:80px">
+                    <col style="width:90px">
+                    <col style="width:140px">
+                    <col style="width:100px">
+
+                    @foreach($project->week_labels as $w)
+                        <col style="width:95px">
+                    @endforeach
+                </colgroup>
+                    <thead class="table-light">
+                        <tr>
+                            <th rowspan="2" class="align-middle text-center">No</th>
+                            <th rowspan="2" class="align-middle text-center">Uraian Pekerjaan</th>
+
+                            <th colspan="4" class="align-middle text-center">TERKONTRAK</th>
+
+                            @foreach($project->week_labels as $w)
+                                <th class="text-center week-head" data-week="{{ $w['week_no'] }}">
+                                        <div>M{{ $w['week_no'] }}</div>
+                                        {{-- <small class="text-muted d-block text-nowrap">
+                                            {{ $w['start'] }} - {{ $w['end'] }}
+                                        </small> --}}
+                                </th>
+                            @endforeach
+                        </tr>
+
+                        <tr>
+                            <th class="align-middle">Satuan</th>
+                            <th class="align-middle text-center">Vol</th>
+                            <th class="align-middle">Jumlah<br>Harga</th>
+                            <th class="align-middle text-center">Bobot<br>(%)</th>
+
+                            @foreach($project->week_labels as $w)
                                 <th class="align-middle text-center">Bobot<br>(%)</th>
-
-                                @foreach($project->week_labels as $w)
-                                    <th class="align-middle text-center">Bobot<br>(%)</th>
-                                @endforeach
-                            </tr>
-                        </thead>
+                            @endforeach
+                        </tr>
+                    </thead>
                     @php
-
-                        function alphaIndex($n) {
-
-                            $result = '';
-
-                            while ($n >= 0) {
-
-                                $result = chr(($n % 26) + 65) . $result;
-
-                                $n = intdiv($n, 26) - 1;
-                            }
-
-                            return $result;
+                    function alphaIndex($n) {
+                        $result = '';
+                        while ($n >= 0) {
+                            $result = chr(($n % 26) + 65) . $result;
+                            $n = intdiv($n, 26) - 1;
                         }
+                        return $result;
+                    }
+                    @endphp
+                    <tbody>
+                        @foreach($groupedPlans as $categoryData)
 
-                        @endphp
-                        <tbody>
-                            @foreach($groupedItems as $categoryData)
+                            @php
+                                $categoryNo = alphaIndex($loop->index);
+                            @endphp
+                            <tr class="row-category"> 
+                                <td colspan="6">
+                                    {{ $categoryNo }}. {{ $categoryData['category_name'] }}
+                                </td> 
+                                <td colspan="{{ $totalCols - 6 }}"></td> 
+                            </tr>
 
+                            @foreach($categoryData['uraians'] as $uraianData)
                                 @php
-                                    $categoryNo = alphaIndex($loop->index);
+                                    $uraianNo = $loop->iteration;
                                 @endphp
-                                <tr class="row-category"> 
+                                <tr class="row-uraian">
                                     <td colspan="6">
-                                        {{ $categoryNo }}. {{ $categoryData['category_name'] }}
+                                        {{ $uraianNo }}.
+                                        {{ $uraianData['uraian_name'] }}
                                     </td> 
                                     <td colspan="{{ $totalCols - 6 }}"></td> 
                                 </tr>
 
-                                @foreach($categoryData['uraians'] as $uraianData)
-                                    @php
-                                        $uraianNo = $loop->iteration;
-                                    @endphp
-                                    <tr class="row-uraian">
-                                        <td colspan="6">
-                                            {{ $uraianNo }}.
-                                            {{ $uraianData['uraian_name'] }}
-                                        </td> 
-                                        <td colspan="{{ $totalCols - 6 }}"></td> 
-                                    </tr>
-
-                                    @foreach($uraianData['items'] as $item)
-                                                @php
-                                                    $itemNo = $loop->iteration;
-                                                @endphp
-                                                <tr
-                                                    data-item-id="{{ $item->id }}"
-                                                    data-item-vol="{{ $item->volume }}"
-                                                    data-item-bobot="{{ $item->bobot_percent }}">                              
-                                                    <td>
-                                                        {{ $uraianNo }}.{{ $itemNo }}
-                                                    </td>
-                                                    <td class="uraian-pekerjaan">
-                                                        <div class="d-flex justify-content-between align-items-start">
-                                                            <div>
-                                                                {{ $item->uraian }}
-                                                            </div>
+                                @foreach($uraianData['items'] as $item)
+                                            @php
+                                                $itemNo = $loop->iteration;
+                                            @endphp
+                                            <tr
+                                                data-item-id="{{ $item->id }}"
+                                                data-item-vol="{{ $item->volume }}"
+                                                data-item-bobot="{{ $item->bobot_percent }}">                              
+                                                <td>
+                                                    {{ $uraianNo }}.{{ $itemNo }}
+                                                </td>
+                                                <td class="uraian-pekerjaan">
+                                                    <div class="d-flex justify-content-between align-items-start">
+                                                        <div>
+                                                            {{ $item->uraian }}
                                                         </div>
-                                                    </td>
-                                                    <td>{{ $item->satuan }}</td>
-                                                    <td class="text-center">
-                                                        {{ number_format($item->volume,2) }}
-                                                    </td>
+                                                    </div>
+                                                </td>
+                                                <td>{{ $item->satuan }}</td>
+                                                <td class="text-center">
+                                                    {{ number_format($item->volume,2) }}
+                                                </td>
 
-                                                    <td class="text-end">
-                                                        Rp {{ number_format($item->total,0,',','.') }}
-                                                    </td>
-                                                    <td width="120">
-                                                        <input type="number"
-                                                            step="0.001"
-                                                            class="form-control"
-                                                            data-id="{{ $item->id }}"
-                                                            value="{{ number_format($item->bobot_percent, 3, '.', '') }}"
-                                                            readonly>
-                                                    </td>
-                                                        @foreach($project->week_labels as $w)
-                                                            @php
-                                                                $prog = $item->progress_map[$w['week_no']] ?? null;
-                                                            @endphp
-                                                            <td class="week-col">
-                                                                @if(!$isReadOnly)
-                                                                <input type="number"
-                                                                    step="0.01"
-                                                                    class="form-control week-plan"
-                                                                    data-item="{{ $item->id }}"
-                                                                    data-week="{{ $w['week_no'] }}"
-                                                                    value="{{ $prog->planned_progress ?? '' }}"
-                                                                    >
-                                                                @else
-                                                                <div class="form-control bg-light">
-                                                                    {{ $prog->planned_progerss ?? '' }}
-                                                                </div>
-                                                                @endif
-                                                            </td>                           
-                                                        @endforeach
-                                                </tr>
-                                    @endforeach
+                                                <td class="text-end">
+                                                    Rp {{ number_format($item->total,0,',','.') }}
+                                                </td>
+                                                <td width="120">
+                                                    <input type="number"
+                                                        step="0.001"
+                                                        class="form-control"
+                                                        data-id="{{ $item->id }}"
+                                                        value="{{ number_format($item->bobot_percent, 3, '.', '') }}"
+                                                        readonly>
+                                                </td>
+                                                    @foreach($project->week_labels as $w)
+                                                        @php
+                                                            $prog = $item->progress_map[$w['week_no']] ?? null;
+                                                        @endphp
+                                                        <td class="week-col">
+                                                            @if(!$isReadOnly)
+                                                            <input type="number"
+                                                                step="0.01"
+                                                                min="0"
+                                                                max="{{ $item->bobot_percent }}"
+                                                                class="form-control week-plan"
+                                                                data-item="{{ $item->id }}"
+                                                                data-week="{{ $w['week_no'] }}"
+                                                                value="{{ $prog->plan_percent ?? '' }}">
+                                                            @else
+                                                            <div class="form-control bg-light">
+                                                                {{ $prog->plan_percent ?? '' }}
+                                                            </div>
+                                                            @endif
+                                                        </td>                           
+                                                    @endforeach
+                                            </tr>
                                 @endforeach
                             @endforeach
-                        </tbody>
-                        <tfoot>
-                            <tr>
-                                <th colspan="4" class="text-end">
-                                    Total Pekerjaan (%)
-                                </th>
-                                <th>Rp {{ number_format($buildPlans->sum('total'),0,',','.') }}</th>
-                                <th class="text-center">
-                                    100.0
-                                </th>
+                        @endforeach
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th colspan="4" class="text-end">
+                                Total Pekerjaan (%)
+                            </th>
+                            <th>Rp {{ number_format($buildPlans->sum('total'),0,',','.') }}</th>
+                            <th class="text-center">
+                                100.0
+                            </th>
 
-                                @foreach($project->week_labels as $w)
-                                    <th class="week-foot text-center fw-bold"
-                                        data-week="{{ $w['week_no'] }}"
-                                        id="total-plan-{{ $w['week_no'] }}">
-                                        0
-                                    </th>
-                                @endforeach
-                            </tr>
-                            <tr>
-                                <th colspan="4" class="text-end">
-                                    Kumulatif (%)
+                            @foreach($project->week_labels as $w)
+                                <th class="week-foot text-center fw-bold"
+                                    data-week="{{ $w['week_no'] }}"
+                                    id="total-plan-{{ $w['week_no'] }}">
+                                    0
                                 </th>
-                                <th>Rp {{ number_format($buildPlans->sum('total'),0,',','.') }}</th>
-                                <th class="text-center">
-                                    100.0
-                                </th>
-                                @foreach($project->week_labels as $w)
-                                    <th class="week-foot text-center fw-bold"
-                                        id="kumulatif-plan-{{ $w['week_no'] }}">
+                            @endforeach
+                        </tr>
+                        <tr>
+                            <th colspan="4" class="text-end">
+                                Kumulatif (%)
+                            </th>
+                            <th>Rp {{ number_format($buildPlans->sum('total'),0,',','.') }}</th>
+                            <th class="text-center">
+                                100.0
+                            </th>
+                            @foreach($project->week_labels as $w)
+                                <th class="week-foot text-center fw-bold"
+                                    id="kumulatif-plan-{{ $w['week_no'] }}">
 
-                                        0
-                                    </th>
-                                @endforeach
-                            </tr>
-                        
-                        </tfoot>
-                    </table>
-                </div>
+                                    0
+                                </th>
+                            @endforeach
+                        </tr>
+                    
+                    </tfoot>
+                </table>
             </div>
-        </x-collapse-card>
+        </div>
+    </x-collapse-card>
     <div id="build-plan">
         @include('projects.steps.build-process')
     </div>
@@ -271,15 +265,35 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
 
-            document.querySelectorAll('.week-plan')
-            .forEach(el => {
+            document.querySelectorAll('.week-plan').forEach(el => {
+
+                // simpan nilai lama
+                el.dataset.old = el.value || 0;
+
+                el.addEventListener('focus', function () {
+
+                    this.dataset.old = this.value || 0;
+
+                });
 
                 el.addEventListener('input', e => {
 
                     const target = e.target;
 
-                    autosaveCategoryPlan(
-                        target.dataset.category,
+                    const itemId = target.dataset.item;
+
+                    const isValid = validateItemPlan(itemId);
+
+                    if(!isValid){
+
+                        // rollback ke nilai sebelumnya
+                        target.value = target.dataset.old || '';
+
+                        return;
+                    }
+
+                    autosavePlan(
+                        itemId,
                         target.dataset.week,
                         parseFloat(target.value) || 0
                     );
@@ -493,8 +507,12 @@
 
         }
 
-        function autosaveCategoryPlan(categoryId, week, val){
-
+        function autosavePlan(itemId, week, val){
+            console.log({
+                item: itemId,
+                week: week,
+                val: val
+            });
             fetch("{{ route('build-week-plan.update') }}", {
 
                 method: "POST",
@@ -513,23 +531,69 @@
                 body: JSON.stringify({
 
                     project_id: "{{ $project->id }}",
-                    category_id: categoryId,
+                    build_plan_id: itemId,
                     week_no: week,
-                    bobot: val
+                    plan_percent: val
 
                 })
 
             })
-            .then(r => {
+            .then(async r => {
+
+                const res = await r.json();
+
+                console.log(res);
 
                 if(!r.ok){
 
-                    console.warn("Plan autosave failed");
+                    console.error(res);
 
                 }
 
+            })
+            .catch(err => {
+
+                console.error(err);
+
             });
 
+        }
+        function validateItemPlan(itemId)
+        {
+            let total = 0;
+
+            document.querySelectorAll(
+                `.week-plan[data-item="${itemId}"]`
+            ).forEach(el => {
+
+                total += parseFloat(el.value) || 0;
+
+            });
+
+            const row = document.querySelector(
+                `tr[data-item-id="${itemId}"]`
+            );
+
+            const bobot =
+                parseFloat(row.dataset.itemBobot) || 0;
+
+            console.log({
+                itemId,
+                total,
+                bobot
+            });
+
+            // toleransi decimal
+            if(total > (bobot + 0.001)){
+
+                alert(
+                    `Total plan item melebihi bobot ${bobot}%`
+                );
+
+                return false;
+            }
+
+            return true;
         }
     </script>
 @endpush

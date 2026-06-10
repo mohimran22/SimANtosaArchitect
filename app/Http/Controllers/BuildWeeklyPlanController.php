@@ -3,32 +3,44 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\BuildCategoryPlan;
+use App\Models\BuildPlanWeek;
 use App\Models\BuildProcessItem;
 use DB;
 
 class BuildWeeklyPlanController extends Controller
 {
-    public function update(Request $r)
-{
-    $data = $r->validate([
-        'project_id' => 'required|uuid', 
-        'category_id' => 'required|integer', 
-        'week_no' => 'required|integer', 
-        'bobot' => 'required|numeric|min:0|max:100'
-    ]);
+    public function update(Request $request)
+    {
+        $request->validate([
 
-    BuildCategoryPlan::updateOrCreate(
-        [
-            'project_id' => $data['project_id'],
-            'category_order' => $data['category_id'],
-            'week_no' => $data['week_no']
-        ],
-        [
-            'bobot_percent' => $data['bobot']
-        ]
-    );
+            'build_plan_id' => 'required|exists:build_plans,id',
+            'week_no'       => 'required|integer',
+            'plan_percent'  => 'nullable|numeric',
 
-    return response()->json(['ok'=>true]);
-}
+        ]);
+
+        $plan = BuildPlanWeek::updateOrCreate(
+
+            [
+
+                'build_plan_id' => $request->build_plan_id,
+                'week_no'       => $request->week_no,
+
+            ],
+
+            [
+
+                'plan_percent'  => $request->plan_percent ?? 0,
+
+            ]
+
+        );
+
+        return response()->json([
+
+            'success' => true,
+            'data'    => $plan
+
+        ]);
+    }
 }

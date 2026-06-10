@@ -104,9 +104,11 @@ class CustomersController extends Controller
     private function readableLoyaltyLevel($value)
     {
         return match ((int) $value) {
-            1 => 'Silver',
-            2 => 'Gold',
-            3 => 'Platinum',
+            1 => 'Lead',
+            2 => 'New Customer',
+            3 => 'Silver',
+            4 => 'Gold',
+            5 => 'Platinum',
             default => '-',
         };
     }

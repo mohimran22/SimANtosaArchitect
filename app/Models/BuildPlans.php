@@ -85,4 +85,11 @@ class BuildPlans extends Model
     {
         return round($this->planned_progress, 2) . '%';
     }
+public function weeks()
+{
+    return $this->hasMany(
+        BuildPlanWeek::class,
+        'build_plan_id'
+    );
+}
 }

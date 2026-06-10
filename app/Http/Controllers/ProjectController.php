@@ -253,14 +253,9 @@ if (
             ])
             ->get();
         $buildItems->each(function ($item) {
-
-            $item->progress_map =
-                $item->weeklyProgresses->keyBy('week_no');
-
+            $item->progress_map = $item->weeklyProgresses->keyBy('week_no');
             $item->tambahan->each(function ($sub) {
-
-                $sub->progress_map =
-                    $sub->weeklyProgresses->keyBy('week_no');
+                $sub->progress_map = $sub->weeklyProgresses->keyBy('week_no');
             });
         });
         $groupedItems = $buildItems
@@ -294,14 +289,55 @@ if (
 
         $buildPlans = BuildPlans::query()
             ->where('project_id', $project->id)
+            ->with([
+                'weeks:id,build_plan_id,week_no,plan_percent'
+            ])
             ->orderBy('category_order')
             ->orderBy('uraian_order')
             ->orderBy('item_order')
             ->get();
 
+        $buildPlans->each(function ($item) {
+            $item->progress_map = $item->weeks->keyBy('week_no');
+        });
+        $groupedPlans = $buildPlans
+            ->sortBy([
+                ['category_order', 'asc'],
+                ['uraian_order', 'asc'],
+                ['item_order', 'asc'],
+            ])
+            ->groupBy('category_order')
+            ->map(function ($items) {
+
+                return [
+
+                    'category_name' =>
+                        $items->first()->category_name,
+
+                    'uraians' => $items
+                        ->groupBy('uraian_order')
+                        ->map(function ($rows) {
+
+                            return [
+
+                                'uraian_name' =>
+                                    $rows->first()->uraian_name,
+
+                                'items' => $rows
+                                    ->sortBy('item_order')
+                                    ->values()
+
+                            ];
+
+                        })
+
+                ];
+
+            });
+
         return view('projects.create', array_merge(
             $this->formData($project),
-            compact('project', 'timelineSteps', 'activeStep', 'surveyInvoice', 'nextDate', 'buildPlans',
+            compact('project', 'timelineSteps', 'activeStep', 'surveyInvoice', 'nextDate', 'groupedPlans', 'buildPlans',
         'surveyApproved', 'usedDates', 'reports', 'groupedItems', 'buildItems',
         'isFreeSurvey', 'surveyWaiting', 'surveyRejected', 'invoiceDp', 'invoiceRab', 'invoiceBuild', 'canEdit', 'weeks')
         ));
