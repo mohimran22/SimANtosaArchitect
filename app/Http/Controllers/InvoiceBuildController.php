@@ -6,6 +6,7 @@ use App\Models\Project;
 use App\Models\InvoiceBuild;
 use App\Models\ProjectLevel;
 use App\Models\BuildProcessItem;
+use App\Models\BuildPlans;
 use App\Models\BuildWeeklyProgress;
 use App\Services\ProjectNotifier;
 use App\Services\InvoiceBuildNumberGenerator;
@@ -178,7 +179,7 @@ class InvoiceBuildController extends Controller
                             ? ($item->total / $subtotalPekerjaan) * 100
                             : 0;
 
-                        BuildProcessItem::updateOrCreate(
+                        $buildProcessItem = BuildProcessItem::updateOrCreate(
 
                             [
                                 'project_id' => $project->id,
@@ -206,11 +207,40 @@ class InvoiceBuildController extends Controller
 
                                 'satuan' => $item->satuan,
 
-                                'bobot_percent' => round($bobot, 3),
+                                'bobot_percent' => $bobot,
 
                                 'category_order' => $cIndex,
                                 'uraian_order' => $uIndex,
                                 'item_order' => $iIndex,
+                            ]
+                        );
+                        BuildPlans::updateOrCreate(
+
+                            [
+                                'project_id' => $project->id,
+                                'rab_item_id' => $item->id,
+                            ],
+
+                            [
+                                'build_process_item_id' => $buildProcessItem->id,
+
+                                'category_name' => $buildProcessItem->category_name,
+                                'uraian_name' => $buildProcessItem->uraian_name,
+
+                                'job_category_id' => $buildProcessItem->job_category_id,
+                                'uraian' => $buildProcessItem->uraian,
+
+                                'price' => $buildProcessItem->price,
+                                'volume' => $buildProcessItem->volume,
+                                'total' => $buildProcessItem->total,
+
+                                'satuan' => $buildProcessItem->satuan,
+
+                                'bobot_percent' => $buildProcessItem->bobot_percent,
+
+                                'category_order' => $buildProcessItem->category_order,
+                                'uraian_order' => $buildProcessItem->uraian_order,
+                                'item_order' => $buildProcessItem->item_order,
                             ]
                         );
                     }

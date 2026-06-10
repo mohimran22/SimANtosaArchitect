@@ -119,10 +119,22 @@ public static function generateNic()
         1 => 'Individu',
         2 => 'Perusahaan',
         3 => 'Instansi',
-        3 => 'Lainnya',
+        4 => 'Lainnya',
     ][$this->loyalty_level] ?? 'Tidak diketahui';
     }
+    public function getLoyaltyLevelAttribute()
+{
+    $totalProject = $this->projects()->count();
 
+    return match (true) {
+        $totalProject === 0 => 'Lead',
+        $totalProject <= 2 => 'New Customer',
+        $totalProject <= 5 => 'Silver',
+        $totalProject <= 10 => 'Gold',
+        $totalProject <= 20 => 'Platinum',
+        default => 'Lead',
+    };
+}
     protected function displayNameWithTitle(): Attribute
 {
     return Attribute::make(

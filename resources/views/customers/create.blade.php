@@ -271,13 +271,13 @@
 
                             <div class="col-md-4">
                                 <label class="form-label">Loyalty Level</label>
-                                <select name="loyalty_level" class="form-select select2" value="{{ old('loyalty_level') }}">
+                                <select name="loyalty_level" class="form-select select2">
                                     <option value="">-- Pilih Status --</option>
                                     <option value="1" {{ old('loyalty_level') == '1' ? 'selected' : '' }}>Lead</option>
-                                    <option value="1" {{ old('loyalty_level') == '2' ? 'selected' : '' }}>New Customer</option>
-                                    <option value="1" {{ old('loyalty_level') == '3' ? 'selected' : '' }}>Silver</option>
-                                    <option value="2" {{ old('loyalty_level') == '4' ? 'selected' : '' }}>Gold</option>
-                                    <option value="3" {{ old('loyalty_level') == '5' ? 'selected' : '' }}>Platinum</option>
+                                    <option value="2" {{ old('loyalty_level') == '2' ? 'selected' : '' }}>New Customer</option>
+                                    <option value="3" {{ old('loyalty_level') == '3' ? 'selected' : '' }}>Silver</option>
+                                    <option value="4" {{ old('loyalty_level') == '4' ? 'selected' : '' }}>Gold</option>
+                                    <option value="5" {{ old('loyalty_level') == '5' ? 'selected' : '' }}>Platinum</option>
                                 </select>
                             </div>
                             

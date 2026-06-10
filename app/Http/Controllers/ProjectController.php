@@ -20,6 +20,7 @@ use App\Models\RabProcess;
 use App\Models\RabProcessItem;
 use App\Models\BuildDailyReport;
 use App\Models\BuildProcessItem;
+use App\Models\BuildPlans;
 use App\Models\User;
 use App\Services\ProjectNotifier;
 use App\Services\BuildProcessSyncService;
@@ -291,23 +292,16 @@ if (
                 ];
             });
 
-$categoryPlans = \App\Models\BuildCategoryPlan::query()
-
-    ->where('project_id', $project?->id)
-
-    ->get()
-
-    ->groupBy('category_order')
-
-    ->map(function($rows){
-
-        return $rows->keyBy('week_no');
-
-    });
+        $buildPlans = BuildPlans::query()
+            ->where('project_id', $project->id)
+            ->orderBy('category_order')
+            ->orderBy('uraian_order')
+            ->orderBy('item_order')
+            ->get();
 
         return view('projects.create', array_merge(
             $this->formData($project),
-            compact('project', 'timelineSteps', 'activeStep', 'surveyInvoice', 'nextDate', 'categoryPlans',
+            compact('project', 'timelineSteps', 'activeStep', 'surveyInvoice', 'nextDate', 'buildPlans',
         'surveyApproved', 'usedDates', 'reports', 'groupedItems', 'buildItems',
         'isFreeSurvey', 'surveyWaiting', 'surveyRejected', 'invoiceDp', 'invoiceRab', 'invoiceBuild', 'canEdit', 'weeks')
         ));

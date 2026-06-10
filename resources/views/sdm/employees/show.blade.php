@@ -1,7 +1,5 @@
 @extends('tablar::page')
 
-@section('title', 'Detail Karyawan')
-
 @section('content')
 <div class="container-xl">
 

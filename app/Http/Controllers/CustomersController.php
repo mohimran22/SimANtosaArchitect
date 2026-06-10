@@ -57,6 +57,8 @@ class CustomersController extends Controller
                         '1' => 'secondary',
                         '2' => 'warning',
                         '3' => 'info',
+                        '4' => 'success',
+                        '5' => 'dark',
                         default => 'secondary',
                     };
                     return '<span class="badge bg-' . $color . '">' . $level . '</span>';
@@ -109,13 +111,13 @@ class CustomersController extends Controller
         };
     }
 
-    public function create()
+    public function create(Customer $customer)
     {
         $user = auth()->user();
         $religions = Religion::all();
         $provinces = Province::all();
         $roles = Role::all();
-        return view('customers.create', compact('user', 'roles', 'religions', 'provinces'));
+        return view('customers.create', compact('customer', 'user', 'roles', 'religions', 'provinces'));
     }
 
     public function store(Request $request)
@@ -156,10 +158,8 @@ class CustomersController extends Controller
         'role' => 'nullable|array',
         'role.*' => 'string|exists:roles,name',
         'category' => 'nullable|in:1,2,3,4',
-        'loyalty_level' => 'nullable|in:1,2,3,4,5',
+        'loyalty_level' => 'nullable|in:1,2,3,4,5'
     ]);
-
-    $validated['loyalty_level'] = strtolower($validated['loyalty_level']);
 
 if ($request->hasFile('photo')) {
     $filename = Str::uuid().'.'.$request->file('photo')->getClientOriginalExtension();
@@ -188,7 +188,6 @@ if ($request->hasFile('photo')) {
 
     DB::transaction(function () use ($validated) {
 
-        // 🔹 Cek user atau buat baru
         if (!empty($validated['user_id'])) {
             $user = User::find($validated['user_id']);
         } else {
@@ -221,7 +220,6 @@ if ($request->hasFile('photo')) {
             session()->flash('new_user_password', $password);
         }
 
-        // 🔹 Assign role tanpa hapus role lama
         if (!empty($validated['role'])) {
             foreach ($validated['role'] as $r) {
                 if (!$user->hasRole($r)) {
@@ -230,9 +228,6 @@ if ($request->hasFile('photo')) {
             }
         }
 
-        
-
-        // 🔹 Simpan Customer
         Customer::create([
             'id' => Str::uuid(),
             'user_id' => $user->id,
@@ -246,7 +241,9 @@ if ($request->hasFile('photo')) {
             'sub_district_id' => $validated['sub_district_id'],
             'postal_code_id' => $validated['postal_code_id'],
             'category' => $validated['category'] ?? null,
-            'loyalty_level' => $validated['loyalty_level'],
+            'loyalty_level' => !empty($validated['loyalty_level'])
+                ? (int) $validated['loyalty_level']
+                : 1,
             'photo' => $validated['photo'] ?? null,
         ]);
     });
@@ -325,12 +322,12 @@ public function update(Request $request, Customer $customer)
         // --- data user ---
         'fullname' => 'required|string|max:255',
         'nickname' => 'nullable|string|max:100',
-        'gender' => 'required|in:1,2',
+        'gender' => 'nullable|in:1,2',
         'email' => 'required|email|unique:users,email,' . $customer->user_id,
         'birth_place' => 'nullable|string|max:100',
         'birth_date' => 'nullable|date_format:Y-m-d',
         'identity_number' => [
-            'required',
+            'nullable',
             'regex:/^[0-9]{16}$/',
             Rule::unique('users', 'identity_number')->ignore($customer->user_id),
         ],
@@ -338,33 +335,30 @@ public function update(Request $request, Customer $customer)
         'npwp' => 'nullable|string|max:30',
         'phone' => 'nullable|string|max:20',
         'address' => 'nullable|string|max:255',
-        'user_province_id' => 'required|exists:provinces,id',
-        'user_city_id' => 'required|exists:cities,id',
-        'user_district_id' => 'required|exists:districts,id',
-        'user_sub_district_id' => 'required|exists:sub_districts,id',
-        'user_postal_code_id' => 'required|exists:postal_codes,id',
+        'user_province_id' => 'nullable|exists:provinces,id',
+        'user_city_id' => 'nullable|exists:cities,id',
+        'user_district_id' => 'nullable|exists:districts,id',
+        'user_sub_district_id' => 'nullable|exists:sub_districts,id',
+        'user_postal_code_id' => 'nullable|exists:postal_codes,id',
         'bank_id' => 'nullable|uuid|exists:banks,id',
         'account_number' => 'nullable|string|max:50',
         'account_holder' => 'nullable|string|max:50',
         'photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
 
-        // --- data Customer ---
-        'nic' => 'required|string|max:50|unique:customers,nic,' . $customer->id,
-        'shipping_name' => 'required|string|max:255',
-        'shipping_phone' => 'required|string|max:20',
+        'nic' => 'nullable|string|max:50|unique:customers,nic,' . $customer->id,
+        'shipping_name' => 'nullable|string|max:255',
+        'shipping_phone' => 'nullable|string|max:20',
         'shipping_address' => 'nullable|string|max:255',
-        'province_id' => 'required|exists:provinces,id',
-        'city_id' => 'required|exists:cities,id',
-        'district_id' => 'required|exists:districts,id',
-        'sub_district_id' => 'required|exists:sub_districts,id',
-        'postal_code_id' => 'required|exists:postal_codes,id',
+        'province_id' => 'nullable|exists:provinces,id',
+        'city_id' => 'nullable|exists:cities,id',
+        'district_id' => 'nullable|exists:districts,id',
+        'sub_district_id' => 'nullable|exists:sub_districts,id',
+        'postal_code_id' => 'nullable|exists:postal_codes,id',
         'category' => 'nullable|in:1,2,3,4',
-        'loyalty_level' => 'required|in:1,2,3,4,5',
+        'loyalty_level' => 'nullable|in:1,2,3,4,5',
         'role' => 'nullable|array',
         'role.*' => 'string|exists:roles,name',
     ]);
-
-    $validated['loyalty_level'] = strtolower($validated['loyalty_level']);
 
     if ($request->has('same_address')) {
             $validated['province_id'] = $validated['user_province_id'];
@@ -419,7 +413,6 @@ public function update(Request $request, Customer $customer)
             'photo' => $validated['photo'] ?? $user->photo,
         ]);
 
-        // 🔹 Role management: tetap multi-role aman
         if (!empty($validated['role'])) {
             foreach ($validated['role'] as $r) {
                 if (!$user->hasRole($r)) {
@@ -444,7 +437,9 @@ public function update(Request $request, Customer $customer)
             'sub_district_id' => $validated['sub_district_id'],
             'postal_code_id' => $validated['postal_code_id'],
             'category' => $validated['category'] ?? null,
-            'loyalty_level' => $validated['loyalty_level'],
+            'loyalty_level' => !empty($validated['loyalty_level'])
+                ? (int) $validated['loyalty_level']
+                : 1,
             'photo' => $validated['photo'] ?? $customer->photo,
         ]);
     });

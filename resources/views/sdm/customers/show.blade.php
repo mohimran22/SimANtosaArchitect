@@ -1,238 +1,251 @@
 @extends('tablar::page')
 
-@section('title', 'Detail Customer')
-
 @section('content')
-<div class="container-xl">
-
-    {{-- 🔹 Header --}}
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2 class="page-title">Detail Customer</h2>
-        <a href="{{ route('customers.index') }}" class="btn btn-outline-secondary">
-            <i class="ti ti-arrow-left"></i> Kembali
-        </a>
+{{-- <div class="page-header d-print-none">
+    <div class="container-xl">
+        <div class="row align-items-center">
+            <div class="col d-flex align-items-center">
+                <a href="{{ route('customers.index') }}" class="btn btn-dark d-flex align-items-center">
+                    <i class="ti ti-arrow-left"></i>
+                </a>
+                
+                    <h2 class="page-title mb-0">Tambah Customer</h2>
+                
+            </div>
+        </div>
     </div>
+</div> --}}
+<div class="page-body">
+    <div class="container-xl">
 
-    {{-- 🔹 Tabs --}}
-    <ul class="nav nav-tabs mb-3" role="tablist">
-        <li class="nav-item" role="presentation">
-            <a class="nav-link active" data-bs-toggle="tab" href="#tab-personal" role="tab">
-                <i class="ti ti-user"></i> Detail Pribadi
+        <div class="d-flex justify-content-between align-items-center mb-3 mt-5">
+            <h2 class="page-title">Detail Customer</h2>
+            <a href="{{ route('customers.index') }}" class="btn btn-outline-secondary">
+                <i class="ti ti-arrow-left"></i> Kembali
             </a>
-        </li>
-        <li class="nav-item" role="presentation">
-            <a class="nav-link" data-bs-toggle="tab" href="#tab-loyalty" role="tab">
-                <i class="ti ti-star"></i> Membership / Loyalty
-            </a>
-        </li>
-        <li class="nav-item" role="presentation">
-            <a class="nav-link" data-bs-toggle="tab" href="#tab-shipping" role="tab">
-                <i class="ti ti-map-pin"></i> Alamat Pengiriman
-            </a>
-        </li>
-    </ul>
+        </div>
 
-    <div class="tab-content">
+        {{-- 🔹 Tabs --}}
+        <ul class="nav nav-tabs mb-3" role="tablist">
+            <li class="nav-item" role="presentation">
+                <a class="nav-link active" data-bs-toggle="tab" href="#tab-personal" role="tab">
+                    <i class="ti ti-user"></i> Detail Pribadi
+                </a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" data-bs-toggle="tab" href="#tab-loyalty" role="tab">
+                    <i class="ti ti-star"></i> Membership / Loyalty
+                </a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" data-bs-toggle="tab" href="#tab-shipping" role="tab">
+                    <i class="ti ti-map-pin"></i> Alamat Pengiriman
+                </a>
+            </li>
+        </ul>
 
-        {{-- ================= TAB 1: PERSONAL ================= --}}
-        <div class="tab-pane fade show active" id="tab-personal" role="tabpanel">
+        <div class="tab-content">
 
-            <div class="card mb-4 shadow-sm">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h3 class="card-title mb-0">Informasi Personal</h3>
-                    <a href="{{ route('customers.edit', $customer->id) }}" class="btn btn-outline-dark btn-sm">
-                        <i class="ti ti-edit"></i> Ubah Detail
-                    </a>
-                </div>
+            {{-- ================= TAB 1: PERSONAL ================= --}}
+            <div class="tab-pane fade show active" id="tab-personal" role="tabpanel">
 
-                <div class="card-body">
-                    <div class="row align-items-center mb-4">
-                        <div class="col-md-3 text-center">
-                            @if ($user->photo)
-                            <img id="previewImage" src="{{ asset('storage/'.$user->photo) }}" alt="Profile" 
-                                 class="rounded-3 shadow-sm border" width="150" height="150"
-                                 style="object-fit: cover;">
-                        @else
-                            <div id="previewImage"
-                                 class="rounded-3 shadow-sm bg-light d-flex align-items-center justify-content-center"
-                                 style="width:150px; height:150px;">
-                                 <i class="ti ti-user" style="font-size: 64px; color:#aaa;"></i>
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h3 class="card-title mb-0">Informasi Personal</h3>
+                        <a href="{{ route('customers.edit', $customer->id) }}" class="btn btn-outline-dark btn-sm">
+                            <i class="ti ti-edit"></i> Ubah Detail
+                        </a>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="row align-items-center mb-4">
+                            <div class="col-md-3 text-center">
+                                @if ($user->photo)
+                                <img id="previewImage" src="{{ asset('storage/'.$user->photo) }}" alt="Profile" 
+                                    class="rounded-3 shadow-sm border" width="150" height="150"
+                                    style="object-fit: cover;">
+                            @else
+                                <div id="previewImage"
+                                    class="rounded-3 shadow-sm bg-light d-flex align-items-center justify-content-center"
+                                    style="width:150px; height:150px;">
+                                    <i class="ti ti-user" style="font-size: 64px; color:#aaa;"></i>
+                                </div>
+                            @endif
                             </div>
-                        @endif
+                            <div class="col-md-6">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <div class="text-muted small">Nama Lengkap</div>
+                                        <div class="fw-bold">{{ $user->fullname ?? '-' }}</div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="text-muted small">Email</div>
+                                        <div class="fw-bold">{{ $user->email ?? '-' }}</div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="text-muted small mt-2">Kategori Customer</div>
+                                        <div class="fw-bold">{{ $customer->readable_category ?? '-' }}</div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="text-muted small">Telepon</div>
+                                        <div class="fw-bold">{{ $user->phone ?? '-' }}</div>
+                                    </div>
+                                    
+                                    {{-- <div class="col-md-4">
+                                        <div class="text-muted small mt-2">Status</div>
+                                        <span class="badge {{ $customer->is_active ? 'bg-success' : 'bg-danger' }}">
+                                            {{ $customer->status_text }}
+                                        </span>
+                                    </div> --}}
+                                </div>
+                            </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <div class="text-muted small">Nama Lengkap</div>
-                                    <div class="fw-bold">{{ $user->fullname ?? '-' }}</div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="text-muted small">Email</div>
-                                    <div class="fw-bold">{{ $user->email ?? '-' }}</div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="text-muted small mt-2">Kategori Customer</div>
-                                    <div class="fw-bold">{{ $customer->readable_category ?? '-' }}</div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="text-muted small">Telepon</div>
-                                    <div class="fw-bold">{{ $user->phone ?? '-' }}</div>
-                                </div>
-                                
-                                {{-- <div class="col-md-4">
-                                    <div class="text-muted small mt-2">Status</div>
-                                    <span class="badge {{ $customer->is_active ? 'bg-success' : 'bg-danger' }}">
-                                        {{ $customer->status_text }}
-                                    </span>
-                                </div> --}}
+                    </div>
+                </div>
+
+                {{-- Section: Address --}}
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-header">
+                        <h3 class="card-title mb-0">Informasi Alamat</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <div class="text-muted small">Alamat Lengkap</div>
+                                <div class="fw-bold">{{ $user->address ?? '-' }}</div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-muted small">Kelurahan</div>
+                                <div class="fw-bold">{{ $user->subDistrict->name ?? '-' }}</div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-muted small">Kecamatan</div>
+                                <div class="fw-bold">{{ $user->district->name ?? '-' }}</div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="text-muted small">Kabupaten/Kota</div>
+                                <div class="fw-bold">{{ $user->city->name ?? '-' }}</div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-muted small">Provinsi</div>
+                                <div class="fw-bold">{{ $user->province->name ?? '-' }}</div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-muted small">Kode Pos</div>
+                                <div class="fw-bold">{{ $user->postalCode->postal_code ?? '-' }}</div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Section: Bank Information (ganti HR section lama) --}}
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-header">
+                        <h3 class="card-title mb-0">Informasi Bank</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="text-muted small">Nama Bank</div>
+                                <div class="fw-bold">{{ $user->bank->name ?? '-' }}</div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="text-muted small">Nomor Rekening</div>
+                                <div class="fw-bold">{{ $user->account_number ?? '-' }}</div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="text-muted small">Atas Nama</div>
+                                <div class="fw-bold">{{ $user->account_holder ?? '-' }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            {{-- ================= TAB 2: LOYALTY ================= --}}
+            <div class="tab-pane fade" id="tab-loyalty" role="tabpanel">
+                <div class="card shadow-sm">
+                    <div class="card-header">
+                        <h3 class="card-title mb-0">Membership / Loyalty Program</h3>
+                    </div>
+                    <div class="card-body text-center">
+                        @php
+                            $color = [
+                                'silver' => 'secondary',
+                                'gold' => 'warning',
+                                'platinum' => 'info',
+                            ][$customer->loyalty_level] ?? 'secondary';
+                        @endphp
+
+                        <div class="mb-3">
+                            <span class="avatar avatar-lg rounded-circle bg-{{ $color }}-lt">
+                                <i class="ti ti-star text-{{ $color }}"></i>
+                            </span>
+                        </div>
+
+                        <h3 class="fw-bold text-capitalize">{{ $customer->readable_loyalty_level }}</h3>
+                        <p class="text-muted">
+                            Tingkatan membership menentukan keuntungan & promo khusus pelanggan.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            {{-- ================= TAB 3: SHIPPING ================= --}}
+            <div class="tab-pane fade" id="tab-shipping" role="tabpanel">
+                <div class="card shadow-sm">
+                    <div class="card-header">
+                        <h3 class="card-title mb-0">Alamat Pengiriman</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <div class="text-muted small">Nama Penerima</div>
+                                <div class="fw-bold">{{ $customer->shipping_name ?? '-' }}</div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-muted small">Nomor Handphone</div>
+                                <div class="fw-bold">{{ $customer->shipping_phone ?? '-' }}</div>
+                            </div>
+                            <div class="col-12">
+                                <div class="text-muted small">Alamat Lengkap</div>
+                                <div class="fw-bold">{{ $customer->shipping_address ?? '-' }}</div>
+                            </div>
+
+                            <div class="col-md-3">
+                                <div class="text-muted small">Kelurahan</div>
+                                <div class="fw-bold">{{ $customer->subDistrict->name ?? '-' }}</div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-muted small">Kecamatan</div>
+                                <div class="fw-bold">{{ $customer->district->name ?? '-' }}</div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-muted small">Kabupaten/Kota</div>
+                                <div class="fw-bold">{{ $customer->city->name ?? '-' }}</div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-muted small">Provinsi</div>
+                                <div class="fw-bold">{{ $customer->province->name ?? '-' }}</div>
+                            </div>
+
+                            <div class="col-md-3">
+                                <div class="text-muted small">Kode Pos</div>
+                                <div class="fw-bold">{{ $customer->postalCode->postal_code ?? '-' }}</div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-muted small">Catatan</div>
+                                <div class="fw-bold">{{ $customer->notes ?? '-' }}</div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {{-- Section: Address --}}
-            <div class="card mb-4 shadow-sm">
-                <div class="card-header">
-                    <h3 class="card-title mb-0">Informasi Alamat</h3>
-                </div>
-                <div class="card-body">
-                    <div class="row g-3">
-                        <div class="col-12">
-                            <div class="text-muted small">Alamat Lengkap</div>
-                            <div class="fw-bold">{{ $user->address ?? '-' }}</div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="text-muted small">Kelurahan</div>
-                            <div class="fw-bold">{{ $user->subDistrict->name ?? '-' }}</div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="text-muted small">Kecamatan</div>
-                            <div class="fw-bold">{{ $user->district->name ?? '-' }}</div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="text-muted small">Kabupaten/Kota</div>
-                            <div class="fw-bold">{{ $user->city->name ?? '-' }}</div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="text-muted small">Provinsi</div>
-                            <div class="fw-bold">{{ $user->province->name ?? '-' }}</div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="text-muted small">Kode Pos</div>
-                            <div class="fw-bold">{{ $user->postalCode->postal_code ?? '-' }}</div>
-                        </div>
-
-                    </div>
-                </div>
-            </div>
-
-            {{-- Section: Bank Information (ganti HR section lama) --}}
-            <div class="card mb-4 shadow-sm">
-                <div class="card-header">
-                    <h3 class="card-title mb-0">Informasi Bank</h3>
-                </div>
-                <div class="card-body">
-                    <div class="row g-3">
-                        <div class="col-md-4">
-                            <div class="text-muted small">Nama Bank</div>
-                            <div class="fw-bold">{{ $user->bank->name ?? '-' }}</div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="text-muted small">Nomor Rekening</div>
-                            <div class="fw-bold">{{ $user->account_number ?? '-' }}</div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="text-muted small">Atas Nama</div>
-                            <div class="fw-bold">{{ $user->account_holder ?? '-' }}</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-
-        {{-- ================= TAB 2: LOYALTY ================= --}}
-        <div class="tab-pane fade" id="tab-loyalty" role="tabpanel">
-            <div class="card shadow-sm">
-                <div class="card-header">
-                    <h3 class="card-title mb-0">Membership / Loyalty Program</h3>
-                </div>
-                <div class="card-body text-center">
-                    @php
-                        $color = [
-                            'silver' => 'secondary',
-                            'gold' => 'warning',
-                            'platinum' => 'info',
-                        ][$customer->loyalty_level] ?? 'secondary';
-                    @endphp
-
-                    <div class="mb-3">
-                        <span class="avatar avatar-lg rounded-circle bg-{{ $color }}-lt">
-                            <i class="ti ti-star text-{{ $color }}"></i>
-                        </span>
-                    </div>
-
-                    <h3 class="fw-bold text-capitalize">{{ $customer->readable_loyalty_level }}</h3>
-                    <p class="text-muted">
-                        Tingkatan membership menentukan keuntungan & promo khusus pelanggan.
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        {{-- ================= TAB 3: SHIPPING ================= --}}
-        <div class="tab-pane fade" id="tab-shipping" role="tabpanel">
-            <div class="card shadow-sm">
-                <div class="card-header">
-                    <h3 class="card-title mb-0">Alamat Pengiriman</h3>
-                </div>
-                <div class="card-body">
-                    <div class="row g-3">
-                        <div class="col-md-3">
-                            <div class="text-muted small">Nama Penerima</div>
-                            <div class="fw-bold">{{ $customer->shipping_name ?? '-' }}</div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="text-muted small">Nomor Handphone</div>
-                            <div class="fw-bold">{{ $customer->shipping_phone ?? '-' }}</div>
-                        </div>
-                        <div class="col-12">
-                            <div class="text-muted small">Alamat Lengkap</div>
-                            <div class="fw-bold">{{ $customer->shipping_address ?? '-' }}</div>
-                        </div>
-
-                        <div class="col-md-3">
-                            <div class="text-muted small">Kelurahan</div>
-                            <div class="fw-bold">{{ $customer->subDistrict->name ?? '-' }}</div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="text-muted small">Kecamatan</div>
-                            <div class="fw-bold">{{ $customer->district->name ?? '-' }}</div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="text-muted small">Kabupaten/Kota</div>
-                            <div class="fw-bold">{{ $customer->city->name ?? '-' }}</div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="text-muted small">Provinsi</div>
-                            <div class="fw-bold">{{ $customer->province->name ?? '-' }}</div>
-                        </div>
-
-                        <div class="col-md-3">
-                            <div class="text-muted small">Kode Pos</div>
-                            <div class="fw-bold">{{ $customer->postalCode->postal_code ?? '-' }}</div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="text-muted small">Catatan</div>
-                            <div class="fw-bold">{{ $customer->notes ?? '-' }}</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-    </div> {{-- end tab-content --}}
+        </div> {{-- end tab-content --}}
+    </div>
 </div>
 @endsection
 

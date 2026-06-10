@@ -159,71 +159,18 @@
                                 <th class="text-center">Harga<br>Total</th>
                             </tr>
                         </thead>
-                    @php
-
-                        function alphaIndex($n) {
-
-                            $result = '';
-
-                            while ($n >= 0) {
-
-                                $result = chr(($n % 26) + 65) . $result;
-
-                                $n = intdiv($n, 26) - 1;
-                            }
-
-                            return $result;
-                        }
-
-                        @endphp
                         <tbody>
                             @foreach($groupedItems as $categoryData)
 
                                 @php
                                     $categoryNo = alphaIndex($loop->index);
                                 @endphp
-                                <tr class="row-category">
-
-                                    <td colspan="6">
-                                        {{ $categoryNo }}. {{ $categoryData['category_name'] }}
-                                    </td>
-                                    @foreach($project->week_labels as $w)
-
-                                        <td></td>
-                                        <td></td>
-                                        <td class="bg-warning-subtle">
-
-                                            <input type="number"
-                                                step="0.001"
-                                                class="form-control category-plan"
-                                                data-category="{{ $categoryData['category_id'] }}"
-                                                data-week="{{ $w['week_no'] }}"
-                                                value="{{
-                                                    $categoryPlans[
-                                                        $categoryData['category_id']
-                                                    ][$w['week_no']]->bobot_percent ?? 0
-                                                }}"
-                                                >
-
-                                        </td>
-
-                                        {{-- JUSTEK --}}
-                                        <td colspan="3"></td>
-
-                                    @endforeach
-
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-
-                                </tr>
-                                {{-- <tr class="row-category"> 
+                                <tr class="row-category"> 
                                     <td colspan="6">
                                         {{ $categoryNo }}. {{ $categoryData['category_name'] }}
                                     </td> 
                                     <td colspan="{{ $totalCols - 6 }}"></td> 
-                                </tr> --}}
+                                </tr>
 
                                 @foreach($categoryData['uraians'] as $uraianData)
                                     @php
@@ -470,11 +417,6 @@
                                 @foreach($project->week_labels as $w)
                                     <th class="week-foot" data-week="{{ $w['week_no'] }}"></th>
                                     <th class="week-foot" data-week="{{ $w['week_no'] }}"></th>
-                                    <th class="week-foot text-center fw-bold"
-                                        data-week="{{ $w['week_no'] }}"
-                                        id="total-plan-{{ $w['week_no'] }}">
-                                        0
-                                    </th>
                                     <th class="week-foot" data-week="{{ $w['week_no'] }}"></th>
                                     <th class="week-foot" data-week="{{ $w['week_no'] }}"></th>
                                     <th class="week-foot" data-week="{{ $w['week_no'] }}"></th>
@@ -494,12 +436,6 @@
                                 @foreach($project->week_labels as $w)
                                     <th class="week-foot" data-week="{{ $w['week_no'] }}"></th>
                                     <th class="week-foot" data-week="{{ $w['week_no'] }}"></th>
-                                    <th class="week-foot text-center fw-bold"
-                                        data-week="{{ $w['week_no'] }}"
-                                        id="kumulatif-plan-{{ $w['week_no'] }}">
-
-                                        0
-                                    </th>
                                     <th class="week-foot" data-week="{{ $w['week_no'] }}"></th>
                                     <th class="week-foot" data-week="{{ $w['week_no'] }}"></th>
                                     <th class="week-foot" data-week="{{ $w['week_no'] }}"></th>
@@ -542,13 +478,12 @@
     <div id="invoice-panel">
         @include('projects.partials.invoice_panel')
     </div>
-    <div id="details-daily-reports">
-        @include('projects.details.daily_reports')
-    </div>
     <div id="daily-reports">
         @include('projects.partials.daily_reports')
     </div>
-
+    <div id="details-daily-reports">
+        @include('projects.details.daily_reports')
+    </div>
 @push('js')
     <script>
             const table = document.querySelector(".progress-table");

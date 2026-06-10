@@ -430,7 +430,7 @@
                             </x-slot:actions>
                             @include('projects.steps.rab-process')
                         @elseif($project->project_type == 3)
-                            @include('projects.steps.build-process')
+                            @include('projects.steps.build-plan')
                         @endif
                     
                 </x-collapse-card>
