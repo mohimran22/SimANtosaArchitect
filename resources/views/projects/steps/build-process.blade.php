@@ -409,44 +409,6 @@
                         <tfoot>
                             <tr>
                                 <th colspan="4" class="text-end">
-                                    Total Pekerjaan (%)
-                                </th>
-                                <th>Rp {{ number_format($buildItems->sum('total'),0,',','.') }}</th>
-                                <th class="totalBobotKontrak">0</th>
-
-                                @foreach($project->week_labels as $w)
-                                    <th class="week-foot" data-week="{{ $w['week_no'] }}"></th>
-                                    <th class="week-foot" data-week="{{ $w['week_no'] }}"></th>
-                                    <th class="week-foot" data-week="{{ $w['week_no'] }}"></th>
-                                    <th class="week-foot" data-week="{{ $w['week_no'] }}"></th>
-                                    <th class="week-foot" data-week="{{ $w['week_no'] }}"></th>
-                                @endforeach
-                                <th id="grand-total-justek">0</th>
-                                <th id="grand-total-pelaksanaan">0</th>
-                                <th></th>
-                                <th id="grand-total-pelaksanaan-nilai">0</th>
-                            </tr>
-                            <tr>
-                                <th colspan="4" class="text-end">
-                                    Kumulatif (%)
-                                </th>
-                                <th>Rp {{ number_format($buildItems->sum('total'),0,',','.') }}</th>
-                                <th class="totalBobotKontrak">0</th>
-
-                                @foreach($project->week_labels as $w)
-                                    <th class="week-foot" data-week="{{ $w['week_no'] }}"></th>
-                                    <th class="week-foot" data-week="{{ $w['week_no'] }}"></th>
-                                    <th class="week-foot" data-week="{{ $w['week_no'] }}"></th>
-                                    <th class="week-foot" data-week="{{ $w['week_no'] }}"></th>
-                                    <th class="week-foot" data-week="{{ $w['week_no'] }}"></th>
-                                @endforeach
-                                <th id="grand-total-justek">0</th>
-                                <th id="grand-total-pelaksanaan">0</th>
-                                <th></th>
-                                <th id="grand-total-pelaksanaan-nilai">0</th>
-                            </tr>
-                            <tr>
-                                <th colspan="4" class="text-end">
                                     Realisasi kumulatif kemajuan Pekerjaan
                                 </th>
                                 <th>Rp {{ number_format($buildItems->sum('total'),0,',','.') }}</th>
@@ -748,7 +710,7 @@
             applyAutoFreeze();
         });
     </script>
-    <script>
+    {{-- <script>
         document.addEventListener('DOMContentLoaded', () => {
 
             document.querySelectorAll('.category-plan')
@@ -1011,44 +973,41 @@
             });
 
         }
-    </script>
+    </script> --}}
     <script>
+        function updateTotalDisplay(total) {
 
-    function updateTotalDisplay(total) {
+            document.querySelectorAll('.totalBobotKontrak')
+                .forEach(el => {
+                    el.innerText = total.toFixed(1);
+                });
+        }
 
-        document.querySelectorAll('.totalBobotKontrak')
-            .forEach(el => {
+        function calcTotal() {
 
-                el.innerText = total.toFixed(1);
-            });
-    }
+            let total = 0;
 
-    function calcTotal() {
+            document.querySelectorAll('.bobot-input')
+                .forEach(el => {
 
-        let total = 0;
+                    const val = parseFloat(el.value) || 0;
 
-        document.querySelectorAll('.bobot-input').forEach(el => {
+                    total += val;
+                });
 
-            const val = parseFloat(el.value);
+            total = Number(total.toFixed(3));
 
-            if (!isNaN(val)) {
-                total += val;
-            }
+            updateTotalDisplay(total);
+
+            return total;
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+
+            calcTotal();
         });
-
-        total = Number(total.toFixed(3));
-
-        updateTotalDisplay(total);
-
-        return total;
-    }
-
-    document.addEventListener('DOMContentLoaded', function () {
-
-        calcTotal();
-    });
-
     </script>
+
     <script>
         document.addEventListener('click', function(e) {
 

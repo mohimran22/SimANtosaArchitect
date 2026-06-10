@@ -28,7 +28,7 @@
                     </tr>
                     </table>
 
-                <div class="row mb-3 ps-3 align-items-end">
+                {{-- <div class="row mb-3 ps-3 align-items-end">
 
                     <div class="col-md-3">
                         <label class="form-label">Filter Minggu</label>
@@ -79,10 +79,10 @@
                             <input type="hidden" name="chart_image" id="chart_image">
                         </form>
                     </div>
-                </div>
+                </div> --}}
 
                 <div class="table-responsive">
-                    <table class="table table-bordered progress-table">
+                    <table class="table table-bordered">
                     <colgroup>
                         <col style="width:60px">
                         <col style="width:320px">
@@ -194,7 +194,7 @@
                                                     <td width="120">
                                                         <input type="number"
                                                             step="0.001"
-                                                            class="form-control bobot-input"
+                                                            class="form-control"
                                                             data-id="{{ $item->id }}"
                                                             value="{{ number_format($item->bobot_percent, 3, '.', '') }}"
                                                             readonly>
@@ -210,7 +210,7 @@
                                                                     class="form-control week-plan"
                                                                     data-item="{{ $item->id }}"
                                                                     data-week="{{ $w['week_no'] }}"
-                                                                    value="{{ $prog->planned_progerss ?? '' }}"
+                                                                    value="{{ $prog->planned_progress ?? '' }}"
                                                                     >
                                                                 @else
                                                                 <div class="form-control bg-light">
@@ -227,11 +227,11 @@
                         <tfoot>
                             <tr>
                                 <th colspan="4" class="text-end">
-                                    Total Bobot (%)
+                                    Total Pekerjaan (%)
                                 </th>
                                 <th>Rp {{ number_format($buildPlans->sum('total'),0,',','.') }}</th>
                                 <th class="text-center">
-                                    100
+                                    100.0
                                 </th>
 
                                 @foreach($project->week_labels as $w)
@@ -243,8 +243,12 @@
                                 @endforeach
                             </tr>
                             <tr>
-                                <th colspan="6" class="text-end">
+                                <th colspan="4" class="text-end">
                                     Kumulatif (%)
+                                </th>
+                                <th>Rp {{ number_format($buildPlans->sum('total'),0,',','.') }}</th>
+                                <th class="text-center">
+                                    100.0
                                 </th>
                                 @foreach($project->week_labels as $w)
                                     <th class="week-foot text-center fw-bold"
@@ -263,3 +267,269 @@
     <div id="build-plan">
         @include('projects.steps.build-process')
     </div>
+@push('js')
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            document.querySelectorAll('.week-plan')
+            .forEach(el => {
+
+                el.addEventListener('input', e => {
+
+                    const target = e.target;
+
+                    autosaveCategoryPlan(
+                        target.dataset.category,
+                        target.dataset.week,
+                        parseFloat(target.value) || 0
+                    );
+
+                    calculateFooterPlan();
+                    updateKurvaPlanRealtime();
+
+                });
+
+            });
+
+            const ctx = document.getElementById('kurvaSChart');
+
+            if(!ctx || typeof Chart === 'undefined') {
+
+                console.error('Chart.js belum load');
+                return;
+
+            }
+
+            const dataAwal = @json($project->getKurvaSData() ?? []);
+            const labels = []; for(let i = 1; i <= {{ $weekCount }}; i++){ labels.push('Minggu ' + i); }
+            const realisasi = []; for(let i = 1; i <= {{ $weekCount }}; i++){ const found = dataAwal.find(d => d.week == i); realisasi.push( found ? found.progress : 0 ); }
+
+            window.kurvaChart = new Chart(ctx, {
+
+                type: 'line',
+
+                data: {
+
+                    labels: labels,
+
+                    datasets: [
+
+                        {
+                            label:'Realisasi (%)',
+                            data: realisasi,
+                            tension:0.3
+                        },
+
+                        {
+                            label:'Rencana (%)',
+                            data:getPlanKumulatif(),
+                            tension:0.3
+                        }
+
+                    ]
+
+                },
+
+                options:{
+                    animation:false,
+                    scales:{
+                        y:{
+                            beginAtZero:true,
+                            max:100
+                        }
+                    }
+                }
+
+            });
+
+            calculateFooterPlan();
+            updateKurvaPlanRealtime();
+
+        });
+
+        function getWeeklyPlanTotal(week){
+
+            let total = 0;
+
+            document.querySelectorAll(
+                `.week-plan[data-week="${week}"]`
+            ).forEach(el => {
+
+                total += parseFloat(el.value) || 0;
+
+            });
+
+            return total;
+
+        }
+
+        function getPlanKumulatif(){
+
+            let weekCount = {{ $weekCount }};
+            let jalan = 0;
+            let data = [];
+
+            for(let w = 1; w <= weekCount; w++){
+
+                jalan += getWeeklyPlanTotal(w);
+
+                data.push(jalan);
+
+            }
+
+            return data;
+
+        }
+
+        function calculateFooterPlan(){
+
+            let weekCount = {{ $weekCount }};
+
+            let kumulatif = 0;
+
+            for(let w = 1; w <= weekCount; w++){
+
+                let total = getWeeklyPlanTotal(w);
+
+                kumulatif += total;
+
+                // mingguan
+                const mingguanEl =
+                    document.getElementById(`total-plan-${w}`);
+
+                if(mingguanEl){
+
+                    mingguanEl.innerText =
+                        total.toFixed(3);
+
+                }
+
+                // kumulatif
+                const kumulatifEl =
+                    document.getElementById(`kumulatif-plan-${w}`);
+
+                if(kumulatifEl){
+
+                    kumulatifEl.innerText =
+                        kumulatif.toFixed(3);
+
+                }
+
+            }
+
+            validatePlanTotal();
+
+        }
+
+        function updateKurvaPlanRealtime(){
+
+            if(!window.kurvaChart) return;
+
+            window.kurvaChart.data.datasets[1].data =
+                getPlanKumulatif();
+
+            window.kurvaChart.update();
+
+        }
+
+        function rebuildKurvaFromTable(){
+
+            let weekCount = {{ $weekCount }};
+            let kumulatif = [];
+            let jalan = 0;
+
+            for(let w = 1; w <= weekCount; w++){
+
+                let sumBobot = 0;
+
+                document.querySelectorAll(
+                    `.week-bobot[data-week="${w}"]`
+                ).forEach(el => {
+
+                    sumBobot += parseFloat(el.innerText) || 0;
+
+                });
+
+                jalan += sumBobot;
+
+                kumulatif.push(jalan);
+
+            }
+
+            return kumulatif;
+
+        }
+
+        function updateKurvaChartRealtime(){
+
+            if(!window.kurvaChart) return;
+
+            window.kurvaChart.data.datasets[0].data =
+                rebuildKurvaFromTable();
+
+            window.kurvaChart.update();
+
+        }
+
+        function validatePlanTotal(){
+
+            let total = 0;
+
+            let weekCount = {{ $weekCount }};
+
+            for(let w = 1; w <= weekCount; w++){
+
+                total += getWeeklyPlanTotal(w);
+
+            }
+
+            console.log('Total Plan:', total);
+
+            if(Math.abs(total - 100) > 0.01){
+
+                console.warn("Total rencana ≠ 100%");
+
+            }
+
+        }
+
+        function autosaveCategoryPlan(categoryId, week, val){
+
+            fetch("{{ route('build-week-plan.update') }}", {
+
+                method: "POST",
+
+                headers: {
+
+                    "Content-Type":"application/json",
+
+                    "X-CSRF-TOKEN":
+                        document.querySelector(
+                            'meta[name=csrf-token]'
+                        ).content
+
+                },
+
+                body: JSON.stringify({
+
+                    project_id: "{{ $project->id }}",
+                    category_id: categoryId,
+                    week_no: week,
+                    bobot: val
+
+                })
+
+            })
+            .then(r => {
+
+                if(!r.ok){
+
+                    console.warn("Plan autosave failed");
+
+                }
+
+            });
+
+        }
+    </script>
+@endpush
