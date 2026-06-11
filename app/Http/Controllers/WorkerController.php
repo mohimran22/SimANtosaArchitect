@@ -366,7 +366,7 @@ public function destroy(Worker $worker): JsonResponse
 
     return response()->json([
         'status' => 'success',
-        'message' => 'Data worker berhasil dihapus.'
+        'message' => 'Data tukang berhasil dihapus.'
     ]);
 }
 }

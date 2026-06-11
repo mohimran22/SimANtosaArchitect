@@ -102,8 +102,7 @@ public function update(Request $r)
     ]);
 }
 
-public function exportPdf(Request $request, Project $project)
-{
+public function exportPdf(Request $request, Project $project) {
     $week = $request->week;
     $date = $request->date;
     
@@ -155,7 +154,7 @@ public function exportPdf(Request $request, Project $project)
     $totalCols = 5 + ($filteredWeeks->count() * 9);
 
 
-$rekap = collect($groupedItems)->map(function ($cat) use ($filteredWeeks, $project, $week) {
+    $rekap = collect($groupedItems)->map(function ($cat) use ($filteredWeeks, $project, $week) {
 
     $items = collect($cat['uraians'])
         ->flatMap(fn($u) => $u['items']);
@@ -175,41 +174,36 @@ $rekap = collect($groupedItems)->map(function ($cat) use ($filteredWeeks, $proje
     $weekPrev =
         max($weekNow - 1, 0);
 
-$rencana = BuildPlanWeek::query()
-    ->whereHas('buildPlan', function ($q) use ($project, $categoryId) {
+    $rencana = BuildPlanWeek::query()
+        ->whereHas('buildPlan', function ($q) use ($project, $categoryId) {
 
-        $q->where('project_id', $project->id)
-          ->where('category_order', $categoryId);
+            $q->where('project_id', $project->id)
+            ->where('category_order', $categoryId);
 
-    })
-    ->where('week_no', '<=', $weekNow)
-    ->sum('plan_percent');
+        })
+        ->where('week_no', '<=', $weekNow)
+        ->sum('plan_percent');
 
-    $prestasiLalu = $items->avg(function ($item)
-        use ($weekPrev) {
+        $prestasiLalu = $items->avg(function ($item) use ($weekPrev) {
+                $vol = 0;
+                for($w = 1; $w <= $weekPrev; $w++){
 
-            $vol = 0;
+                    $prog =
+                        $item->progress_map[$w]
+                        ?? null;
 
-            for($w = 1; $w <= $weekPrev; $w++){
+                    $vol +=
+                        $prog->volume ?? 0;
 
-                $prog =
-                    $item->progress_map[$w]
-                    ?? null;
+                }
+                return $item->volume > 0
 
-                $vol +=
-                    $prog->volume ?? 0;
+                    ? ($vol / $item->volume) * 100
 
-            }
-
-            return $item->volume > 0
-
-                ? ($vol / $item->volume) * 100
-
-                : 0;
+                    : 0;
         });
 
-    $bobotLalu = $items->sum(function ($item)
-    use ($weekPrev) {
+    $bobotLalu = $items->sum(function ($item) use ($weekPrev) {
 
         $sum = 0;
 
@@ -265,167 +259,199 @@ $rencana = BuildPlanWeek::query()
 
     });
     $prestasiKumulatif = $prestasiLalu + $prestasiMingguIni;
-
     $realisasiKumulatif = $bobotLalu + $bobotMingguIni;
-
     return [
-
         'category' => $cat['category_name'],
-
-        // kontrak
         'bobot' => $bobot,
-
-        // plan
         'rencana' => $rencana,
-
-        // SD minggu lalu
         'prestasi_lalu' => $prestasiLalu,
         'bobot_lalu' => $bobotLalu,
-
-        // minggu ini
         'prestasi_minggu_ini' => $prestasiMingguIni,
-
         'bobot_minggu_ini' => $bobotMingguIni,
-
-        // SD minggu ini
         'prestasi_sd_minggu_ini' => $prestasiKumulatif,
-
         'realisasi_sd_minggu_ini' => $realisasiKumulatif,
     ];
+    });
+    $kurvaS = $project->getKurvaSData() ?? [];
+    $labels = collect($kurvaS)
+        ->pluck('week')
+        ->map(fn($w) => 'M'.$w)
+        ->values()
+        ->toArray();
 
-});
-$kurvaS = $project->getKurvaSData() ?? [];
-$labels = collect($kurvaS)
-    ->pluck('week')
-    ->map(fn($w) => 'M'.$w)
-    ->values()
-    ->toArray();
+    $realisasi = collect($kurvaS)
+        ->pluck('progress')
+        ->values()
+        ->toArray();
 
-$realisasi = collect($kurvaS)
-    ->pluck('progress')
-    ->values()
-    ->toArray();
-$plan = [];
+    $plan = [];
+    $jalan = 0;
 
-$jalan = 0;
+    foreach ($project->week_labels as $w) {
 
-foreach ($project->week_labels as $w) {
+        $mingguan = BuildPlanWeek::query()
+            ->whereHas('buildPlan', function ($q) use ($project) {
 
-    $mingguan = BuildPlanWeek::query()
+                $q->where('project_id', $project->id);
+
+            })
+            ->where('week_no', $w['week_no'])
+            ->sum('plan_percent');
+
+        $jalan += $mingguan;
+
+        $plan[] = round($jalan, 2);
+
+
+    }
+
+    $planMap = BuildPlanWeek::query()
+        ->with('buildPlan')
         ->whereHas('buildPlan', function ($q) use ($project) {
-
             $q->where('project_id', $project->id);
-
         })
-        ->where('week_no', $w['week_no'])
-        ->sum('plan_percent');
+        ->get()
+        ->groupBy(function ($item) {
+            return $item->buildPlan->category_order;
+        });
 
-    $jalan += $mingguan;
-
-    $plan[] = round($jalan, 2);
-
-
-}
-$chartConfig = [
-    'type' => 'line',
-    'data' => [
-        'labels' => $labels,
-        'datasets' => [
-            [
-                'label' => 'Rencana',
-                'data' => $plan,
-                'borderColor' => 'green',
-                'fill' => false,
-            ],
-            [
-                'label' => 'Realisasi',
-                'data' => $realisasi,
-                'borderColor' => 'blue',
-                'fill' => false,
+    $chartConfig = [
+        'type' => 'line',
+        'data' => [
+            'labels' => $labels,
+            'datasets' => [
+                [
+                    'label' => 'Rencana',
+                    'data' => $plan,
+                    'borderColor' => 'green',
+                    'fill' => false,
+                ],
+                [
+                    'label' => 'Realisasi',
+                    'data' => $realisasi,
+                    'borderColor' => 'blue',
+                    'fill' => false,
+                ],
             ],
         ],
-    ],
-];
+    ];
 
-$chartUrl =
-    'https://quickchart.io/chart?c=' .
-    urlencode(json_encode($chartConfig));
-$chartPath = storage_path(
-    'app/public/kurva-'.$project->id.'.png'
-);
-
-$image = Http::get($chartUrl);
-
-if ($image->successful()) {
-
-    file_put_contents(
-        $chartPath,
-        $image->body()
+    $chartUrl = 'https://quickchart.io/chart?c=' . urlencode(json_encode($chartConfig));
+    $chartPath = storage_path(
+        'app/public/kurva-'.$project->id.'.png'
     );
 
-}
-$kurvaHtml = view(
-    'build.pdf-kurvas',
-    [
-        'project'      => $project,
-        'weeks'        => $allWeeks,
-        'groupedItems' => $groupedItems,
-        'chartUrl'     => $chartUrl,
-        'totalCols'    => $totalColsSchedule,
-        'chartPath' => $chartPath,
-    ]
-)->render();
+    $image = Http::get($chartUrl);
 
-$rekapHtml = view(
-    'build.pdf.rekap',
-    [
-        'project' => $project,
-        'rekap'   => $rekap,
-    ]
-)->render();
+    if ($image->successful()) {
 
-$detailHtml = view(
-    'build.pdf.detail',
-    [
-        'project'      => $project,
-        'groupedItems' => $groupedItems,
-        'weeks'        => $filteredWeeks,
-        'totalCols'    => $totalCols,
-    ]
-)->render();
-$mpdf = new Mpdf([
-    'format' => 'A4-L',
-    'margin_top' => 20,
-    'margin_bottom' => 15,
-    'margin_left' => 10,
-    'margin_right' => 10,
-]);
+        file_put_contents(
+            $chartPath,
+            $image->body()
+        );
 
-$mpdf->curlAllowUnsafeSslRequests = true;
+    }
+    $svgWidth = count($allWeeks) * 40;
+    $svgHeight = 140;
 
-$mpdf->WriteHTML($kurvaHtml);
+    $planPoints = [];
+    $realPoints = [];
 
-$mpdf->AddPage('P');
+    foreach ($plan as $i => $value) {
 
+        $x = ($i / max(count($plan)-1,1))
+            * $svgWidth;
 
-$mpdf->WriteHTML($rekapHtml);
+        $y = $svgHeight -
+            (($value / 100) * $svgHeight);
 
-$mpdf->AddPage('P');
+        $planPoints[] =
+            round($x,2).','.
+            round($y,2);
+    }
 
-$mpdf->WriteHTML($detailHtml);
+    foreach ($realisasi as $i => $value) {
 
-return response(
-    $mpdf->Output(
-        'LAPORAN-'.$project->project_name.'.pdf',
-        'S'
-    ),
-    200,
-    [
-        'Content-Type' => 'application/pdf',
-        'Content-Disposition' =>
-            'inline; filename="LAPORAN-'.$project->project_name.'.pdf"',
-    ]
-);
+        $x = ($i / max(count($realisasi)-1,1))
+            * $svgWidth;
+
+        $y = $svgHeight -
+            (($value / 100) * $svgHeight);
+
+        $realPoints[] =
+            round($x,2).','.
+            round($y,2);
+    }
+
+    $svgPlan = implode(' ', $planPoints);
+    $svgReal = implode(' ', $realPoints);
+    $kurvaHtml = view(
+        'build.pdf-kurvas',
+        [
+            'project'      => $project,
+            'weeks'        => $allWeeks,
+            'groupedItems' => $groupedItems,
+            'chartUrl'     => $chartUrl,
+            'totalCols'    => $totalColsSchedule,
+            'chartPath' => $chartPath,
+            'plan'         => $plan,
+            'realisasi'    => $realisasi,
+            'planMap'         => $planMap,
+            'svgPlan' => $svgPlan,
+            'svgReal' => $svgReal,
+            'svgWidth' => $svgWidth,
+            'svgHeight' => $svgHeight,
+        ]
+    )->render();
+
+    $rekapHtml = view(
+        'build.pdf.rekap',
+        [
+            'project' => $project,
+            'rekap'   => $rekap,
+        ]
+    )->render();
+
+    $detailHtml = view(
+        'build.pdf-detail',
+        [
+            'project'      => $project,
+            'groupedItems' => $groupedItems,
+            'weeks'        => $filteredWeeks,
+            'totalCols'    => $totalCols,
+        ]
+    )->render();
+    ini_set('pcre.backtrack_limit', '5000000');
+    ini_set('pcre.recursion_limit', '5000000');
+    $mpdf = new Mpdf([
+        'format' => 'A4-L',
+        'margin_top' => 20,
+        'margin_bottom' => 15,
+        'margin_left' => 10,
+        'margin_right' => 10,
+    ]);
+
+    $mpdf->curlAllowUnsafeSslRequests = true;
+
+    $mpdf->WriteHTML($kurvaHtml);
+
+    $mpdf->AddPage('P');
+    $mpdf->WriteHTML($rekapHtml);
+    $mpdf->AddPage('P');
+    $mpdf->WriteHTML($detailHtml);
+
+    return response(
+        $mpdf->Output(
+            'LAPORAN-'.$project->project_name.'.pdf',
+            'S'
+        ),
+        200,
+        [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' =>
+                'inline; filename="LAPORAN-'.$project->project_name.'.pdf"',
+        ]
+    );
 }
 
 private function groupItems($buildItems)
@@ -464,8 +490,6 @@ private function groupItems($buildItems)
 
         })->values();
 }
-
-
 
 //     public function update(Request $r)
 // {
