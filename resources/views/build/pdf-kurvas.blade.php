@@ -35,148 +35,163 @@
 </tr>
 
 </table>
+<div style="position:relative">
+    <table>
+        <thead>
+            <tr style="background:#d9d9d9; text-align:center; font-weight:bold;">
+                <th width="4%">
+                    NO
+                </th>
+                <th>
+                    URAIAN PEKERJAAN
+                </th>
+                <th width="8%">
+                    BOBOT
+                </th>
+                @foreach($weeks as $w)
+                    <th width="4%">
+                        M{{ $w['week_no'] }}
+                    </th>
 
-<table>
-
-<thead>
-
-<tr style="background:#d9d9d9; text-align:center; font-weight:bold;">
-
-    <th width="4%">
-        NO
-    </th>
-
-    <th>
-        URAIAN PEKERJAAN
-    </th>
-
-    <th width="8%">
-        BOBOT
-    </th>
-
-    @foreach($weeks as $w)
-
-        <th width="4%">
-            M{{ $w['week_no'] }}
-        </th>
-
-    @endforeach
-
-</tr>
-
-</thead>
-
-<tbody>
-
-@foreach($groupedItems as $category)
-
-    @php
-
-        $items = collect($category['uraians'])
-            ->flatMap(fn($u) => $u['items']);
-
-        $subtotalBobot =
-            $items->sum('bobot_percent');
-
-    @endphp
-
-    {{-- CATEGORY --}}
-    <tr style="background:#c4c4c4; font-weight:bold;">
-
-        <td align="center">
-            {{ $loop->iteration }}
-        </td>
-
-        <td>
-            {{ strtoupper($category['category_name']) }}
-        </td>
-
-        <td align="right">
-            {{ number_format($subtotalBobot,2) }}%
-        </td>
-
-        @foreach($weeks as $w)
-
-            <td></td>
-
-        @endforeach
-
-    </tr>
-
-    {{-- ITEMS --}}
-    @foreach($items as $item)
-
-        <tr>
-
-            <td></td>
-
-            <td>
-                {{ $item->uraian }}
-            </td>
-
-            <td align="right">
-                {{ number_format(
-                    $item->bobot_percent,
-                    2
-                ) }}%
-            </td>
-
-            @foreach($weeks as $w)
+                @endforeach
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($groupedItems as $category)
 
                 @php
 
-                    $plan =
-                        $item->plan_week_start
-                        <= $w['week_no']
+                    $items = collect($category['uraians'])
+                        ->flatMap(fn($u) => $u['items']);
 
-                        &&
-
-                        $item->plan_week_end
-                        >= $w['week_no'];
+                    $subtotalBobot =
+                        $items->sum('bobot_percent');
 
                 @endphp
 
-                <td align="center">
+                {{-- CATEGORY --}}
+                <tr style="background:#c4c4c4; font-weight:bold;">
 
-                    @if($plan)
+                    <td align="center">
+                        {{ $loop->iteration }}
+                    </td>
 
-                        <div style="
-                            height:12px;
-                            background:#000;
-                            width:100%;
-                        "></div>
+                    <td>
+                        {{ strtoupper($category['category_name']) }}
+                    </td>
 
-                    @endif
+                    <td align="right">
+                        {{ number_format($subtotalBobot,2) }}%
+                    </td>
 
-                </td>
+                    @foreach($weeks as $w)
+
+                        <td></td>
+
+                    @endforeach
+
+                </tr>
+
+                {{-- ITEMS --}}
+                @foreach($items as $item)
+
+                    <tr>
+
+                        <td></td>
+
+                        <td>
+                            {{ $item->uraian }}
+                        </td>
+
+                        <td align="right">
+                            {{ number_format(
+                                $item->bobot_percent,
+                                2
+                            ) }}%
+                        </td>
+
+                        @foreach($weeks as $w)
+
+                            @php
+
+                                $plan =
+                                    $item->plan_week_start
+                                    <= $w['week_no']
+
+                                    &&
+
+                                    $item->plan_week_end
+                                    >= $w['week_no'];
+
+                            @endphp
+
+                            <td align="center">
+
+                                @if($plan)
+
+                                    <div style="
+                                        height:12px;
+                                        background:#000;
+                                        width:100%;
+                                    "></div>
+
+                                @endif
+
+                            </td>
+
+                        @endforeach
+
+                    </tr>
+
+                @endforeach
 
             @endforeach
+        </tbody>
+        {{-- <tfoot>
 
-        </tr>
+            <tr style="font-weight:bold; background:#f5f5f5;">
 
-    @endforeach
+                <td colspan="3">
+                    RENCANA KUMULATIF
+                </td>
 
-@endforeach
+                @foreach($plan as $nilai)
 
-</tbody>
+                    <td align="center">
+                        {{ number_format($nilai,2) }}
+                    </td>
 
-</table>
+                @endforeach
 
-@if(!empty($chartUrl))
+            </tr>
 
-<table style="border:none; margin-top:25px;">
+            <tr style="font-weight:bold; background:#f5f5f5;">
 
-<tr>
+                <td colspan="3">
+                    REALISASI KUMULATIF
+                </td>
 
-    <td style="border:none; text-align:center;">
+                @foreach($realisasi as $nilai)
 
-        <img src="{{ $chartUrl }}"
-             style="width:100%;">
+                    <td align="center">
+                        {{ number_format($nilai,2) }}
+                    </td>
 
-    </td>
+                @endforeach
 
-</tr>
+            </tr>
 
-</table>
-
-@endif
+        </tfoot> --}}
+    </table>
+    <img
+        src="{{ $chartPath }}"
+        style="
+            position:absolute;
+            left:250px;
+            top:120px;
+            width:75%;
+            opacity:0.7;
+            z-index:999;
+        "
+    >
+</div>

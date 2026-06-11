@@ -24,6 +24,7 @@ use App\Models\BuildPlans;
 use App\Models\User;
 use App\Services\ProjectNotifier;
 use App\Services\BuildProcessSyncService;
+use App\Services\BuildPlanSyncService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
@@ -288,7 +289,7 @@ if (
             });
 
         $buildPlans = BuildPlans::query()
-            ->where('project_id', $project->id)
+            ->where('project_id', $project?->id)
             ->with([
                 'weeks:id,build_plan_id,week_no,plan_percent'
             ])
@@ -600,9 +601,25 @@ public function syncBuildProcess(Project $project)
     app(BuildProcessSyncService::class)
         ->syncFull($project);
 
+    $project->update([
+        'need_sync_build' => false
+    ]);
     return back()->with(
         'success',
         'Build process berhasil disinkronkan.'
+    );
+}
+public function syncBuildPlan(Project $project)
+{
+    app(BuildPlanSyncService::class)
+        ->sync($project);
+        
+    $project->update([
+        'need_sync_plan' => false
+    ]);
+    return back()->with(
+        'success',
+        'Form perencanaan berhasil diperbarui'
     );
 }
 }

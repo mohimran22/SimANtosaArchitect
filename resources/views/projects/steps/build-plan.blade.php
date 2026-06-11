@@ -16,7 +16,6 @@
 
     <x-collapse-card title="Tahap Perencanaan Proyek" target="proyek-build-plan-body">
         <div class="card-body">
-            
                 <table width="100%" style="margin-bottom:20px; margin-left:20px;">
                 <tr>
                     <td width="20%">PEKERJAAN</td>
@@ -54,20 +53,6 @@
 
                 <div class="col-md-3 d-flex gap-2">
 
-                    <form action="{{ route('projects.sync-build', $project->id) }}"
-                        method="POST"
-                        class="d-inline"
-                        onsubmit="return confirm('Update form kemajuan pekerjaan dengan RAB terbaru?')">
-
-                        @csrf
-
-                        <button type="submit" class="btn btn-secondary">
-                            <i class="ti ti-refresh"></i>
-                            Update Form
-                        </button>
-
-                    </form>
-
                     <button type="button" id="btn-export-pdf" class="btn btn-dark"> 
                         <i class="ti ti-file-export"></i> Ekspor PDF 
                     </button>
@@ -80,21 +65,33 @@
                     </form>
                 </div>
             </div> --}}
+                                @if($project->need_sync_build)
+                    <form
+                        action="{{ route('projects.sync-build-plan',$project->id) }}"
+                        method="POST">
 
+                        @csrf
+
+                        <button class="btn btn-secondary">
+                            <i class="ti ti-refresh"></i>
+                            Update Form
+                        </button>
+                    </form>
+                    @endif
             <div class="table-responsive">
-                <table class="table table-bordered">
-                <colgroup>
-                    <col style="width:60px">
-                    <col style="width:320px">
-                    <col style="width:80px">
-                    <col style="width:90px">
-                    <col style="width:140px">
-                    <col style="width:100px">
+                <table class="table table-bordered build-plan-table">
+                    <colgroup>
+                        <col style="width:60px">
+                        <col style="width:320px">
+                        <col style="width:80px">
+                        <col style="width:90px">
+                        <col style="width:140px">
+                        <col style="width:100px">
 
-                    @foreach($project->week_labels as $w)
-                        <col style="width:95px">
-                    @endforeach
-                </colgroup>
+                        @foreach($project->week_labels as $w)
+                            <col style="width:95px">
+                        @endforeach
+                    </colgroup>
                     <thead class="table-light">
                         <tr>
                             <th rowspan="2" class="align-middle text-center">No</th>
@@ -172,7 +169,7 @@
                                                 <td class="uraian-pekerjaan">
                                                     <div class="d-flex justify-content-between align-items-start">
                                                         <div>
-                                                            {{ $item->uraian }}
+                                                            {{ $item->item_name }}
                                                         </div>
                                                     </div>
                                                 </td>
@@ -262,6 +259,211 @@
         @include('projects.steps.build-process')
     </div>
 @push('js')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const table = document.querySelector('.build-plan-table');
+
+    if (!table) return;
+
+    const freezeCount = 6;
+
+    function applyFreeze() {
+
+        // reset
+        table.querySelectorAll('.sticky-col,.sticky-last')
+            .forEach(el => {
+
+                el.classList.remove(
+                    'sticky-col',
+                    'sticky-last'
+                );
+
+                el.style.left = '';
+                el.style.width = '';
+            });
+
+        const cols =
+            table.querySelectorAll('colgroup col');
+
+        // hitung posisi kiri tiap kolom fixed
+        const offsets = [];
+        let left = 0;
+
+        for(let i = 0; i < freezeCount; i++){
+
+            offsets.push(left);
+
+            left += parseFloat(
+                getComputedStyle(cols[i]).width
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | HEADER ROW 1
+        |--------------------------------------------------------------------------
+        */
+
+        const headerRow1 =
+            table.querySelector('thead tr:first-child');
+
+        if(headerRow1){
+
+            const ths =
+                headerRow1.children;
+
+            // No
+            ths[0].classList.add('sticky-col');
+            ths[0].style.left = offsets[0] + 'px';
+
+            // Uraian
+            ths[1].classList.add('sticky-col');
+            ths[1].style.left = offsets[1] + 'px';
+
+            // TERKONTRAK
+            ths[2].classList.add(
+                'sticky-col',
+                'sticky-last'
+            );
+
+            ths[2].style.left =
+                offsets[2] + 'px';
+
+            let kontrakWidth = 0;
+
+            for(let i = 2; i < 6; i++){
+
+                kontrakWidth += parseFloat(
+                    getComputedStyle(cols[i]).width
+                );
+            }
+
+            ths[2].style.width =
+                kontrakWidth + 'px';
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | HEADER ROW 2
+        |--------------------------------------------------------------------------
+        */
+
+        const headerRow2 =
+            table.querySelector('thead tr:last-child');
+
+        if(headerRow2){
+
+            Array.from(headerRow2.children)
+                .slice(0,4)
+                .forEach((th,index)=>{
+
+                    th.classList.add(
+                        'sticky-col'
+                    );
+
+                    th.style.left =
+                        offsets[index + 2] + 'px';
+
+                    if(index === 3){
+
+                        th.classList.add(
+                            'sticky-last'
+                        );
+                    }
+                });
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | BODY ROW
+        |--------------------------------------------------------------------------
+        */
+
+        table.querySelectorAll(
+            'tbody tr:not(.row-category):not(.row-uraian)'
+        ).forEach(row => {
+
+            const cells = row.children;
+
+            for(let i = 0; i < freezeCount; i++){
+
+                const cell = cells[i];
+
+                if(!cell) continue;
+
+                cell.classList.add(
+                    'sticky-col'
+                );
+
+                cell.style.left =
+                    offsets[i] + 'px';
+
+                if(i === freezeCount - 1){
+
+                    cell.classList.add(
+                        'sticky-last'
+                    );
+                }
+            }
+        });
+
+        /*
+        |--------------------------------------------------------------------------
+        | CATEGORY & URAIAN
+        |--------------------------------------------------------------------------
+        */
+
+        table.querySelectorAll(
+            '.row-category,.row-uraian'
+        ).forEach(row => {
+
+            const td =
+                row.querySelector('td');
+
+            if(!td) return;
+
+            let width = 0;
+
+            for(let i = 0; i < freezeCount; i++){
+
+                width += parseFloat(
+                    getComputedStyle(cols[i]).width
+                );
+            }
+
+            td.classList.add(
+                'sticky-col',
+                'sticky-last'
+            );
+
+            td.style.left = '0px';
+            td.style.width = width + 'px';
+            td.style.zIndex = '40';
+        });
+
+        /*
+        |--------------------------------------------------------------------------
+        | Z-INDEX HEADER
+        |--------------------------------------------------------------------------
+        */
+
+        table.querySelectorAll(
+            'thead .sticky-col'
+        ).forEach(th => {
+
+            th.style.zIndex = '100';
+        });
+    }
+
+    applyFreeze();
+
+    window.addEventListener(
+        'resize',
+        applyFreeze
+    );
+});
+</script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
 

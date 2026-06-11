@@ -228,7 +228,7 @@ class InvoiceBuildController extends Controller
                                 'uraian_name' => $buildProcessItem->uraian_name,
 
                                 'job_category_id' => $buildProcessItem->job_category_id,
-                                'uraian' => $buildProcessItem->uraian,
+                                'item_name' => $buildProcessItem->uraian,
 
                                 'price' => $buildProcessItem->price,
                                 'volume' => $buildProcessItem->volume,

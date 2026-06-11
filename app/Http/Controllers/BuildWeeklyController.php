@@ -7,8 +7,8 @@ use Illuminate\Support\Facades\Http;
 use App\Models\Project;
 use App\Models\BuildWeeklyProgress;
 use App\Models\BuildProcessItem;
-use App\Models\BuildCategoryPlan;
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Models\BuildPlanWeek;
+use Mpdf\Mpdf;
 use Carbon\Carbon;
 use DB;
 
@@ -120,7 +120,7 @@ public function exportPdf(Request $request, Project $project)
     $buildItems->each(function ($item) { $item->progress_map = $item->weeklyProgresses ->keyBy('week_no'); });
 
     $groupedItems = $this->groupItems($buildItems);
-
+    $allWeeks = collect($project->week_labels);
     $filteredWeeks = collect($project->week_labels);
 
     if ($week) {
@@ -151,7 +151,7 @@ public function exportPdf(Request $request, Project $project)
             });
 
     }
-
+    $totalColsSchedule = 5 + ($allWeeks->count() * 9);
     $totalCols = 5 + ($filteredWeeks->count() * 9);
 
 
@@ -175,15 +175,15 @@ $rekap = collect($groupedItems)->map(function ($cat) use ($filteredWeeks, $proje
     $weekPrev =
         max($weekNow - 1, 0);
 
-    $rencana = BuildCategoryPlan::query()
+$rencana = BuildPlanWeek::query()
+    ->whereHas('buildPlan', function ($q) use ($project, $categoryId) {
 
-        ->where('project_id', $project->id)
+        $q->where('project_id', $project->id)
+          ->where('category_order', $categoryId);
 
-        ->where('category_order', $categoryId)
-
-        ->where('week_no', '<=', $weekNow)
-
-        ->sum('bobot_percent');
+    })
+    ->where('week_no', '<=', $weekNow)
+    ->sum('plan_percent');
 
     $prestasiLalu = $items->avg(function ($item)
         use ($weekPrev) {
@@ -294,16 +294,6 @@ $rekap = collect($groupedItems)->map(function ($cat) use ($filteredWeeks, $proje
     ];
 
 });
-    $kurvaS = $project->getKurvaSData();
-
-$labels = collect($kurvaS)
-    ->pluck('week')
-    ->map(fn($w) => 'M'.$w)
-    ->values();
-
-$realisasi = collect($kurvaS)
-    ->pluck('progress')
-    ->values();
 $kurvaS = $project->getKurvaSData() ?? [];
 $labels = collect($kurvaS)
     ->pluck('week')
@@ -319,67 +309,123 @@ $plan = [];
 
 $jalan = 0;
 
-foreach($project->week_labels as $w){
+foreach ($project->week_labels as $w) {
 
-    $mingguan =
-        \App\Models\BuildCategoryPlan::query()
+    $mingguan = BuildPlanWeek::query()
+        ->whereHas('buildPlan', function ($q) use ($project) {
 
-        ->where('project_id', $project->id)
+            $q->where('project_id', $project->id);
 
+        })
         ->where('week_no', $w['week_no'])
-
-        ->sum('bobot_percent');
+        ->sum('plan_percent');
 
     $jalan += $mingguan;
 
     $plan[] = round($jalan, 2);
 
+
 }
 $chartConfig = [
-
     'type' => 'line',
-
     'data' => [
-
         'labels' => $labels,
-
         'datasets' => [
-
             [
                 'label' => 'Rencana',
                 'data' => $plan,
+                'borderColor' => 'green',
+                'fill' => false,
             ],
-
             [
                 'label' => 'Realisasi',
                 'data' => $realisasi,
-            ]
-
-        ]
-
-    ]
-
+                'borderColor' => 'blue',
+                'fill' => false,
+            ],
+        ],
+    ],
 ];
 
 $chartUrl =
     'https://quickchart.io/chart?c=' .
     urlencode(json_encode($chartConfig));
+$chartPath = storage_path(
+    'app/public/kurva-'.$project->id.'.png'
+);
 
-    $pdf = Pdf::loadView(
-        'build.pdf',
-        [
-            'project' => $project,
-            'groupedItems' => $groupedItems,
-            'weeks' => $filteredWeeks,
-            'totalCols' => $totalCols,
-            'rekap' => $rekap,
-            'chartUrl' => $chartUrl,
-        ]
+$image = Http::get($chartUrl);
+
+if ($image->successful()) {
+
+    file_put_contents(
+        $chartPath,
+        $image->body()
     );
 
-    $pdf->setPaper('a4', 'potrait');
+}
+$kurvaHtml = view(
+    'build.pdf-kurvas',
+    [
+        'project'      => $project,
+        'weeks'        => $allWeeks,
+        'groupedItems' => $groupedItems,
+        'chartUrl'     => $chartUrl,
+        'totalCols'    => $totalColsSchedule,
+        'chartPath' => $chartPath,
+    ]
+)->render();
 
-    return $pdf->stream('LAPORAN MINGGUAN-'.$project->project_name.'.pdf');
+$rekapHtml = view(
+    'build.pdf.rekap',
+    [
+        'project' => $project,
+        'rekap'   => $rekap,
+    ]
+)->render();
+
+$detailHtml = view(
+    'build.pdf.detail',
+    [
+        'project'      => $project,
+        'groupedItems' => $groupedItems,
+        'weeks'        => $filteredWeeks,
+        'totalCols'    => $totalCols,
+    ]
+)->render();
+$mpdf = new Mpdf([
+    'format' => 'A4-L',
+    'margin_top' => 20,
+    'margin_bottom' => 15,
+    'margin_left' => 10,
+    'margin_right' => 10,
+]);
+
+$mpdf->curlAllowUnsafeSslRequests = true;
+
+$mpdf->WriteHTML($kurvaHtml);
+
+$mpdf->AddPage('P');
+
+
+$mpdf->WriteHTML($rekapHtml);
+
+$mpdf->AddPage('P');
+
+$mpdf->WriteHTML($detailHtml);
+
+return response(
+    $mpdf->Output(
+        'LAPORAN-'.$project->project_name.'.pdf',
+        'S'
+    ),
+    200,
+    [
+        'Content-Type' => 'application/pdf',
+        'Content-Disposition' =>
+            'inline; filename="LAPORAN-'.$project->project_name.'.pdf"',
+    ]
+);
 }
 
 private function groupItems($buildItems)

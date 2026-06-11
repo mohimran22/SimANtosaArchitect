@@ -104,20 +104,20 @@ class WorkerController extends Controller
         'user_id' => 'nullable|exists:users,id',
         'fullname' => 'required|string|max:255',
         'nickname' => 'nullable|string|max:100',
-        'gender' => 'required|in:1,2',
-        'email' => 'required|email|unique:users,email',
+        'gender' => 'nullable|in:1,2',
+        'email' => 'nullable|email|unique:users,email',
         'birth_place' => 'nullable|string|max:100',
-        'birth_date' => 'required|date_format:Y-m-d',
-        'identity_number' => 'required|string|max:16',
-        'religion_id' => 'required|exists:religions,id',
+        'birth_date' => 'nullable|date_format:Y-m-d',
+        'identity_number' => 'nullable|string|max:16',
+        'religion_id' => 'nullable|exists:religions,id',
         'npwp' => 'nullable|string|max:30',
-        'phone' => 'required|string|max:20',
+        'phone' => 'nullable|string|max:20',
         'address' => 'nullable|string|max:255',
-        'user_province_id' => 'required|exists:provinces,id',
-        'user_city_id' => 'required|exists:cities,id',
-        'user_district_id' => 'required|exists:districts,id',
-        'user_sub_district_id' => 'required|exists:sub_districts,id',
-        'user_postal_code_id' => 'required|exists:postal_codes,id',
+        'user_province_id' => 'nullable|exists:provinces,id',
+        'user_city_id' => 'nullable|exists:cities,id',
+        'user_district_id' => 'nullable|exists:districts,id',
+        'user_sub_district_id' => 'nullable|exists:sub_districts,id',
+        'user_postal_code_id' => 'nullable|exists:postal_codes,id',
         'bank_id' => 'nullable|uuid|exists:banks,id',
         'account_number' => 'nullable|string|max:50',
         'account_holder' => 'nullable|string|max:50',
@@ -125,7 +125,7 @@ class WorkerController extends Controller
 
         // --- data worker ---
         'worker_id' => 'required|unique:workers,worker_id',
-        'role' => 'required|array',
+        'role' => 'nullable|array',
         'role.*' => 'string|exists:roles,name',
         
     ]);
@@ -172,8 +172,6 @@ class WorkerController extends Controller
                 'account_number' => $validated['account_number'] ?? null,
                 'account_holder' => $validated['account_holder'] ?? null,
             ]);
-
-            session()->flash('new_user_password', $password);
         }
 
         // 🔹 Assign role tanpa hapus role lama
@@ -184,10 +182,6 @@ class WorkerController extends Controller
                 }
             }
         }
-
-        
-
-        // 🔹 Simpan worker
         Worker::create([
             'id' => Str::uuid(),
             'user_id' => $user->id,
@@ -198,9 +192,7 @@ class WorkerController extends Controller
 
     return redirect()
         ->route('workers.index')
-        ->with('success', 'Data worker berhasil ditambahkan.' .
-            (session('new_user_password') ? ' Akun user baru dibuat. Password: ' . session('new_user_password') : '')
-        );
+        ->with('success', 'Data tukang berhasil ditambahkan.');
 }
 
 
@@ -249,8 +241,8 @@ public function update(Request $request, Worker $worker)
         // --- data user ---
         'fullname' => 'required|string|max:255',
         'nickname' => 'nullable|string|max:100',
-        'gender' => 'required|in:1,2',
-        'email' => 'required|email|unique:users,email,' . $worker->user_id,
+        'gender' => 'nullable|in:1,2',
+        'email' => 'nullable|email|unique:users,email,' . $worker->user_id,
         'birth_place' => 'nullable|string|max:100',
         'birth_date' => 'nullable|date_format:Y-m-d',
         'identity_number' => 'nullable|string|max:16',
@@ -258,11 +250,11 @@ public function update(Request $request, Worker $worker)
         'npwp' => 'nullable|string|max:30',
         'phone' => 'nullable|string|max:20',
         'address' => 'nullable|string|max:255',
-        'user_province_id' => 'required|exists:provinces,id',
-        'user_city_id' => 'required|exists:cities,id',
-        'user_district_id' => 'required|exists:districts,id',
-        'user_sub_district_id' => 'required|exists:sub_districts,id',
-        'user_postal_code_id' => 'required|exists:postal_codes,id',
+        'user_province_id' => 'nullable|exists:provinces,id',
+        'user_city_id' => 'nullable|exists:cities,id',
+        'user_district_id' => 'nullable|exists:districts,id',
+        'user_sub_district_id' => 'nullable|exists:sub_districts,id',
+        'user_postal_code_id' => 'nullable|exists:postal_codes,id',
         'bank_id' => 'nullable|uuid|exists:banks,id',
         'account_number' => 'nullable|string|max:50',
         'account_holder' => 'nullable|string|max:50',
@@ -289,7 +281,6 @@ public function update(Request $request, Worker $worker)
             $validated['photo'] = $filename;
         }
 
-        // 🔹 Update user data
         $user->update([
             'fullname' => $validated['fullname'],
             'nickname' => $validated['nickname'],
@@ -326,11 +317,6 @@ public function update(Request $request, Worker $worker)
                 $user->assignRole('Tukang');
             }
         }
-
-        
-
-
-        // 🔹 Update data worker
         $worker->update([
             'worker_id' => $validated['worker_id'],
             'photo' => $validated['photo'] ?? $worker->photo,
@@ -339,7 +325,7 @@ public function update(Request $request, Worker $worker)
 
     return redirect()
         ->route('workers.show', $worker->id)
-        ->with('success', 'Data worker berhasil diperbarui.');
+        ->with('success', 'Data tukang berhasil diperbarui.');
 }
 
 

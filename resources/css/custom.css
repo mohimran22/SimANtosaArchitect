@@ -805,7 +805,33 @@ tr.row-uraian td.sticky-col{
     z-index: 11;
     background: #fff;
 }
+.build-plan-table{
+    table-layout: fixed;
+    min-width: max-content;
+}
 
+.build-plan-table .sticky-col{
+    position: sticky;
+    background: #fff;
+}
+
+.build-plan-table thead .sticky-col{
+    z-index: 100;
+}
+
+.build-plan-table tbody .sticky-col{
+    z-index: 20;
+}
+
+.build-plan-table .sticky-last{
+    box-shadow: 2px 0 6px rgba(0,0,0,.15);
+}
+
+.build-plan-table .row-category td,
+.build-plan-table .row-uraian td{
+    background: #ffff;
+    font-weight: 600;
+}
 #rabItemsTableEdit col:nth-child(1){ width:50px }
 #rabItemsTableEdit col:nth-child(2){ width:35% }
 #rabItemsTableEdit col:nth-child(3){ width:90px }

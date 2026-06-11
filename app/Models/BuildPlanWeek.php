@@ -19,7 +19,7 @@ class BuildPlanWeek extends Model
 
     public function buildPlan()
     {
-        return $this->belongsTo(BuildPlan::class);
+        return $this->belongsTo(BuildPlans::class);
     }
 
     public function getFormattedPercentAttribute()

@@ -665,6 +665,10 @@ Route::post(
     '/projects/{project}/sync-build',
     [ProjectController::class, 'syncBuildProcess']
 )->name('projects.sync-build');
+Route::post(
+    '/projects/{project}/sync-build-plan',
+    [ProjectController::class,'syncBuildPlan']
+)->name('projects.sync-build-plan');
 Route::get('/projects/{project}/export-pdf', 
     [BuildWeeklyController::class, 'exportPdf'])
     ->name('projects.export-pdf');

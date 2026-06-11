@@ -60,15 +60,17 @@
 @push('js')
     <script>
         $(function() {
+            const isMobile = window.innerWidth < 576;
             const table = $('#tableWorkers').DataTable({
                 scrollY: '500px',
                 scrollX: true,
                 scrollCollapse: true,
-                fixedColumns: {
+                fixedColumns: !isMobile ? {
                     leftColumns: 4
-                },
+                } : false,
                 serverSide: true,
                 processing: true,
+                responsive: false,
                 ajax: '{{ route("workers.index") }}',
                 columns: [
                     { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
@@ -103,7 +105,7 @@
             });
 
             // Delete user functionally
-            $('table').on('click', '.delete-worker', function () {
+            $('#tableWorkers').on('click', '.delete-worker', function () {
             const workerId = $(this).data('id');
 
             Swal.fire({

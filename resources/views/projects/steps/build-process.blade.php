@@ -55,21 +55,21 @@
                     </div>
 
                     <div class="col-md-3 d-flex gap-2">
+                        {{-- @if($project->need_sync_build) --}}
+                            <form action="{{ route('projects.sync-build', $project->id) }}"
+                                method="POST"
+                                class="d-inline"
+                                onsubmit="return confirm('Update form kemajuan pekerjaan dengan RAB terbaru?')">
 
-                        <form action="{{ route('projects.sync-build', $project->id) }}"
-                            method="POST"
-                            class="d-inline"
-                            onsubmit="return confirm('Update form kemajuan pekerjaan dengan RAB terbaru?')">
+                                @csrf
 
-                            @csrf
+                                <button type="submit" class="btn btn-secondary">
+                                    <i class="ti ti-refresh"></i>
+                                    Update Form
+                                </button>
 
-                            <button type="submit" class="btn btn-secondary">
-                                <i class="ti ti-refresh"></i>
-                                Update Form
-                            </button>
-
-                        </form>
-
+                            </form>
+                        {{-- @endif --}}
                         <button type="button" id="btn-export-pdf" class="btn btn-dark"> 
                             <i class="ti ti-file-export"></i> Ekspor PDF 
                         </button>
