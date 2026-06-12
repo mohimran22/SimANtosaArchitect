@@ -40,32 +40,39 @@
         <thead>
             {{-- <tr>
 
-                <td colspan="{{ 3 + count($weeks) }}"
+                <td colspan="3"
+                    style="
+                        height:100px;
+                        border:1px solid #000;
+                    ">
+                </td>
+
+                <td colspan="{{ count($weeks) }}"
                     style="
                         padding:0;
-                        height:160px;
+                        height:100px;
                         border:1px solid #000;
                     ">
 
                     <svg
                         width="100%"
-                        height="160"
-                        viewBox="0 0 {{ $svgWidth }} {{ $svgHeight }}"
+                        height="100"
+                        viewBox="0 0 {{ count($weeks) * 20 }} 100"
                         xmlns="http://www.w3.org/2000/svg">
 
                         @for($i=0;$i<=10;$i++)
 
                             @php
-                                $y = ($svgHeight/10)*$i;
+                                $y = $i * 10;
                             @endphp
 
                             <line
                                 x1="0"
                                 y1="{{ $y }}"
-                                x2="{{ $svgWidth }}"
+                                x2="{{ count($weeks) * 20 }}"
                                 y2="{{ $y }}"
                                 stroke="#ddd"
-                                stroke-width="1"
+                                stroke-width="0.5"
                             />
 
                         @endfor
@@ -73,18 +80,16 @@
                         @foreach($weeks as $i => $w)
 
                             @php
-                                $x =
-                                ($i / max(count($weeks)-1,1))
-                                * $svgWidth;
+                                $x = $i * 20;
                             @endphp
 
                             <line
                                 x1="{{ $x }}"
                                 y1="0"
                                 x2="{{ $x }}"
-                                y2="{{ $svgHeight }}"
+                                y2="100"
                                 stroke="#ddd"
-                                stroke-width="1"
+                                stroke-width="0.5"
                             />
 
                         @endforeach
@@ -92,14 +97,14 @@
                         <polyline
                             fill="none"
                             stroke="green"
-                            stroke-width="3"
+                            stroke-width="2"
                             points="{{ $svgPlan }}"
                         />
 
                         <polyline
                             fill="none"
                             stroke="blue"
-                            stroke-width="3"
+                            stroke-width="2"
                             points="{{ $svgReal }}"
                         />
 
@@ -109,17 +114,11 @@
 
             </tr> --}}
             <tr style="background:#d9d9d9; text-align:center; font-weight:bold;">
-                <th width="4%">
-                    NO
-                </th>
-                <th>
-                    URAIAN PEKERJAAN
-                </th>
-                <th width="8%">
-                    BOBOT
-                </th>
+                <th style="width:12mm">NO</th>
+                <th style="width:80mm">URAIAN PEKERJAAN</th>
+                <th style="width:18mm">BOBOT</th>
                 @foreach($weeks as $w)
-                    <th width="4%">
+                    <th style="width:6mm">
                         M{{ $w['week_no'] }}
                     </th>
                 @endforeach

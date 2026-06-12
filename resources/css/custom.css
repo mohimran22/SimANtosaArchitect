@@ -700,15 +700,13 @@ col.just-hidden {
     background-color: #fff !important;
     position: sticky;
     vertical-align: middle;
-    z-index: 2;
 }
 
-.progress-table thead tr:first-child th[colspan="4"] {
+/* .progress-table thead tr:first-child th[colspan="4"] {
     z-index: 3;
-}
+} */
 
 .progress-table thead th.sticky-col {
-    z-index: 4;
     background-color: #ffff;
 }
 

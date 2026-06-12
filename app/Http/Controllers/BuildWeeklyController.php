@@ -351,40 +351,44 @@ public function exportPdf(Request $request, Project $project) {
         );
 
     }
-    $svgWidth = count($allWeeks) * 40;
-    $svgHeight = 140;
+    $svgWidth = count($allWeeks) * 20;
+    $svgHeight = 100;
 
     $planPoints = [];
     $realPoints = [];
-
+    $stepX = $svgWidth / max(count($plan)-1,1);
+    $stepY = $svgWidth / max(count($realisasi)-1,1);
     foreach ($plan as $i => $value) {
 
-        $x = ($i / max(count($plan)-1,1))
-            * $svgWidth;
+        $x = $i * $stepX;
 
-        $y = $svgHeight -
-            (($value / 100) * $svgHeight);
+        $y = $svgHeight
+            - (($value / 100) * $svgHeight);
 
         $planPoints[] =
             round($x,2).','.
             round($y,2);
     }
-
     foreach ($realisasi as $i => $value) {
 
-        $x = ($i / max(count($realisasi)-1,1))
-            * $svgWidth;
+        $x = $i * $stepY;
 
-        $y = $svgHeight -
-            (($value / 100) * $svgHeight);
+        $y = $svgHeight
+            - (($value / 100) * $svgHeight);
 
         $realPoints[] =
             round($x,2).','.
             round($y,2);
     }
-
     $svgPlan = implode(' ', $planPoints);
     $svgReal = implode(' ', $realPoints);
+    $headerKurva = 'file://' . public_path('images/header-penawaran.jpg');
+    $headerRekap = 'file://' . public_path('images/header-penawaran.jpg');
+    $headerDetail = 'file://' . public_path('images/header-penawaran.jpg');
+
+    $footerKurva = 'file://' . public_path('images/footer-penawaran.jpg');
+    $footerRekap = 'file://' . public_path('images/footer-penawaran.jpg');
+    $footerDetail = 'file://' . public_path('images/footer-penawaran.jpg');
     $kurvaHtml = view(
         'build.pdf-kurvas',
         [
@@ -399,8 +403,6 @@ public function exportPdf(Request $request, Project $project) {
             'planMap'         => $planMap,
             'svgPlan' => $svgPlan,
             'svgReal' => $svgReal,
-            'svgWidth' => $svgWidth,
-            'svgHeight' => $svgHeight,
         ]
     )->render();
 
@@ -421,23 +423,79 @@ public function exportPdf(Request $request, Project $project) {
             'totalCols'    => $totalCols,
         ]
     )->render();
+    $svg = view(
+        'build.kurva-svg',
+        [
+            'weeks' => $allWeeks,
+            'plan' => $plan,
+            'realisasi' => $realisasi,
+        ]
+    )->render();
+
+    $svgPath = storage_path(
+        'app/public/kurva-'.$project->id.'.svg'
+    );
+
+    file_put_contents(
+        $svgPath,
+        $svg
+    );
     ini_set('pcre.backtrack_limit', '5000000');
     ini_set('pcre.recursion_limit', '5000000');
     $mpdf = new Mpdf([
         'format' => 'A4-L',
-        'margin_top' => 20,
-        'margin_bottom' => 15,
+        'margin_top' => 50,
+        'margin_bottom' => 20,
         'margin_left' => 10,
         'margin_right' => 10,
     ]);
 
     $mpdf->curlAllowUnsafeSslRequests = true;
+    $mpdf->SetHTMLHeader('
+    <div>
+        <img src="'.$headerKurva.'" width="100%">
+    </div>
+    ');
+
+    $mpdf->SetHTMLFooter('
+    <div>
+        <img src="'.$footerKurva.'" width="100%">
+    </div>
+    ');
 
     $mpdf->WriteHTML($kurvaHtml);
-
+    $mpdf->Image(
+        $svgPath,
+        118,    
+        74,     
+        150,    
+        35     
+    );
     $mpdf->AddPage('P');
+    $mpdf->SetHTMLHeader('
+    <div>
+        <img src="'.$headerRekap.'" width="100%">
+    </div>
+    ');
+
+    $mpdf->SetHTMLFooter('
+    <div>
+        <img src="'.$footerRekap.'" width="100%">
+    </div>
+    ');
     $mpdf->WriteHTML($rekapHtml);
     $mpdf->AddPage('P');
+    $mpdf->SetHTMLHeader('
+    <div>
+        <img src="'.$headerDetail.'" width="100%">
+    </div>
+    ');
+
+    $mpdf->SetHTMLFooter('
+    <div>
+        <img src="'.$footerDetail.'" width="100%">
+    </div>
+    ');
     $mpdf->WriteHTML($detailHtml);
 
     return response(
