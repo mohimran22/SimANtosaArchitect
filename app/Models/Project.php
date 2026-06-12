@@ -32,7 +32,8 @@ class Project extends Model
         'end_date',
         'start_date',
         'project_status',
-        'bobot_locked'
+        'bobot_locked',
+        'description'
     ];
 
     public function province()

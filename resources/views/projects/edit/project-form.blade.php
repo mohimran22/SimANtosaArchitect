@@ -60,44 +60,53 @@
                     <textarea name="project_location" class="form-control" rows="3">{{ $project->project_location }}</textarea>
                 </div>
 
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <label class="form-label required">Provinsi</label>
-                    <select id="edit_province" name="province_id" class="form-select select2">
-                        <option value="">-- Pilih Provinsi --</option>
-                        @foreach ($provinces as $prov)
-                            <option value="{{ $prov->id }}" {{ $prov->id == $project->province_id ? 'selected' : '' }}>
-                                {{ $prov->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <div class="col-md-6">
-                    <label class="form-label required">Kabupaten/Kota</label>
-                        <select id="edit_city" name="city_id" class="form-select select2">
-                            <option value="">-- Pilih Kota --</option>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label required">Provinsi</label>
+                        <select id="edit_province" name="province_id" class="form-select select2">
+                            <option value="">-- Pilih Provinsi --</option>
+                            @foreach ($provinces as $prov)
+                                <option value="{{ $prov->id }}" {{ $prov->id == $project->province_id ? 'selected' : '' }}>
+                                    {{ $prov->name }}
+                                </option>
+                            @endforeach
                         </select>
-                </div>
-            </div>
+                    </div>
 
-            <div class="row mb-3">
-                <div class="col-md-5">
-                    <label class="form-label required">Kecamatan</label>
-                        <select id="edit_district" name="district_id" class="form-select select2">
-                            <option value="">-- Pilih Kecamatan --</option>
-                        </select>
+                    <div class="col-md-6">
+                        <label class="form-label required">Kabupaten/Kota</label>
+                            <select id="edit_city" name="city_id" class="form-select select2">
+                                <option value="">-- Pilih Kota --</option>
+                            </select>
+                    </div>
                 </div>
 
-                <div class="col-md-5">
-                    <label class="form-label required">Kelurahan</label>
-                        <select id="edit_sub_district" name="sub_district_id" class="form-select select2"></select>
+                <div class="row mb-3">
+                    <div class="col-md-5">
+                        <label class="form-label required">Kecamatan</label>
+                            <select id="edit_district" name="district_id" class="form-select select2">
+                                <option value="">-- Pilih Kecamatan --</option>
+                            </select>
+                    </div>
+
+                    <div class="col-md-5">
+                        <label class="form-label required">Kelurahan</label>
+                            <select id="edit_sub_district" name="sub_district_id" class="form-select select2"></select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label required">Kode Pos</label>
+                            <select id="edit_postal_code" name="postal_code_id" class="form-select select2"></select>
+                    </div>
                 </div>
-                <div class="col-md-2">
-                    <label class="form-label required">Kode Pos</label>
-                        <select id="edit_postal_code" name="postal_code_id" class="form-select select2"></select>
-                </div>
-            </div>
+                
+                    <div class="col-12">
+                        <label class="form-label">Ringkasan Kegiatan</label>
+                        <textarea name="description" rows="3" class="form-control @error('description') is-invalid @enderror" required>{{ old('description') }} </textarea>
+                        @error('description')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                
             </div>
 
             <div class="mt-4">

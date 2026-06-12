@@ -156,121 +156,116 @@ public function exportPdf(Request $request, Project $project) {
 
     $rekap = collect($groupedItems)->map(function ($cat) use ($filteredWeeks, $project, $week) {
 
-    $items = collect($cat['uraians'])
-        ->flatMap(fn($u) => $u['items']);
+        $items = collect($cat['uraians'])->flatMap(fn($u) => $u['items']);
+        $bobot = $items->sum('bobot_percent');
+        $categoryId = $items->first()->category_order;
+        $weekNow = $filteredWeeks->max('week_no');
+        $weekPrev = max($weekNow - 1, 0);
+        $rencana = BuildPlanWeek::query()
+            ->whereHas('buildPlan', function ($q) use ($project, $categoryId) {
 
-    // Bobot kontrak kategori
-    $bobot = $items->sum('bobot_percent');
+                $q->where('project_id', $project->id)
+                ->where('category_order', $categoryId);
 
-    // category id
-    $categoryId =
-        $items->first()->category_order;
+            })
+            ->where('week_no', '<=', $weekNow)
+            ->sum('plan_percent');
 
-    // minggu aktif
-    $weekNow =
-        $filteredWeeks->max('week_no');
+            $prestasiLalu = $items->avg(function ($item) use ($weekPrev) {
+                    $vol = 0;
+                    for($w = 1; $w <= $weekPrev; $w++){
 
-    // minggu lalu
-    $weekPrev =
-        max($weekNow - 1, 0);
+                        $prog =
+                            $item->progress_map[$w]
+                            ?? null;
 
-    $rencana = BuildPlanWeek::query()
-        ->whereHas('buildPlan', function ($q) use ($project, $categoryId) {
+                        $vol +=
+                            $prog->volume ?? 0;
 
-            $q->where('project_id', $project->id)
-            ->where('category_order', $categoryId);
+                    }
+                    return $item->volume > 0
 
-        })
-        ->where('week_no', '<=', $weekNow)
-        ->sum('plan_percent');
+                        ? ($vol / $item->volume) * 100
 
-        $prestasiLalu = $items->avg(function ($item) use ($weekPrev) {
-                $vol = 0;
-                for($w = 1; $w <= $weekPrev; $w++){
+                        : 0;
+            });
+        $status = 'Belum Dimulai';
 
-                    $prog =
-                        $item->progress_map[$w]
-                        ?? null;
+        if ($rencana >= $bobot) {
+            $status = 'Selesai';
+        } elseif ($rencana > 0) {
+            $status = 'Sedang Berlangsung';
+        }
+        $bobotLalu = $items->sum(function ($item) use ($weekPrev) {
 
-                    $vol +=
-                        $prog->volume ?? 0;
+            $sum = 0;
 
-                }
-                return $item->volume > 0
+            for($w = 1; $w <= $weekPrev; $w++){
 
-                    ? ($vol / $item->volume) * 100
+                $prog =
+                    $item->progress_map[$w]
+                    ?? null;
+
+                $vol =
+                    $prog->volume ?? 0;
+
+                $sum += $item->volume > 0
+
+                    ? ($vol / $item->volume)
+                        * $item->bobot_percent
 
                     : 0;
+
+            }
+
+            return $sum;
         });
-
-    $bobotLalu = $items->sum(function ($item) use ($weekPrev) {
-
-        $sum = 0;
-
-        for($w = 1; $w <= $weekPrev; $w++){
+        
+        $prestasiMingguIni = $items->avg(function ($item) use ($weekNow) {
 
             $prog =
-                $item->progress_map[$w]
+                $item->progress_map[$weekNow]
                 ?? null;
 
             $vol =
                 $prog->volume ?? 0;
 
-            $sum += $item->volume > 0
+            return $item->volume > 0
+
+                ? ($vol / $item->volume) * 100
+
+                : 0;
+
+        });
+        $bobotMingguIni = $items->sum(function ($item) use ($weekNow) {
+
+            $prog = $item->progress_map[$weekNow] ?? null;
+
+            $vol = $prog->volume ?? 0;
+
+            return $item->volume > 0
 
                 ? ($vol / $item->volume)
                     * $item->bobot_percent
 
                 : 0;
 
-        }
+        });
+        $prestasiKumulatif = $prestasiLalu + $prestasiMingguIni;
+        $realisasiKumulatif = $bobotLalu + $bobotMingguIni;
 
-        return $sum;
-    });
-    
-    $prestasiMingguIni = $items->avg(function ($item) use ($weekNow) {
-
-        $prog =
-            $item->progress_map[$weekNow]
-            ?? null;
-
-        $vol =
-            $prog->volume ?? 0;
-
-        return $item->volume > 0
-
-            ? ($vol / $item->volume) * 100
-
-            : 0;
-
-    });
-    $bobotMingguIni = $items->sum(function ($item) use ($weekNow) {
-
-        $prog = $item->progress_map[$weekNow] ?? null;
-
-        $vol = $prog->volume ?? 0;
-
-        return $item->volume > 0
-
-            ? ($vol / $item->volume)
-                * $item->bobot_percent
-
-            : 0;
-
-    });
-    $prestasiKumulatif = $prestasiLalu + $prestasiMingguIni;
-    $realisasiKumulatif = $bobotLalu + $bobotMingguIni;
-    return [
-        'category' => $cat['category_name'],
-        'bobot' => $bobot,
-        'rencana' => $rencana,
-        'prestasi_lalu' => $prestasiLalu,
-        'bobot_lalu' => $bobotLalu,
-        'prestasi_minggu_ini' => $prestasiMingguIni,
-        'bobot_minggu_ini' => $bobotMingguIni,
-        'prestasi_sd_minggu_ini' => $prestasiKumulatif,
-        'realisasi_sd_minggu_ini' => $realisasiKumulatif,
-    ];
+        return [
+            'category' => $cat['category_name'],
+            'bobot' => $bobot,
+            'rencana' => $rencana,
+            'prestasi_lalu' => $prestasiLalu,
+            'bobot_lalu' => $bobotLalu,
+            'prestasi_minggu_ini' => $prestasiMingguIni,
+            'bobot_minggu_ini' => $bobotMingguIni,
+            'prestasi_sd_minggu_ini' => $prestasiKumulatif,
+            'realisasi_sd_minggu_ini' => $realisasiKumulatif,
+            'status' => $status
+        ];
     });
     $kurvaS = $project->getKurvaSData() ?? [];
     $labels = collect($kurvaS)
@@ -301,8 +296,6 @@ public function exportPdf(Request $request, Project $project) {
         $jalan += $mingguan;
 
         $plan[] = round($jalan, 2);
-
-
     }
 
     $planMap = BuildPlanWeek::query()
@@ -351,13 +344,29 @@ public function exportPdf(Request $request, Project $project) {
         );
 
     }
-    $svgWidth = count($allWeeks) * 20;
-    $svgHeight = 100;
+    $weekNow = $filteredWeeks->max('week_no');
+    $rencanaKumulatif = $plan[$weekNow - 1] ?? 0;
+    $realisasiKumulatif = $realisasi[$weekNow - 1] ?? 0;
+    $deviasi = round(
+        $realisasiKumulatif - $rencanaKumulatif,
+        2
+    );
+    if ($deviasi < 0) {
+        $status = 'Pekerjaan Lebih Lambat';
+    } elseif ($deviasi > 0) {
+        $status = 'Pekerjaan Lebih Cepat';
+    } else {
+        $status = 'Sesuai Rencana';
+    }
+    $weekWidthMm = count($allWeeks) * 6;
+
+    $svgWidth = $weekWidthMm * 3.78; // mm -> px
+    $svgHeight = 300;
 
     $planPoints = [];
     $realPoints = [];
     $stepX = $svgWidth / max(count($plan)-1,1);
-    $stepY = $svgWidth / max(count($realisasi)-1,1);
+
     foreach ($plan as $i => $value) {
 
         $x = $i * $stepX;
@@ -371,7 +380,7 @@ public function exportPdf(Request $request, Project $project) {
     }
     foreach ($realisasi as $i => $value) {
 
-        $x = $i * $stepY;
+        $x = $i * $stepX;
 
         $y = $svgHeight
             - (($value / 100) * $svgHeight);
@@ -382,15 +391,27 @@ public function exportPdf(Request $request, Project $project) {
     }
     $svgPlan = implode(' ', $planPoints);
     $svgReal = implode(' ', $realPoints);
+    $headerCover = 'file://' . public_path('images/header-penawaran.jpg');
     $headerKurva = 'file://' . public_path('images/header-penawaran.jpg');
     $headerRekap = 'file://' . public_path('images/header-penawaran.jpg');
     $headerDetail = 'file://' . public_path('images/header-penawaran.jpg');
 
-    $footerKurva = 'file://' . public_path('images/footer-penawaran.jpg');
-    $footerRekap = 'file://' . public_path('images/footer-penawaran.jpg');
-    $footerDetail = 'file://' . public_path('images/footer-penawaran.jpg');
+    // $footerKurva = 'file://' . public_path('images/footer-penawaran.jpg');
+    // $footerRekap = 'file://' . public_path('images/footer-penawaran.jpg');
+    // $footerDetail = 'file://' . public_path('images/footer-penawaran.jpg');
+    $coverHtml = view(
+    'build.pdf-cover',
+        [
+            'project' => $project,
+            'rekap' => $rekap,
+            'periode' => $filteredWeeks->first()['start'].' - '.$filteredWeeks->last()['end'],
+            'summary' => $project->description ?? '',
+            'status_progress' => $status,
+            'deviasi' => $deviasi,
+        ]
+    )->render();
     $kurvaHtml = view(
-        'build.pdf-kurvas',
+        'build.pdf.schedule',
         [
             'project'      => $project,
             'weeks'        => $allWeeks,
@@ -401,8 +422,10 @@ public function exportPdf(Request $request, Project $project) {
             'plan'         => $plan,
             'realisasi'    => $realisasi,
             'planMap'         => $planMap,
-            'svgPlan' => $svgPlan,
-            'svgReal' => $svgReal,
+            'svgWidth'     => $svgWidth,
+            'svgHeight'    => $svgHeight,
+            'svgPlan'      => $svgPlan,
+            'svgReal'      => $svgReal,
         ]
     )->render();
 
@@ -429,21 +452,21 @@ public function exportPdf(Request $request, Project $project) {
             'weeks' => $allWeeks,
             'plan' => $plan,
             'realisasi' => $realisasi,
+            'svgWidth' => $svgWidth,
+            'svgHeight' => $svgHeight,
+            'svgPlan' => $svgPlan,
+            'svgReal' => $svgReal,
         ]
     )->render();
 
-    $svgPath = storage_path(
-        'app/public/kurva-'.$project->id.'.svg'
-    );
+    $svgPath = storage_path('app/public/kurva-'.$project->id.'.svg');
 
-    file_put_contents(
-        $svgPath,
-        $svg
-    );
+    file_put_contents($svgPath, $svg);
+    
     ini_set('pcre.backtrack_limit', '5000000');
     ini_set('pcre.recursion_limit', '5000000');
     $mpdf = new Mpdf([
-        'format' => 'A4-L',
+        'format' => 'A4',
         'margin_top' => 50,
         'margin_bottom' => 20,
         'margin_left' => 10,
@@ -451,25 +474,42 @@ public function exportPdf(Request $request, Project $project) {
     ]);
 
     $mpdf->curlAllowUnsafeSslRequests = true;
+
+    $mpdf->SetHTMLHeader('
+    <div>
+        <img src="'.$headerCover.'" width="100%">
+    </div>
+    ');
+
+    $mpdf->WriteHTML($coverHtml);
+
+    $mpdf->AddPage('L');
     $mpdf->SetHTMLHeader('
     <div>
         <img src="'.$headerKurva.'" width="100%">
     </div>
     ');
-
-    $mpdf->SetHTMLFooter('
-    <div>
-        <img src="'.$footerKurva.'" width="100%">
-    </div>
-    ');
-
     $mpdf->WriteHTML($kurvaHtml);
+    $leftWidth =
+        20 + 
+        88 + 
+        26;  
+
+    $weekWidth = count($allWeeks) * 6;
+
+    $pageLeftMargin = 10;
+
+    $chartX = $pageLeftMargin + $leftWidth;
+
+    $chartWidth = $weekWidth;
+    $chartY = 68;
+    $chartHeight = 35;
     $mpdf->Image(
         $svgPath,
-        118,    
-        74,     
-        150,    
-        35     
+        $chartX,
+        $chartY,
+        $chartWidth,
+        $chartHeight
     );
     $mpdf->AddPage('P');
     $mpdf->SetHTMLHeader('
@@ -478,11 +518,11 @@ public function exportPdf(Request $request, Project $project) {
     </div>
     ');
 
-    $mpdf->SetHTMLFooter('
-    <div>
-        <img src="'.$footerRekap.'" width="100%">
-    </div>
-    ');
+    // $mpdf->SetHTMLFooter('
+    // <div>
+    //     <img src="'.$footerRekap.'" width="100%">
+    // </div>
+    // ');
     $mpdf->WriteHTML($rekapHtml);
     $mpdf->AddPage('P');
     $mpdf->SetHTMLHeader('
@@ -491,11 +531,11 @@ public function exportPdf(Request $request, Project $project) {
     </div>
     ');
 
-    $mpdf->SetHTMLFooter('
-    <div>
-        <img src="'.$footerDetail.'" width="100%">
-    </div>
-    ');
+    // $mpdf->SetHTMLFooter('
+    // <div>
+    //     <img src="'.$footerDetail.'" width="100%">
+    // </div>
+    // ');
     $mpdf->WriteHTML($detailHtml);
 
     return response(

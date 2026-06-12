@@ -25,11 +25,10 @@ class ProjectRequest extends FormRequest
             'employee_id'       => 'required|uuid',
             'customer_id'       => 'required|uuid',
             'affiliator_id'     => 'nullable|uuid',
-
             'start_date'        => 'required|date',
             'end_date'          => 'nullable|date|after_or_equal:start_date',
-
             'project_status'    => 'nullable|integer',
+            'description'    => 'nullable|string',
         ];
     }
 }

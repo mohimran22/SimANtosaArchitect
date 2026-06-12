@@ -1,69 +1,20 @@
-@php
-
-$width = 1000;
-$height = 120;
-
-$stepX = $width / max(count($plan)-1,1);
-
-$planPoints = [];
-
-foreach($plan as $i => $value){
-
-    $x = $i * $stepX;
-
-    $y = $height -
-        (($value / 100) * $height);
-
-    $planPoints[] = $x.','.$y;
-}
-
-$svgPlan = implode(' ', $planPoints);
-
-$stepX = $width / max(count($realisasi)-1,1);
-
-$realPoints = [];
-
-foreach($realisasi as $i => $value){
-
-    $x = $i * $stepX;
-
-    $y = $height -
-        (($value / 100) * $height);
-
-    $realPoints[] = $x.','.$y;
-}
-
-$svgReal = implode(' ', $realPoints);
-@endphp
-
-
-
-<svg
-xmlns="http://www.w3.org/2000/svg"
-width="1000"
-height="120">
+<svg xmlns="http://www.w3.org/2000/svg" width="{{ $svgWidth }}" height="{{ $svgHeight }}">
 
 @php
-
-$width = 1000;
-$height = 120;
-
 $countWeek = max(count($weeks),1);
-$stepX = $width / $countWeek;
-
+$stepX = $svgWidth / max(($countWeek - 1),1);
 @endphp
 
-{{-- Grid Horizontal --}}
 @for($i=0;$i<=10;$i++)
 
     @php
-        $y = ($height/10) * $i;
+        $y = ($svgHeight/10) * $i;
     @endphp
 
     <line
         x1="0"
         y1="{{ $y }}"
-        x2="{{ $width }}"
+        x2="{{ $svgWidth }}"
         y2="{{ $y }}"
         stroke="#dddddd"
         stroke-width="1"
@@ -71,7 +22,6 @@ $stepX = $width / $countWeek;
 
 @endfor
 
-{{-- Grid Vertical --}}
 @for($i=0;$i<=$countWeek;$i++)
 
     @php
@@ -82,14 +32,13 @@ $stepX = $width / $countWeek;
         x1="{{ $x }}"
         y1="0"
         x2="{{ $x }}"
-        y2="{{ $height }}"
+        y2="{{ $svgHeight }}"
         stroke="#eeeeee"
         stroke-width="1"
     />
 
 @endfor
 
-{{-- Garis Rencana --}}
 <polyline
     fill="none"
     stroke="#00aa00"
@@ -97,7 +46,6 @@ $stepX = $width / $countWeek;
     points="{{ $svgPlan }}"
 />
 
-{{-- Garis Realisasi --}}
 <polyline
     fill="none"
     stroke="#0000ff"
@@ -105,15 +53,14 @@ $stepX = $width / $countWeek;
     points="{{ $svgReal }}"
 />
 
-{{-- Titik + Angka Rencana --}}
 @foreach($plan as $i => $value)
 
     @php
 
-        $x = $i * 20;
+        $x = $i * $stepX;
 
-        $y = $height -
-            (($value/100) * $height);
+        $y = $svgHeight -
+            (($value/100) * $svgHeight);
 
     @endphp
 
@@ -137,15 +84,14 @@ $stepX = $width / $countWeek;
 
 @endforeach
 
-{{-- Titik + Angka Realisasi --}}
 @foreach($realisasi as $i => $value)
 
     @php
 
-        $x = $i * 20;
+        $x = $i * $stepX;
 
-        $y = $height -
-            (($value/100) * $height);
+        $y = $svgHeight -
+            (($value/100) * $svgHeight);
 
     @endphp
 
