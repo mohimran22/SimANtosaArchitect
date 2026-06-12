@@ -63,7 +63,35 @@
         margin-bottom: 0 !important;
         text-align: left !important;
     }
+        .form-control,
+    .form-select,
+    .select2-selection{
+        min-height: 48px !important;
+        font-size: 16px !important;
+    }
 
+    /* Tombol lebih besar */
+    .btn{
+        min-height: 44px;
+        padding: .5rem .9rem;
+    }
+
+    /* Label lebih jelas */
+    label,
+    .form-label{
+        font-size: .95rem;
+        font-weight: 600;
+    }
+
+    .table{
+        min-width:700px;
+    }
+    .table td,
+    .table th{
+        white-space: nowrap;
+        padding: .75rem;
+        font-size: .95rem;
+    }
     .table-responsive{
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
@@ -146,4 +174,17 @@
         display:none !important;
     }
 
+}
+@media (max-width: 768px) {
+    .sticky-col,
+    .sticky-last {
+        position: static !important;
+        left: auto !important;
+        z-index: auto !important;
+    }
+}
+@media (max-width:768px){
+    .chart-wrapper{
+        height: 500px;
+    }
 }

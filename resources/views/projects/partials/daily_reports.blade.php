@@ -480,15 +480,36 @@
                 </div>
             </div>
         </div>
-        <div class="card shadow-sm border-0 mb-3">
-            <div class="card-header fw-bold">
-                Catatan / Perintah Konsultan MK
+            <div class="card shadow-sm border-0 mb-3">
+                <div class="card-header fw-bold">
+                    Catatan / Perintah Konsultan MK
+                </div>
+                <div class="card-body">
+                    <textarea name="catatan" class="form-control" rows="5"></textarea>
+                </div>
             </div>
-            <div class="card-body">
-                <textarea name="catatan" class="form-control" rows="5"></textarea>
+        @if($showWeeklyReport)
+            <div class="card shadow-sm border-0 mb-3">
+                <div class="card-header fw-bold">
+                    Capaian Pekerjaan
+                </div>
+                <div class="card-body">
+                    <textarea name="capaian" class="form-control" rows="3"></textarea>
+                </div>
+                <div class="card-header fw-bold">
+                    Kendala Pekerjaan
+                </div>
+                <div class="card-body">
+                    <textarea name="kendala" class="form-control" rows="3"></textarea>
+                </div>
+                <div class="card-header fw-bold">
+                    Rencana Kerja
+                </div>
+                <div class="card-body">
+                    <textarea name="rencana" class="form-control" rows="3"></textarea>
+                </div>
             </div>
-        </div>
-
+        @endif
         <div class="card shadow-sm border-0 mb-4">
             <div class="card-header fw-bold">
                 Pengesahan

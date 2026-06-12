@@ -20,8 +20,6 @@
                         @foreach($reports as $minggu => $items)
 
                             <tbody id="reportTable">
-
-                                {{-- HEADER MINGGU --}}
                                 <tr class="table-secondary week-header" data-week="{{ $minggu }}">
                                     <td colspan="4"
                                         class="fw-bold week-header"
@@ -36,7 +34,6 @@
                                     </td>
                                 </tr>
 
-                                {{-- ISI MINGGU --}}
                                 @foreach($items as $report)
                                         <tr id="report-row-{{ $report->id }}"
                                             data-week="{{ $minggu }}"
@@ -67,9 +64,7 @@
                                         </td>
                                     </tr>
                                 @endforeach
-
                             </tbody>
-
                         @endforeach
                     </table>
                 </div>

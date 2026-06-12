@@ -335,11 +335,14 @@ if (
                 ];
 
             });
+        $startProject = Carbon::parse($project->start_date);
+        $currentDate  = Carbon::parse($nextDate);
 
+        $showWeeklyReport = $startProject->diffInDays($currentDate) >= 6;
         return view('projects.create', array_merge(
             $this->formData($project),
             compact('project', 'timelineSteps', 'activeStep', 'surveyInvoice', 'nextDate', 'groupedPlans', 'buildPlans',
-        'surveyApproved', 'usedDates', 'reports', 'groupedItems', 'buildItems',
+        'surveyApproved', 'usedDates', 'reports', 'groupedItems', 'buildItems', 'showWeeklyReport',
         'isFreeSurvey', 'surveyWaiting', 'surveyRejected', 'invoiceDp', 'invoiceRab', 'invoiceBuild', 'canEdit', 'weeks')
         ));
     }

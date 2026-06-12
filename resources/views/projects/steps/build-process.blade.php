@@ -433,9 +433,9 @@
             </div>
         </x-collapse-card>
         <x-collapse-card title="Kurva S Progress Proyek" target="kurva-body">
-
-            <canvas id="kurvaSChart" height="120"></canvas>
-
+            <div class="chart-wrapper">
+                <canvas id="kurvaSChart"></canvas>
+            </div>
         </x-collapse-card>
     <div id="invoice-panel">
         @include('projects.partials.invoice_panel')
@@ -460,7 +460,9 @@
                     cell.style.width = "";
                 });
 
-                // hitung offset kiri untuk kolom freeze
+                if (window.innerWidth < 576) {
+                    return;
+                }
                 const offsets = [];
                 let left = 0;
                 for (let i = 0; i < freezeCount; i++) {

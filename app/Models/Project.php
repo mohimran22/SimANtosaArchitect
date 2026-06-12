@@ -301,7 +301,7 @@ public function getWeekLabelsAttribute()
 
     while ($start <= $end) {
 
-        $weekEnd = $start->copy()->addDays(7)->min($end);
+        $weekEnd = $start->copy()->addDays(6)->min($end);
 
         $labels[] = [
             'week_no' => $w,

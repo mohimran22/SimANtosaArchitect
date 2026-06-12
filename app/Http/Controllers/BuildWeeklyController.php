@@ -153,7 +153,6 @@ public function exportPdf(Request $request, Project $project) {
     $totalColsSchedule = 5 + ($allWeeks->count() * 9);
     $totalCols = 5 + ($filteredWeeks->count() * 9);
 
-
     $rekap = collect($groupedItems)->map(function ($cat) use ($filteredWeeks, $project, $week) {
 
         $items = collect($cat['uraians'])->flatMap(fn($u) => $u['items']);
@@ -395,7 +394,6 @@ public function exportPdf(Request $request, Project $project) {
     $headerKurva = 'file://' . public_path('images/header-penawaran.jpg');
     $headerRekap = 'file://' . public_path('images/header-penawaran.jpg');
     $headerDetail = 'file://' . public_path('images/header-penawaran.jpg');
-
     // $footerKurva = 'file://' . public_path('images/footer-penawaran.jpg');
     // $footerRekap = 'file://' . public_path('images/footer-penawaran.jpg');
     // $footerDetail = 'file://' . public_path('images/footer-penawaran.jpg');

@@ -553,7 +553,9 @@ document.addEventListener('DOMContentLoaded', function () {
                             beginAtZero:true,
                             max:100
                         }
-                    }
+                    },
+                    responsive: true,
+                    maintainAspectRatio: false
                 }
 
             });
