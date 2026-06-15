@@ -136,14 +136,12 @@
                             @php
                                 $categoryNo = alphaIndex($loop->index);
                             @endphp
-                            <tr class="row-category"> 
-                                <td>
-                                    {{ $categoryNo }}
-                                </td> 
-                                <td colspan="5">
-                                    {{ strtoupper($categoryData['category_name']) }}
-                                </td> 
-                                <td colspan="{{ $totalCols - 5 }}"></td> 
+                            <tr class="row-category">
+                                <td colspan="6">
+                                    {{ $categoryNo }}. {{ strtoupper($categoryData['category_name']) }}
+                                </td>
+
+                                <td colspan="{{ $totalCols - 6 }}"></td>
                             </tr>
 
                             @foreach($categoryData['uraians'] as $uraianData)
@@ -151,13 +149,11 @@
                                     $uraianNo = $loop->iteration;
                                 @endphp
                                 <tr class="row-uraian">
-                                    <td>
-                                        {{ $uraianNo }}.
+                                    <td colspan="6">
+                                        {{ $uraianNo }}. {{ ucwords($uraianData['uraian_name']) }}
                                     </td>
-                                    <td colspan="5">
-                                        {{ ucwords($uraianData['uraian_name']) }}
-                                    </td> 
-                                    <td colspan="{{ $totalCols - 5 }}"></td> 
+
+                                    <td colspan="{{ $totalCols - 6 }}"></td>
                                 </tr>
 
                                 @foreach($uraianData['items'] as $item)
@@ -304,12 +300,6 @@ document.addEventListener('DOMContentLoaded', function () {
             );
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | HEADER ROW 1
-        |--------------------------------------------------------------------------
-        */
-
         const headerRow1 =
             table.querySelector('thead tr:first-child');
 
@@ -348,12 +338,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 kontrakWidth + 'px';
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | HEADER ROW 2
-        |--------------------------------------------------------------------------
-        */
-
         const headerRow2 =
             table.querySelector('thead tr:last-child');
 
@@ -378,12 +362,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                 });
         }
-
-        /*
-        |--------------------------------------------------------------------------
-        | BODY ROW
-        |--------------------------------------------------------------------------
-        */
 
         table.querySelectorAll(
             'tbody tr:not(.row-category):not(.row-uraian)'
@@ -413,15 +391,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
 
-        /*
-        |--------------------------------------------------------------------------
-        | CATEGORY & URAIAN
-        |--------------------------------------------------------------------------
-        */
-
-        table.querySelectorAll(
-            '.row-category,.row-uraian'
-        ).forEach(row => {
+        table.querySelectorAll('.row-category,.row-uraian').forEach(row => {
 
             const td =
                 row.querySelector('td');
@@ -446,12 +416,6 @@ document.addEventListener('DOMContentLoaded', function () {
             td.style.width = width + 'px';
             td.style.zIndex = '40';
         });
-
-        /*
-        |--------------------------------------------------------------------------
-        | Z-INDEX HEADER
-        |--------------------------------------------------------------------------
-        */
 
         table.querySelectorAll(
             'thead .sticky-col'

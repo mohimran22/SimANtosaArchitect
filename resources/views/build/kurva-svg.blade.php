@@ -2,7 +2,9 @@
 
 @php
 $countWeek = max(count($weeks),1);
-$stepX = $svgWidth / max(($countWeek - 1),1);
+
+$stepX = $svgWidth / $countWeek;
+
 @endphp
 
 @for($i=0;$i<=10;$i++)
@@ -25,7 +27,7 @@ $stepX = $svgWidth / max(($countWeek - 1),1);
 @for($i=0;$i<=$countWeek;$i++)
 
     @php
-        $x = $i * $stepX;
+        $x = ($i + 0.5) * $stepX;
     @endphp
 
     <line
@@ -57,7 +59,7 @@ $stepX = $svgWidth / max(($countWeek - 1),1);
 
     @php
 
-        $x = $i * $stepX;
+        $x = ($i + 0.5) * $stepX;
 
         $y = $svgHeight -
             (($value/100) * $svgHeight);
@@ -88,7 +90,7 @@ $stepX = $svgWidth / max(($countWeek - 1),1);
 
     @php
 
-        $x = $i * $stepX;
+        $x = ($i + 0.5) * $stepX;
 
         $y = $svgHeight -
             (($value/100) * $svgHeight);

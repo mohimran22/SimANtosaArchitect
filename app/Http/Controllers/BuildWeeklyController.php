@@ -385,32 +385,43 @@ public function exportPdf(Request $request, Project $project) {
     } else {
         $status = 'Sesuai Rencana';
     }
+
     $weekWidthMm = count($allWeeks) * 6;
 
-    $svgWidth = $weekWidthMm * 3.78; // mm -> px
-    $svgHeight = 300;
+    $svgWidth = count($allWeeks) * 100;
+    $svgHeight = 100;
+
+
+    $countWeek = count($allWeeks);
+
+    $stepX = $svgWidth / max(count($allWeeks)-1,1);
+
 
     $planPoints = [];
     $realPoints = [];
-    $stepX = $svgWidth / max(count($plan)-1,1);
+
 
     foreach ($plan as $i => $value) {
 
-        $x = $i * $stepX;
+        $x = ($i + 0.5) * ($svgWidth / count($allWeeks));
 
-        $y = $svgHeight
-            - (($value / 100) * $svgHeight);
+        $y = $svgHeight -
+            (($value / 100) * $svgHeight);
+
 
         $planPoints[] =
             round($x,2).','.
             round($y,2);
     }
+
+
     foreach ($realisasi as $i => $value) {
 
-        $x = $i * $stepX;
+        $x = ($i + 0.5) * ($svgWidth / count($allWeeks));
 
-        $y = $svgHeight
-            - (($value / 100) * $svgHeight);
+        $y = $svgHeight -
+            (($value / 100) * $svgHeight);
+
 
         $realPoints[] =
             round($x,2).','.
@@ -516,27 +527,20 @@ public function exportPdf(Request $request, Project $project) {
     </div>
     ');
     $mpdf->WriteHTML($kurvaHtml);
-    $leftWidth =
-        20 + 
-        88 + 
-        26;  
+    // $leftWidth = 12 + 80 + 18; 
+    // $weekWidth = count($allWeeks) * 6;
+    // $chartX = 10 + $leftWidth;
+    // $chartWidth = $weekWidth;
+    // $chartY = 68;
+    // $chartHeight = 40;
+    // $mpdf->Image(
+    //     $svgPath,
+    //     $chartX,
+    //     $chartY,
+    //     $chartWidth,
+    //     $chartHeight
+    // );
 
-    $weekWidth = count($allWeeks) * 6;
-
-    $pageLeftMargin = 10;
-
-    $chartX = $pageLeftMargin + $leftWidth;
-
-    $chartWidth = $weekWidth;
-    $chartY = 68;
-    $chartHeight = 35;
-    $mpdf->Image(
-        $svgPath,
-        $chartX,
-        $chartY,
-        $chartWidth,
-        $chartHeight
-    );
     $mpdf->AddPage('P');
     $mpdf->SetHTMLHeader('
     <div>
@@ -572,8 +576,9 @@ public function exportPdf(Request $request, Project $project) {
         200,
         [
             'Content-Type' => 'application/pdf',
+
             'Content-Disposition' =>
-                'inline; filename="LAPORAN-'.$project->project_name.'.pdf"',
+                'inline; filename="LAPORAN-'.$project->project_name.'.pdf"; filename*=UTF-8\'\'LAPORAN-'.$project->project_name.'.pdf',
         ]
     );
 }

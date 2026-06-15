@@ -61,9 +61,8 @@
                                 {{ number_format($nilai, 2) }}%
 
                             @endif
-                        </td>
+                        </td>                   
                     @endforeach
-
                 </tr>
             @endforeach
         </tbody>
@@ -98,4 +97,20 @@
             </tr> --}}
         </tfoot>
     </table>
+
+@php
+    $tableHeight = count($groupedItems) * 8 + 40;
+@endphp
+<div style="
+    position:absolute;
+    left:1000mm;
+    bottom:0;
+    width:{{ count($weeks)*6 }}mm;
+    height:35mm;
+    z-index:10;
+">
+
+    @include('build.kurva-svg')
+
+</div>
 </div>
