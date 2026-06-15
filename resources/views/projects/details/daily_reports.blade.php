@@ -21,7 +21,7 @@
 
                             <tbody id="reportTable">
                                 <tr class="table-secondary week-header" data-week="{{ $minggu }}">
-                                    <td colspan="4"
+                                    <td colspan="3"
                                         class="fw-bold week-header"
                                         {{-- data-week="{{ $minggu }}" --}}
                                         style="cursor:pointer;">
@@ -32,10 +32,19 @@
                                             {{ $items->where('is_libur', false)->count() }}
                                         </span> Hari Kerja)
                                     </td>
+                                    <td class="text-center">
+                                        @if($items->where('is_libur', true)->count() >= 7)
+                                        <button
+                                            class="btn btn-sm btn-dark btn-weekly-note"
+                                            data-week="{{ $minggu }}">
+                                            <i class="ti ti-plus"></i>
+                                        </button>
+                                        @endif
+                                    </td>
                                 </tr>
 
                                 @foreach($items as $report)
-                                        <tr id="report-row-{{ $report->id }}"
+                                    <tr id="report-row-{{ $report->id }}"
                                             data-week="{{ $minggu }}"
                                             class="week-row week-{{ $minggu }} {{ $report->is_libur ? 'table-warning' : '' }}">
                                         <td>{{ $loop->iteration }}</td>
@@ -89,6 +98,42 @@
                                 </div>
                             </div>
 
+                        </div>
+                    </div>
+                </div>
+                <div class="modal fade" id="weeklyModal" tabindex="-1">
+                <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <form id="weeklyForm">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">
+                                        Laporan Mingguan
+                                    </h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+
+                                <div class="modal-body">
+                                    <input type="hidden" name="project_id" value="{{ $project->id }}">
+                                    <input type="hidden" name="minggu" id="weekly_minggu">
+                                    <div class="mb-3">
+                                        <label>Capaian Pekerjaan</label>
+                                        <textarea name="capaian" class="form-control" rows="3"></textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label>Kendala Pekerjaan</label>
+                                        <textarea name="kendala" class="form-control" rows="3"></textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label>Rencana Kerja</label>
+                                        <textarea name="rencana" class="form-control" rows="3"></textarea>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="submit" class="btn btn-dark">
+                                        Simpan
+                                    </button>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -316,7 +361,6 @@ document.addEventListener('DOMContentLoaded', function(){
 
                     workTimeRows += `
                     <tr>
-                        <td>${i + 1}</td>
 
                         <td>${t.jam_mulai ?? '-'}</td>
 
@@ -337,7 +381,6 @@ document.addEventListener('DOMContentLoaded', function(){
                 data.works.forEach((w,i)=>{
                     pekerjaanRows += `
                     <tr>
-                        <td>${i+1}</td>
                         <td>${w.rab_process_item 
                             ? w.rab_process_item.job_name 
                             : (w.uraian_manual ?? '-')}</td>
@@ -351,7 +394,6 @@ document.addEventListener('DOMContentLoaded', function(){
                 data.workers.forEach((w,i)=>{
                     workerRows += `
                     <tr>
-                        <td>${i+1}</td>
                         <td>${w.worker 
                             ? w.worker.user.fullname 
                             : (w.keahlian ?? '-')}</td>
@@ -364,7 +406,6 @@ document.addEventListener('DOMContentLoaded', function(){
                 data.materials.forEach((m,i)=>{
                     materialRows += `
                     <tr>
-                        <td>${i+1}</td>
                         <td>${m.nama_bahan}</td>
                         <td>${m.diterima}</td>
                         <td>${m.ditolak}</td>
@@ -374,11 +415,24 @@ document.addEventListener('DOMContentLoaded', function(){
                 modalBody.innerHTML = `
 
                 <div id="viewMode">
-                <h6>Pekerjaan</h6>
+                <h6>Tenaga Kerja & Alat Bantu</h6>
                 <table class="table table-bordered mb-4">
                     <thead class="table-light">
                         <tr>
-                            <th>No</th>
+                            <th>Nama / Keahlian</th>
+                            <th>Jumlah</th>
+                            <th>Alat</th>
+                        </tr>
+                    </thead>
+                    <tbody>${workerRows}</tbody>
+                </table>
+                <h6 class="mt-4">File Upload Foto Tukang</h6>
+                ${renderDocumentation(data, 'tenaga')}
+                <hr>
+                <h6>Pekerjaan Yang Diselenggarakan Hari Ini</h6>
+                <table class="table table-bordered mb-4">
+                    <thead class="table-light">
+                        <tr>
                             <th>Uraian</th>
                             <th>Volume</th>
                             <th>Satuan</th>
@@ -387,27 +441,13 @@ document.addEventListener('DOMContentLoaded', function(){
                     </thead>
                     <tbody>${pekerjaanRows}</tbody>
                 </table>
-                <h6 class="mt-4">File Upload</h6>
+                <h6 class="mt-4">File Upload Foto Pekerjaan</h6>
                 ${renderDocumentation(data, 'pekerjaan')}
-                <h6>Tenaga Kerja</h6>
-                <table class="table table-bordered mb-4">
-                    <thead class="table-light">
-                        <tr>
-                            <th>No</th>
-                            <th>Nama / Keahlian</th>
-                            <th>Jumlah</th>
-                            <th>Alat</th>
-                        </tr>
-                    </thead>
-                    <tbody>${workerRows}</tbody>
-                </table>
-                <h6 class="mt-4">File Upload</h6>
-                ${renderDocumentation(data, 'tenaga')}
-                <h6>Bahan Masuk</h6>
+                <hr>
+                <h6>Bahan Yang Masuk</h6>
                 <table class="table table-bordered">
                     <thead class="table-light">
                         <tr>
-                            <th>No</th>
                             <th>Nama Bahan</th>
                             <th>Diterima</th>
                             <th>Ditolak</th>
@@ -415,16 +455,14 @@ document.addEventListener('DOMContentLoaded', function(){
                     </thead>
                     <tbody>${materialRows}</tbody>
                 </table>
-                <h6 class="mt-4">File Upload</h6>
+                <h6 class="mt-4">File Upload Foto Bahan</h6>
                 ${renderDocumentation(data, 'material')}
-                                <hr>
+                <hr>
                 <h6>Jam Kerja & Cuaca</h6>
-
                 <table class="table table-bordered mb-4">
 
                     <thead class="table-light">
                         <tr>
-                            <th width="50">No</th>
                             <th width="150">Jam Mulai</th>
                             <th width="150">Jam Selesai</th>
                             <th width="120">Total Jam</th>
@@ -447,7 +485,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
                 </table>
                 <div class="mt-3">
-                    <label class="fw-semibold">Catatan</label>
+                    <label class="fw-semibold">Catatan / Perintah Konsultan MK</label>
                     <textarea class="form-control" readonly>${data.catatan ?? ''}</textarea>
                 </div>
                 <hr>
@@ -505,6 +543,65 @@ document.addEventListener('DOMContentLoaded', function(){
                             </label>
 
                             <span id="statusHari" class="badge bg-success">Hari Kerja</span>
+                        </div>
+                        <hr>
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="mb-0">Tenaga Kerja & Alat Bantu</h6>
+                            <button type="button" class="btn btn-sm btn-dark" id="btnAddWorker">
+                                + Tambah Tenaga
+                            </button>
+                        </div>
+                        <table class="table table-bordered" id="workersTable">
+                            <thead class="table-light">
+                                <tr>
+                                    <th width="50">No</th>
+                                    <th>Nama / Keahlian</th>
+                                    <th width="120">Jumlah</th>
+                                    <th width="150">Alat</th>
+                                    <th width="80">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            ${data.workers.map((w,i)=>`
+                            <tr>
+                                <td class="row-number">${i+1}</td>
+                                <td>
+                                    ${w.worker 
+                                        ? w.worker.user.fullname
+                                        : (w.keahlian ?? '-')}
+                                    <input type="hidden" name="workers[${i}][id]" value="${w.id}">
+                                </td>
+                                <td>
+                                    <input type="number"
+                                        name="workers[${i}][jumlah]"
+                                        class="form-control"
+                                        value="${w.jumlah}">
+                                </td>
+                                <td>
+                                    <input type="text"
+                                        name="workers[${i}][alat]"
+                                        class="form-control"
+                                        value="${w.alat ?? ''}">
+                                </td>
+                                <td>
+                                    <button type="button"
+                                        class="btn btn-sm btn-dark btn-remove-worker">
+                                        Hapus
+                                    </button>
+                                </td>
+                            </tr>
+                            `).join('')}
+                            </tbody>
+                        </table>
+                        <h6 class="mt-4">File Upload Foto Tukang</h6>
+                        <div id="editDocsTenaga">
+                            ${renderDocumentationEdit(data, 'tenaga')}
+                        </div>
+
+                        <input type="file" name="new_files_tenaga[]" 
+                            class="form-control mt-2" multiple>
+                        <div id="previewTenaga"
+                            class="d-flex flex-wrap gap-3 mt-3">
                         </div>
                         <hr>
                         <div class="d-flex justify-content-between align-items-center mb-2">
@@ -568,7 +665,7 @@ document.addEventListener('DOMContentLoaded', function(){
                                 `).join('')}
                             </tbody>
                         </table>
-                        <h6 class="mt-4">File Upload (Pekerjaan)</h6>
+                        <h6 class="mt-4">File Upload Foto Pekerjaan</h6>
                         <div id="editDocsPekerjaan">
                             ${renderDocumentationEdit(data, 'pekerjaan')}
                         </div>
@@ -580,67 +677,9 @@ document.addEventListener('DOMContentLoaded', function(){
                         </div>
                         <hr>
                         <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h6 class="mb-0">Tenaga Kerja</h6>
-                            <button type="button" class="btn btn-sm btn-dark" id="btnAddWorker">
-                                + Tambah Tenaga
-                            </button>
-                        </div>
-                        <table class="table table-bordered" id="workersTable">
-                            <thead class="table-light">
-                                <tr>
-                                    <th width="50">No</th>
-                                    <th>Nama / Keahlian</th>
-                                    <th width="120">Jumlah</th>
-                                    <th width="150">Alat</th>
-                                    <th width="80">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                            ${data.workers.map((w,i)=>`
-                            <tr>
-                                <td class="row-number">${i+1}</td>
-                                <td>
-                                    ${w.worker 
-                                        ? w.worker.user.fullname
-                                        : (w.keahlian ?? '-')}
-                                    <input type="hidden" name="workers[${i}][id]" value="${w.id}">
-                                </td>
-                                <td>
-                                    <input type="number"
-                                        name="workers[${i}][jumlah]"
-                                        class="form-control"
-                                        value="${w.jumlah}">
-                                </td>
-                                <td>
-                                    <input type="text"
-                                        name="workers[${i}][alat]"
-                                        class="form-control"
-                                        value="${w.alat ?? ''}">
-                                </td>
-                                <td>
-                                    <button type="button"
-                                        class="btn btn-sm btn-dark btn-remove-worker">
-                                        Hapus
-                                    </button>
-                                </td>
-                            </tr>
-                            `).join('')}
-                            </tbody>
-                        </table>
-                        <h6 class="mt-4">File Upload (Pekerjaan)</h6>
-                        <div id="editDocsTenaga">
-                            ${renderDocumentationEdit(data, 'tenaga')}
-                        </div>
-
-                        <input type="file" name="new_files_tenaga[]" 
-                            class="form-control mt-2" multiple>
-                        <div id="previewTenaga"
-                            class="d-flex flex-wrap gap-3 mt-3">
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h6 class="mb-0">Material</h6>
+                            <h6 class="mb-0">Bahan Yang Masuk</h6>
                             <button type="button" class="btn btn-sm btn-dark" id="btnAddMaterial">
-                                + Tambah Material
+                                + Tambah Bahan
                             </button>
                         </div>
                         <table class="table table-bordered" id="materialsTable">
@@ -683,7 +722,7 @@ document.addEventListener('DOMContentLoaded', function(){
                         `).join('')}
                         </tbody>
                         </table>
-                        <h6 class="mt-4">File Upload (Pekerjaan)</h6>
+                        <h6 class="mt-4">File Upload Foto Bahan</h6>
                         <div id="editDocsMaterial">
                             ${renderDocumentationEdit(data, 'material')}
                         </div>
@@ -1186,5 +1225,37 @@ function updateWeekHeader(week){
     header.find('.hari-kerja').text(hariKerja);
 
 }
+$(document).on('click', '.btn-weekly-note', function () {
+
+    let minggu = $(this).data('week');
+
+    $('#weekly_minggu').val(minggu);
+
+    $('#weeklyModal .modal-title')
+        .text('Laporan Mingguan - Minggu ke-' + minggu);
+
+    $('#weeklyModal').modal('show');
+});
+$('#weeklyForm').submit(function(e){
+
+    e.preventDefault();
+
+    $.ajax({
+        url: "{{ route('weekly-report.store', $project) }}",
+        method: 'POST',
+        data: $(this).serialize(),
+
+        success: function(res){
+
+            $('#weeklyModal').modal('hide');
+
+            Swal.fire(
+                'Berhasil',
+                res.message,
+                'success'
+            );
+        }
+    });
+});
 </script>
 @endpush

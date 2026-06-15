@@ -86,7 +86,7 @@
                 <div class="table-responsive">
                     <table class="table table-bordered progress-table">
                             <colgroup>
-                                <col style="width:60px;">   
+                                <col style="width:50px;">   
                                 <col style="width:260px;">  
                                 <col style="width:80px;">   
                                 <col style="width:80px;">   
@@ -166,10 +166,13 @@
                                     $categoryNo = alphaIndex($loop->index);
                                 @endphp
                                 <tr class="row-category"> 
-                                    <td colspan="6">
-                                        {{ $categoryNo }}. {{ $categoryData['category_name'] }}
+                                    <td>
+                                        {{ $categoryNo }}
                                     </td> 
-                                    <td colspan="{{ $totalCols - 6 }}"></td> 
+                                    <td colspan="5">
+                                        {{ strtoupper($categoryData['category_name']) }}
+                                    </td> 
+                                    <td colspan="{{ $totalCols - 5 }}"></td> 
                                 </tr>
 
                                 @foreach($categoryData['uraians'] as $uraianData)
@@ -177,11 +180,13 @@
                                         $uraianNo = $loop->iteration;
                                     @endphp
                                     <tr class="row-uraian">
-                                        <td colspan="6">
+                                        <td>
                                             {{ $uraianNo }}.
-                                            {{ $uraianData['uraian_name'] }}
+                                        </td>
+                                        <td colspan="5">
+                                            {{ ucwords($uraianData['uraian_name']) }}
                                         </td> 
-                                        <td colspan="{{ $totalCols - 6 }}"></td> 
+                                        <td colspan="{{ $totalCols - 5 }}"></td> 
                                     </tr>
 
                                     @foreach($uraianData['items'] as $item)

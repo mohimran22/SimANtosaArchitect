@@ -49,6 +49,11 @@
         display:none;
     }
 
+    .page-body{
+        margin-top:0 !important;
+        padding-top:8px !important;
+    }
+
     .card{
         border-radius: 14px;
         overflow: hidden !important;
@@ -62,8 +67,17 @@
         font-size: 18px !important;
         margin-bottom: 0 !important;
         text-align: left !important;
+        white-space:nowrap;
+        margin-bottom:0 !important;
     }
-        .form-control,
+    .card-header > .d-flex{
+        flex-wrap: nowrap !important;
+        gap: 10px;
+    }
+    .card-body {
+        overflow-x: hidden;
+    }
+    .form-control,
     .form-select,
     .select2-selection{
         min-height: 48px !important;
@@ -108,54 +122,92 @@
         vertical-align: middle;
     }
 
-    .dt-container .row{
-        display:flex !important;
-        align-items:center;
-        gap:10px;
+    .dt-layout-row:first-child{
 
-        flex-wrap:nowrap;
+        position: sticky;
+        left: 0;
+        top: 56px;
+
+        z-index: 1000;
+
+        background:#fff;
+
+        display:flex !important;
+        justify-content:space-between !important;
+        align-items:center !important;
+
+        flex-wrap:nowrap !important;
+
+        width:100%;
+
+        padding:8px 10px;
+
+        border-bottom:1px solid #dee2e6;
+
     }
+
+
+    /* kiri: jumlah data */
+    .dt-layout-start{
+
+        flex:0 0 auto !important;
+
+        width:auto !important;
+
+    }
+
+
+    /* kanan: search */
+    .dt-layout-end{
+
+        display:flex !important;
+
+        flex:0 0 auto !important;
+
+        width:auto !important;
+
+        margin-left:auto;
+
+    }
+
 
     .dt-length{
         margin:0 !important;
-        flex-shrink:0;
     }
 
-    .dt-length label{
-        font-size:0;
-        margin:0;
-    }
 
     .dt-length select{
+
+        height:36px !important;
+
         font-size:14px !important;
 
-        min-width:70px;
-
-        height:38px;
-
-        border-radius:8px;
     }
-
-    /* search */
-    .dt-search{
+    .dt-length label{
+        font-size: 0;
         margin:0 !important;
-        flex:1;
     }
 
-    .dt-search label{
-        width:100%;
-        margin:0;
+
+    .dt-search{
+
+        margin:0 !important;
+
     }
+
 
     .dt-search input{
 
-        width:100% !important;
+        min-width: 200px;
 
-        margin-left:0 !important;
+        height:36px !important;
 
-        height:38px;
+        margin-left:8px !important;
 
-        border-radius:10px;
+        font-size:13px !important;
+
+        padding:6px 10px !important;
+
     }
 
     /* pagination */
@@ -165,6 +217,35 @@
         overflow-x:auto;
 
         white-space:nowrap;
+    }
+    #datatable-search-container{
+        display:flex;
+        align-items:center;
+        justify-content:flex-end;
+
+        flex:1;
+        max-width:50px;
+    }
+
+    #datatable-search-container .dt-search{
+        margin:0 !important;
+        width:100%;
+    }
+
+    #datatable-search-container .dt-search input{
+        width:120px !important;
+        height:36px !important;
+
+        margin:0 !important;
+
+        font-size:12px !important;
+        padding:6px 10px !important;
+    }
+    .dt-layout-end{
+        display:flex !important;
+    }
+    #datatable-search-container .dt-search{
+        display:flex !important;
     }
 
 }
@@ -187,4 +268,5 @@
     .chart-wrapper{
         height: 500px;
     }
+
 }

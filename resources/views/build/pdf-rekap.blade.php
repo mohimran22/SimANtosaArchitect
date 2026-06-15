@@ -147,7 +147,7 @@ $totalRealisasi += $r['realisasi_sd_minggu_ini'];
     </td>
     {{-- JENIS --}}
     <td>
-        {{ $r['category'] }}
+        {{ strtoupper($r['category']) }}
     </td>
 
     {{-- BOBOT KONTRAK --}}

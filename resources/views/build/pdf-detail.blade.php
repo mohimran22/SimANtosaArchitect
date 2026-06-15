@@ -150,7 +150,7 @@
                     </td>
 
                     <td>
-                        {{ $uraian['uraian_name'] }}
+                        {{ ucwords($uraian['uraian_name']) }}
                     </td>
 
                     @for($i = 0; $i < ($totalCols - 2); $i++)

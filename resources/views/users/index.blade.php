@@ -33,9 +33,12 @@
                 <div class="col-12">
                     <div class="card">
                         <div class="card-header">
-                            <p class="text-center mb-4" style="font-size: 1.4rem; font-weight: 400; font-family: 'Poppins', sans-serif;">
-                                 Daftar Pengguna
-                            </p>
+                            <div class="d-flex align-items-center justify-content-between w-100">
+                                <p class="mb-0"
+                                    style="font-size:1.4rem;font-weight:400;font-family:'Poppins',sans-serif;">
+                                    Daftar Pengguna
+                                </p>
+                            </div>
                         </div>
                         <div class="table-responsive">
                             <table id="tableUsers" class="table card-table table-vcenter text-nowrap">
@@ -227,7 +230,6 @@ $(function () {
             }
         });
     });
-
 });
 </script>
 

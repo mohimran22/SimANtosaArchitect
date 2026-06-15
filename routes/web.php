@@ -630,7 +630,10 @@ Route::middleware(['auth'])
 Route::post('/build-items/tambahan', 
     [BuildProcessItemController::class, 'storeTambahan']
 )->name('build-items.store-tambahan');
-
+Route::post(
+    '/projects/{project}/weekly-report',
+    [BuildWeeklyController::class, 'store']
+)->name('weekly-report.store');
 Route::post('/build-weekly/update',
     [BuildWeeklyController::class,'update']
 )->name('build-weekly.update');
