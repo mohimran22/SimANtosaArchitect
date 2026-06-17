@@ -54,8 +54,8 @@
         <div class="card shadow-sm border-0 mb-3">
             <div class="card-header fw-bold d-flex justify-content-between">
                 <span>Tenaga Kerja & Alat Bantu</span>
-                    <button type="button" class="btn btn-sm btn-dark" id="addTenaga">
-                        + Tambah Tenaga
+                    <button type="button" class="btn btn-sm btn-dark btn-add-icon" id="addTenaga" data-bs-toggle="tooltip" title="Tambah Tenaga">
+                        <i class="ti ti-plus"></i>
                     </button>
             </div>
             <div class="card-body p-0">
@@ -166,8 +166,8 @@
         <div class="card shadow-sm border-0 mb-3">
             <div class="card-header fw-bold d-flex justify-content-between">
                 <span>Pekerjaan Yang Diselenggarakan Hari Ini</span>
-                <button type="button" class="btn btn-sm btn-dark" id="addWork">
-                    + Tambah Pekerjaan
+                <button type="button" class="btn btn-sm btn-dark btn-add-icon" id="addWork" data-bs-toggle="tooltip" title="Tambah Pekerjaan">
+                    <i class="ti ti-plus"></i>
                 </button>
             </div>
             <div class="card-body p-0">
@@ -300,8 +300,8 @@
         <div class="card shadow-sm border-0 mb-3">
             <div class="card-header fw-bold d-flex justify-content-between">
                 <span>Bahan Yang Masuk</span>
-                <button type="button" class="btn btn-sm btn-dark" id="addMaterial">
-                    + Tambah Bahan
+                <button type="button" class="btn btn-sm btn-dark btn-add-icon" id="addMaterial" data-bs-toggle="tooltip" title="Tambah Bahan">
+                    <i class="ti ti-plus"></i>
                 </button>
             </div>
             <div class="card-body p-0">
@@ -651,7 +651,7 @@ document.addEventListener("DOMContentLoaded", function() {
         }
 
     });
-
+    
 });
 </script>
 <script>

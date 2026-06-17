@@ -386,19 +386,21 @@ public function exportPdf(Request $request, Project $project) {
         $status = 'Sesuai Rencana';
     }
 
-    $svgWidth  = count($allWeeks) * 20;
-    $svgHeight = 220;
+    $svgWidth  = 900;
+    $svgHeight = 300;
 
+    $paddingLeft = 50;
+    $paddingRight = 30;
 
-    $countWeek = count($allWeeks);
+    $chartWidth = $svgWidth - $paddingLeft - $paddingRight;
 
-    $stepX = $svgWidth / max(count($allWeeks)-1,1);
+    $stepX = $chartWidth / max(count($allWeeks)-1,1);
 
     $planPoints = [];
     $realPoints = [];
     $columnWidth = $svgWidth / count($allWeeks);
     foreach ($plan as $i => $value) {
-        $x = ($i * $columnWidth) + ($columnWidth / 2);
+        $x = $paddingLeft + ($i * $stepX);
         $y = $svgHeight - (($value / 100) * $svgHeight);
         $planPoints[] =
             round($x,2).','.
@@ -418,15 +420,23 @@ public function exportPdf(Request $request, Project $project) {
     $totalRows = count($groupedItems);
 
     $rowHeight = 8; // mm
-
-    $curveTop =
-        24 + ($totalRows * $rowHeight);
+    $curveLeft = $request->curve_left_mm
+        ?? $project->curve_left_mm
+        ?? 110;
+    $curveTop = $request->curve_top_mm
+        ?? $project->curve_top_mm
+        ?? 80;
     $maxValue = max(
-        max($plan ?: [0]),
-        max($realisasi ?: [0]),
-        1
+        collect($plan)->max() ?: 1,
+        collect($realisasi)->max() ?: 1
     );
-    $curveHeight = 45;
+    $curveWidth = $request->curve_width_mm
+        ?? $project->curve_width_mm
+        ?? 220;
+
+    $curveHeight = $request->curve_height_mm
+        ?? $project->curve_height_mm
+        ?? 50;
     $headerCover = 'file://' . public_path('images/header-penawaran.jpg');
     $headerKurva = 'file://' . public_path('images/header-penawaran.jpg');
     $headerRekap = 'file://' . public_path('images/header-penawaran.jpg');
@@ -461,7 +471,9 @@ public function exportPdf(Request $request, Project $project) {
             'svgHeight'    => $svgHeight,
             'svgPlan'      => $svgPlan,
             'svgReal'      => $svgReal,
+            'curveLeft' => $curveLeft,
             'curveTop' => $curveTop,
+            'curveWidth' => $curveWidth,
             'curveHeight' => $curveHeight,
             'maxValue' => $maxValue,
         ]
@@ -528,19 +540,6 @@ public function exportPdf(Request $request, Project $project) {
     </div>
     ');
     $mpdf->WriteHTML($kurvaHtml);
-    // $leftWidth = 12 + 80 + 18; 
-    // $weekWidth = count($allWeeks) * 6;
-    // $chartX = 10 + $leftWidth;
-    // $chartWidth = $weekWidth;
-    // $chartY = 68;
-    // $chartHeight = 40;
-    // $mpdf->Image(
-    //     $svgPath,
-    //     $chartX,
-    //     $chartY,
-    //     $chartWidth,
-    //     $chartHeight
-    // );
 
     $mpdf->AddPage('P');
     $mpdf->SetHTMLHeader('

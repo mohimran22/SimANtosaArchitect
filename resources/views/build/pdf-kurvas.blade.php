@@ -91,15 +91,29 @@
         </tfoot>
     </table>
 <div style="
-    position:absolute;
-    left:110mm;
-    top:0;
-    width:{{ count($weeks)*6 }}mm;
-    height:100%;
-    z-index:999;
+    margin-top:15mm;
+    width:100%;
 ">
 
-    @include('build.kurva-svg')
+    <div style="
+        font-size:14px;
+        font-weight:bold;
+        margin-bottom:8px;
+    ">
+        KURVA S PROGRES PEKERJAAN
+    </div>
+
+
+    <div style="
+        width:100%;
+        height:70mm;
+        border:1px solid #ccc;
+        padding:5mm;
+    ">
+
+        @include('build.kurva-svg')
+
+    </div>
 
 </div>
 </div>

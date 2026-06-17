@@ -453,6 +453,108 @@
     <div id="details-daily-reports">
         @include('projects.details.daily_reports')
     </div>
+    <div class="offcanvas offcanvas-end"
+        tabindex="-1"
+        id="pdfSettingCanvas">
+
+        <div class="offcanvas-header">
+
+            <h5 class="offcanvas-title">
+                ⚙ Pengaturan Kurva PDF
+            </h5>
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="offcanvas">
+            </button>
+
+        </div>
+
+        <div class="offcanvas-body">
+
+            <div class="mb-3">
+                <label class="form-label">
+                    Posisi Kiri (mm)
+                </label>
+
+                <input type="number"
+                    class="form-control"
+                    id="curve_left_mm"
+                    value="{{ $project->curve_left_mm ?? 110 }}">
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">
+                    Posisi Atas (mm)
+                </label>
+
+                <input type="number"
+                    class="form-control"
+                    id="curve_top_mm"
+                    value="{{ $project->curve_top_mm ?? 80 }}">
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">
+                    Lebar Kurva (mm)
+                </label>
+
+                <input type="number"
+                    class="form-control"
+                    id="curve_width_mm"
+                    value="{{ $project->curve_width_mm ?? 220 }}">
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">
+                    Tinggi Kurva (mm)
+                </label>
+
+                <input type="number"
+                    class="form-control"
+                    id="curve_height_mm"
+                    value="{{ $project->curve_height_mm ?? 50 }}">
+            </div>
+
+            <hr>
+
+            <label class="form-label">
+                Geser Cepat
+            </label>
+
+            <div class="d-flex flex-wrap gap-2">
+
+                <button type="button"
+                        class="btn btn-outline-secondary move-curve"
+                        data-left="-5"
+                        data-top="0">
+                    ← Kiri
+                </button>
+
+                <button type="button"
+                        class="btn btn-outline-secondary move-curve"
+                        data-left="5"
+                        data-top="0">
+                    Kanan →
+                </button>
+
+                <button type="button"
+                        class="btn btn-outline-secondary move-curve"
+                        data-left="0"
+                        data-top="-5">
+                    ↑ Atas
+                </button>
+
+                <button type="button"
+                        class="btn btn-outline-secondary move-curve"
+                        data-left="0"
+                        data-top="5">
+                    ↓ Bawah
+                </button>
+
+            </div>
+        </div>
+    </div>
 @push('js')
     <script>
             const table = document.querySelector(".progress-table");
@@ -1431,34 +1533,33 @@
     </script>
     <script>
 
-document.getElementById('btn-export-pdf')
-.addEventListener('click', function(e){
+        document.getElementById('btn-export-pdf').addEventListener('click', function(e){
 
-    e.preventDefault();
+            e.preventDefault();
 
-    const week =
-        document.getElementById('filter-week').value;
+            const week =
+                document.getElementById('filter-week').value;
 
-    const date =
-        document.getElementById('filter-date').value;
+            const date =
+                document.getElementById('filter-date').value;
 
-    let url = "{{ route('projects.export-pdf', $project->id) }}";
+            let url = "{{ route('projects.export-pdf', $project->id) }}";
 
-    const params = new URLSearchParams();
+            const params = new URLSearchParams();
 
-    if(week){
-        params.append('week', week);
-    }
+            if(week){
+                params.append('week', week);
+            }
 
-    if(date){
-        params.append('date', date);
-    }
+            if(date){
+                params.append('date', date);
+            }
 
-    window.open(
-        url + '?' + params.toString(),
-        '_blank'
-    );
+            window.open(
+                url + '?' + params.toString(),
+                '_blank'
+            );
 
-});
+        });
     </script>
 @endpush

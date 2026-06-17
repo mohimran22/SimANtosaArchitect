@@ -4,7 +4,7 @@
 $countWeek = max(count($weeks),1);
 
 $stepX = $svgWidth / $countWeek;
-
+$safeMax = max($maxValue ?? 0, 1);
 @endphp
 
 @for($i=0;$i<=10;$i++)
@@ -27,7 +27,7 @@ $stepX = $svgWidth / $countWeek;
 @for($i=0;$i<$countWeek;$i++)
 
     @php
-        $x = $i * $stepX;
+        $x = ($i * $stepX) + ($stepX / 2);
     @endphp
 
     <line
@@ -35,23 +35,42 @@ $stepX = $svgWidth / $countWeek;
         y1="0"
         x2="{{ $x }}"
         y2="{{ $svgHeight }}"
-        stroke="#ddddd"
+        stroke="#dddddd"
         stroke-width="1"
     />
 
 @endfor
+@foreach($weeks as $i => $w)
+
+    @php
+        $x = ($i * $stepX) + ($stepX / 2);
+    @endphp
+
+    <text
+        x="{{ $x }}"
+        y="{{ $svgHeight - 5 }}"
+        font-size="10"
+        text-anchor="middle"
+        fill="#555">
+
+        M{{ $w['week_no'] }}
+
+    </text>
+
+@endforeach
 
 <polyline
-    fill="none"
-    stroke="#00aa00"
-    stroke-width="2"
-    points="{{ $svgPlan }}"
+fill="none"
+stroke="#16a34a"
+stroke-width="3"
+stroke-dasharray="8 5"
+points="{{ $svgPlan }}"
 />
 
 <polyline
     fill="none"
     stroke="#0000ff"
-    stroke-width="2"
+    stroke-width="3"
     points="{{ $svgReal }}"
 />
 
@@ -61,21 +80,21 @@ $stepX = $svgWidth / $countWeek;
 
         $x = ($i * $stepX) + ($stepX / 2);
 
-        $y = $svgHeight - (($value / $maxValue) * $svgHeight);
+        $y = $svgHeight - (($value / 100) * $svgHeight);
 
     @endphp
 
     <circle
         cx="{{ $x }}"
         cy="{{ $y }}"
-        r="2"
+        r="3"
         fill="#00aa00"
     />
 
     <text
         x="{{ $x }}"
-        y="{{ $y - 4 }}"
-        font-size="7"
+        y="{{ $y - 8 }}"
+        font-size="8"
         text-anchor="middle"
         fill="#00aa00">
 
@@ -91,21 +110,21 @@ $stepX = $svgWidth / $countWeek;
 
         $x = ($i * $stepX) + ($stepX / 2);
 
-        $y = $svgHeight - (($value / $maxValue) * $svgHeight);
+        $y = $svgHeight - (($value / 100) * $svgHeight);
 
     @endphp
 
     <circle
         cx="{{ $x }}"
         cy="{{ $y }}"
-        r="2"
+        r="4"
         fill="#0000ff"
     />
 
     <text
         x="{{ $x }}"
-        y="{{ $y + 10 }}"
-        font-size="7"
+        y="{{ $y - 8 }}"
+        font-size="8"
         text-anchor="middle"
         fill="#0000ff">
 
