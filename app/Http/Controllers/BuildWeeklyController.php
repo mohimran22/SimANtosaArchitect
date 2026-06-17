@@ -386,8 +386,6 @@ public function exportPdf(Request $request, Project $project) {
         $status = 'Sesuai Rencana';
     }
 
-    $weekWidthMm = count($allWeeks) * 6;
-
     $svgWidth = count($allWeeks) * 100;
     $svgHeight = 100;
 
@@ -396,37 +394,25 @@ public function exportPdf(Request $request, Project $project) {
 
     $stepX = $svgWidth / max(count($allWeeks)-1,1);
 
-
     $planPoints = [];
     $realPoints = [];
-
-
+    $columnWidth = $svgWidth / count($allWeeks);
     foreach ($plan as $i => $value) {
-
-        $x = ($i + 0.5) * ($svgWidth / count($allWeeks));
-
-        $y = $svgHeight -
-            (($value / 100) * $svgHeight);
-
-
+        $x = ($i * $columnWidth) + ($columnWidth / 2);
+        $y = $svgHeight - (($value / 100) * $svgHeight);
         $planPoints[] =
             round($x,2).','.
             round($y,2);
     }
 
-
     foreach ($realisasi as $i => $value) {
-
-        $x = ($i + 0.5) * ($svgWidth / count($allWeeks));
-
-        $y = $svgHeight -
-            (($value / 100) * $svgHeight);
-
-
+        $x = ($i * $columnWidth) + ($columnWidth / 2);
+        $y = $svgHeight - (($value / 100) * $svgHeight);
         $realPoints[] =
             round($x,2).','.
             round($y,2);
     }
+
     $svgPlan = implode(' ', $planPoints);
     $svgReal = implode(' ', $realPoints);
     $headerCover = 'file://' . public_path('images/header-penawaran.jpg');

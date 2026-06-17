@@ -33,13 +33,12 @@
                                         </span> Hari Kerja)
                                     </td>
                                     <td class="text-center">
-                                        @if($items->where('is_libur', true)->count() >= 7)
+                                        {{-- @if($items->where('is_libur', true)->count() >= 7) --}}
                                         <button
                                             class="btn btn-sm btn-dark btn-weekly-note"
                                             data-week="{{ $minggu }}">
                                             <i class="ti ti-plus"></i>
                                         </button>
-                                        @endif
                                     </td>
                                 </tr>
 

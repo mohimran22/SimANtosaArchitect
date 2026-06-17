@@ -56,7 +56,7 @@
 
                         <td align="center">
 
-                            @if($nilai > 0)
+                            @if($nilai)
 
                                 {{ number_format($nilai, 2) }}%
 
@@ -93,21 +93,27 @@
 
                 <td colspan="{{ count($weeks) }}">
                     @include('build.kurva-svg')
-                </td>
+                </td> 
+                <div style="
+                    position:absolute;
+                    left:110mm;
+                    top:{{ 18 + (count($groupedItems)*8) }}mm;
+                    width:{{ count($weeks)*6 }}mm;
+                    height:35mm;
+                ">
+
+                    @include('build.kurva-svg')
+
+                </div> 
             </tr> --}}
         </tfoot>
     </table>
-
-@php
-    $tableHeight = count($groupedItems) * 8 + 40;
-@endphp
 <div style="
     position:absolute;
-    left:1000mm;
-    bottom:0;
+    left:110mm;
+    top:{{ 18 + (count($groupedItems)*8) }}mm;
     width:{{ count($weeks)*6 }}mm;
     height:35mm;
-    z-index:10;
 ">
 
     @include('build.kurva-svg')
