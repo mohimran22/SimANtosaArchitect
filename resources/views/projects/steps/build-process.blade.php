@@ -55,7 +55,7 @@
                     </div>
 
                     <div class="col-md-3 d-flex gap-2">
-                        {{-- @if($project->need_sync_build) --}}
+                        @if(!$isReadOnly)
                             <form action="{{ route('projects.sync-build', $project->id) }}"
                                 method="POST"
                                 class="d-inline"
@@ -69,7 +69,7 @@
                                 </button>
 
                             </form>
-                        {{-- @endif --}}
+                        @endif
                         <button type="button" id="btn-export-pdf" class="btn btn-dark"> 
                             <i class="ti ti-file-export"></i> Ekspor PDF 
                         </button>
@@ -416,7 +416,9 @@
                                 <th colspan="4" class="text-end">
                                     Realisasi kumulatif kemajuan Pekerjaan
                                 </th>
-                                <th>Rp {{ number_format($buildItems->sum('total'),0,',','.') }}</th>
+                                <th>
+                                    {{ $isReadOnly ? '' : 'Rp '.number_format($buildItems->sum('total'),0,',','.') }}
+                                </th>
                                 <th class="totalBobotKontrak">0</th>
 
                                 @foreach($project->week_labels as $w)

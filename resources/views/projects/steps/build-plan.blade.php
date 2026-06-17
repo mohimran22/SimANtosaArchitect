@@ -27,57 +27,24 @@
                 </tr>
                 </table>
 
-            {{-- <div class="row mb-3 ps-3 align-items-end">
+                    <div class="col-md-3 d-flex gap-2">
+                        @if(!$isReadOnly)
+                            <form action="{{ route('projects.sync-build', $project->id) }}"
+                                method="POST"
+                                class="d-inline"
+                                onsubmit="return confirm('Update form kemajuan pekerjaan dengan RAB terbaru?')">
 
-                <div class="col-md-3">
-                    <label class="form-label">Filter Minggu</label>
+                                @csrf
 
-                    <select id="filter-week" class="form-select select2">
-                        <option value="">-- Semua --</option>
+                                <button type="submit" class="btn btn-secondary">
+                                    <i class="ti ti-refresh"></i>
+                                    Update Form
+                                </button>
 
-                        @foreach($project->week_labels as $w)
-                            <option value="{{ $w['week_no'] }}">
-                                M{{ $w['week_no'] }} ({{ $w['label'] }})
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <div class="col-md-3">
-                    <label class="form-label">Filter Tanggal</label>
-
-                    <input type="date"
-                        id="filter-date"
-                        class="form-control">
-                </div>
-
-                <div class="col-md-3 d-flex gap-2">
-
-                    <button type="button" id="btn-export-pdf" class="btn btn-dark"> 
-                        <i class="ti ti-file-export"></i> Ekspor PDF 
-                    </button>
-
-                    <form id="exportPdfForm" method="POST" action="{{ route('projects.export-pdf', $project->id) }}" target="_blank">
-                        @csrf
-                        <input type="hidden" name="week" id="pdf_week">
-                        <input type="hidden" name="date" id="pdf_date">
-                        <input type="hidden" name="chart_image" id="chart_image">
-                    </form>
-                </div>
-            </div> --}}
-                                @if($project->need_sync_build)
-                    <form
-                        action="{{ route('projects.sync-build-plan',$project->id) }}"
-                        method="POST">
-
-                        @csrf
-
-                        <button class="btn btn-secondary">
-                            <i class="ti ti-refresh"></i>
-                            Update Form
-                        </button>
-                    </form>
-                    @endif
+                            </form>
+                        @endif
+                    </div>
+                
             <div class="table-responsive">
                 <table class="table table-bordered build-plan-table">
                     <colgroup>
@@ -221,7 +188,9 @@
                             <th colspan="4" class="text-end">
                                 Total Pekerjaan (%)
                             </th>
-                            <th>Rp {{ number_format($buildPlans->sum('total'),0,',','.') }}</th>
+                            <th>
+                                {{ $isReadOnly ? '' : 'Rp '.number_format($buildPlans->sum('total'),0,',','.') }}
+                            </th>
                             <th class="text-center">
                                 100.0
                             </th>
@@ -238,7 +207,9 @@
                             <th colspan="4" class="text-end">
                                 Kumulatif (%)
                             </th>
-                            <th>Rp {{ number_format($buildPlans->sum('total'),0,',','.') }}</th>
+                            <th>
+                                {{ $isReadOnly ? '' : 'Rp '.number_format($buildPlans->sum('total'),0,',','.') }}
+                            </th>
                             <th class="text-center">
                                 100.0
                             </th>

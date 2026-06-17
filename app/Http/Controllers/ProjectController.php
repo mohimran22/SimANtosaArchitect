@@ -131,24 +131,11 @@ if (
         // Tombol Aksi
         ->addColumn('action', function ($project) {
             $buttons = '';
-
-            // if (auth()->user()->can('ubah data proyek')) {
-            //     $buttons .= '<a href="' . route('projects.edit', $project->id) . '" 
-            //                 class="btn btn-icon btn-sm btn-dark me-1">
-            //                 <i class="ti ti-edit"></i></a>';
-            // }
-            //  if (auth()->user()->can('lihat data proyek')) {
-            //             $buttons .= '<a href="' . route('projects.show', $project->id) . '" class="btn btn-icon btn-sm btn-dark me-1" title="Lihat">
-            //                             <i class="ti ti-eye"></i>
-            //                         </a>';
-
-            // }
             if (auth()->user()->can('hapus data proyek')) {
                 $buttons .= '<button data-id="' . $project->id . '" 
                             class="btn btn-icon btn-sm btn-dark delete-projects">
                             <i class="ti ti-trash"></i></button>';
             }
-
             return $buttons;
         })
 
@@ -173,12 +160,10 @@ public function create(Request $request)
 {
     $project = null;
     if ($request->has('project_id')) {
-        // ━━━ Phase 1: Load project MINIMAL untuk hitung step ━━━
         $project = $this->loadBaseProject($request->project_id);
     }
     $activeStep  = $this->getCurrentStep($project);
     $projectType = $project?->project_type;
-    // ━━━ Phase 2: Lazy-load relasi tambahan sesuai kebutuhan ━━━
     if ($project) {
         $extra = $this->resolveExtraRelations($activeStep, $projectType);
         if (!empty($extra)) {
@@ -251,32 +236,26 @@ private function resolveExtraRelations(int $activeStep, ?int $projectType): arra
 {
     $relations = [];
 
-    // Step >= 2: Konsultasi
     if ($activeStep >= 2) {
         $relations[] = 'consultation.items';
     }
 
-    // Step >= 4: Survei
     if ($activeStep >= 4) {
         $relations[] = 'survey.items';
     }
 
-    // Step >= 5: Offer
     if ($activeStep >= 5) {
         $relations[] = 'offer.items';
 
-        // RAB offer detail — hanya type 2
         if ($projectType == 2) {
             $relations[] = 'offer.rab.items.category';
         }
     }
 
-    // RAB detail — type 2, step >= 7
     if ($projectType == 2 && $activeStep >= 7) {
         $relations[] = 'rab.categories.uraians.items.category';
     }
 
-    // Build items & daily reports — HANYA type 3, step >= 8
     if ($projectType == 3 && $activeStep >= 8) {
         $relations = array_merge($relations, [
             'buildItems.jobCategory',
@@ -292,7 +271,6 @@ private function resolveExtraRelations(int $activeStep, ?int $projectType): arra
 }
 private function resolveSurveyData($project, int $activeStep): array
 {
-    // Pakai relasi invoices yang sudah di-eager-load
     $surveyInvoice = $project->invoices
         ->where('invoice_type', 'survey')
         ->sortByDesc('created_at')
@@ -301,10 +279,8 @@ private function resolveSurveyData($project, int $activeStep): array
     $surveyApproved = $surveyInvoice?->status === 'approved';
     $surveyWaiting  = $surveyInvoice?->status === 'waiting_approval';
     $surveyRejected = $surveyInvoice?->status === 'rejected';
-    $isFreeSurvey   = !$surveyInvoice
-        && $project->levels->firstWhere('level_order', 3)?->is_started;
+    $isFreeSurvey   = !$surveyInvoice && $project->levels->firstWhere('level_order', 3)?->is_started;
 
-    // Auto-advance ke step 4
     if (
         $project->planning
         && ($isFreeSurvey || $surveyApproved)
@@ -320,7 +296,6 @@ private function resolveSurveyData($project, int $activeStep): array
 }
 private function resolveInvoiceData($project): array
 {
-    // Pakai relasi invoices yang sudah di-eager-load
     $invoiceDp = $project->invoices
         ->where('invoice_type', Invoice::TYPE_DP)
         ->first();
@@ -329,7 +304,6 @@ private function resolveInvoiceData($project): array
         ->where('invoice_type', Invoice::TYPE_RAB)
         ->first();
 
-    // InvoiceBuild mungkin tabel terpisah, perlu query
     $invoiceBuild = InvoiceBuild::where('project_id', $project->id)
         ->where('invoice_type', InvoiceBuild::TYPE_BUILD)
         ->first();
@@ -393,8 +367,7 @@ private function resolveBuildData($project): array
         });
 
     return compact(
-        'weeks', 'usedDates', 'nextDate', 'reports',
-        'buildItems', 'groupedItems'
+        'weeks', 'usedDates', 'nextDate', 'reports', 'buildItems', 'groupedItems'
     );
 }
 private function resolveBuildPlanData($project): array
@@ -523,8 +496,6 @@ private function resolveBuildPlanData($project): array
 
         return $current ? $current->level_order + 1 : 9;
     }
-
-
 
     public function continue(Project $project, Request $request)
 {
@@ -662,7 +633,7 @@ private function formData($project = null, int $activeStep = 1, ?int $projectTyp
             ->orderBy('price_meter')->get();
     }
     // ── Job categories — hanya type 3, saat step penawaran/build ──
-    if ($projectType == 3 && $activeStep >= 5) {
+    if (in_array($projectType, [2, 3]) && $activeStep >= 5) {
         $data['jobCategories'] = JobCategory::orderBy('kode_urut')
             ->orderBy('nama_pekerjaan')->get();
     }
