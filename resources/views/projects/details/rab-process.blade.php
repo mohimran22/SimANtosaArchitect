@@ -70,7 +70,7 @@ function numberToLetters($num) {
 
                     <tr class="table-secondary">
                         <th>{{ $categoryLetter }}</th>
-                        <th colspan="4">{{ $category->name }}</th>
+                        <th colspan="4">{{ strtoupper($category->name) }}</th>
                         <th class="text-end">
                             Rp {{ number_format($categoryTotal,2,',','.') }}
                         </th>
@@ -84,7 +84,7 @@ function numberToLetters($num) {
                         <td colspan="5">
                             <div class="d-flex align-items-center gap-2">
 
-                                {{ $uraian->name }}
+                                {{ ucwords($uraian->name) }}
 
                                 <button type="button"
                                     class="btn btn-sm btn-gambar"

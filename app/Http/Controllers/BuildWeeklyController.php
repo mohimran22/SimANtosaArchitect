@@ -386,8 +386,8 @@ public function exportPdf(Request $request, Project $project) {
         $status = 'Sesuai Rencana';
     }
 
-    $svgWidth = count($allWeeks) * 100;
-    $svgHeight = 100;
+    $svgWidth  = count($allWeeks) * 20;
+    $svgHeight = 220;
 
 
     $countWeek = count($allWeeks);
@@ -415,6 +415,18 @@ public function exportPdf(Request $request, Project $project) {
 
     $svgPlan = implode(' ', $planPoints);
     $svgReal = implode(' ', $realPoints);
+    $totalRows = count($groupedItems);
+
+    $rowHeight = 8; // mm
+
+    $curveTop =
+        24 + ($totalRows * $rowHeight);
+    $maxValue = max(
+        max($plan ?: [0]),
+        max($realisasi ?: [0]),
+        1
+    );
+    $curveHeight = 45;
     $headerCover = 'file://' . public_path('images/header-penawaran.jpg');
     $headerKurva = 'file://' . public_path('images/header-penawaran.jpg');
     $headerRekap = 'file://' . public_path('images/header-penawaran.jpg');
@@ -449,6 +461,9 @@ public function exportPdf(Request $request, Project $project) {
             'svgHeight'    => $svgHeight,
             'svgPlan'      => $svgPlan,
             'svgReal'      => $svgReal,
+            'curveTop' => $curveTop,
+            'curveHeight' => $curveHeight,
+            'maxValue' => $maxValue,
         ]
     )->render();
 

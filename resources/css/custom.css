@@ -665,6 +665,7 @@ col.just-hidden {
 
 .table-responsive {
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .progress-table {

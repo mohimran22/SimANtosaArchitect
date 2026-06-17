@@ -32,7 +32,7 @@
 
     color: #fff;
 }
-@media (max-width: 768px){
+@media (max-width: 576px){
 
     .page-header{
         display:none;
@@ -77,6 +77,9 @@
     .card-body {
         overflow-x: hidden;
     }
+    .card-body.px-5.py-3 {
+        padding: 0 !important;
+    }
     .form-control,
     .form-select,
     .select2-selection{
@@ -99,16 +102,14 @@
 
     .table{
         min-width:700px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
     }
     .table td,
     .table th{
         white-space: nowrap;
         padding: .75rem;
         font-size: .95rem;
-    }
-    .table-responsive{
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
     }
 
     #menuTable{
@@ -249,14 +250,14 @@
     }
 
 }
-@media (min-width: 768px){
+@media (min-width: 576px){
 
     .mobile-fab{
         display:none !important;
     }
 
 }
-@media (max-width: 768px) {
+@media (max-width: 576px) {
     .sticky-col,
     .sticky-last {
         position: static !important;
@@ -264,7 +265,7 @@
         z-index: auto !important;
     }
 }
-@media (max-width:768px){
+@media (max-width:576px){
     .chart-wrapper{
         height: 500px;
     }

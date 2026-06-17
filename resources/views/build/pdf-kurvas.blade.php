@@ -23,7 +23,7 @@
                     $subtotalBobot = $items->sum('bobot_percent');
 
                 @endphp
-                <tr style="font-weight:bold;">
+                <tr style="height:8mm;font-weight:bold;">
                     <td align="center">
                     {{ \PhpOffice\PhpSpreadsheet\Cell\Coordinate
                         ::stringFromColumnIndex($loop->iteration) }}
@@ -88,32 +88,15 @@
                     </td>
                 @endforeach
             </tr>
-            {{-- <tr>
-                <td colspan="3"></td>
-
-                <td colspan="{{ count($weeks) }}">
-                    @include('build.kurva-svg')
-                </td> 
-                <div style="
-                    position:absolute;
-                    left:110mm;
-                    top:{{ 18 + (count($groupedItems)*8) }}mm;
-                    width:{{ count($weeks)*6 }}mm;
-                    height:35mm;
-                ">
-
-                    @include('build.kurva-svg')
-
-                </div> 
-            </tr> --}}
         </tfoot>
     </table>
 <div style="
     position:absolute;
     left:110mm;
-    top:{{ 18 + (count($groupedItems)*8) }}mm;
+    top:0;
     width:{{ count($weeks)*6 }}mm;
-    height:35mm;
+    height:100%;
+    z-index:999;
 ">
 
     @include('build.kurva-svg')
