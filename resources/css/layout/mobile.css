@@ -76,6 +76,7 @@
     }
     .card-body {
         overflow-x: hidden;
+        padding: 0.5rem 0.5rem !important;
     }
     .card-body.px-5.py-3 {
         padding: 0 !important;

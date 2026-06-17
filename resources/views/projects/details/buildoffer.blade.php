@@ -200,7 +200,7 @@ function numberToLetters($num) {
             <div class="border p-3">{{ $offer->notes }}</div>
         </div>
         @endif
-        <div class="d-flex align-items-center gap-2">
+        <div class="d-flex align-items-center mt-2">
             @if($project->offer?->id)
                 @if($project->project_type == 3)
                 <a href="{{ route('projects.offers.build.pdf', $project->id) }}"
