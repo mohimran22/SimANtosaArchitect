@@ -1,42 +1,47 @@
 @extends('tablar::page')
 
-@section('title', 'Detail affiliator')
-
 @section('content')
-<div class="container-xl">
+<div class="container-xl" style="padding-top:80px">
 
-    {{-- 🔹 Header --}}
-    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="row align-items-center" style="padding-bottom:20px">
+            <div class="col d-flex align-items-center">
+                <a href="{{ route('affiliators.index') }}" class="btn btn-dark d-flex align-items-center">
+                    <i class="ti ti-arrow-left"></i>
+                </a>
+                    <h2 class="page-title">Detail Affiliator</h2>
+            </div>
+        </div>
+    {{-- <div class="d-flex justify-content-between align-items-center mb-3">
         <h2 class="page-title">Detail affiliator</h2>
         <a href="{{ route('affiliators.index') }}" class="btn btn-outline-secondary">
             <i class="ti ti-arrow-left"></i> Kembali
         </a>
+    </div> --}}
+
+    <div class="tabs-mobile-wrapper">
+        <ul class="nav nav-tabs mb-3" role="tablist">
+            <li class="nav-item" role="presentation">
+                <a class="nav-link active" data-bs-toggle="tab" href="#tab-personal" role="tab">
+                    <i class="ti ti-user"></i> Detail Pribadi
+                </a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" data-bs-toggle="tab" href="#tab-loyalty" role="tab">
+                    <i class="ti ti-star"></i> Membership / Loyalty
+                </a>
+            </li>
+            {{-- <li class="nav-item" role="presentation">
+                <a class="nav-link" data-bs-toggle="tab" href="#tab-shipping" role="tab">
+                    <i class="ti ti-map-pin"></i> Riwayat Performa
+                </a>
+            </li> --}}
+            {{-- <li class="nav-item" role="presentation">
+                <a class="nav-link" data-bs-toggle="tab" href="#tab-shipping" role="tab">
+                    <i class="ti ti-map-pin"></i> Alamat Pengiriman
+                </a>
+            </li> --}}
+        </ul>
     </div>
-
-    {{-- 🔹 Tabs --}}
-    <ul class="nav nav-tabs mb-3" role="tablist">
-        <li class="nav-item" role="presentation">
-            <a class="nav-link active" data-bs-toggle="tab" href="#tab-personal" role="tab">
-                <i class="ti ti-user"></i> Detail Pribadi
-            </a>
-        </li>
-        <li class="nav-item" role="presentation">
-            <a class="nav-link" data-bs-toggle="tab" href="#tab-loyalty" role="tab">
-                <i class="ti ti-star"></i> Membership / Loyalty
-            </a>
-        </li>
-        {{-- <li class="nav-item" role="presentation">
-            <a class="nav-link" data-bs-toggle="tab" href="#tab-shipping" role="tab">
-                <i class="ti ti-map-pin"></i> Riwayat Performa
-            </a>
-        </li> --}}
-        {{-- <li class="nav-item" role="presentation">
-            <a class="nav-link" data-bs-toggle="tab" href="#tab-shipping" role="tab">
-                <i class="ti ti-map-pin"></i> Alamat Pengiriman
-            </a>
-        </li> --}}
-    </ul>
-
     <div class="tab-content">
 
         {{-- ================= TAB 1: PERSONAL ================= --}}

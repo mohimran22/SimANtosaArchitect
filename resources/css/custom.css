@@ -1039,6 +1039,20 @@ input[type=number]::-webkit-outer-spin-button {
 .btn-add-icon i{
     font-size:18px;
 }
+.tabs-mobile-wrapper {
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+}
+
+.tabs-mobile-wrapper .nav-tabs {
+    flex-wrap: nowrap;
+    white-space: nowrap;
+}
+
+.tabs-mobile-wrapper .nav-link {
+    white-space: nowrap;
+}
 @media (min-width:769px){
     #datatable-search-container{
         display:none;

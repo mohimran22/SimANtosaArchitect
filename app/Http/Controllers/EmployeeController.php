@@ -139,6 +139,7 @@ class EmployeeController extends Controller
         'account_number' => 'nullable|string|max:50',
         'account_holder' => 'nullable|max:50',
         'photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        'identity_photo' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
 
         // --- data employee ---
         'nik' => 'required|unique:employees,nik',
@@ -170,6 +171,17 @@ if ($request->hasFile('photo')) {
 
     // simpan full relative path
     $validated['photo'] = $path;   // → photos/uuid.jpg
+}
+
+if ($request->hasFile('identity_photo')) {
+
+    $identityPhotoPath = $request->file('identity_photo')->storeAs(
+        'identity_photos',
+        Str::uuid().'.'.$request->file('identity_photo')->getClientOriginalExtension(),
+        'public'
+    );
+
+    $validated['identity_photo'] = $identityPhotoPath;
 }
 
 if ($request->hasFile('contract_letter_file')) {
@@ -232,6 +244,7 @@ if ($request->hasFile('training_certificate')) {
                 'bank_id' => $validated['bank_id'] ?? null,
                 'account_number' => $validated['account_number'] ?? null,
                 'account_holder' => $validated['account_holder'] ?? null,
+                'identity_photo' => $validated['identity_photo'] ?? null,
             ]);
 
             // Simpan password plain-nya di session supaya admin bisa lihat
@@ -342,7 +355,7 @@ public static function generateNikAjax()
         'account_number' => 'nullable|string|max:50',
         'account_holder' => 'nullable|string|max:100',
         'photo' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
-
+        'identity_photo' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
         'nik' => 'required|string|max:50|unique:employees,nik,' . $employee->id,
         'role' => 'required|array',
         'role.*' => 'string|exists:roles,name',
@@ -386,6 +399,19 @@ public static function generateNikAjax()
     // 🔹 Update role user (hapus role lama → assign role baru)
     $user->syncRoles($validated['role']);
     
+    if ($request->hasFile('identity_photo')) {
+        if ($user->identity_photo) {
+            Storage::disk('public')->delete($user->identity_photo);
+        }
+
+        $path = $request->file('identity_photo')->storeAs(
+            'identity_photos',
+            Str::uuid().'.'.$request->file('identity_photo')->getClientOriginalExtension(),
+            'public'
+        );
+
+        $user->update(['identity_photo' => $path]);
+    }
     if ($request->hasFile('photo')) {
         if ($user->photo) {
             Storage::disk('public')->delete($user->photo);

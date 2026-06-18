@@ -5,10 +5,10 @@
     <div class="container-xl">
         <div class="row align-items-center">
             <div class="col d-flex align-items-center">
-                <a href="{{ route('users.index') }}" class="btn btn-dark d-flex align-items-center" style="margin-left: 20px;">
+                <a href="{{ route('users.index') }}" class="btn btn-dark d-flex align-items-center">
                     <i class="ti ti-arrow-left"></i>
                 </a>
-                    <h2 class="page-title mb-0">Edit Data Pengguna</h2>
+                    <h2 class="page-title mb-0">Ubah Data Pengguna</h2>
             </div>
         </div>
     </div>

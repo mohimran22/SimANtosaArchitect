@@ -1,14 +1,21 @@
 @extends('tablar::page')
 
 @section('content')
-<div class="container-xl">
-
-    <div class="d-flex justify-content-between align-items-center mb-3 mt-4">
+<div class="container-xl" style="padding-top:80px">
+        <div class="row align-items-center" style="padding-bottom:20px">
+            <div class="col d-flex align-items-center">
+                <a href="{{ route('users.index') }}" class="btn btn-dark d-flex align-items-center">
+                    <i class="ti ti-arrow-left"></i>
+                </a>
+                    <h2 class="page-title">Detail Pengguna</h2>
+            </div>
+        </div>
+    {{-- <div class="d-flex justify-content-between align-items-center mb-3">
         <h2 class="page-title">Detail Pengguna</h2>
         <a href="{{ route('users.index') }}" class="btn btn-outline-secondary">
             <i class="ti ti-arrow-left"></i> Kembali
         </a>
-    </div>
+    </div> --}}
     
     <ul class="nav nav-tabs mb-3" role="tablist">
         <li class="nav-item" role="presentation">

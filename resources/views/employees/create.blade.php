@@ -35,17 +35,11 @@
 
                     <div class="text-center mb-5">
                         <div class="position-relative d-inline-block">
-                            {{-- @if ($user->photo)
-                                <img id="previewImage" src="{{ asset('storage/'.$user->photo) }}" alt="Profile" 
-                                    class="rounded-3 shadow-sm border" width="150" height="150"
-                                    style="object-fit: cover;">
-                            @else --}}
                                 <div id="previewImage"
                                     class="rounded-3 shadow-sm bg-light d-flex align-items-center justify-content-center"
                                     style="width:150px; height:150px;">
                                     <i class="ti ti-user" style="font-size: 64px; color:#aaa;"></i>
                                 </div>
-                            {{-- @endif --}}
                             <label for="photo"
                                 class="btn btn-sm btn-dark position-absolute bottom-0 end-0 translate-middle rounded-circle"
                                 title="Ganti Foto">
@@ -80,7 +74,7 @@
                             </div>
                             <div class="col-md-2">
                                 <label class="form-label required">Jenis Kelamin</label>
-                                <select name="gender" class="form-select" required>
+                                <select name="gender" class="form-select select2" required>
                                     <option value="">-- Pilih --</option>
                                     <option value="1" {{ old('gender') == '1' ? 'selected' : '' }}>Laki-laki</option>
                                     <option value="2" {{ old('gender') == '2' ? 'selected' : '' }}>Perempuan</option>
@@ -130,7 +124,7 @@
                             </div>
                             <div class="col-md-4">
                                             <label class="form-label">Status Pernikahan :</label>
-                                            <select name="marital_status" class="form-select">
+                                            <select name="marital_status" class="form-select select2">
                                                 <option value="">-- Pilih Status --</option>
                                                 <option value="1">Lajang</option>
                                                 <option value="2">Menikah</option>
@@ -233,7 +227,7 @@
                         <div class="row g-4">
                             <div class="col-md-4">
                                 <label class="form-label" for="bank_id">Nama Bank</label>
-                                <select id="bank_id" name="bank_id" class="form-select">
+                                <select id="bank_id" name="bank_id" class="form-select select2">
                                     <option value="">Pilih Bank</option>
                                 </select>
                             </div>
@@ -301,7 +295,7 @@
                                 <h3 class="fw-semibold mb-3 border-bottom pb-2">📎 Dokumen Karyawan</h3>   
                                 <div class="row g-4">
                                     <div class="col-md-6 mb-3">
-                                        <label for="contract_letter_file" class="required">Upload Surat Perjanjian Kerja (PDF)</label>
+                                        <label class="form-label required">Upload Surat Perjanjian Kerja (PDF)</label>
                                         <input type="file" name="contract_letter_file" class="form-control" accept="application/pdf" required>
                                         @error('contract_letter_file')
                                             <small class="text-danger">{{ $message }}</small>
@@ -309,9 +303,16 @@
                                     </div>
 
                                     <div class="col-md-6 mb-3">
-                                        <label for="training_certificate">Upload Sertifikat (kalau ada)</label>
+                                        <label class="form-label">Upload Sertifikat (kalau ada)</label>
                                         <input type="file" name="training_certificate" class="form-control" accept="application/pdf">
                                         @error('training_certificate')
+                                            <small class="text-danger">{{ $message }}</small>
+                                        @enderror
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Upload Foto KTP (kalau ada)</label>
+                                        <input type="file" name="identity_photo" class="form-control" accept="application/pdf,image/*">
+                                        @error('identity_photo')
                                             <small class="text-danger">{{ $message }}</small>
                                         @enderror
                                     </div>

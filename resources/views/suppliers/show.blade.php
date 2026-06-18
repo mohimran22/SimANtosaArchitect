@@ -1,41 +1,47 @@
 @extends('tablar::page')
 
 @section('content')
-<div class="container-xl">
+<div class="container-xl" style="padding-top:80px">
 
-    {{-- 🔹 Header --}}
-    {{-- <div class="d-flex justify-content-between align-items-center mb-3 mt-4"> --}}
-    <div class="col d-flex align-items-center mb-3 mt-4">
-                <a href="{{ route('suppliers.index') }}" class="btn btn-dark d-flex align-items-center">
-                    <i class="ti ti-arrow-left"></i>
-                </a>
-                        <h2 class="page-title">Detail Supplier</h2>
+    <div class="row align-items-center" style="padding-bottom:20px">
+        <div class="col d-flex align-items-center">
+            <a href="{{ route('suppliers.index') }}" class="btn btn-dark d-flex align-items-center">
+                <i class="ti ti-arrow-left"></i>
+            </a>
+                <h2 class="page-title">Detail Mitra Supplier</h2>
+        </div>
     </div>
+    {{-- <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="page-title">Detail Mitra Supplier</h2>
+        <a href="{{ route('suppliers.index') }}" class="btn btn-outline-secondary">
+            <i class="ti ti-arrow-left"></i> Kembali
+        </a>
+    </div> --}}
 
-    {{-- 🔹 Tabs --}}
-    <ul class="nav nav-tabs mb-3" role="tablist">
-        <li class="nav-item" role="presentation">
-            <a class="nav-link active" data-bs-toggle="tab" href="#tab-personal" role="tab">
-                <i class="ti ti-user"></i> Detail Pribadi
-            </a>
-        </li>
-        <li class="nav-item" role="presentation">
-            <a class="nav-link" data-bs-toggle="tab" href="#tab-loyalty" role="tab">
-                <i class="ti ti-map-pin"></i> Detail Usaha
-            </a>
-        </li>
-        <li class="nav-item" role="presentation">
-            <a class="nav-link" data-bs-toggle="tab" href="#tab-catalogue" role="tab">
-                <i class="ti ti-shopping-cart"></i> Katalog Produk
-            </a>
-        </li>
-        <li class="nav-item" role="presentation">
-            <a class="nav-link" data-bs-toggle="tab" href="#tab-employment" role="tab">
-                <i class="ti ti-briefcase"></i> Riwayat Pembayaran
-            </a>
-        </li>
-    </ul>
-
+    <div class="tabs-mobile-wrapper">
+        <ul class="nav nav-tabs mb-3" role="tablist">
+            <li class="nav-item" role="presentation">
+                <a class="nav-link active" data-bs-toggle="tab" href="#tab-personal" role="tab">
+                    <i class="ti ti-user"></i> Detail Pribadi
+                </a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" data-bs-toggle="tab" href="#tab-loyalty" role="tab">
+                    <i class="ti ti-map-pin"></i> Detail Usaha
+                </a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" data-bs-toggle="tab" href="#tab-catalogue" role="tab">
+                    <i class="ti ti-shopping-cart"></i> Katalog Produk
+                </a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" data-bs-toggle="tab" href="#tab-employment" role="tab">
+                    <i class="ti ti-briefcase"></i> Riwayat Pembayaran
+                </a>
+            </li>
+        </ul>
+    </div>
     <div class="tab-content">
 
         {{-- ================= TAB 1: PERSONAL ================= --}}

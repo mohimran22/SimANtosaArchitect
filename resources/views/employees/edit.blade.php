@@ -82,7 +82,7 @@
                                 </div>
                                 <div class="col-md-2">
                                     <label class="form-label required">Jenis Kelamin</label>
-                                    <select name="gender" class="form-select" value="{{ old('gender') }}" required>
+                                    <select name="gender" class="form-select select2" required>
                                         <option value="">-- Pilih --</option>
                                         <option value="1" {{ old('gender', $user->gender) == 1 ? 'selected' : '' }}>Laki-laki</option>
                                         <option value="2" {{ old('gender', $user->gender) == 2 ? 'selected' : '' }}>Perempuan</option>
@@ -103,7 +103,9 @@
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label required">Agama</label>
-                                    <select name="religion_id" class="form-select select2" required>
+                                    <select name="religion_id"
+                                        class="form-select select2 @error('religion_id') is-invalid @enderror"
+                                        required>
                                         <option value="">-- Pilih Agama --</option>
                                         @foreach($religions as $religion)
                                             <option value="{{ $religion->id }}" {{ old('religion_id', $user->religion_id) == $religion->id ? 'selected' : '' }}>
@@ -112,10 +114,12 @@
                                         @endforeach
                                     </select>
                                     @error('religion_id')
-                                        <div class="invalid-feedback">{{ $message }}</div>
+                                        <div class="invalid-feedback d-block">
+                                            {{ $message }}
+                                        </div>
                                     @enderror
                                 </div>
-                                
+                                {{-- {{ dd($user->religion_id) }} --}}
                                 <div class="col-md-4">
                                     <label class="form-label">Nomor KTP</label>
                                     <input type="text" class="form-control @error('identity_number') is-invalid @enderror" name="identity_number" maxlength="16" inputmode="numeric" pattern="[0-9]*" value="{{ old('identity_number', $user->identity_number) }}">
@@ -132,7 +136,7 @@
                                 </div>
                                 <div class="col-md-4">
                                     <label>Status Pernikahan :</label>
-                                    <select name="marital_status" class="form-select">
+                                    <select name="marital_status" class="form-select select2">
                                         <option value="">-- Pilih Status --</option>
                                         <option value="1" {{ $employee->marital_status == 1 ? 'selected' : '' }}>Lajang</option>
                                         <option value="2" {{ $employee->marital_status == 2 ? 'selected' : '' }}>Menikah</option>
@@ -238,7 +242,7 @@
                             <div class="row g-4">
                                 <div class="col-md-4">
                                     <label class="form-label" for="bank_id">Nama Bank</label>
-                                        <select id="bank_id" name="bank_id" class="form-select"
+                                        <select id="bank_id" name="bank_id" class="form-select select2"
                                         value="{{ old('bank_id', auth()->user()->bank_id) }}">
                                             <option value="">Pilih Bank</option>
                                         </select>
@@ -329,7 +333,6 @@
                                         <small class="text-muted">Kosongkan jika tidak ingin mengubah file.</small>
                                     </div>
 
-                                    <!-- PDF Sertifikat Pelatihan -->
                                     <div class="col-md-6">
                                         <label>Sertifikat Pelatihan Saat Ini:</label><br>
                                         @if ($employee->training_certificate)
@@ -339,7 +342,7 @@
                                             Lihat / Unduh PDF
                                             </a>
                                         @else
-                                            <p class="text-muted mb-0">Belum ada sertifikat pelatihan.</p>
+                                            <p class="text-muted mb-0">Belum ada foto KTP.</p>
                                         @endif
                                     </div>
 
@@ -348,7 +351,24 @@
                                         <input type="file" name="training_certificate" class="form-control" accept="application/pdf">
                                         <small class="text-muted">Kosongkan jika tidak ingin mengubah file.</small>
                                     </div>
+                                     <div class="col-md-6">
+                                        <label>Foto KTP:</label><br>
+                                        @if ($user->identity_photo)
+                                            <a href="{{ asset('storage/' . $user->identity_photo) }}"
+                                            target="_blank"
+                                            class="btn btn-sm btn-outline-primary">
+                                            Lihat / Unduh KTP
+                                            </a>
+                                        @else
+                                            <p class="text-muted mb-0">Belum ada sertifikat pelatihan.</p>
+                                        @endif
+                                    </div>
 
+                                    <div class="col-md-6">
+                                        <label class="form-label">Upload Foto KTP(PDF/Gambar)</label>
+                                        <input type="file" name="identity_photo" class="form-control" accept="application/pdf,image/*">
+                                        <small class="text-muted">Kosongkan jika tidak ingin mengubah file.</small>
+                                    </div>
                                 </div>
                     </div>
                         </div>

@@ -52,11 +52,11 @@
                                         <th>Posisi/Peran</th>
                                         <th>Status Karyawan</th>
                                         <th>Tanggal Mulai Kerja</th>
-                                        <th>Gaji Pokok</th>
+                                        {{-- <th>Gaji Pokok</th>
                                         <th>Tunjangan</th>
                                         <th>Potongan</th>
                                         <th>Bonus</th>
-                                        <th>THR</th>
+                                        <th>THR</th> --}}
                                         <th>Surat Perjanjian Kerja</th>
                                         <th>Sertifikat Pelatihan</th>
                                         <th>Aksi</th>
@@ -117,11 +117,11 @@
                     { data: 'roles', name: 'roles' },   
                     { data: 'employment_status', name: 'employment_status', orderable: false, searchable: false},
                     { data: 'start_date', name: 'start_date' },  
-                    { data: 'basic_salary', name: 'basic_salary' },
-                    { data: 'allowance', name: 'allowance' },  
-                    { data: 'deduction', name: 'deduction' },  
-                    { data: 'bonus', name: 'bonus' },  
-                    { data: 'thr', name: 'thr' },  
+                    // { data: 'basic_salary', name: 'basic_salary' },
+                    // { data: 'allowance', name: 'allowance' },  
+                    // { data: 'deduction', name: 'deduction' },  
+                    // { data: 'bonus', name: 'bonus' },  
+                    // { data: 'thr', name: 'thr' },  
                     { data: 'contract_letter_file', name: 'contract_letter_file' },
                     { data: 'training_certificate', name: 'training_certificate' },  
                     { data: 'action', name: 'action', orderable: false, searchable: false }  

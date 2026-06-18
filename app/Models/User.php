@@ -96,6 +96,7 @@ public function activeRole()
         'account_number',
         'account_holder',
         'active_role',
+        'identity_photo'
     ];
 
     /**
@@ -119,7 +120,7 @@ public function activeRole()
     }
 
     public function religion() {
-        return $this->belongsTo(Religion::class, 'religion_id');
+        return $this->belongsTo(Religion::class);
     }
 
     public function province() {
@@ -148,18 +149,11 @@ public function activeRole()
 }
 
     public function getPhotoUrlAttribute()
-{
-    if ($this->employee && $this->employee->photo) {
-        return asset('storage/' . $this->employee->photo);
+    {
+        return $this->photo
+            ? asset('storage/' . $this->photo)
+            : null;
     }
-
-    if ($this->licenseholder && $this->licenseholder->photo) {
-        return asset('storage/profile_photos/' . $this->licenseholder->photo);
-    }
-
-    // fallback default
-    return null;
-}
 
     public function getBirthDateFormattedAttribute()
     {

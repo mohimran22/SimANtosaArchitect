@@ -219,7 +219,7 @@ public function show(User $user)
         'identity_number' => [
             'required',
             'regex:/^[0-9]{16}$/',
-            Rule::unique('users', 'identity_number')->ignore($user->id),
+            Rule::unique('users', 'identity_number')->ignore($user->id, 'id'),
         ],
         'address' => 'required',
         'province_id' => 'required|exists:provinces,id',

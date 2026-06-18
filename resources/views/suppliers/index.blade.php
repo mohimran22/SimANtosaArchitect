@@ -92,7 +92,7 @@
                 scrollY: '500px',
                 scrollX: true,
                 scrollCollapse: true,
-                fixedColumns: !isMobile {
+                fixedColumns: !isMobile ? {
                     leftColumns: 4
                 } : false,
                 serverSide: true,
