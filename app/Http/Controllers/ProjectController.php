@@ -23,6 +23,7 @@ use App\Models\RabProcessItem;
 use App\Models\BuildDailyReport;
 use App\Models\BuildProcessItem;
 use App\Models\BuildPlans;
+use App\Models\WeeklyReport;
 use App\Models\User;
 use App\Services\ProjectNotifier;
 use App\Services\BuildProcessSyncService;
@@ -365,10 +366,10 @@ private function resolveBuildData($project): array
                     }),
             ];
         });
-
-    return compact(
-        'weeks', 'usedDates', 'nextDate', 'reports', 'buildItems', 'groupedItems'
-    );
+    $weeklyReports = WeeklyReport::where('project_id', $project->id)
+        ->get()
+        ->keyBy('minggu');
+    return compact('weeks', 'usedDates', 'nextDate', 'reports', 'buildItems', 'groupedItems', 'weeklyReports');
 }
 private function resolveBuildPlanData($project): array
 {

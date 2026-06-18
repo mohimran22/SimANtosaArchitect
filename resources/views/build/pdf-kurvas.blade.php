@@ -95,13 +95,13 @@
     width:100%;
 ">
 
-    <div style="
+    {{-- <div style="
         font-size:14px;
         font-weight:bold;
         margin-bottom:8px;
     ">
         KURVA S PROGRES PEKERJAAN
-    </div>
+    </div> --}}
 
 
     <div style="

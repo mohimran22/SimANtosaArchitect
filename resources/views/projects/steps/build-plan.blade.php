@@ -448,7 +448,7 @@ document.addEventListener('DOMContentLoaded', function () {
             });
 
             const ctx = document.getElementById('kurvaSChart');
-
+            ctx.width = Math.max({{ $weekCount }} * 50, 900);
             if(!ctx || typeof Chart === 'undefined') {
 
                 console.error('Chart.js belum load');
@@ -457,7 +457,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             const dataAwal = @json($project->getKurvaSData() ?? []);
-            const labels = []; for(let i = 1; i <= {{ $weekCount }}; i++){ labels.push('Minggu ' + i); }
+            const labels = []; for(let i = 1; i <= {{ $weekCount }}; i++){ labels.push('M' + i); }
             const realisasi = []; for(let i = 1; i <= {{ $weekCount }}; i++){ const found = dataAwal.find(d => d.week == i); realisasi.push( found ? found.progress : 0 ); }
 
             window.kurvaChart = new Chart(ctx, {
@@ -488,14 +488,22 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 options:{
                     animation:false,
+                    responsive:true,
+                    maintainAspectRatio:false,
+
                     scales:{
+                        x:{
+                            ticks:{
+                                autoSkip:true,
+                                maxTicksLimit:5
+                            }
+                        },
+
                         y:{
                             beginAtZero:true,
                             max:100
                         }
-                    },
-                    responsive: true,
-                    maintainAspectRatio: false
+                    }
                 }
 
             });

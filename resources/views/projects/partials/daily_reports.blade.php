@@ -150,13 +150,18 @@
                 <div class="md-6 mb-4 ps-4">
                     <label class="fw-bold">File Upload Foto Tukang</label>
                     <div class="text-muted mb-2">Bisa berupa foto atau dokumen</div>
-                    <input type="file"
+                    <input type="file" id="documentation_tenaga"
                         name="documentation_tenaga[]"
-                        class="form-control image-input"
+                        class="d-none image-input"
                         data-preview="preview-tenaga"
                         accept="image/*,application/pdf"
                         multiple>
-
+                     <label for="documentation_tenaga"
+                        class="btn btn-dark btn-add-icon"
+                        data-bs-toggle="tooltip"
+                        title="Upload Foto Tukang">
+                        <i class="ti ti-photo-plus"></i>
+                    </label>
                         <div id="preview-tenaga"
                             class="mt-3 d-flex flex-wrap gap-3"></div>
                 </div>
@@ -286,12 +291,19 @@
                     <label class="fw-bold">File Upload Foto Pekerjaan</label>
                     <div class="text-muted mb-2">Bisa berupa foto atau dokumen</div>
                     <input type="file"
+                        id="documentation_pekerjaan"
                         name="documentation_pekerjaan[]"
-                        class="form-control image-input"
+                        class="d-none image-input"
                         data-preview="preview-pekerjaan"
                         accept="image/*,application/pdf"
                         multiple>
 
+                    <label for="documentation_pekerjaan"
+                        class="btn btn-dark btn-add-icon"
+                        data-bs-toggle="tooltip"
+                        title="Upload Foto Pekerjaan">
+                        <i class="ti ti-photo-plus"></i>
+                    </label>
                     <div id="preview-pekerjaan" class="mt-3 d-flex flex-wrap gap-3"></div>
                 </div>
             </div>
@@ -340,13 +352,18 @@
                 <div class="md-6 mb-4 ps-4">
                     <label class="fw-bold">File Upload Foto Bahan</label>
                     <div class="text-muted mb-2">Bisa berupa foto atau dokumen</div>
-                    <input type="file"
+                    <input type="file" id="documentation_material"
                         name="documentation_material[]"
-                        class="form-control image-input"
+                        class="d-none image-input"
                         data-preview="preview-material"
                         accept="image/*,application/pdf"
                         multiple>
-
+                    <label for="documentation_material"
+                        class="btn btn-dark btn-add-icon"
+                        data-bs-toggle="tooltip"
+                        title="Upload Foto Bahan">
+                        <i class="ti ti-photo-plus"></i>
+                    </label>
                     <div id="preview-material" class="mt-3 d-flex flex-wrap gap-3"></div>
                 </div>
             </div>
@@ -356,10 +373,8 @@
             <div class="card-header fw-bold d-flex justify-content-between">
                 <span>Jam Kerja & Cuaca</span>
 
-                <button type="button"
-                        class="btn btn-sm btn-dark"
-                        id="addJamKerja">
-                    + Tambah Baris
+                <button type="button" class="btn btn-sm btn-dark btn-add-icon" data-bs-toggle="tooltip" title="Tambah Baris" id="addJamKerja">
+                    <i class="ti ti-plus"></i>
                 </button>
             </div>
 
@@ -651,7 +666,6 @@ document.addEventListener("DOMContentLoaded", function() {
         }
 
     });
-    
 });
 </script>
 <script>

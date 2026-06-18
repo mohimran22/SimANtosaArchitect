@@ -152,6 +152,11 @@ public function weeklyPlans()
     return $this->hasMany(BuildPlans::class);
 }
 
+public function weeklyReports()
+{
+    return $this->hasMany(WeeklyReport::class);
+}
+
 public function progressSnapshots()
 {
     return $this->hasMany(BuildProgressSnapshot::class);

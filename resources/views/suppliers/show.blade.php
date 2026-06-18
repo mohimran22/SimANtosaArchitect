@@ -50,8 +50,8 @@
             <div class="card mb-4 shadow-sm">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h3 class="card-title mb-0">Informasi Personal</h3>
-                    <a href="{{ route('suppliers.edit', $supplier->id) }}" class="btn btn-outline-dark btn-sm">
-                        <i class="ti ti-edit"></i> Ubah Detail
+                    <a href="{{ route('suppliers.edit', $supplier->id) }}" class="btn btn-outline-dark btn-sm" data-bs-toggle="tooltip" title="Ubah Detail">
+                        <i class="ti ti-edit"></i>
                     </a>
                 </div>
 

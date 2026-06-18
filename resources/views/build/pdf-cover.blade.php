@@ -40,15 +40,15 @@
 <h4>Capaian Pekerjaan</h4>
 
 <div style="border:1px solid #000;padding:10px">
-    {!! nl2br($summary) !!}
+    {!! nl2br($capaian) !!}
 </div>
 <h4>Kendala Pekerjaan</h4>
 
 <div style="border:1px solid #000;padding:10px">
-    {!! nl2br($summary) !!}
+    {!! nl2br($kendala) !!}
 </div>
 <h4>Rencana Kerja</h4>
 
 <div style="border:1px solid #000;padding:10px">
-    {!! nl2br($summary) !!}
+    {!! nl2br($rencana) !!}
 </div>

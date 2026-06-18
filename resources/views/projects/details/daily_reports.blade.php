@@ -18,7 +18,9 @@
                         </thead>
 
                         @foreach($reports as $minggu => $items)
-
+                            @php
+                                $weeklyReport = $weeklyReports[$minggu] ?? null;
+                            @endphp
                             <tbody id="reportTable">
                                 <tr class="table-secondary week-header" data-week="{{ $minggu }}">
                                     <td colspan="3"
@@ -36,8 +38,12 @@
                                         {{-- @if($items->where('is_libur', true)->count() >= 7) --}}
                                         <button
                                             class="btn btn-sm btn-dark btn-weekly-note"
-                                            data-week="{{ $minggu }}">
-                                            <i class="ti ti-plus"></i>
+                                            data-week="{{ $minggu }}"
+                                            data-report-id="{{ $weeklyReport?->id }}"
+                                            data-capaian="{{ $weeklyReport?->capaian }}"
+                                            data-kendala="{{ $weeklyReport?->kendala }}"
+                                            data-rencana="{{ $weeklyReport?->rencana }}">
+                                            <i class="ti ti-{{ isset($weeklyReports[$minggu]) ? 'pencil' : 'plus' }}"></i>
                                         </button>
                                     </td>
                                 </tr>
@@ -101,9 +107,10 @@
                     </div>
                 </div>
                 <div class="modal fade" id="weeklyModal" tabindex="-1">
-                <div class="modal-dialog modal-lg">
+                    <div class="modal-dialog modal-lg">
                         <div class="modal-content">
                             <form id="weeklyForm">
+                                @csrf
                                 <div class="modal-header">
                                     <h5 class="modal-title">
                                         Laporan Mingguan
@@ -1227,9 +1234,18 @@ function updateWeekHeader(week){
 $(document).on('click', '.btn-weekly-note', function () {
 
     let minggu = $(this).data('week');
+    let reportId = $(this).data('report-id');
 
     $('#weekly_minggu').val(minggu);
-
+    if(reportId){
+        $('textarea[name="capaian"]').val($(this).data('capaian'));
+        $('textarea[name="kendala"]').val($(this).data('kendala'));
+        $('textarea[name="rencana"]').val($(this).data('rencana'));
+    }else{
+        // reset form
+        $('#weeklyForm')[0].reset();
+        $('#weekly_minggu').val(minggu);
+    }
     $('#weeklyModal .modal-title')
         .text('Laporan Mingguan - Minggu ke-' + minggu);
 
@@ -1241,20 +1257,41 @@ $('#weeklyForm').submit(function(e){
 
     $.ajax({
         url: "{{ route('weekly-report.store', $project) }}",
-        method: 'POST',
+        type: 'POST',
         data: $(this).serialize(),
 
         success: function(res){
 
             $('#weeklyModal').modal('hide');
 
-            Swal.fire(
-                'Berhasil',
-                res.message,
-                'success'
-            );
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil',
+                text: res.message
+            });
+        },
+
+        error: function(xhr){
+
+            let message = 'Terjadi kesalahan.';
+
+            if(xhr.status === 422){
+
+                let errors = xhr.responseJSON.errors;
+
+                message = Object.values(errors)
+                    .flat()
+                    .join('<br>');
+            }
+
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal',
+                html: message
+            });
         }
     });
+
 });
 </script>
 @endpush

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use App\Models\Project;
+use App\Models\WeeklyReport;
 use App\Models\BuildWeeklyProgress;
 use App\Models\BuildProcessItem;
 use App\Models\BuildPlanWeek;
@@ -180,7 +181,11 @@ public function exportPdf(Request $request, Project $project) {
     }
     $totalColsSchedule = 5 + ($allWeeks->count() * 9);
     $totalCols = 5 + ($filteredWeeks->count() * 9);
+    $weekNo = $filteredWeeks->first()['week_no'] ?? null;
 
+    $weeklyReport = $project->weeklyReports()
+        ->where('minggu', $weekNo)
+        ->first();
     $rekap = collect($groupedItems)->map(function ($cat) use ($filteredWeeks, $project, $week) {
 
         $items = collect($cat['uraians'])->flatMap(fn($u) => $u['items']);
@@ -451,6 +456,9 @@ public function exportPdf(Request $request, Project $project) {
             'rekap' => $rekap,
             'periode' => $filteredWeeks->first()['start'].' - '.$filteredWeeks->last()['end'],
             'summary' => $project->description ?? '',
+            'capaian' => $weeklyReport?->capaian ?? '',
+            'kendala' => $weeklyReport?->kendala ?? '',
+            'rencana' => $weeklyReport?->rencana ?? '',
             'status_progress' => $status,
             'deviasi' => $deviasi,
         ]
