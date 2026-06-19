@@ -46,7 +46,7 @@
                     </div>
                 
             <div class="table-responsive">
-                <table id="buildPlanTable" class="table table-bordered">
+                <table id="buildPlanTable" class="table table-bordered build-plan-table">
                     <colgroup>
                         <col style="width:60px">
                         <col style="width:320px">
@@ -138,7 +138,6 @@
     </div>
 @push('js')
 <script>
-document.addEventListener('DOMContentLoaded', function () {
 
     const table = document.querySelector('.build-plan-table');
 
@@ -308,7 +307,7 @@ document.addEventListener('DOMContentLoaded', function () {
         'resize',
         applyFreeze
     );
-});
+
 </script>
 <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -698,8 +697,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         return result;
     }
-    $('#buildPlanTable').DataTable({
 
+    $('#buildPlanTable').DataTable({
         processing:true,
         serverSide:true,
         searching: false,
@@ -708,6 +707,7 @@ document.addEventListener('DOMContentLoaded', function () {
         info: false,
         ordering: false,
         autoWidth: false,
+        responsive: true,
         dom: 't',
         columnDefs:[
             {
@@ -841,6 +841,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 window.chartInitialized=true;
 
+            }
+            if(typeof applyFreeze === 'function'){
+                applyFreeze();
             }
         }
     });

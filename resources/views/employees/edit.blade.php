@@ -342,7 +342,7 @@
                                             Lihat / Unduh PDF
                                             </a>
                                         @else
-                                            <p class="text-muted mb-0">Belum ada foto KTP.</p>
+                                            <p class="text-muted mb-0">Belum ada sertifikat pelatihan.</p>
                                         @endif
                                     </div>
 
@@ -360,12 +360,12 @@
                                             Lihat / Unduh KTP
                                             </a>
                                         @else
-                                            <p class="text-muted mb-0">Belum ada sertifikat pelatihan.</p>
+                                            <p class="text-muted mb-0">Belum ada foto KTP.</p>
                                         @endif
                                     </div>
 
                                     <div class="col-md-6">
-                                        <label class="form-label">Upload Foto KTP(PDF/Gambar)</label>
+                                        <label class="form-label">Upload Foto KTP (PDF/Gambar)</label>
                                         <input type="file" name="identity_photo" class="form-control" accept="application/pdf,image/*">
                                         <small class="text-muted">Kosongkan jika tidak ingin mengubah file.</small>
                                     </div>
