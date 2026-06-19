@@ -51,8 +51,20 @@ class CustomersController extends Controller
                     $name = Str::title($row->user->fullname ?? '-');
                     return '<a href="'.$url.'">'.e($name).'</a>';
                 })
+                // ->addColumn('loyalty', function ($row) {
+                //     $level = ucfirst($row->readable_loyalty_level);
+                //     $color = match ($row->readable_loyalty_level) {
+                //         '1' => 'secondary',
+                //         '2' => 'warning',
+                //         '3' => 'info',
+                //         '4' => 'success',
+                //         '5' => 'dark',
+                //         default => 'secondary',
+                //     };
+                //     return '<span class="badge bg-' . $color . '">' . $level . '</span>';
+                // })
                 ->addColumn('loyalty', function ($row) {
-                    $level = ucfirst($row->readable_loyalty_level);
+
                     $color = match ($row->readable_loyalty_level) {
                         '1' => 'secondary',
                         '2' => 'warning',
@@ -61,7 +73,8 @@ class CustomersController extends Controller
                         '5' => 'dark',
                         default => 'secondary',
                     };
-                    return '<span class="badge bg-' . $color . '">' . $level . '</span>';
+
+                    return '<span class="badge bg-' . $color . '">' . $row->readable_loyalty_level . '</span>';
                 })
                 ->addColumn('action', function ($customer) {
                     $buttons = '';

@@ -46,7 +46,7 @@
                     </div>
                 
             <div class="table-responsive">
-                <table id="buildPlanTable" class="table table-bordered build-plan-table">
+                <table id="buildPlanTable" class="table table-bordered">
                     <colgroup>
                         <col style="width:60px">
                         <col style="width:320px">
@@ -841,9 +841,6 @@
 
                 window.chartInitialized=true;
 
-            }
-            if(typeof applyFreeze === 'function'){
-                applyFreeze();
             }
         }
     });
