@@ -1,7 +1,7 @@
 @extends('tablar::page')
 
 @section('content')
-<div class="container my-4">
+<div class="container-xl" style="padding-top:80px">
     <div class="card shadow-sm border-0">
         <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
             <h5 class="mb-0">
@@ -106,7 +106,6 @@
 <script>
     $(document).ready(function() {
         $('.select2').select2({
-            placeholder: "-- Pilih --",
             width: '100%'
         });
     });

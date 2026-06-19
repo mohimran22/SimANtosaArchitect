@@ -130,8 +130,8 @@
                         @foreach($survey->documentations as $doc)
                             <div class="col-6 col-md-3">
                                 <div class="border rounded shadow-sm p-1">
-                                    <img src="{{ asset('storage/'.$img->file_path) }}"
-                                        data-src="{{ asset('storage/'.$img->file_path) }}"
+                                    <img src="{{ asset('storage/'.$doc->file_path) }}"
+                                        data-src="{{ asset('storage/'.$doc->file_path) }}"
                                         class="img-fluid rounded preview-image"
                                         style="height:150px; object-fit:cover; cursor:pointer;">
                                 </div>
