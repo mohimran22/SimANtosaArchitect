@@ -26,8 +26,8 @@ use App\Models\BuildPlans;
 use App\Models\WeeklyReport;
 use App\Models\User;
 use App\Services\ProjectNotifier;
-use App\Services\BuildPlanSyncService;
 use App\Services\BuildProcessSyncService;
+use App\Services\BuildPlanSyncService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
@@ -209,7 +209,7 @@ public function create(Request $request)
     if ($activeStep >= 6 && $project) {
         $viewData = array_merge($viewData, $this->resolveInvoiceData($project));
     }
-
+    // ── Build data (type 3, step >= 8) ──
     if ($projectType == 3 && $activeStep >= 8 && $project) {
         $viewData = array_merge($viewData, $this->resolveBuildData($project));
     }
@@ -229,8 +229,8 @@ private function loadBaseProject($projectId)
         'employee',
         'levels.employees',
         'planning',
-        'invoices',                           
-        'rab:id,project_id,job_duration',     
+        'invoices',                           // Untuk surveyInvoice & invoiceFinal check di Blade
+        'rab:id,project_id,job_duration',     // Hanya ambil field yang perlu
     ])->findOrFail($projectId);
 }
 private function resolveExtraRelations(int $activeStep, ?int $projectType): array
@@ -371,7 +371,43 @@ private function resolveBuildData($project): array
         ->keyBy('minggu');
     return compact('weeks', 'usedDates', 'nextDate', 'reports', 'buildItems', 'groupedItems', 'weeklyReports');
 }
+private function resolveBuildPlanData($project): array
+{
+    $buildPlans = BuildPlans::query()
+        ->where('project_id', $project->id)
+        ->with('weeks:id,build_plan_id,week_no,plan_percent')
+        ->orderBy('category_order')
+        ->orderBy('uraian_order')
+        ->orderBy('item_order')
+        ->get();
 
+    $buildPlans->each(function ($item) {
+        $item->progress_map = $item->weeks->keyBy('week_no');
+    });
+
+    $groupedPlans = $buildPlans
+        ->sortBy([
+            ['category_order', 'asc'],
+            ['uraian_order', 'asc'],
+            ['item_order', 'asc'],
+        ])
+        ->groupBy('category_order')
+        ->map(function ($items) {
+            return [
+                'category_name' => $items->first()->category_name,
+                'uraians'       => $items
+                    ->groupBy('uraian_order')
+                    ->map(function ($rows) {
+                        return [
+                            'uraian_name' => $rows->first()->uraian_name,
+                            'items'       => $rows->sortBy('item_order')->values(),
+                        ];
+                    }),
+            ];
+        });
+
+    return compact('buildPlans', 'groupedPlans');
+}
     public function store(ProjectRequest $request)
 {
     abort_if(auth()->user()->cannot('lihat daftar proyek'), 403);
@@ -525,6 +561,7 @@ private function stepKeyMap()
     ];
 }
 
+
 public function update(Request $request, Project $project)
 {
     abort_if(auth()->user()->cannot('lihat daftar proyek'), 403);
@@ -643,19 +680,6 @@ public function loadTambahan(BuildProcessItem $item)
         ]
     )->render();
 }
-public function syncBuildPlan(Project $project)
-{
-    app(BuildPlanSyncService::class)
-        ->syncFull($project);
-
-    $project->update([
-        'need_sync_build' => false
-    ]);
-    return back()->with(
-        'success',
-        'Build process berhasil disinkronkan.'
-    );
-}
 public function syncBuildProcess(Project $project)
 {
     app(BuildProcessSyncService::class)
@@ -669,115 +693,17 @@ public function syncBuildProcess(Project $project)
         'Build process berhasil disinkronkan.'
     );
 }
-public function data(Project $project)
+public function syncBuildPlan(Project $project)
 {
-    $weeks = $project->week_labels;
-    $query = BuildPlans::query()
-        ->with('weeks')
-        ->where('project_id',$project->id)
-        ->ordered();
-    $dataTable = DataTables::eloquent($query)
-        ->addIndexColumn()
-        ->addColumn('total_format',function($row){
-            return 'Rp '.number_format(
-                $row->total,
-                0,
-                ',',
-                '.'
-            );
-        })
-        ->addColumn('bobot_format',function($row){
-            return number_format(
-                $row->bobot_percent,
-                3,
-                '.',
-                ''
-            );
-        })
-        ->addColumn('week_values',function($row) use($weeks){
-            $values=[];
-            foreach($weeks as $week){
-                $progress=$row->weeks
-                    ->firstWhere(
-                        'week_no',
-                        $week['week_no']
-                    );
-                $values[$week['week_no']] = $progress?->plan_percent ?? 0;
-            }
-            return $values;
-        });
-    $response=$dataTable->make(true);
-
-    $plans = BuildPlans::with('weeks')
-        ->where('project_id',$project->id)
-        ->get();
-
-    $weekTotal=[];
-
-    foreach($weeks as $week){
-        $weekTotal[$week['week_no']] =
-            $plans->sum(function($plan) use($week){
-                return $plan->weeks
-                    ->where(
-                        'week_no',
-                        $week['week_no']
-                    )
-                    ->sum('plan_percent');
-            });
-    }
-
-    $kumulatif=[];
-    $running=0;
-    foreach($weekTotal as $week=>$total){
-        $running += $total;
-        $kumulatif[$week]=$running;
-    }
-
-    return $dataTable
-        ->with([
-            'week_total'=>$weekTotal,
-            'week_kumulatif'=>$kumulatif
-        ])
-        ->make(true);
-
-}
-
-private function resolveBuildPlanData($project): array
-{
-    $canEdit = auth()->user()->can('lihat daftar proyek');
-    $buildPlans = BuildPlans::query()
-        ->where('project_id', $project->id)
-        ->with('weeks:id,build_plan_id,week_no,plan_percent')
-        ->orderBy('category_order')
-        ->orderBy('uraian_order')
-        ->orderBy('item_order')
-        ->get();
-
-    $buildPlans->each(function ($item) {
-        $item->progress_map = $item->weeks->keyBy('week_no');
-    });
-
-    $groupedPlans = $buildPlans
-        ->sortBy([
-            ['category_order', 'asc'],
-            ['uraian_order', 'asc'],
-            ['item_order', 'asc'],
-        ])
-        ->groupBy('category_order')
-        ->map(function ($items) {
-            return [
-                'category_name' => $items->first()->category_name,
-                'uraians'       => $items
-                    ->groupBy('uraian_order')
-                    ->map(function ($rows) {
-                        return [
-                            'uraian_name' => $rows->first()->uraian_name,
-                            'items'       => $rows->sortBy('item_order')->values(),
-                        ];
-                    }),
-            ];
-        });
-
-    return compact('buildPlans', 'groupedPlans', 'canEdit');
+    app(BuildPlanSyncService::class)
+        ->sync($project);
+        
+    $project->update([
+        'need_sync_plan' => false
+    ]);
+    return back()->with(
+        'success',
+        'Form perencanaan berhasil diperbarui'
+    );
 }
 }

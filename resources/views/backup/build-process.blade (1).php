@@ -14,14 +14,6 @@
 
     $plans = $project->weeklyPlans
         ->keyBy('week_no');
-    function alphaIndex($n) {
-        $result = '';
-        while ($n >= 0) {
-            $result = chr(($n % 26) + 65) . $result;
-            $n = intdiv($n, 26) - 1;
-        }
-        return $result;
-    }
 @endphp
 
         <x-collapse-card title="Tahap Pelaksanaan Proyek" target="proyek-build-body">

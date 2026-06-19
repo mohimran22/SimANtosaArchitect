@@ -430,12 +430,7 @@
                             </x-slot:actions>
                             @include('projects.steps.rab-process')
                         @elseif($project->project_type == 3)
-                                {{-- <div id="build-plan-container">
-                                    <div class="text-center py-4">
-                                        Loading...
-                                    </div>
-                                </div> --}}
-                                @include('projects.steps.build-plan')
+                            @include('projects.steps.build-plan')
                         @endif
                     
                 </x-collapse-card>

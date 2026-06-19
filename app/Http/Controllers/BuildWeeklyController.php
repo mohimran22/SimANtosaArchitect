@@ -496,7 +496,7 @@ public function exportPdf(Request $request, Project $project) {
     )->render();
 
     $detailHtml = view(
-        'build.pdf-detail',
+        'build.pdf.detail',
         [
             'project'      => $project,
             'groupedItems' => $groupedItems,

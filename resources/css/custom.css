@@ -831,6 +831,26 @@ tr.row-uraian td.sticky-col{
     background: #ffff;
     font-weight: 600;
 }
+.group-category td{
+
+    background:#f5f5f5;
+
+    font-weight:bold;
+
+}
+
+
+.group-uraian td{
+
+    background:#fafafa;
+
+    font-weight:600;
+
+}
+.week-plan{
+    width:70px!important;
+    text-align:center;
+}
 #rabItemsTableEdit col:nth-child(1){ width:50px }
 #rabItemsTableEdit col:nth-child(2){ width:35% }
 #rabItemsTableEdit col:nth-child(3){ width:90px }

@@ -29,7 +29,7 @@
 
                     <div class="col-md-3 d-flex gap-2">
                         @if(!$isReadOnly)
-                            <form action="{{ route('projects.sync-build', $project->id) }}"
+                            <form action="{{ route('projects.sync-build-plan', $project->id) }}"
                                 method="POST"
                                 class="d-inline"
                                 onsubmit="return confirm('Update form kemajuan pekerjaan dengan RAB terbaru?')">
@@ -46,7 +46,7 @@
                     </div>
                 
             <div class="table-responsive">
-                <table class="table table-bordered build-plan-table">
+                <table id="buildPlanTable" class="table table-bordered">
                     <colgroup>
                         <col style="width:60px">
                         <col style="width:320px">
@@ -87,101 +87,7 @@
                             @endforeach
                         </tr>
                     </thead>
-                    @php
-                    function alphaIndex($n) {
-                        $result = '';
-                        while ($n >= 0) {
-                            $result = chr(($n % 26) + 65) . $result;
-                            $n = intdiv($n, 26) - 1;
-                        }
-                        return $result;
-                    }
-                    @endphp
                     <tbody>
-                        @foreach($groupedPlans as $categoryData)
-
-                            @php
-                                $categoryNo = alphaIndex($loop->index);
-                            @endphp
-                            <tr class="row-category">
-                                <td colspan="6">
-                                    {{ $categoryNo }}. {{ strtoupper($categoryData['category_name']) }}
-                                </td>
-
-                                <td colspan="{{ $totalCols - 6 }}"></td>
-                            </tr>
-
-                            @foreach($categoryData['uraians'] as $uraianData)
-                                @php
-                                    $uraianNo = $loop->iteration;
-                                @endphp
-                                <tr class="row-uraian">
-                                    <td colspan="6">
-                                        {{ $uraianNo }}. {{ ucwords($uraianData['uraian_name']) }}
-                                    </td>
-
-                                    <td colspan="{{ $totalCols - 6 }}"></td>
-                                </tr>
-
-                                @foreach($uraianData['items'] as $item)
-                                            @php
-                                                $itemNo = $loop->iteration;
-                                            @endphp
-                                            <tr
-                                                data-item-id="{{ $item->id }}"
-                                                data-item-vol="{{ $item->volume }}"
-                                                data-item-bobot="{{ $item->bobot_percent }}">                              
-                                                <td>
-                                                    {{ $uraianNo }}.{{ $itemNo }}
-                                                </td>
-                                                <td class="uraian-pekerjaan">
-                                                    <div class="d-flex justify-content-between align-items-start">
-                                                        <div>
-                                                            {{ $item->item_name }}
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td>{{ $item->satuan }}</td>
-                                                <td class="text-center">
-                                                    {{ number_format($item->volume,2) }}
-                                                </td>
-
-                                                <td class="text-end">
-                                                    Rp {{ number_format($item->total,0,',','.') }}
-                                                </td>
-                                                <td width="120">
-                                                    <input type="number"
-                                                        step="0.001"
-                                                        class="form-control"
-                                                        data-id="{{ $item->id }}"
-                                                        value="{{ number_format($item->bobot_percent, 3, '.', '') }}"
-                                                        readonly>
-                                                </td>
-                                                    @foreach($project->week_labels as $w)
-                                                        @php
-                                                            $prog = $item->progress_map[$w['week_no']] ?? null;
-                                                        @endphp
-                                                        <td class="week-col">
-                                                            @if(!$isReadOnly)
-                                                            <input type="number"
-                                                                step="0.01"
-                                                                min="0"
-                                                                max="{{ $item->bobot_percent }}"
-                                                                class="form-control week-plan"
-                                                                data-item="{{ $item->id }}"
-                                                                data-week="{{ $w['week_no'] }}"
-                                                                value="{{ $prog->plan_percent ?? '' }}">
-                                                            @else
-                                                            <div class="form-control bg-light">
-                                                                {{ $prog->plan_percent ?? '' }}
-                                                            </div>
-                                                            @endif
-                                                        </td>                           
-                                                    @endforeach
-                                            </tr>
-                                @endforeach
-                            @endforeach
-                        @endforeach
                     </tbody>
                     <tfoot>
                         <tr>
@@ -404,348 +310,539 @@ document.addEventListener('DOMContentLoaded', function () {
     );
 });
 </script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        $(document).on('focus', '.week-plan', function(){
+            this.dataset.old = this.value || 0;
+        });
 
-            document.querySelectorAll('.week-plan').forEach(el => {
+        $(document).on('input', '.week-plan', function(){
 
-                // simpan nilai lama
-                el.dataset.old = el.value || 0;
+            const target = this;
 
-                el.addEventListener('focus', function () {
+            const itemId = target.dataset.item;
 
-                    this.dataset.old = this.value || 0;
+            const isValid = validateItemPlan(itemId);
 
-                });
+            if(!isValid){
 
-                el.addEventListener('input', e => {
+                target.value = target.dataset.old || '';
 
-                    const target = e.target;
-
-                    const itemId = target.dataset.item;
-
-                    const isValid = validateItemPlan(itemId);
-
-                    if(!isValid){
-
-                        // rollback ke nilai sebelumnya
-                        target.value = target.dataset.old || '';
-
-                        return;
-                    }
-
-                    autosavePlan(
-                        itemId,
-                        target.dataset.week,
-                        parseFloat(target.value) || 0
-                    );
-
-                    calculateFooterPlan();
-                    updateKurvaPlanRealtime();
-
-                });
-
-            });
-
-            const ctx = document.getElementById('kurvaSChart');
-            ctx.width = Math.max({{ $weekCount }} * 50, 900);
-            if(!ctx || typeof Chart === 'undefined') {
-
-                console.error('Chart.js belum load');
                 return;
 
             }
 
-            const dataAwal = @json($project->getKurvaSData() ?? []);
-            const labels = []; for(let i = 1; i <= {{ $weekCount }}; i++){ labels.push('M' + i); }
-            const realisasi = []; for(let i = 1; i <= {{ $weekCount }}; i++){ const found = dataAwal.find(d => d.week == i); realisasi.push( found ? found.progress : 0 ); }
-
-            window.kurvaChart = new Chart(ctx, {
-
-                type: 'line',
-
-                data: {
-
-                    labels: labels,
-
-                    datasets: [
-
-                        {
-                            label:'Realisasi (%)',
-                            data: realisasi,
-                            tension:0.3
-                        },
-
-                        {
-                            label:'Rencana (%)',
-                            data:getPlanKumulatif(),
-                            tension:0.3
-                        }
-
-                    ]
-
-                },
-
-                options:{
-                    animation:false,
-                    responsive:true,
-                    maintainAspectRatio:false,
-
-                    scales:{
-                        x:{
-                            ticks:{
-                                autoSkip:true,
-                                maxTicksLimit:5
-                            }
-                        },
-
-                        y:{
-                            beginAtZero:true,
-                            max:100
-                        }
-                    }
-                }
-
-            });
+            autosavePlan(
+                itemId,
+                target.dataset.week,
+                parseFloat(target.value) || 0
+            );
 
             calculateFooterPlan();
+
             updateKurvaPlanRealtime();
+        });
+    });
+
+    function initKurvaChart(){
+        const ctx = document.getElementById('kurvaSChart');
+        ctx.width = Math.max({{ $weekCount }} * 50, 900);
+        if(!ctx || typeof Chart === 'undefined') {
+
+            console.error('Chart.js belum load');
+            return;
+
+        }
+        const dataAwal = @json($project->getKurvaSData() ?? []);
+        const labels = []; for(let i = 1; i <= {{ $weekCount }}; i++){ labels.push('M' + i); }
+        const realisasi = []; for(let i = 1; i <= {{ $weekCount }}; i++){ const found = dataAwal.find(d => d.week == i); realisasi.push( found ? found.progress : 0 ); }
+
+        window.kurvaChart = new Chart(ctx, {
+
+            type: 'line',
+
+            data: {
+
+                labels: labels,
+
+                datasets: [
+
+                    {
+                        label:'Realisasi (%)',
+                        data: realisasi,
+                        tension:0.3
+                    },
+
+                    {
+                        label:'Rencana (%)',
+                        data:getPlanKumulatif(),
+                        tension:0.3
+                    }
+
+                ]
+
+            },
+
+            options:{
+                animation:false,
+                responsive:true,
+                maintainAspectRatio:false,
+
+                scales:{
+                    x:{
+                        ticks:{
+                            autoSkip:true,
+                            maxTicksLimit:5
+                        }
+                    },
+
+                    y:{
+                        beginAtZero:true,
+                        max:100
+                    }
+                }
+            }
+
+        });
+    }
+    function getWeeklyPlanTotal(week){
+
+        let total = 0;
+
+        document.querySelectorAll(
+            `.week-plan[data-week="${week}"]`
+        ).forEach(el => {
+
+            total += parseFloat(el.value) || 0;
 
         });
 
-        function getWeeklyPlanTotal(week){
+        return total;
 
-            let total = 0;
+    }
+
+    function getPlanKumulatif(){
+
+        let weekCount = {{ $weekCount }};
+        let jalan = 0;
+        let data = [];
+
+        for(let w = 1; w <= weekCount; w++){
+
+            jalan += getWeeklyPlanTotal(w);
+
+            data.push(jalan);
+
+        }
+
+        return data;
+
+    }
+
+    function calculateFooterPlan(){
+
+        let weekCount = {{ $weekCount }};
+
+        let kumulatif = 0;
+
+        for(let w = 1; w <= weekCount; w++){
+
+            let total = getWeeklyPlanTotal(w);
+
+            kumulatif += total;
+
+            // mingguan
+            const mingguanEl =
+                document.getElementById(`total-plan-${w}`);
+
+            if(mingguanEl){
+
+                mingguanEl.innerText =
+                    total.toFixed(3);
+
+            }
+
+            // kumulatif
+            const kumulatifEl =
+                document.getElementById(`kumulatif-plan-${w}`);
+
+            if(kumulatifEl){
+
+                kumulatifEl.innerText =
+                    kumulatif.toFixed(3);
+
+            }
+
+        }
+
+        validatePlanTotal();
+
+    }
+
+    function updateKurvaPlanRealtime(){
+
+        if(!window.kurvaChart) return;
+
+        window.kurvaChart.data.datasets[1].data =
+            getPlanKumulatif();
+
+        window.kurvaChart.update();
+
+    }
+
+    function rebuildKurvaFromTable(){
+
+        let weekCount = {{ $weekCount }};
+        let kumulatif = [];
+        let jalan = 0;
+
+        for(let w = 1; w <= weekCount; w++){
+
+            let sumBobot = 0;
 
             document.querySelectorAll(
-                `.week-plan[data-week="${week}"]`
+                `.week-bobot[data-week="${w}"]`
             ).forEach(el => {
 
-                total += parseFloat(el.value) || 0;
+                sumBobot += parseFloat(el.innerText) || 0;
 
             });
 
-            return total;
+            jalan += sumBobot;
+
+            kumulatif.push(jalan);
 
         }
 
-        function getPlanKumulatif(){
+        return kumulatif;
 
-            let weekCount = {{ $weekCount }};
-            let jalan = 0;
-            let data = [];
+    }
 
-            for(let w = 1; w <= weekCount; w++){
+    function updateKurvaChartRealtime(){
 
-                jalan += getWeeklyPlanTotal(w);
+        if(!window.kurvaChart) return;
 
-                data.push(jalan);
+        window.kurvaChart.data.datasets[0].data =
+            rebuildKurvaFromTable();
 
-            }
+        window.kurvaChart.update();
 
-            return data;
+    }
 
-        }
+    function validatePlanTotal(){
 
-        function calculateFooterPlan(){
+        let total = 0;
 
-            let weekCount = {{ $weekCount }};
+        let weekCount = {{ $weekCount }};
 
-            let kumulatif = 0;
+        for(let w = 1; w <= weekCount; w++){
 
-            for(let w = 1; w <= weekCount; w++){
-
-                let total = getWeeklyPlanTotal(w);
-
-                kumulatif += total;
-
-                // mingguan
-                const mingguanEl =
-                    document.getElementById(`total-plan-${w}`);
-
-                if(mingguanEl){
-
-                    mingguanEl.innerText =
-                        total.toFixed(3);
-
-                }
-
-                // kumulatif
-                const kumulatifEl =
-                    document.getElementById(`kumulatif-plan-${w}`);
-
-                if(kumulatifEl){
-
-                    kumulatifEl.innerText =
-                        kumulatif.toFixed(3);
-
-                }
-
-            }
-
-            validatePlanTotal();
+            total += getWeeklyPlanTotal(w);
 
         }
 
-        function updateKurvaPlanRealtime(){
+        console.log('Total Plan:', total);
 
-            if(!window.kurvaChart) return;
+        if(Math.abs(total - 100) > 0.01){
 
-            window.kurvaChart.data.datasets[1].data =
-                getPlanKumulatif();
-
-            window.kurvaChart.update();
+            console.warn("Total rencana ≠ 100%");
 
         }
 
-        function rebuildKurvaFromTable(){
+    }
 
-            let weekCount = {{ $weekCount }};
-            let kumulatif = [];
-            let jalan = 0;
+    function autosavePlan(itemId, week, val){
+        console.log({
+            item: itemId,
+            week: week,
+            val: val
+        });
+        fetch("{{ route('build-week-plan.update') }}", {
 
-            for(let w = 1; w <= weekCount; w++){
+            method: "POST",
 
-                let sumBobot = 0;
+            headers: {
 
-                document.querySelectorAll(
-                    `.week-bobot[data-week="${w}"]`
-                ).forEach(el => {
+                "Content-Type":"application/json",
 
-                    sumBobot += parseFloat(el.innerText) || 0;
+                "X-CSRF-TOKEN":
+                    document.querySelector(
+                        'meta[name=csrf-token]'
+                    ).content
 
-                });
+            },
 
-                jalan += sumBobot;
+            body: JSON.stringify({
 
-                kumulatif.push(jalan);
-
-            }
-
-            return kumulatif;
-
-        }
-
-        function updateKurvaChartRealtime(){
-
-            if(!window.kurvaChart) return;
-
-            window.kurvaChart.data.datasets[0].data =
-                rebuildKurvaFromTable();
-
-            window.kurvaChart.update();
-
-        }
-
-        function validatePlanTotal(){
-
-            let total = 0;
-
-            let weekCount = {{ $weekCount }};
-
-            for(let w = 1; w <= weekCount; w++){
-
-                total += getWeeklyPlanTotal(w);
-
-            }
-
-            console.log('Total Plan:', total);
-
-            if(Math.abs(total - 100) > 0.01){
-
-                console.warn("Total rencana ≠ 100%");
-
-            }
-
-        }
-
-        function autosavePlan(itemId, week, val){
-            console.log({
-                item: itemId,
-                week: week,
-                val: val
-            });
-            fetch("{{ route('build-week-plan.update') }}", {
-
-                method: "POST",
-
-                headers: {
-
-                    "Content-Type":"application/json",
-
-                    "X-CSRF-TOKEN":
-                        document.querySelector(
-                            'meta[name=csrf-token]'
-                        ).content
-
-                },
-
-                body: JSON.stringify({
-
-                    project_id: "{{ $project->id }}",
-                    build_plan_id: itemId,
-                    week_no: week,
-                    plan_percent: val
-
-                })
+                project_id: "{{ $project->id }}",
+                build_plan_id: itemId,
+                week_no: week,
+                plan_percent: val
 
             })
-            .then(async r => {
 
-                const res = await r.json();
+        })
+        .then(async r => {
 
-                console.log(res);
+            const res = await r.json();
 
-                if(!r.ok){
+            console.log(res);
 
-                    console.error(res);
+            if(!r.ok){
 
-                }
+                console.error(res);
 
-            })
-            .catch(err => {
+            }
 
-                console.error(err);
+        })
+        .catch(err => {
 
-            });
+            console.error(err);
 
-        }
-        function validateItemPlan(itemId)
-        {
-            let total = 0;
+        });
 
-            document.querySelectorAll(
-                `.week-plan[data-item="${itemId}"]`
-            ).forEach(el => {
+    }
+    function validateItemPlan(itemId)
+    {
 
-                total += parseFloat(el.value) || 0;
+        let total = 0;
 
-            });
+        let bobot =
+            parseFloat(
+                document.querySelector(
+                    `.week-plan[data-item="${itemId}"]`
+                )
+                ?.dataset
+                .bobot
+            ) || 0;
 
-            const row = document.querySelector(
-                `tr[data-item-id="${itemId}"]`
+
+        document.querySelectorAll(`.week-plan[data-item="${itemId}"]`)
+        .forEach(el=>{
+            total += parseFloat(el.value)||0;
+        });
+        if(total > bobot + 0.001){
+            alert(
+                `Total plan item melebihi bobot ${bobot}%`
             );
+            return false;
+        }
+        return true;
+    }
+</script>
+<script>
+    let weeks = @json($project->week_labels);
 
-            const bobot =
-                parseFloat(row.dataset.itemBobot) || 0;
+    let columns = [
+        {
+            data:'DT_RowIndex',
+            name:'DT_RowIndex',
+            orderable:false,
+            searchable:false,
+        },
 
-            console.log({
-                itemId,
-                total,
-                bobot
-            });
+        {
+            data:'item_name',
+            name:'item_name',
+        },
 
-            // toleransi decimal
-            if(total > (bobot + 0.001)){
+        {
+            data:'satuan',
+            name:'satuan',
+        },
 
-                alert(
-                    `Total plan item melebihi bobot ${bobot}%`
+        {
+            data:'volume',
+            name:'volume',
+        },
+
+        {
+            data:'total_format',
+            name:'total_format',
+        },
+
+
+        {
+            data:'bobot_format',
+            name:'bobot_format',
+        }
+
+    ];
+
+    weeks.forEach(function(w){
+        columns.push({
+            data:'week_values.'+w.week_no,
+            width:"95px",
+            className:"text-center",
+            defaultContent:'',
+            orderable:false,
+            render:function(data,type,row){
+                return `
+                <input type="number" step="0.001" class="form-control week-plan"
+                    data-item="${row.id}"
+                    data-week="${w.week_no}"
+                    data-bobot="${row.bobot_percent}"
+                    value="${data ?? 0}"
+                >
+                `;
+            }
+        });
+    });
+    function alphaIndex(n) {
+        let result = '';
+
+        while (n >= 0) {
+            result = String.fromCharCode((n % 26) + 65) + result;
+            n = Math.floor(n / 26) - 1;
+        }
+
+        return result;
+    }
+    $('#buildPlanTable').DataTable({
+
+        processing:true,
+        serverSide:true,
+        searching: false,
+        lengthChange: false,
+        paging: false,
+        info: false,
+        ordering: false,
+        autoWidth: false,
+        dom: 't',
+        columnDefs:[
+            {
+                targets:0,
+                width:"60px"
+            },
+            {
+                targets:1,
+                width:"320px"
+            },
+            {
+                targets:[2,3],
+                width:"90px"
+            },
+            {
+                targets:4,
+                width:"140px"
+            },
+            {
+                targets:5,
+                width:"100px"
+            }
+        ],
+        ajax:{
+            url:"{{ route('build-plan.data',$project->id) }}",
+            type:"POST",
+            headers:{
+                'X-CSRF-TOKEN':
+                '{{ csrf_token() }}'
+            },
+            dataSrc:function(json){
+                window.weekTotal = json.week_total ?? {};
+                window.weekKumulatif = json.week_kumulatif ?? {};
+                return json.data;
+            }
+        },
+        columns:columns,
+        drawCallback:function(){
+
+            let api = this.api();
+
+            let rows = api.rows({
+                page:'current'
+            }).nodes();
+
+            let data = api.rows({
+                page:'current'
+            }).data();
+
+            let lastCategory = null;
+            let lastUraian = null;
+
+            let categoryIndex = 0;
+            let uraianIndex = 0;
+            let itemIndex = 0;
+
+            data.each(function(row,i){
+
+                // CATEGORY
+                if(row.category_name !== lastCategory){
+
+                    categoryIndex++;
+                    uraianIndex = 0;
+                    itemIndex = 0;
+                    lastUraian = null;
+
+                    $(rows[i]).before(`
+                        <tr class="row-category">
+                            <td class="text-center fw-bold">
+                                ${alphaIndex(categoryIndex - 1)}
+                            </td>
+                            <td colspan="${api.columns().count()-1}">
+                                <strong>${row.category_name.toUpperCase()}</strong>
+                            </td>
+                        </tr>
+                    `);
+
+                    lastCategory = row.category_name;
+                }
+
+                // URAIAN
+                if(row.uraian_name !== lastUraian){
+
+                    uraianIndex++;
+                    itemIndex = 0;
+
+                    $(rows[i]).before(`
+                        <tr class="row-uraian">
+                            <td class="text-center">
+                                ${uraianIndex}.
+                            </td>
+                            <td colspan="${api.columns().count()-1}">
+                                ${row.uraian_name}
+                            </td>
+                        </tr>
+                    `);
+
+                    lastUraian = row.uraian_name;
+                }
+
+                // ITEM
+                itemIndex++;
+
+                $('td:eq(0)', rows[i]).html(
+                    uraianIndex + '.' + itemIndex
                 );
 
-                return false;
-            }
+            });
 
-            return true;
+            // total mingguan
+            Object.entries(window.weekTotal).forEach(([week,total])=>{
+                $('#total-plan-'+week).html(
+                    Number(total).toFixed(3)
+                );
+            });
+
+            Object.entries(window.weekKumulatif).forEach(([week,total])=>{
+                $('#kumulatif-plan-'+week).html(
+                    Number(total).toFixed(3)
+                );
+            });
+                        $('.week-plan').each(function(){
+                if(this.dataset.old === undefined){
+                    this.dataset.old =
+                        this.value || 0;
+                }
+            });
+            if(!window.chartInitialized){
+
+                initKurvaChart();
+
+                window.chartInitialized=true;
+
+            }
         }
-    </script>
+    });
+</script>
 @endpush
