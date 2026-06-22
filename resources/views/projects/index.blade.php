@@ -40,6 +40,7 @@
                                  Daftar Proyek
                             </h2>
                         </div>
+
                         <div class="table-responsive">
                             <table id="tableProjects" class="table card-table table-vcenter text-nowrap">
                                 <thead>

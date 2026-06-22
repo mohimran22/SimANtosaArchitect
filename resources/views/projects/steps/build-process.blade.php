@@ -14,14 +14,14 @@
 
     $plans = $project->weeklyPlans
         ->keyBy('week_no');
-    function alphaIndex($n) {
-        $result = '';
-        while ($n >= 0) {
-            $result = chr(($n % 26) + 65) . $result;
-            $n = intdiv($n, 26) - 1;
-        }
-        return $result;
-    }
+    // function alphaIndex($n) {
+    //     $result = '';
+    //     while ($n >= 0) {
+    //         $result = chr(($n % 26) + 65) . $result;
+    //         $n = intdiv($n, 26) - 1;
+    //     }
+    //     return $result;
+    // }
 @endphp
 
         <x-collapse-card title="Tahap Pelaksanaan Proyek" target="proyek-build-body">
@@ -90,8 +90,10 @@
                         </form>
                     </div>
                 </div>
-
-                <div class="table-responsive">
+                <div class="table-scroll-top">
+                    <div></div>
+                </div>
+                <div class="table-responsive" id="tableWrapper">>
                     <table class="table table-bordered progress-table">
                             <colgroup>
                                 <col style="width:50px;">   
@@ -735,7 +737,7 @@
                         table.offsetHeight; 
                         table.style.display = "";
                     requestAnimationFrame(() => {
-                        // applyAutoFreeze();
+                        applyAutoFreeze();
                         recalcAll();
                     });
                 }
@@ -1570,4 +1572,30 @@
 
         });
     </script>
+    <script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const topScroll = document.querySelector('.table-scroll-top');
+    const topContent = topScroll.querySelector('div');
+    const bottomScroll = document.querySelector('.table-responsive');
+
+    function syncWidth() {
+        topContent.style.width =
+            bottomScroll.scrollWidth + 'px';
+    }
+
+    syncWidth();
+
+    window.addEventListener('resize', syncWidth);
+
+    topScroll.addEventListener('scroll', function () {
+        bottomScroll.scrollLeft = topScroll.scrollLeft;
+    });
+
+    bottomScroll.addEventListener('scroll', function () {
+        topScroll.scrollLeft = bottomScroll.scrollLeft;
+    });
+
+});
+</script>
 @endpush
