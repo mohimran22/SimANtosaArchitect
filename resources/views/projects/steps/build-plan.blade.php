@@ -170,6 +170,7 @@
                                                                 class="form-control week-plan"
                                                                 data-item="{{ $item->id }}"
                                                                 data-week="{{ $w['week_no'] }}"
+                                                                data-bobot="{{ $item->bobot_percent }}"   {{-- ← tambahkan ini --}}
                                                                 value="{{ $prog->plan_percent ?? '' }}">
                                                             @else
                                                             <div class="form-control bg-light">
@@ -370,9 +371,10 @@
             );
 
             calculateFooterPlan();
-
             updateKurvaPlanRealtime();
         });
+        calculateFooterPlan();
+        initKurvaChart();
     });
 
     function initKurvaChart(){
@@ -436,20 +438,14 @@
 
         });
     }
-    function getWeeklyPlanTotal(week){
-
+    function getWeeklyPlanTotal(week) {
         let total = 0;
-
-        document.querySelectorAll(
-            `.week-plan[data-week="${week}"]`
-        ).forEach(el => {
-
-            total += parseFloat(el.value) || 0;
-
+        document.querySelectorAll(`.week-plan[data-week="${week}"]`).forEach(el => {
+            // Handle baik <input> maupun <div>
+            const val = el.tagName === 'INPUT' ? el.value : el.innerText;
+            total += parseFloat(val) || 0;
         });
-
         return total;
-
     }
 
     function getPlanKumulatif(){
