@@ -671,6 +671,23 @@
                         }
                     });
                 });
+                    const headerRows = table.querySelectorAll("thead tr");
+                    const firstRow = headerRows[0];
+                    Array.from(firstRow.children).forEach(th => {
+                        th.style.position = "sticky";
+                        th.style.top = "0px";
+                        th.style.zIndex = th.classList.contains("sticky-col") ? "110" : "100";
+                        th.style.background = th.style.background || "#f8f9fa";
+                    });
+
+                    const firstRowHeight = firstRow.offsetHeight;
+                    const secondRow = headerRows[1];
+                    Array.from(secondRow.children).forEach(th => {
+                        th.style.position = "sticky";
+                        th.style.top = firstRowHeight + "px";
+                        th.style.zIndex = th.classList.contains("sticky-col") ? "110" : "100";
+                        th.style.background = th.style.background || "#f8f9fa";
+                    });
             }
         document.addEventListener('DOMContentLoaded', function() {
 

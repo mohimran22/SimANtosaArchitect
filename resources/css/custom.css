@@ -813,7 +813,7 @@ tr.row-uraian td.sticky-col{
 #buildPlanTable{
     border-collapse: separate;
     table-layout: fixed !important;
-    min-width: max-content !important;
+    min-width: max-content;
 }
 
 #buildPlanTable .sticky-col{
@@ -1095,12 +1095,10 @@ input[type=number]::-webkit-outer-spin-button {
     margin-bottom: 0;
     border: none;
     background: transparent;
-    width: 100%;
 }
 
 .table-scroll-top > div {
     height: 1px;
-    /* width diset via JS */
 }
 .table-scroll-tops {
     overflow-x: scroll;  /* pakai scroll bukan auto */

@@ -717,12 +717,13 @@ public function data(Project $project)
     foreach($weeks as $week){
         $weekTotal[$week['week_no']] =
             $plans->sum(function($plan) use($week){
-                return $plan->weeks
-                    ->where(
-                        'week_no',
-                        $week['week_no']
-                    )
-                    ->sum('plan_percent');
+                $weekPlan = $plan->weeks
+                    ->firstWhere('week_no', $week['week_no']);
+                
+                $planPersen = $weekPlan?->plan_percent ?? 0;
+                $bobot = $plan->bobot_percent ?? 0;
+                
+                return ($planPersen / 100) * $bobot;
             });
     }
 

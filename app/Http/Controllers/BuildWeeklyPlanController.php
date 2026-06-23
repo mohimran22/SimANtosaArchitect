@@ -12,35 +12,25 @@ class BuildWeeklyPlanController extends Controller
     public function update(Request $request)
     {
         $request->validate([
-
             'build_plan_id' => 'required|exists:build_plans,id',
             'week_no'       => 'required|integer',
             'plan_percent'  => 'nullable|numeric',
 
         ]);
-
         $plan = BuildPlanWeek::updateOrCreate(
 
             [
-
                 'build_plan_id' => $request->build_plan_id,
                 'week_no'       => $request->week_no,
 
             ],
-
             [
-
                 'plan_percent'  => $request->plan_percent ?? 0,
-
             ]
-
         );
-
         return response()->json([
-
             'success' => true,
             'data'    => $plan
-
         ]);
     }
 }

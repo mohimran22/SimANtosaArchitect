@@ -27,7 +27,7 @@
                 </tr>
                 </table>
 
-                    {{-- <div class="col-md-3 d-flex gap-2">
+                    <div class="col-md-3 d-flex gap-2">
                         @if(!$isReadOnly)
                             <form action="{{ route('projects.sync-build-plan', $project->id) }}"
                                 method="POST"
@@ -43,12 +43,12 @@
 
                             </form>
                         @endif
-                    </div> --}}
+                    </div>
                     <div class="table-scroll-top">
                         <div></div>
                     </div>
                     <div class="table-plan">
-                        <table id="buildPlanTable" class="table table-bordered">
+                        <table id="buildPlanTable" class="table card-table table-vcenter text-nowrap">
                             <colgroup>
                                 <col style="width:60px">
                                 <col style="width:320px">
@@ -67,10 +67,8 @@
                                     <th rowspan="2" class="align-middle text-center">Uraian Pekerjaan</th>
 
                                     <th colspan="4" class="align-middle text-center">TERKONTRAK</th>
-                                    
-
                                     @foreach($project->week_labels as $w)
-                                        <th class="text-center week-head" data-week="{{ $w['week_no'] }}">
+                                        <th class="text-center" data-week="{{ $w['week_no'] }}">
                                                 <div>M{{ $w['week_no'] }}</div>
                                                 {{-- <small class="text-muted d-block text-nowrap">
                                                     {{ $w['start'] }} - {{ $w['end'] }}
@@ -250,32 +248,27 @@ function applyFreeze() {
         });
 
         $(document).on('input', '.week-plan', function(){
-
             const target = this;
-
             const itemId = target.dataset.item;
+            const week = target.dataset.week;
+            const bobot = parseFloat(target.dataset.bobot) || 0;
+            const persen = parseFloat(target.value) || 0;
+
+            // Tampilkan nilai hasil kalkulasi langsung
+            const nilaiHasil = (persen / 100) * bobot;
+            const nilaiEl = document.querySelector(`.week-plan-nilai[data-item="${itemId}"][data-week="${week}"]`);
+            if(nilaiEl) nilaiEl.innerText = `= ${nilaiHasil.toFixed(3)}`;
 
             const isValid = validateItemPlan(itemId);
-
             if(!isValid){
-
                 target.value = target.dataset.old || '';
-
                 return;
-
             }
 
-            autosavePlan(
-                itemId,
-                target.dataset.week,
-                parseFloat(target.value) || 0
-            );
-
+            autosavePlan(itemId, week, persen);  // kirim nilai persen ke server
             calculateFooterPlan();
             updateKurvaPlanRealtime();
         });
-        calculateFooterPlan();
-        // initKurvaChart();
     });
 
     function initKurvaChart(){
@@ -342,9 +335,10 @@ function applyFreeze() {
     function getWeeklyPlanTotal(week) {
         let total = 0;
         document.querySelectorAll(`.week-plan[data-week="${week}"]`).forEach(el => {
-            // Handle baik <input> maupun <div>
             const val = el.tagName === 'INPUT' ? el.value : el.innerText;
-            total += parseFloat(val) || 0;
+            const persen = parseFloat(val) || 0;
+            const bobot = parseFloat(el.dataset.bobot) || 0;
+            total += (persen / 100) * bobot;  // <-- konversi persen ke nilai bobot
         });
         return total;
     }
@@ -532,29 +526,19 @@ function applyFreeze() {
     }
     function validateItemPlan(itemId)
     {
-
-        let total = 0;
-
-        let bobot =
-            parseFloat(
-                document.querySelector(
-                    `.week-plan[data-item="${itemId}"]`
-                )
-                ?.dataset
-                .bobot
-            ) || 0;
-
+        let totalPersen = 0;
 
         document.querySelectorAll(`.week-plan[data-item="${itemId}"]`)
-        .forEach(el=>{
-            total += parseFloat(el.value)||0;
+        .forEach(el => {
+            totalPersen += parseFloat(el.value) || 0;
         });
-        if(total > bobot + 0.001){
-            alert(
-                `Total plan item melebihi bobot ${bobot}%`
-            );
+
+        // Total persen semua minggu tidak boleh melebihi 100%
+        if(totalPersen > 100.001){
+            alert(`Total plan item melebihi 100% (sekarang: ${totalPersen.toFixed(3)}%)`);
             return false;
         }
+
         return true;
     }
 </script>
@@ -605,13 +589,21 @@ function applyFreeze() {
             defaultContent:'',
             orderable:false,
             render:function(data,type,row){
+                const persen = data ?? 0;
+                const nilaiBobot = ((parseFloat(persen) || 0) / 100) * parseFloat(row.bobot_percent || 0);
                 return `
-                <input type="number" step="0.001" class="form-control week-plan"
-                    data-item="${row.id}"
-                    data-week="${w.week_no}"
-                    data-bobot="${row.bobot_percent}"
-                    value="${data ?? 0}"
-                >
+                <div class="week-plan-wrapper">
+                    <input type="number" step="0.001" class="form-control week-plan"
+                        data-item="${row.id}"
+                        data-week="${w.week_no}"
+                        data-bobot="${row.bobot_percent}"
+                        value="${persen}"
+                        placeholder="%"
+                    >
+                    <small class="text-muted week-plan-nilai" data-item="${row.id}" data-week="${w.week_no}">
+                        = ${nilaiBobot.toFixed(3)}
+                    </small>
+                </div>
                 `;
             }
         });
@@ -626,32 +618,33 @@ function applyFreeze() {
 
         return result;
     }
-document.addEventListener('DOMContentLoaded', function () {
-    const topScroll = document.querySelector('.table-scroll-top');
-    const topContent = topScroll.querySelector('div');
-    const bottomScroll = document.querySelector('.table-plan');
+    document.addEventListener('DOMContentLoaded', function () {
+        const topScroll = document.querySelector('.table-scroll-top');
+        const topContent = topScroll.querySelector('div');
+        const bottomScroll = document.querySelector('.table-plan');
 
-    // Sync scroll
-    topScroll.addEventListener('scroll', () => {
-        bottomScroll.scrollLeft = topScroll.scrollLeft;
-    });
-    bottomScroll.addEventListener('scroll', () => {
-        topScroll.scrollLeft = bottomScroll.scrollLeft;
-    });
+        // Sync scroll
+        topScroll.addEventListener('scroll', () => {
+            bottomScroll.scrollLeft = topScroll.scrollLeft;
+        });
+        bottomScroll.addEventListener('scroll', () => {
+            topScroll.scrollLeft = bottomScroll.scrollLeft;
+        });
 
-    // Sync width — pakai ResizeObserver, trigger otomatis saat konten berubah
-    const observer = new ResizeObserver(() => {
-        const w = bottomScroll.scrollWidth;
-        if (w > 0) {
-            topContent.style.width = w + 'px';
-            console.log('ResizeObserver set width:', w);
-        }
-    });
+        // Sync width — pakai ResizeObserver, trigger otomatis saat konten berubah
+        const observer = new ResizeObserver(() => {
+            const table = document.querySelector('#buildPlanTable');
+            const w = table?.offsetWidth || 0;  // pakai offsetWidth tabel, bukan scrollWidth container
+            if (w > 0) {
+                topContent.style.width = w + 'px';
+                console.log('set width:', w);
+            }
+        });
 
-    // Observe tabel, bukan container — karena tabel yang berubah ukurannya
-    const table = document.querySelector('#buildPlanTable');
-    if (table) observer.observe(table);
-});
+        // Observe tabel, bukan container — karena tabel yang berubah ukurannya
+        const table = document.querySelector('#buildPlanTable');
+        if (table) observer.observe(table);
+    });
     $('#buildPlanTable').DataTable({
         processing:true,
         serverSide:true,
@@ -758,7 +751,7 @@ document.addEventListener('DOMContentLoaded', function () {
             setTimeout(() => {
                 applyFreeze();
 
-            }, 1000);
+            }, 200);
         }
     });
 </script>
