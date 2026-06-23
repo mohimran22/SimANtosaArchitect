@@ -27,7 +27,7 @@
                 </tr>
                 </table>
 
-                    <div class="col-md-3 d-flex gap-2">
+                    {{-- <div class="col-md-3 d-flex gap-2">
                         @if(!$isReadOnly)
                             <form action="{{ route('projects.sync-build-plan', $project->id) }}"
                                 method="POST"
@@ -43,189 +43,96 @@
 
                             </form>
                         @endif
+                    </div> --}}
+                    <div class="table-scroll-top">
+                        <div></div>
                     </div>
-                
-            <div class="table-responsive">
-                <table id="buildPlanTable" class="table table-bordered">
-                    <colgroup>
-                        <col style="width:60px">
-                        <col style="width:320px">
-                        <col style="width:80px">
-                        <col style="width:90px">
-                        <col style="width:140px">
-                        <col style="width:100px">
+                    <div class="table-plan">
+                        <table id="buildPlanTable" class="table table-bordered">
+                            <colgroup>
+                                <col style="width:60px">
+                                <col style="width:320px">
+                                <col style="width:80px">
+                                <col style="width:90px">
+                                <col style="width:140px">
+                                <col style="width:100px">
 
-                        @foreach($project->week_labels as $w)
-                            <col style="width:95px">
-                        @endforeach
-                    </colgroup>
-                    <thead class="table-light">
-                        <tr>
-                            <th rowspan="2" class="align-middle text-center">No</th>
-                            <th rowspan="2" class="align-middle text-center">Uraian Pekerjaan</th>
-
-                            <th colspan="4" class="align-middle text-center">TERKONTRAK</th>
-                            
-
-                            @foreach($project->week_labels as $w)
-                                <th class="text-center week-head" data-week="{{ $w['week_no'] }}">
-                                        <div>M{{ $w['week_no'] }}</div>
-                                        {{-- <small class="text-muted d-block text-nowrap">
-                                            {{ $w['start'] }} - {{ $w['end'] }}
-                                        </small> --}}
-                                </th>
-                            @endforeach
-                        </tr>
-                        <tr>
-                            <th class="align-middle">Satuan</th>
-                            <th class="align-middle text-center">Vol</th>
-                            <th class="align-middle">Jumlah<br>Harga</th>
-                            <th class="align-middle text-center">Bobot<br>(%)</th>
-
-                            @foreach($project->week_labels as $w)
-                                <th class="align-middle text-center">Bobot<br>(%)</th>
-                            @endforeach
-                        </tr>
-                    </thead>
-                     @php
-                    function alphaIndex($n) {
-                        $result = '';
-                        while ($n >= 0) {
-                            $result = chr(($n % 26) + 65) . $result;
-                            $n = intdiv($n, 26) - 1;
-                        }
-                        return $result;
-                    }
-                    @endphp
-                    <tbody>
-                        @foreach($groupedPlans as $categoryData)
-
-                            @php
-                                $categoryNo = alphaIndex($loop->index);
-                            @endphp
-                            <tr class="row-category">
-                                <td colspan="6">
-                                    {{ $categoryNo }}. {{ strtoupper($categoryData['category_name']) }}
-                                </td>
-
-                                <td colspan="{{ $totalCols - 6 }}"></td>
-                            </tr>
-
-                            @foreach($categoryData['uraians'] as $uraianData)
-                                @php
-                                    $uraianNo = $loop->iteration;
-                                @endphp
-                                <tr class="row-uraian">
-                                    <td colspan="6">
-                                        {{ $uraianNo }}. {{ ucwords($uraianData['uraian_name']) }}
-                                    </td>
-
-                                    <td colspan="{{ $totalCols - 6 }}"></td>
-                                </tr>
-
-                                @foreach($uraianData['items'] as $item)
-                                            @php
-                                                $itemNo = $loop->iteration;
-                                            @endphp
-                                            <tr
-                                                data-item-id="{{ $item->id }}"
-                                                data-item-vol="{{ $item->volume }}"
-                                                data-item-bobot="{{ $item->bobot_percent }}">                              
-                                                <td>
-                                                    {{ $uraianNo }}.{{ $itemNo }}
-                                                </td>
-                                                <td class="uraian-pekerjaan">
-                                                    <div class="d-flex justify-content-between align-items-start">
-                                                        <div>
-                                                            {{ $item->item_name }}
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td>{{ $item->satuan }}</td>
-                                                <td class="text-center">
-                                                    {{ number_format($item->volume,2) }}
-                                                </td>
-
-                                                <td class="text-end">
-                                                    Rp {{ number_format($item->total,0,',','.') }}
-                                                </td>
-                                                <td width="120">
-                                                    <input type="number"
-                                                        step="0.001"
-                                                        class="form-control"
-                                                        data-id="{{ $item->id }}"
-                                                        value="{{ number_format($item->bobot_percent, 3, '.', '') }}"
-                                                        readonly>
-                                                </td>
-                                                    @foreach($project->week_labels as $w)
-                                                        @php
-                                                            $prog = $item->progress_map[$w['week_no']] ?? null;
-                                                        @endphp
-                                                        <td class="week-col">
-                                                            @if(!$isReadOnly)
-                                                            <input type="number"
-                                                                step="0.01"
-                                                                min="0"
-                                                                max="{{ $item->bobot_percent }}"
-                                                                class="form-control week-plan"
-                                                                data-item="{{ $item->id }}"
-                                                                data-week="{{ $w['week_no'] }}"
-                                                                data-bobot="{{ $item->bobot_percent }}"   {{-- ← tambahkan ini --}}
-                                                                value="{{ $prog->plan_percent ?? '' }}">
-                                                            @else
-                                                            <div class="form-control bg-light">
-                                                                {{ $prog->plan_percent ?? '' }}
-                                                            </div>
-                                                            @endif
-                                                        </td>                           
-                                                    @endforeach
-                                            </tr>
+                                @foreach($project->week_labels as $w)
+                                    <col style="width:95px">
                                 @endforeach
-                            @endforeach
-                        @endforeach
-                    </tbody>
-                    <tfoot>
-                        <tr>
-                            <th colspan="4" class="text-end">
-                                Total Pekerjaan (%)
-                            </th>
-                            <th>
-                                {{ $isReadOnly ? '' : 'Rp '.number_format($buildPlans->sum('total'),0,',','.') }}
-                            </th>
-                            <th class="text-center">
-                                100.0
-                            </th>
+                            </colgroup>
+                            <thead class="table-light">
+                                <tr>
+                                    <th rowspan="2" class="align-middle text-center">No</th>
+                                    <th rowspan="2" class="align-middle text-center">Uraian Pekerjaan</th>
 
-                            @foreach($project->week_labels as $w)
-                                <th class="week-foot text-center fw-bold"
-                                    data-week="{{ $w['week_no'] }}"
-                                    id="total-plan-{{ $w['week_no'] }}">
-                                    0
-                                </th>
-                            @endforeach
-                        </tr>
-                        <tr>
-                            <th colspan="4" class="text-end">
-                                Kumulatif (%)
-                            </th>
-                            <th>
-                                {{ $isReadOnly ? '' : 'Rp '.number_format($buildPlans->sum('total'),0,',','.') }}
-                            </th>
-                            <th class="text-center">
-                                100.0
-                            </th>
-                            @foreach($project->week_labels as $w)
-                                <th class="week-foot text-center fw-bold"
-                                    id="kumulatif-plan-{{ $w['week_no'] }}">
+                                    <th colspan="4" class="align-middle text-center">TERKONTRAK</th>
+                                    
 
-                                    0
-                                </th>
-                            @endforeach
-                        </tr>
-                    
-                    </tfoot>
-                </table>
-            </div>
+                                    @foreach($project->week_labels as $w)
+                                        <th class="text-center week-head" data-week="{{ $w['week_no'] }}">
+                                                <div>M{{ $w['week_no'] }}</div>
+                                                {{-- <small class="text-muted d-block text-nowrap">
+                                                    {{ $w['start'] }} - {{ $w['end'] }}
+                                                </small> --}}
+                                        </th>
+                                    @endforeach
+                                </tr>
+                                <tr>
+                                    <th class="align-middle">Satuan</th>
+                                    <th class="align-middle text-center">Vol</th>
+                                    <th class="align-middle">Jumlah<br>Harga</th>
+                                    <th class="align-middle text-center">Bobot<br>(%)</th>
+
+                                    @foreach($project->week_labels as $w)
+                                        <th class="align-middle text-center">Bobot<br>(%)</th>
+                                    @endforeach
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th colspan="4" class="text-end">
+                                        Total Pekerjaan (%)
+                                    </th>
+                                    <th>
+                                        {{ $isReadOnly ? '' : 'Rp '.number_format($buildPlans->sum('total'),0,',','.') }}
+                                    </th>
+                                    <th class="text-center">
+                                        100.0
+                                    </th>
+
+                                    @foreach($project->week_labels as $w)
+                                        <th class="week-foot text-center fw-bold"
+                                            data-week="{{ $w['week_no'] }}"
+                                            id="total-plan-{{ $w['week_no'] }}">
+                                            0
+                                        </th>
+                                    @endforeach
+                                </tr>
+                                <tr>
+                                    <th colspan="4" class="text-end">
+                                        Kumulatif (%)
+                                    </th>
+                                    <th>
+                                        {{ $isReadOnly ? '' : 'Rp '.number_format($buildPlans->sum('total'),0,',','.') }}
+                                    </th>
+                                    <th class="text-center">
+                                        100.0
+                                    </th>
+                                    @foreach($project->week_labels as $w)
+                                        <th class="week-foot text-center fw-bold"
+                                            id="kumulatif-plan-{{ $w['week_no'] }}">
+
+                                            0
+                                        </th>
+                                    @endforeach
+                                </tr>
+                            
+                            </tfoot>
+                        </table>
+                    </div>
         </div>
     </x-collapse-card>
     <div id="build-process">
@@ -235,111 +142,105 @@
 <script>
 
     const buildPlanTable = document.querySelector("#buildPlanTable");
-    const cols = buildPlanTable?.querySelectorAll("colgroup col") || [];
+    const cols = document.querySelectorAll('#buildPlanTable colgroup col');
     const freezeCounts = 6;
-    function applyFreeze() {
-        if (!buildPlanTable) return;
+function applyFreeze() {
+    if (!buildPlanTable) return;
 
-        buildPlanTable.querySelectorAll(".sticky-col, .sticky-last").forEach(cell => {
-            cell.classList.remove("sticky-col", "sticky-last");
+    // Reset — hapus sticky-last juga dari reset
+    buildPlanTable.querySelectorAll(".sticky-col").forEach(cell => {
+        cell.classList.remove("sticky-col");
+        cell.style.left = "";
+        cell.style.width = "";
+    });
+
+    if (window.innerWidth < 576) return;
+
+    const offsets = [];
+    let left = 0;
+    for (let i = 0; i < freezeCounts; i++) {
+        offsets.push(left);
+        left += Math.round(parseFloat(getComputedStyle(cols[i]).width));
+    }
+
+    const rowspanMap = [];
+    buildPlanTable.querySelectorAll("tr").forEach(row => {
+        let colIndex = 0;
+        Array.from(row.children).forEach(cell => {
+            while (rowspanMap[colIndex] && rowspanMap[colIndex] > 0) {
+                rowspanMap[colIndex]--;
+                colIndex++;
+            }
+
+            const colspan = parseInt(cell.getAttribute("colspan")) || 1;
+            const rowspan = parseInt(cell.getAttribute("rowspan")) || 1;
+
+            if (colIndex < freezeCounts || cell.classList.contains('freeze-col')) {
+                cell.classList.add("sticky-col");
+                cell.style.left = Math.round(offsets[colIndex]) + "px";
+
+                let width = 0;
+                for (let i = 0; i < colspan && (colIndex + i) < freezeCounts; i++) {
+                    width += Math.round(parseFloat(getComputedStyle(cols[colIndex + i]).width));
+                }
+                cell.style.width = width + "px";
+            }
+
+            if (rowspan > 1) {
+                for (let i = 0; i < colspan; i++) {
+                    rowspanMap[colIndex + i] = rowspan - 1;
+                }
+            }
+            colIndex += colspan;
+        });
+    });
+
+    // row-category & row-uraian
+    buildPlanTable.querySelectorAll("tr.row-category, tr.row-uraian").forEach(row => {
+        const cells = row.querySelectorAll("td");
+
+        cells.forEach(cell => {
+            cell.classList.remove("sticky-col");
             cell.style.left = "";
             cell.style.width = "";
+            cell.style.zIndex = "";
+            cell.style.background = "";
         });
 
-        if (window.innerWidth < 576) {
-            return;
-        }
-        const offsets = [];
-        let left = 0;
-        for (let i = 0; i < freezeCounts; i++) {
-            offsets.push(left);
-            left += Math.round(
-                parseFloat(getComputedStyle(cols[i]).width)
-            );
-        }
+        const firstCell = cells[0];
+        if (!firstCell) return;
 
-        const rowspanMap = [];
-        buildPlanTable.querySelectorAll("tr").forEach(row => {
-            let colIndex = 0;
-            Array.from(row.children).forEach(cell => {
-                while (rowspanMap[colIndex] && rowspanMap[colIndex] > 0) {
-                    rowspanMap[colIndex]--;
-                    colIndex++;
-                }
+        const width = Array.from(cols).slice(0, freezeCounts).reduce((sum, c) => {
+            return sum + (parseFloat(getComputedStyle(c).width) || 0);
+        }, 0);
 
-                const colspan = parseInt(cell.getAttribute("colspan")) || 1;
-                const rowspan = parseInt(cell.getAttribute("rowspan")) || 1;
+        firstCell.classList.add("sticky-col");
+        firstCell.style.left = "0px";
+        firstCell.style.width = Math.round(width) + "px";
+        firstCell.style.zIndex = "20";
+        firstCell.style.background = "#fff";
+    });
 
-                if (
-                        colIndex < freezeCounts ||
-                        cell.classList.contains('freeze-col')
-                    ) {
-                    cell.classList.add("sticky-col");
-                    if (colIndex === freezeCounts - 1) {
-                        cell.classList.add("sticky-last");
-                    }
-                    cell.style.left = Math.round(offsets[colIndex]) + "px";
-                    // batasi width jika colspan > 1
-                    let width = 0;
-                    for (let i = 0; i < colspan && (colIndex + i) < freezeCounts; i++) {
-                        width += Math.round(parseFloat(
-                            getComputedStyle(cols[colIndex + i]).width)
-                        );
-                    }
-                    cell.style.width = width + "px";
-                }
+    // Sticky header
+    const headerRows = buildPlanTable.querySelectorAll("thead tr");
+    const firstRow = headerRows[0];
+    Array.from(firstRow.children).forEach(th => {
+        th.style.position = "sticky";
+        th.style.top = "0px";
+        th.style.zIndex = th.classList.contains("sticky-col") ? "110" : "100";
+        th.style.background = th.style.background || "#f8f9fa";
+    });
 
-                if (rowspan > 1) {
-                    for (let i = 0; i < colspan; i++) {
-                        rowspanMap[colIndex + i] = rowspan - 1;
-                    }
-                }
-                colIndex += colspan;
-            });
-        });
-
-        // row-category: freeze td pertama
-        buildPlanTable.querySelectorAll("tr.row-category, tr.row-uraian").forEach(row => {
-            const cell = row.querySelector("td");
-            if (!cell) return;
-            const width = Array.from(cols).slice(0, freezeCounts).reduce((sum, c) => {
-                return sum + (parseFloat(getComputedStyle(c).width) || 0);
-            }, 0);
-            cell.classList.add("sticky-col");
-            cell.classList.add("sticky-last");
-
-            cell.style.left = "0px";
-            cell.style.width = Math.round(width) + "px";
-        });
-        // row tambahan (kuning)
-        buildPlanTable.querySelectorAll("tr.row-tambahan-item").forEach(row => {
-
-            let left = 0;
-
-            Array.from(row.children).forEach((cell, index) => {
-
-                if (index < freezeCounts) {
-
-                    cell.classList.add("sticky-col");
-
-                    if (index === freezeCounts - 1) {
-                        cell.classList.add("sticky-last");
-                    }
-
-                    cell.style.left = Math.round(left) + "px";
-
-                    cell.style.zIndex = 55;
-
-                    cell.style.background = "#fff3cd";
-
-                    left += Math.round(parseFloat(
-                        getComputedStyle(cols[index]).width)
-                    );
-                }
-            });
-        });
-    }
-    applyFreeze();
+    const firstRowHeight = firstRow.offsetHeight;
+    const secondRow = headerRows[1];
+    Array.from(secondRow.children).forEach(th => {
+        th.style.position = "sticky";
+        th.style.top = firstRowHeight + "px";
+        th.style.zIndex = th.classList.contains("sticky-col") ? "110" : "100";
+        th.style.background = th.style.background || "#f8f9fa";
+    });
+}
+    // applyFreeze();
 
 </script>
 <script>
@@ -374,7 +275,7 @@
             updateKurvaPlanRealtime();
         });
         calculateFooterPlan();
-        initKurvaChart();
+        // initKurvaChart();
     });
 
     function initKurvaChart(){
@@ -657,7 +558,7 @@
         return true;
     }
 </script>
-{{-- <script>
+<script>
     let weeks = @json($project->week_labels);
 
     let columns = [
@@ -725,7 +626,32 @@
 
         return result;
     }
+document.addEventListener('DOMContentLoaded', function () {
+    const topScroll = document.querySelector('.table-scroll-top');
+    const topContent = topScroll.querySelector('div');
+    const bottomScroll = document.querySelector('.table-plan');
 
+    // Sync scroll
+    topScroll.addEventListener('scroll', () => {
+        bottomScroll.scrollLeft = topScroll.scrollLeft;
+    });
+    bottomScroll.addEventListener('scroll', () => {
+        topScroll.scrollLeft = bottomScroll.scrollLeft;
+    });
+
+    // Sync width — pakai ResizeObserver, trigger otomatis saat konten berubah
+    const observer = new ResizeObserver(() => {
+        const w = bottomScroll.scrollWidth;
+        if (w > 0) {
+            topContent.style.width = w + 'px';
+            console.log('ResizeObserver set width:', w);
+        }
+    });
+
+    // Observe tabel, bukan container — karena tabel yang berubah ukurannya
+    const table = document.querySelector('#buildPlanTable');
+    if (table) observer.observe(table);
+});
     $('#buildPlanTable').DataTable({
         processing:true,
         serverSide:true,
@@ -736,7 +662,14 @@
         ordering: false,
         autoWidth: false,
         dom: 't',
-
+        columnDefs: [
+            { targets: 0, width: '60px' },
+            { targets: 1, width: '320px' },
+            { targets: 2, width: '80px' },
+            { targets: 3, width: '90px' },
+            { targets: 4, width: '140px' },
+            { targets: 5, width: '100px' },
+        ],
         ajax:{
             url:"{{ route('build-plan.data',$project->id) }}",
             type:"POST",
@@ -774,10 +707,9 @@
                     lastUraian = null;
 
                     $(rows[i]).before(`
-                        <tr class="table-secondary fw-bold">
-                            <td class="text-center">${alphaIndex(categoryIndex - 1)}</td>
-                            <td colspan="999">
-                                ${row.category_name.toUpperCase()}
+                        <tr class="table-secondary fw-bold row-category">
+                            <td colspan="${columns.length + 10}">
+                                ${alphaIndex(categoryIndex - 1)}. ${row.category_name.toUpperCase()}
                             </td>
                         </tr>
                     `);
@@ -791,10 +723,9 @@
                     itemIndex = 0;
 
                     $(rows[i]).before(`
-                        <tr class="table-light">
-                            <td class="text-center">${uraianIndex}.</td>
-                            <td colspan="999">
-                                ${row.uraian_name}
+                        <tr class="table-light row-uraian"> 
+                            <td colspan="${columns.length + 10}">
+                                ${uraianIndex}. ${row.uraian_name}
                             </td>
                         </tr>
                     `);
@@ -823,7 +754,12 @@
                 initKurvaChart();
                 window.chartInitialized = true;
             }
+                // applyFreeze juga dipanggil ulang di sini
+            setTimeout(() => {
+                applyFreeze();
+
+            }, 1000);
         }
     });
-</script> --}}
+</script>
 @endpush

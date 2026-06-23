@@ -800,26 +800,60 @@ tr.row-uraian td.sticky-col{
     z-index: 11;
     background: #fff;
 }
+.table-real {
+    max-height: 75vh; /* atau nilai lain sesuai kebutuhan */
+    overflow-y: auto;
+    overflow-x: auto;
+}
+.table-plan {
+    max-height: 75vh; /* atau nilai lain sesuai kebutuhan */
+    overflow-y: auto;
+    overflow-x: auto;
+}
 #buildPlanTable{
-    table-layout: fixed;
-    min-width: max-content;
+    border-collapse: separate;
+    table-layout: fixed !important;
+    min-width: max-content !important;
 }
 
 #buildPlanTable .sticky-col{
     position: sticky;
     background: #fff;
 }
-
-#buildPlanTable thead .sticky-col{
+#buildPlanTable thead tr:first-child th {
+    position: sticky;
+    top: 0;
     z-index: 100;
+    background: #fff; /* warna table-light */
+}
+#buildPlanTable thead tr:nth-child(2) th {
+    position: sticky;
+    z-index: 100;
+    background: #fff;
+}
+#buildPlanTable thead th.sticky-col {
+    z-index: 150 !important;
+}
+#buildPlanTable tbody td {
+    background: #fff;
 }
 
-#buildPlanTable tbody .sticky-col{
+#buildPlanTable tr.table-secondary td {
+    background: #e2e3e5 !important;
+}
+
+#buildPlanTable tr.table-light td {
+    background: #f8f9fa !important;
+}
+
+#buildPlanTable tbody .sticky-col {
+    position: sticky;
+    background: #fff !important;
     z-index: 20;
 }
 
 #buildPlanTable .sticky-last{
-    box-shadow: 2px 0 6px rgba(0,0,0,.15);
+    box-shadow: none;
 }
 
 #buildPlanTable .row-category td,
@@ -1053,6 +1087,33 @@ input[type=number]::-webkit-outer-spin-button {
 
 .tabs-mobile-wrapper .nav-link {
     white-space: nowrap;
+}
+.table-scroll-top {
+    overflow-x: scroll;  /* pakai scroll bukan auto */
+    overflow-y: hidden;
+    height: 16px;
+    margin-bottom: 0;
+    border: none;
+    background: transparent;
+    width: 100%;
+}
+
+.table-scroll-top > div {
+    height: 1px;
+    /* width diset via JS */
+}
+.table-scroll-tops {
+    overflow-x: scroll;  /* pakai scroll bukan auto */
+    overflow-y: hidden;
+    height: 16px;
+    margin-bottom: 0;
+    border: none;
+    background: transparent;
+}
+
+.table-scroll-tops > div {
+    height: 1px;
+    /* width diset via JS */
 }
 @media (min-width:769px){
     #datatable-search-container{

@@ -14,14 +14,14 @@
 
     $plans = $project->weeklyPlans
         ->keyBy('week_no');
-    // function alphaIndex($n) {
-    //     $result = '';
-    //     while ($n >= 0) {
-    //         $result = chr(($n % 26) + 65) . $result;
-    //         $n = intdiv($n, 26) - 1;
-    //     }
-    //     return $result;
-    // }
+    function alphaIndex($n) {
+        $result = '';
+        while ($n >= 0) {
+            $result = chr(($n % 26) + 65) . $result;
+            $n = intdiv($n, 26) - 1;
+        }
+        return $result;
+    }
 @endphp
 
         <x-collapse-card title="Tahap Pelaksanaan Proyek" target="proyek-build-body">
@@ -90,10 +90,10 @@
                         </form>
                     </div>
                 </div>
-                <div class="table-scroll-top">
+                <div class="table-scroll-tops">
                     <div></div>
                 </div>
-                <div class="table-responsive" id="tableWrapper">>
+                <div class="table-real" id="tableWrapper">>
                     <table class="table table-bordered progress-table">
                             <colgroup>
                                 <col style="width:50px;">   
@@ -1574,28 +1574,32 @@
     </script>
     <script>
 document.addEventListener('DOMContentLoaded', function () {
-
-    const topScroll = document.querySelector('.table-scroll-top');
+    const topScroll = document.querySelector('.table-scroll-tops');
     const topContent = topScroll.querySelector('div');
-    const bottomScroll = document.querySelector('.table-responsive');
+    const bottomScroll = document.querySelector('.table-real');
 
     function syncWidth() {
-        topContent.style.width =
-            bottomScroll.scrollWidth + 'px';
+        const w = bottomScroll.scrollWidth;
+        if (w > 0) {
+            topContent.style.width = w + 'px';
+        }
     }
 
-    syncWidth();
+    // Coba dengan MutationObserver agar sync saat tabel benar-benar render
+    const observer = new ResizeObserver(() => {
+        syncWidth();
+    });
+    observer.observe(bottomScroll);
 
     window.addEventListener('resize', syncWidth);
 
-    topScroll.addEventListener('scroll', function () {
+    topScroll.addEventListener('scroll', () => {
         bottomScroll.scrollLeft = topScroll.scrollLeft;
     });
 
-    bottomScroll.addEventListener('scroll', function () {
+    bottomScroll.addEventListener('scroll', () => {
         topScroll.scrollLeft = bottomScroll.scrollLeft;
     });
-
 });
 </script>
 @endpush
