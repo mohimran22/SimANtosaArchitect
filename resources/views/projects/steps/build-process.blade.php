@@ -93,7 +93,7 @@
                 <div class="table-scroll-tops">
                     <div></div>
                 </div>
-                <div class="table-real" id="tableWrapper">>
+                <div class="table-real">
                     <table class="table table-bordered progress-table">
                             <colgroup>
                                 <col style="width:50px;">   
@@ -671,23 +671,25 @@
                         }
                     });
                 });
-                    const headerRows = table.querySelectorAll("thead tr");
-                    const firstRow = headerRows[0];
-                    Array.from(firstRow.children).forEach(th => {
-                        th.style.position = "sticky";
-                        th.style.top = "0px";
-                        th.style.zIndex = th.classList.contains("sticky-col") ? "110" : "100";
-                        th.style.background = th.style.background || "#f8f9fa";
-                    });
+                const HEADER_ROW_HEIGHT = 60;
 
-                    const firstRowHeight = firstRow.offsetHeight;
-                    const secondRow = headerRows[1];
-                    Array.from(secondRow.children).forEach(th => {
-                        th.style.position = "sticky";
-                        th.style.top = firstRowHeight + "px";
-                        th.style.zIndex = th.classList.contains("sticky-col") ? "110" : "100";
-                        th.style.background = th.style.background || "#f8f9fa";
-                    });
+                const headerRows = table.querySelectorAll("thead tr");
+                const firstRow = headerRows[0];
+                const secondRow = headerRows[1];
+
+                Array.from(firstRow.children).forEach(th => {
+                    th.style.position = "sticky";
+                    th.style.top = "0px";
+                    th.style.zIndex = th.classList.contains("sticky-col") ? "155" : "102";
+                    th.style.background = "#f8f9fa";
+                });
+
+                Array.from(secondRow.children).forEach(th => {
+                    th.style.position = "sticky";
+                    th.style.top = HEADER_ROW_HEIGHT + "px";
+                    th.style.zIndex = th.classList.contains("sticky-col") ? "155" : "101";
+                    th.style.background = "#f8f9fa";
+                });
             }
         document.addEventListener('DOMContentLoaded', function() {
 

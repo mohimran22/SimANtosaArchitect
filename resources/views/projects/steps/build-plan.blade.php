@@ -15,16 +15,16 @@
 @endphp
 
     <x-collapse-card title="Tahap Perencanaan Proyek" target="proyek-build-plan-body">
-        <div class="card-body">
+            <div class="card-body">
                 <table width="100%" style="margin-bottom:20px; margin-left:20px;">
-                <tr>
-                    <td width="20%">PEKERJAAN</td>
-                    <td>: {{ $project->project_name ?? '-' }}</td>
-                </tr>
-                <tr>
-                    <td>LOKASI</td>
-                    <td>: {{ $project->city->name ?? '-' }}</td>
-                </tr>
+                    <tr>
+                        <td width="20%">PEKERJAAN</td>
+                        <td>: {{ $project->project_name ?? '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td>LOKASI</td>
+                        <td>: {{ $project->city->name ?? '-' }}</td>
+                    </tr>
                 </table>
 
                     <div class="col-md-3 d-flex gap-2">
@@ -77,7 +77,7 @@
                                     @endforeach
                                 </tr>
                                 <tr>
-                                    <th class="align-middle">Satuan</th>
+                                    <th class="align-middle">Sat</th>
                                     <th class="align-middle text-center">Vol</th>
                                     <th class="align-middle">Jumlah<br>Harga</th>
                                     <th class="align-middle text-center">Bobot<br>(%)</th>
@@ -87,8 +87,7 @@
                                     @endforeach
                                 </tr>
                             </thead>
-                            <tbody>
-                            </tbody>
+                            <tbody></tbody>
                             <tfoot>
                                 <tr>
                                     <th colspan="4" class="text-end">
@@ -131,7 +130,7 @@
                             </tfoot>
                         </table>
                     </div>
-        </div>
+            </div>
     </x-collapse-card>
     <div id="build-process">
         @include('projects.steps.build-process')
@@ -142,104 +141,103 @@
     const buildPlanTable = document.querySelector("#buildPlanTable");
     const cols = document.querySelectorAll('#buildPlanTable colgroup col');
     const freezeCounts = 6;
-function applyFreeze() {
-    if (!buildPlanTable) return;
+    function applyFreeze() {
+        if (!buildPlanTable) return;
 
-    // Reset — hapus sticky-last juga dari reset
-    buildPlanTable.querySelectorAll(".sticky-col").forEach(cell => {
-        cell.classList.remove("sticky-col");
-        cell.style.left = "";
-        cell.style.width = "";
-    });
-
-    if (window.innerWidth < 576) return;
-
-    const offsets = [];
-    let left = 0;
-    for (let i = 0; i < freezeCounts; i++) {
-        offsets.push(left);
-        left += Math.round(parseFloat(getComputedStyle(cols[i]).width));
-    }
-
-    const rowspanMap = [];
-    buildPlanTable.querySelectorAll("tr").forEach(row => {
-        let colIndex = 0;
-        Array.from(row.children).forEach(cell => {
-            while (rowspanMap[colIndex] && rowspanMap[colIndex] > 0) {
-                rowspanMap[colIndex]--;
-                colIndex++;
-            }
-
-            const colspan = parseInt(cell.getAttribute("colspan")) || 1;
-            const rowspan = parseInt(cell.getAttribute("rowspan")) || 1;
-
-            if (colIndex < freezeCounts || cell.classList.contains('freeze-col')) {
-                cell.classList.add("sticky-col");
-                cell.style.left = Math.round(offsets[colIndex]) + "px";
-
-                let width = 0;
-                for (let i = 0; i < colspan && (colIndex + i) < freezeCounts; i++) {
-                    width += Math.round(parseFloat(getComputedStyle(cols[colIndex + i]).width));
-                }
-                cell.style.width = width + "px";
-            }
-
-            if (rowspan > 1) {
-                for (let i = 0; i < colspan; i++) {
-                    rowspanMap[colIndex + i] = rowspan - 1;
-                }
-            }
-            colIndex += colspan;
-        });
-    });
-
-    // row-category & row-uraian
-    buildPlanTable.querySelectorAll("tr.row-category, tr.row-uraian").forEach(row => {
-        const cells = row.querySelectorAll("td");
-
-        cells.forEach(cell => {
+        // Reset — hapus sticky-last juga dari reset
+        buildPlanTable.querySelectorAll(".sticky-col").forEach(cell => {
             cell.classList.remove("sticky-col");
             cell.style.left = "";
             cell.style.width = "";
-            cell.style.zIndex = "";
-            cell.style.background = "";
         });
 
-        const firstCell = cells[0];
-        if (!firstCell) return;
+        if (window.innerWidth < 576) return;
 
-        const width = Array.from(cols).slice(0, freezeCounts).reduce((sum, c) => {
-            return sum + (parseFloat(getComputedStyle(c).width) || 0);
-        }, 0);
+        const offsets = [];
+        let left = 0;
+        for (let i = 0; i < freezeCounts; i++) {
+            offsets.push(left);
+            left += Math.round(parseFloat(getComputedStyle(cols[i]).width));
+        }
 
-        firstCell.classList.add("sticky-col");
-        firstCell.style.left = "0px";
-        firstCell.style.width = Math.round(width) + "px";
-        firstCell.style.zIndex = "20";
-        firstCell.style.background = "#fff";
-    });
+        const rowspanMap = [];
+        buildPlanTable.querySelectorAll("tr").forEach(row => {
+            let colIndex = 0;
+            Array.from(row.children).forEach(cell => {
+                while (rowspanMap[colIndex] && rowspanMap[colIndex] > 0) {
+                    rowspanMap[colIndex]--;
+                    colIndex++;
+                }
 
-    // Sticky header
-    const headerRows = buildPlanTable.querySelectorAll("thead tr");
-    const firstRow = headerRows[0];
-    Array.from(firstRow.children).forEach(th => {
-        th.style.position = "sticky";
-        th.style.top = "0px";
-        th.style.zIndex = th.classList.contains("sticky-col") ? "110" : "100";
-        th.style.background = th.style.background || "#f8f9fa";
-    });
+                const colspan = parseInt(cell.getAttribute("colspan")) || 1;
+                const rowspan = parseInt(cell.getAttribute("rowspan")) || 1;
 
-    const firstRowHeight = firstRow.offsetHeight;
-    const secondRow = headerRows[1];
-    Array.from(secondRow.children).forEach(th => {
-        th.style.position = "sticky";
-        th.style.top = firstRowHeight + "px";
-        th.style.zIndex = th.classList.contains("sticky-col") ? "110" : "100";
-        th.style.background = th.style.background || "#f8f9fa";
-    });
-}
-    // applyFreeze();
+                if (colIndex < freezeCounts || cell.classList.contains('freeze-col')) {
+                    cell.classList.add("sticky-col");
+                    cell.style.left = Math.round(offsets[colIndex]) + "px";
 
+                    let width = 0;
+                    for (let i = 0; i < colspan && (colIndex + i) < freezeCounts; i++) {
+                        width += Math.round(parseFloat(getComputedStyle(cols[colIndex + i]).width));
+                    }
+                    cell.style.width = width + "px";
+                }
+
+                if (rowspan > 1) {
+                    for (let i = 0; i < colspan; i++) {
+                        rowspanMap[colIndex + i] = rowspan - 1;
+                    }
+                }
+                colIndex += colspan;
+            });
+        });
+
+        // row-category & row-uraian
+        buildPlanTable.querySelectorAll("tr.row-category, tr.row-uraian").forEach(row => {
+            const cells = row.querySelectorAll("td");
+
+            cells.forEach(cell => {
+                cell.classList.remove("sticky-col");
+                cell.style.left = "";
+                cell.style.width = "";
+                cell.style.zIndex = "";
+                cell.style.background = "";
+            });
+
+            const firstCell = cells[0];
+            if (!firstCell) return;
+
+            const width = Array.from(cols).slice(0, freezeCounts).reduce((sum, c) => {
+                return sum + (parseFloat(getComputedStyle(c).width) || 0);
+            }, 0);
+
+            firstCell.classList.add("sticky-col");
+            firstCell.style.left = "0px";
+            firstCell.style.width = Math.round(width) + "px";
+            firstCell.style.zIndex = "20";
+            firstCell.style.background = "#fff";
+        });
+
+        const HEADER_ROW_HEIGHT = 45;
+
+        const headerRows = buildPlanTable.querySelectorAll("thead tr");
+        const firstRow = headerRows[0];
+        const secondRow = headerRows[1];
+
+        Array.from(firstRow.children).forEach(th => {
+            th.style.position = "sticky";
+            th.style.top = "0px";
+            th.style.zIndex = th.classList.contains("sticky-col") ? "155" : "102";
+            th.style.background = "#f8f9fa";
+        });
+
+        Array.from(secondRow.children).forEach(th => {
+            th.style.position = "sticky";
+            th.style.top = HEADER_ROW_HEIGHT + "px";
+            th.style.zIndex = th.classList.contains("sticky-col") ? "155" : "101";
+            th.style.background = "#f8f9fa";
+        });
+    }
 </script>
 <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -552,33 +550,26 @@ function applyFreeze() {
             orderable:false,
             searchable:false,
         },
-
         {
             data:'item_name',
             name:'item_name',
         },
-
         {
             data:'satuan',
             name:'satuan',
         },
-
         {
             data:'volume',
             name:'volume',
         },
-
         {
             data:'total_format',
             name:'total_format',
         },
-
-
         {
             data:'bobot_format',
             name:'bobot_format',
         }
-
     ];
 
     weeks.forEach(function(w){
@@ -632,18 +623,14 @@ function applyFreeze() {
         });
 
         // Sync width — pakai ResizeObserver, trigger otomatis saat konten berubah
-        const observer = new ResizeObserver(() => {
-            const table = document.querySelector('#buildPlanTable');
-            const w = table?.offsetWidth || 0;  // pakai offsetWidth tabel, bukan scrollWidth container
-            if (w > 0) {
-                topContent.style.width = w + 'px';
-                console.log('set width:', w);
-            }
-        });
-
-        // Observe tabel, bukan container — karena tabel yang berubah ukurannya
-        const table = document.querySelector('#buildPlanTable');
-        if (table) observer.observe(table);
+        // const observer = new ResizeObserver(() => {
+        //     const table = document.querySelector('#buildPlanTable');
+        //     const w = table?.offsetWidth || 0;
+        //     if (w > 0) {
+        //         topContent.style.width = w + 'px';
+        //     }
+        // });
+        // observer.observe(document.querySelector('#buildPlanTable'));
     });
     $('#buildPlanTable').DataTable({
         processing:true,
@@ -733,7 +720,6 @@ function applyFreeze() {
                 );
             });
 
-            // update totals (OK tetap)
             Object.entries(window.weekTotal || {}).forEach(([week, total]) => {
                 $('#total-plan-' + week).html(Number(total).toFixed(3));
             });
@@ -742,15 +728,29 @@ function applyFreeze() {
                 $('#kumulatif-plan-' + week).html(Number(total).toFixed(3));
             });
 
-            // chart init tetap aman
             if (!window.chartInitialized) {
                 initKurvaChart();
                 window.chartInitialized = true;
             }
-                // applyFreeze juga dipanggil ulang di sini
             setTimeout(() => {
                 applyFreeze();
 
+                // Hitung total width dari colgroup
+                const cols = document.querySelectorAll('#buildPlanTable colgroup col');
+                let totalWidth = 0;
+                cols.forEach(col => {
+                    totalWidth += parseFloat(getComputedStyle(col).width) || 0;
+                });
+
+                // Set width tabel eksplisit
+                const table = document.querySelector('#buildPlanTable');
+                table.style.width = Math.ceil(totalWidth) + 'px';
+
+                // Sync scrollbar atas
+                const topContent = document.querySelector('.table-scroll-top div');
+                if (topContent) {
+                    topContent.style.width = Math.ceil(totalWidth) + 'px';
+                }
             }, 200);
         }
     });

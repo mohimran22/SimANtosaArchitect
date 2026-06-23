@@ -523,6 +523,7 @@ z-index: 1035;
 .table {
   margin: 10px 10px;
     table-layout: auto;
+    max-width: 100% !important;
 }
 
 .table td {
@@ -691,8 +692,11 @@ col.just-hidden {
 }
 .progress-table tr:first-child th {
     border-top: 1px solid #adb5bd;
+    height: 60px;
 }
-
+.progress-table thead tr:nth-child(2) th {
+    height: 60px;
+}
 .progress-table th:first-child,
 .progress-table td:first-child {
     border-left: 1px solid #adb5bd;
@@ -806,14 +810,18 @@ tr.row-uraian td.sticky-col{
     overflow-x: auto;
 }
 .table-plan {
-    max-height: 75vh; /* atau nilai lain sesuai kebutuhan */
+    max-height: 80vh; /* atau nilai lain sesuai kebutuhan */
     overflow-y: auto;
     overflow-x: auto;
+    max-width: 100% !important;
+    width: 100%;
+}
+#buildPlanTable.dataTable {
+    max-width: unset !important;
 }
 #buildPlanTable{
     border-collapse: separate;
     table-layout: fixed !important;
-    min-width: max-content;
 }
 
 #buildPlanTable .sticky-col{
@@ -822,17 +830,25 @@ tr.row-uraian td.sticky-col{
 }
 #buildPlanTable thead tr:first-child th {
     position: sticky;
-    top: 0;
-    z-index: 100;
-    background: #fff; /* warna table-light */
+    top: 80px; /* tinggi navbar (70px) + top navbar (10px) */
+    z-index: 102;
+    background: #fff;
+    height: 45px;
 }
+
 #buildPlanTable thead tr:nth-child(2) th {
     position: sticky;
-    z-index: 100;
+    top: 125px; /* 80px + 45px (tinggi baris pertama) */
+    z-index: 101;
     background: #fff;
+    height: 45px;
+}
+
+#buildPlanTable thead th.sticky-col {
+    z-index: 155 !important;
 }
 #buildPlanTable thead th.sticky-col {
-    z-index: 150 !important;
+    z-index: 155 !important;
 }
 #buildPlanTable tbody td {
     background: #fff;
