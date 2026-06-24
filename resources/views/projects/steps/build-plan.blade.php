@@ -47,7 +47,7 @@
                     <div class="table-scroll-top">
                         <div></div>
                     </div>
-                    <div class="table-plan" id="tableWrapper">
+                    <div class="table-plan">
                         <table id="buildPlanTable" class="table card-table table-vcenter text-nowrap">
                             <colgroup>
                                 <col style="width:60px">
@@ -156,7 +156,10 @@
                     });
                 }
             }
-             const cols = buildPlanTable.querySelectorAll('colgroup:first-of-type col');
+            const cols =
+                buildPlanTable.querySelectorAll(
+                    'colgroup:last-of-type col'
+                );
             buildPlanTable.style.width = "";
             buildPlanTable.style.minWidth = "";
 
@@ -164,8 +167,8 @@
                 return sum + (parseFloat(col.style.width) || 0);
             }, 0);
 
-            // buildPlanTable.style.width = "max-content";
-            // buildPlanTable.style.minWidth = totalColWidth + "px";
+            buildPlanTable.style.width = "";
+            buildPlanTable.style.minWidth = totalColWidth + "px";
 
             buildPlanTable.querySelectorAll(".sticky-col").forEach(cell => {
                 cell.classList.remove("sticky-col");

@@ -14,9 +14,9 @@ class BuildWeeklyPlanController extends Controller
         $request->validate([
             'build_plan_id' => 'required|exists:build_plans,id',
             'week_no'       => 'required|integer',
-            'plan_percent'  => 'nullable|numeric',
-
+            'plan_percent'  => 'nullable|numeric|min:0|max:100',
         ]);
+
         $plan = BuildPlanWeek::updateOrCreate(
 
             [

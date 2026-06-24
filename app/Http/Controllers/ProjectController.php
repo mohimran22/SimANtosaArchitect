@@ -733,7 +733,9 @@ public function data(Project $project)
         $running += $total;
         $kumulatif[$week]=$running;
     }
+    $totalBobot = $plans->sum('bobot_percent');
 
+    logger()->info('TOTAL BOBOT = '.$totalBobot);
     return $dataTable
         ->with([
             'week_total'=>$weekTotal,
