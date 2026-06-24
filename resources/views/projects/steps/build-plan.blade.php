@@ -47,7 +47,7 @@
                     <div class="table-scroll-top">
                         <div></div>
                     </div>
-                    <div class="table-plan">
+                    <div class="table-plan" id="tableWrapper">
                         <table id="buildPlanTable" class="table card-table table-vcenter text-nowrap">
                             <colgroup>
                                 <col style="width:60px">
@@ -139,17 +139,39 @@
 <script>
 
     const buildPlanTable = document.querySelector("#buildPlanTable");
-    const cols = document.querySelectorAll('#buildPlanTable colgroup col');
+
     const freezeCounts = 6;
     function applyFreeze() {
         if (!buildPlanTable) return;
+            const firstColgroup = buildPlanTable.querySelector('colgroup:first-of-type');
+            const allColgroups = buildPlanTable.querySelectorAll('colgroup');
+            if (allColgroups.length > 1 && firstColgroup) {
+                for (let i = 1; i < allColgroups.length; i++) {
+                    const secondCols = allColgroups[i].querySelectorAll('col');
+                    const firstCols = firstColgroup.querySelectorAll('col');
+                    firstCols.forEach((col, idx) => {
+                        if (secondCols[idx]) {
+                            secondCols[idx].style.width = col.style.width;
+                        }
+                    });
+                }
+            }
+             const cols = buildPlanTable.querySelectorAll('colgroup:first-of-type col');
+            buildPlanTable.style.width = "";
+            buildPlanTable.style.minWidth = "";
 
-        // Reset — hapus sticky-last juga dari reset
-        buildPlanTable.querySelectorAll(".sticky-col").forEach(cell => {
-            cell.classList.remove("sticky-col");
-            cell.style.left = "";
-            cell.style.width = "";
-        });
+            const totalColWidth = Array.from(cols).reduce((sum, col) => {
+                return sum + (parseFloat(col.style.width) || 0);
+            }, 0);
+
+            // buildPlanTable.style.width = "max-content";
+            // buildPlanTable.style.minWidth = totalColWidth + "px";
+
+            buildPlanTable.querySelectorAll(".sticky-col").forEach(cell => {
+                cell.classList.remove("sticky-col");
+                cell.style.left = "";
+                cell.style.width = "";
+            });
 
         if (window.innerWidth < 576) return;
 
@@ -208,12 +230,12 @@
             if (!firstCell) return;
 
             const width = Array.from(cols).slice(0, freezeCounts).reduce((sum, c) => {
-                return sum + (parseFloat(getComputedStyle(c).width) || 0);
+                return sum + (parseFloat(c.style.width) || 0); // pakai style.width bukan getComputedStyle
             }, 0);
 
             firstCell.classList.add("sticky-col");
             firstCell.style.left = "0px";
-            firstCell.style.width = Math.round(width) + "px";
+            firstCell.style.width = width + "px";
             firstCell.style.zIndex = "20";
             firstCell.style.background = "#fff";
         });
@@ -621,16 +643,6 @@
         bottomScroll.addEventListener('scroll', () => {
             topScroll.scrollLeft = bottomScroll.scrollLeft;
         });
-
-        // Sync width — pakai ResizeObserver, trigger otomatis saat konten berubah
-        // const observer = new ResizeObserver(() => {
-        //     const table = document.querySelector('#buildPlanTable');
-        //     const w = table?.offsetWidth || 0;
-        //     if (w > 0) {
-        //         topContent.style.width = w + 'px';
-        //     }
-        // });
-        // observer.observe(document.querySelector('#buildPlanTable'));
     });
     $('#buildPlanTable').DataTable({
         processing:true,
@@ -641,6 +653,7 @@
         info: false,
         ordering: false,
         autoWidth: false,
+        scrollX: false,
         dom: 't',
         columnDefs: [
             { targets: 0, width: '60px' },
@@ -688,7 +701,7 @@
 
                     $(rows[i]).before(`
                         <tr class="table-secondary fw-bold row-category">
-                            <td colspan="${columns.length + 10}">
+                            <td colspan="${columns.length}">
                                 ${alphaIndex(categoryIndex - 1)}. ${row.category_name.toUpperCase()}
                             </td>
                         </tr>
@@ -704,7 +717,7 @@
 
                     $(rows[i]).before(`
                         <tr class="table-light row-uraian"> 
-                            <td colspan="${columns.length + 10}">
+                            <td colspan="${columns.length}">
                                 ${uraianIndex}. ${row.uraian_name}
                             </td>
                         </tr>
@@ -733,24 +746,33 @@
                 window.chartInitialized = true;
             }
             setTimeout(() => {
-                applyFreeze();
+                applyFreeze(); // cukup ini saja, width sudah di-handle di dalam applyFreeze()
 
-                // Hitung total width dari colgroup
-                const cols = document.querySelectorAll('#buildPlanTable colgroup col');
-                let totalWidth = 0;
-                cols.forEach(col => {
-                    totalWidth += parseFloat(getComputedStyle(col).width) || 0;
-                });
+                // Sync scrollbar atas tetap di sini
+                const cols = document.querySelectorAll('#buildPlanTable colgroup:first-of-type col');
+                const totalWidth = Array.from(cols).reduce((sum, col) => {
+                    return sum + (parseFloat(col.style.width) || 0);
+                }, 0);
 
-                // Set width tabel eksplisit
-                const table = document.querySelector('#buildPlanTable');
-                table.style.width = Math.ceil(totalWidth) + 'px';
-
-                // Sync scrollbar atas
                 const topContent = document.querySelector('.table-scroll-top div');
                 if (topContent) {
                     topContent.style.width = Math.ceil(totalWidth) + 'px';
                 }
+                const observer = new MutationObserver(() => {
+                    const tbl = document.querySelector('#buildPlanTable');
+                    if (tbl && Math.round(parseFloat(tbl.style.width)) !== totalWidth) {
+                        tbl.style.width = totalWidth + "px";
+                        tbl.style.minWidth = totalWidth + "px";
+                    }
+                });
+
+                observer.observe(buildPlanTable, {
+                    attributes: true,
+                    attributeFilter: ['style']
+                });
+
+                // Stop setelah 2 detik
+                setTimeout(() => observer.disconnect(), 2000);
             }, 200);
         }
     });

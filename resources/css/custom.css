@@ -523,7 +523,6 @@ z-index: 1035;
 .table {
   margin: 10px 10px;
     table-layout: auto;
-    max-width: 100% !important;
 }
 
 .table td {
@@ -810,18 +809,22 @@ tr.row-uraian td.sticky-col{
     overflow-x: auto;
 }
 .table-plan {
-    max-height: 80vh; /* atau nilai lain sesuai kebutuhan */
+    max-height: 75vh; /* atau nilai lain sesuai kebutuhan */
     overflow-y: auto;
-    overflow-x: auto;
-    max-width: 100% !important;
+    overflow-x: scroll;
+    max-width: 100%;
     width: 100%;
+    background: transparent;
+    display: block;
 }
-#buildPlanTable.dataTable {
-    max-width: unset !important;
+.table-plan::after {
+    display: none;
 }
-#buildPlanTable{
+#buildPlanTable {
     border-collapse: separate;
+    border-spacing: 0;
     table-layout: fixed !important;
+    margin: 0 !important;
 }
 
 #buildPlanTable .sticky-col{

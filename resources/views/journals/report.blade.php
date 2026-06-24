@@ -150,7 +150,6 @@
     <script>
         $(document).ready(function () {
         $('.select2').select2({
-            placeholder: "-- Pilih --",
             width: '100%'
         });
         
@@ -182,7 +181,7 @@
             ordering: true,
             language: {
                     search: "",
-                    searchPlaceholder: "Cari investor...",
+                    searchPlaceholder: "Cari transaksi...",
                     lengthMenu: "Tampilkan _MENU_ data",
                     info: "Menampilkan _START_ - _END_ dari _TOTAL_ data",
                     infoEmpty: "Tidak ada data",
