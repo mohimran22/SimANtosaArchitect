@@ -194,6 +194,31 @@ class BuildPlanSyncService
 
                 $buildPlan->save();
             }
+            $plans = BuildPlans::where('project_id', $project->id)
+                ->get();
+
+            $totalBobot = $plans->sum('bobot_percent');
+
+            $selisih = round(100 - $totalBobot, 10);
+            \Log::info('SYNC_BOBOT', [
+                'total_bobot' => $totalBobot,
+                'selisih' => $selisih,
+            ]);
+            if (abs($selisih) > 0.0000001 && $plans->isNotEmpty()) {
+
+                $lastPlan = BuildPlans::where('project_id', $project->id)
+                    ->orderByDesc('category_order')
+                    ->orderByDesc('uraian_order')
+                    ->orderByDesc('item_order')
+                    ->first();
+
+                if ($lastPlan) {
+
+                    $lastPlan->update([
+                        'bobot_percent' => $lastPlan->bobot_percent + $selisih
+                    ]);
+                }
+            }
         });
     }
 }

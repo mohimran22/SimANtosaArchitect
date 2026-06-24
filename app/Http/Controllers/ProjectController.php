@@ -733,18 +733,7 @@ public function data(Project $project)
         $running += $total;
         $kumulatif[$week]=$running;
     }
-    logger()->info('TOTAL_BOBOT',[
-    'total' => $plans->sum('bobot_percent')
-        ]);
 
-        foreach($plans as $plan){
-
-            logger()->info('PLAN_ITEM',[
-                'item' => $plan->id,
-                'bobot' => $plan->bobot_percent,
-                'total_plan' => $plan->weeks->sum('plan_percent')
-            ]);
-        }
     return $dataTable
         ->with([
             'week_total'=>$weekTotal,
