@@ -811,7 +811,7 @@ tr.row-uraian td.sticky-col{
 .table-plan {
     max-height: 75vh; /* atau nilai lain sesuai kebutuhan */
     overflow-y: auto;
-    overflow-x: scroll;
+    overflow-x: auto;
     max-width: 100%;
     width: 100%;
     background: transparent;

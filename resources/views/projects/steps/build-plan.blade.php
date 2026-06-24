@@ -97,7 +97,7 @@
                                         {{ $isReadOnly ? '' : 'Rp '.number_format($buildPlans->sum('total'),0,',','.') }}
                                     </th>
                                     <th class="text-center">
-                                        100.0
+                                        {{ number_format($buildPlans->sum('bobot_percent'),3) }}
                                     </th>
 
                                     @foreach($project->week_labels as $w)
@@ -116,7 +116,7 @@
                                         {{ $isReadOnly ? '' : 'Rp '.number_format($buildPlans->sum('total'),0,',','.') }}
                                     </th>
                                     <th class="text-center">
-                                        100.0
+                                        {{ number_format($buildPlans->sum('bobot_percent'),3) }}
                                     </th>
                                     @foreach($project->week_labels as $w)
                                         <th class="week-foot text-center fw-bold"
