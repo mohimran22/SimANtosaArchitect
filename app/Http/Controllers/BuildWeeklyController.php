@@ -8,6 +8,7 @@ use App\Models\Project;
 use App\Models\WeeklyReport;
 use App\Models\BuildWeeklyProgress;
 use App\Models\BuildProcessItem;
+use App\Models\BuildPlans;
 use App\Models\BuildPlanWeek;
 use Mpdf\Mpdf;
 use Carbon\Carbon;
@@ -193,15 +194,21 @@ public function exportPdf(Request $request, Project $project) {
         $categoryId = $items->first()->category_order;
         $weekNow = $filteredWeeks->max('week_no');
         $weekPrev = max($weekNow - 1, 0);
-        $rencana = BuildPlanWeek::query()
-            ->whereHas('buildPlan', function ($q) use ($project, $categoryId) {
+        $rencana = BuildPlans::with('weeks')
+            ->where('project_id', $project->id)
+            ->where('category_order', $categoryId)
+            ->get()
+            ->sum(function ($plan) use ($weekNow) {
 
-                $q->where('project_id', $project->id)
-                ->where('category_order', $categoryId);
+                $persenKumulatif = $plan->weeks
+                    ->where('week_no', '<=', $weekNow)
+                    ->sum('plan_percent');
 
-            })
-            ->where('week_no', '<=', $weekNow)
-            ->sum('plan_percent');
+                return (
+                    $persenKumulatif / 100
+                ) * $plan->bobot_percent;
+
+            });
 
             $prestasiLalu = $items->avg(function ($item) use ($weekPrev) {
                     $vol = 0;
@@ -317,17 +324,25 @@ public function exportPdf(Request $request, Project $project) {
     foreach ($project->week_labels as $w) {
 
         $mingguan = BuildPlanWeek::query()
+            ->with('buildPlan')
             ->whereHas('buildPlan', function ($q) use ($project) {
 
                 $q->where('project_id', $project->id);
 
             })
             ->where('week_no', $w['week_no'])
-            ->sum('plan_percent');
+            ->get()
+            ->sum(function ($week) {
+
+                return (
+                    ($week->plan_percent ?? 0) / 100
+                ) * ($week->buildPlan->bobot_percent ?? 0);
+
+            });
 
         $jalan += $mingguan;
 
-        $plan[] = round($jalan, 2);
+        $plan[] = round($jalan, 3);
     }
 
     $planMap = BuildPlanWeek::query()

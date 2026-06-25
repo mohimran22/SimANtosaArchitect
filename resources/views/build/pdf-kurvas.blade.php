@@ -47,10 +47,19 @@
                                 ->first()
                                 ?->category_order;
 
-                            $nilai =
-                                collect($planMap[$categoryId] ?? [])
-                                    ->where('week_no', $w['week_no'])
-                                    ->sum('plan_percent');
+                            $nilai = collect($planMap[$categoryId] ?? [])
+                                ->where('week_no', $w['week_no'])
+                                ->sum(function ($week) {
+
+                                    $bobot =
+                                        $week->buildPlan->bobot_percent ?? 0;
+
+                                    return (
+                                        ($week->plan_percent ?? 0) / 100
+                                    ) * $bobot;
+
+                                });
+
 
                         @endphp
 
