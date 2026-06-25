@@ -678,13 +678,10 @@ Route::post(
 )
 ->name('build-plan.data');
 
-Route::post(
-    '/projects/{project}/build-process/datatable',
-    [
-        ProjectController::class,
-        'buildProcessDatatable'
-    ]
-);
+Route::get(
+    '/projects/{project}/build-process-partial',
+    [ProjectController::class, 'buildProcessPartial']
+)->name('projects.build-process.partial');
 Route::get('/projects/{project}/export-pdf', 
     [BuildWeeklyController::class, 'exportPdf'])
     ->name('projects.export-pdf');

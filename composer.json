@@ -40,7 +40,8 @@
         },
         "files": [
             "app/helpers.php",
-            "app/Helpers/TerbilangHelper.php"
+            "app/Helpers/TerbilangHelper.php",
+            "app/Helpers/NumberHelper.php"
         ]
     },
     "autoload-dev": {

@@ -13,3 +13,14 @@ if (!function_exists('number_to_letters')) {
         return $letters;
     }
 }
+if (!function_exists('alphaIndex')) {
+    function alphaIndex(int $index): string
+    {
+        $result = '';
+        do {
+            $result = chr(65 + ($index % 26)) . $result;
+            $index  = intdiv($index, 26) - 1;
+        } while ($index >= 0);
+        return $result;
+    }
+}

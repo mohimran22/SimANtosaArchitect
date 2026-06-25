@@ -781,4 +781,39 @@ private function resolveBuildPlanData($project): array
 
     return compact('buildPlans', 'groupedPlans', 'canEdit');
 }
+// Route: GET /projects/{project}/build-process-data
+public function buildProcessPartial(Project $project)
+{
+    $project->load([
+        'city',
+        'weeklyPlans',
+        'buildItems.weeklyProgresses',
+        'buildItems.tambahan.weeklyProgresses',
+        'dailyReports.works.rabProcessItem',
+        'dailyReports.workers.worker.user',
+        'dailyReports.materials',
+    ]);
+
+    $buildData = $this->resolveBuildData($project);
+
+    $formData = $this->formData(
+        $project,
+        8,
+        3
+    );
+
+    $canEdit = auth()->user()->can('update-project');
+
+    return view(
+        'projects.steps.build-process',
+        array_merge(
+            $buildData,
+            $formData,
+            compact(
+                'project',
+                'canEdit'
+            )
+        )
+    );
+}
 }

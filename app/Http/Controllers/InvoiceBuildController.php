@@ -243,6 +243,23 @@ class InvoiceBuildController extends Controller
                                 'item_order' => $buildProcessItem->item_order,
                             ]
                         );
+                        $plans = BuildPlans::where('project_id', $project->id)
+                            ->orderBy('id')
+                            ->get();
+
+                        $selisih = round(
+                            100 - $plans->sum('bobot_percent'),
+                            10
+                        );
+
+                        if (abs($selisih) > 0.0000001) {
+
+                            $lastPlan = $plans->last();
+
+                            $lastPlan->update([
+                                'bobot_percent' => $lastPlan->bobot_percent + $selisih
+                            ]);
+                        }
                     }
                 }
             }

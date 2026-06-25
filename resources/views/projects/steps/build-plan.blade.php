@@ -97,7 +97,7 @@
                                         {{ $isReadOnly ? '' : 'Rp '.number_format($buildPlans->sum('total'),0,',','.') }}
                                     </th>
                                     <th class="text-center">
-                                        {{ number_format($buildPlans->sum('bobot_percent'),3) }}
+                                        {{ number_format($buildPlans->sum('bobot_percent'),2) }}
                                     </th>
 
                                     @foreach($project->week_labels as $w)
@@ -116,7 +116,7 @@
                                         {{ $isReadOnly ? '' : 'Rp '.number_format($buildPlans->sum('total'),0,',','.') }}
                                     </th>
                                     <th class="text-center">
-                                        {{ number_format($buildPlans->sum('bobot_percent'),3) }}
+                                        {{ number_format($buildPlans->sum('bobot_percent'),2) }}
                                     </th>
                                     @foreach($project->week_labels as $w)
                                         <th class="week-foot text-center fw-bold"
@@ -132,9 +132,13 @@
                     </div>
             </div>
     </x-collapse-card>
-    <div id="build-process">
-        @include('projects.steps.build-process')
-    </div>
+    <x-collapse-card title="Tahap Pelaksanaan Proyek" target="proyek-build-body">
+        <div id="build-process-container">
+            <div class="text-center py-3">
+                Klik untuk memuat data...
+            </div>
+        </div>
+    </x-collapse-card>
 @push('js')
 <script>
 
@@ -296,12 +300,13 @@
 
     function initKurvaChart(){
         const ctx = document.getElementById('kurvaSChart');
-        ctx.width = Math.max({{ $weekCount }} * 50, 900);
-        if(!ctx || typeof Chart === 'undefined') {
 
-            console.error('Chart.js belum load');
+        if(!ctx){
             return;
+        }
 
+        if(window.kurvaChart){
+            window.kurvaChart.destroy();
         }
         const dataAwal = @json($project->getKurvaSData() ?? []);
         const labels = []; for(let i = 1; i <= {{ $weekCount }}; i++){ labels.push('M' + i); }
@@ -744,7 +749,10 @@
                 $('#kumulatif-plan-' + week).html(Number(total).toFixed(3));
             });
 
-            if (!window.chartInitialized) {
+            if (
+                !window.chartInitialized &&
+                document.getElementById('kurvaSChart')
+            ) {
                 initKurvaChart();
                 window.chartInitialized = true;
             }

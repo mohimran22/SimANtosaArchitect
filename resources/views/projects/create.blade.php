@@ -430,11 +430,6 @@
                             </x-slot:actions>
                             @include('projects.steps.rab-process')
                         @elseif($project->project_type == 3)
-                                {{-- <div id="build-plan-container">
-                                    <div class="text-center py-4">
-                                        Loading...
-                                    </div>
-                                </div> --}}
                                 @include('projects.steps.build-plan')
                         @endif
                     
@@ -1240,40 +1235,87 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 <script>
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener('click', async function(e) {
+    let loaded = false;
+    const btn = e.target.closest('.btn-toggle-card');
 
-    document.querySelectorAll(".btn-toggle-card").forEach(btn => {
+    if (!btn) return;
 
-        btn.addEventListener("click", function () {
+    const target =
+        document.querySelector(btn.dataset.target);
 
-            const target = document.querySelector(
-                this.dataset.target
-            );
+    if (!target) return;
 
-            if(!target) return;
+    target.classList.toggle('d-none');
 
-            // TOGGLE
-            target.classList.toggle("d-none");
+    const icon = btn.querySelector('i');
 
-            // ICON
-            const icon = this.querySelector("i");
+    if (target.classList.contains('d-none')) {
 
-            if(target.classList.contains("d-none")){
+        icon.classList.remove('ti-chevron-up');
+        icon.classList.add('ti-chevron-down');
 
-                icon.classList.remove("ti-chevron-up");
-                icon.classList.add("ti-chevron-down");
-
-            }else{
+            } else {
 
                 icon.classList.remove("ti-chevron-down");
                 icon.classList.add("ti-chevron-up");
 
+                // lazy load hanya untuk Tahap Pelaksanaan
+                if (
+                    target.id === "proyek-build-body" &&
+                    !loaded
+                ) {
+
+                    const container =
+                        document.getElementById(
+                            "build-process-container"
+                        );
+
+                    container.innerHTML = `
+                        <div class="text-center p-5">
+                            Loading...
+                        </div>
+                    `;
+
+                    try {
+
+                        const response = await fetch(
+                            "{{ route('projects.build-process.partial', $project) }}"
+                        );
+
+                        const html =
+                            await response.text();
+
+                        container.innerHTML = html;
+
+                        loaded = true;
+
+                        // kalau partial berisi canvas
+                        setTimeout(() => {
+
+                            if (
+                                typeof initKurvaChart === 'function' &&
+                                document.getElementById('kurvaSChart')
+                            ) {
+                                initKurvaChart();
+                            }
+
+                        }, 100);
+
+                    } catch (e) {
+
+                        console.error(e);
+
+                        container.innerHTML = `
+                            <div class="alert alert-danger">
+                                Gagal memuat data pelaksanaan proyek.
+                            </div>
+                        `;
+                    }
+
+                }
+
             }
-
-        });
-
-    });
-
 });
 </script>
 @endpush

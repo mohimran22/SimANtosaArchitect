@@ -833,7 +833,7 @@ tr.row-uraian td.sticky-col{
 }
 #buildPlanTable thead tr:first-child th {
     position: sticky;
-    top: 80px; /* tinggi navbar (70px) + top navbar (10px) */
+    top: 80px; 
     z-index: 102;
     background: #fff;
     height: 45px;
@@ -841,7 +841,7 @@ tr.row-uraian td.sticky-col{
 
 #buildPlanTable thead tr:nth-child(2) th {
     position: sticky;
-    top: 125px; /* 80px + 45px (tinggi baris pertama) */
+    top: 125px; 
     z-index: 101;
     background: #fff;
     height: 45px;
@@ -855,6 +855,9 @@ tr.row-uraian td.sticky-col{
 }
 #buildPlanTable tbody td {
     background: #fff;
+    line-height: 1.2;
+    white-space: normal;
+    word-break: break-word;
 }
 
 #buildPlanTable tr.table-secondary td {
