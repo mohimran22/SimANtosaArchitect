@@ -1584,33 +1584,33 @@
         });
     </script>
     <script>
-document.addEventListener('DOMContentLoaded', function () {
-    const topScroll = document.querySelector('.table-scroll-tops');
-    const topContent = topScroll.querySelector('div');
-    const bottomScroll = document.querySelector('.table-real');
+        document.addEventListener('DOMContentLoaded', function () {
+            const topScroll = document.querySelector('.table-scroll-tops');
+            const topContent = topScroll.querySelector('div');
+            const bottomScroll = document.querySelector('.table-real');
 
-    function syncWidth() {
-        const w = bottomScroll.scrollWidth;
-        if (w > 0) {
-            topContent.style.width = w + 'px';
-        }
-    }
+            function syncWidth() {
+                const w = bottomScroll.scrollWidth;
+                if (w > 0) {
+                    topContent.style.width = w + 'px';
+                }
+            }
 
-    // Coba dengan MutationObserver agar sync saat tabel benar-benar render
-    const observer = new ResizeObserver(() => {
-        syncWidth();
-    });
-    observer.observe(bottomScroll);
+            // Coba dengan MutationObserver agar sync saat tabel benar-benar render
+            const observer = new ResizeObserver(() => {
+                syncWidth();
+            });
+            observer.observe(bottomScroll);
 
-    window.addEventListener('resize', syncWidth);
+            window.addEventListener('resize', syncWidth);
 
-    topScroll.addEventListener('scroll', () => {
-        bottomScroll.scrollLeft = topScroll.scrollLeft;
-    });
+            topScroll.addEventListener('scroll', () => {
+                bottomScroll.scrollLeft = topScroll.scrollLeft;
+            });
 
-    bottomScroll.addEventListener('scroll', () => {
-        topScroll.scrollLeft = bottomScroll.scrollLeft;
-    });
-});
-</script>
+            bottomScroll.addEventListener('scroll', () => {
+                topScroll.scrollLeft = bottomScroll.scrollLeft;
+            });
+        });
+    </script>
 @endpush

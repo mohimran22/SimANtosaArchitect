@@ -260,22 +260,23 @@ public function exportPdf(Request $request, Project $project) {
             return $sum;
         });
         
-        $prestasiMingguIni = $items->avg(function ($item) use ($weekNow) {
+        // $prestasiMingguIni = $items->avg(function ($item) use ($weekNow) {
 
-            $prog =
-                $item->progress_map[$weekNow]
-                ?? null;
+        //     $prog =
+        //         $item->progress_map[$weekNow]
+        //         ?? null;
 
-            $vol =
-                $prog->volume ?? 0;
+        //     $vol =
+        //         $prog->volume ?? 0;
 
-            return $item->volume > 0
+        //     return $item->volume > 0
 
-                ? ($vol / $item->volume) * 100
+        //         ? ($vol / $item->volume) * 100
 
-                : 0;
+        //         : 0;
 
-        });
+        // });
+
         $bobotMingguIni = $items->sum(function ($item) use ($weekNow) {
 
             $prog = $item->progress_map[$weekNow] ?? null;
@@ -290,8 +291,17 @@ public function exportPdf(Request $request, Project $project) {
                 : 0;
 
         });
-        $prestasiKumulatif = $prestasiLalu + $prestasiMingguIni;
+                $prestasiMingguIni =
+    $bobot > 0
+        ? ($bobotMingguIni / $bobot) * 100
+        : 0;
+        // $prestasiKumulatif = $prestasiLalu + $prestasiMingguIni;
+
         $realisasiKumulatif = $bobotLalu + $bobotMingguIni;
+                $prestasiKumulatif =
+    $bobot > 0
+        ? ($realisasiKumulatif / $bobot) * 100
+        : 0;
 
         return [
             'category' => $cat['category_name'],
