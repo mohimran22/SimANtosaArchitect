@@ -855,7 +855,6 @@ tr.row-uraian td.sticky-col{
 }
 #buildPlanTable tbody td {
     background: #fff;
-    line-height: 1.2;
     white-space: normal;
     word-break: break-word;
 }

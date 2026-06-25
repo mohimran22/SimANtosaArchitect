@@ -132,13 +132,9 @@
                     </div>
             </div>
     </x-collapse-card>
-    <x-collapse-card title="Tahap Pelaksanaan Proyek" target="proyek-build-body">
-        <div id="build-process-container">
-            <div class="text-center py-3">
-                Klik untuk memuat data...
-            </div>
-        </div>
-    </x-collapse-card>
+    <div id="build-process">
+        @include('projects.steps.build-process')
+    </div>
 @push('js')
 <script>
 
@@ -300,13 +296,12 @@
 
     function initKurvaChart(){
         const ctx = document.getElementById('kurvaSChart');
+        ctx.width = Math.max({{ $weekCount }} * 50, 900);
+        if(!ctx || typeof Chart === 'undefined') {
 
-        if(!ctx){
+            console.error('Chart.js belum load');
             return;
-        }
 
-        if(window.kurvaChart){
-            window.kurvaChart.destroy();
         }
         const dataAwal = @json($project->getKurvaSData() ?? []);
         const labels = []; for(let i = 1; i <= {{ $weekCount }}; i++){ labels.push('M' + i); }
@@ -749,10 +744,7 @@
                 $('#kumulatif-plan-' + week).html(Number(total).toFixed(3));
             });
 
-            if (
-                !window.chartInitialized &&
-                document.getElementById('kurvaSChart')
-            ) {
+            if (!window.chartInitialized) {
                 initKurvaChart();
                 window.chartInitialized = true;
             }

@@ -1235,87 +1235,40 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 <script>
-document.addEventListener('click', async function(e) {
-    let loaded = false;
-    const btn = e.target.closest('.btn-toggle-card');
+    document.addEventListener("DOMContentLoaded", function () {
 
-    if (!btn) return;
+        document.querySelectorAll(".btn-toggle-card").forEach(btn => {
 
-    const target =
-        document.querySelector(btn.dataset.target);
+            btn.addEventListener("click", function () {
 
-    if (!target) return;
+                const target = document.querySelector(
+                    this.dataset.target
+                );
 
-    target.classList.toggle('d-none');
+                if(!target) return;
 
-    const icon = btn.querySelector('i');
+                // TOGGLE
+                target.classList.toggle("d-none");
 
-    if (target.classList.contains('d-none')) {
+                // ICON
+                const icon = this.querySelector("i");
 
-        icon.classList.remove('ti-chevron-up');
-        icon.classList.add('ti-chevron-down');
+                if(target.classList.contains("d-none")){
 
-            } else {
+                    icon.classList.remove("ti-chevron-up");
+                    icon.classList.add("ti-chevron-down");
 
-                icon.classList.remove("ti-chevron-down");
-                icon.classList.add("ti-chevron-up");
+                }else{
 
-                // lazy load hanya untuk Tahap Pelaksanaan
-                if (
-                    target.id === "proyek-build-body" &&
-                    !loaded
-                ) {
-
-                    const container =
-                        document.getElementById(
-                            "build-process-container"
-                        );
-
-                    container.innerHTML = `
-                        <div class="text-center p-5">
-                            Loading...
-                        </div>
-                    `;
-
-                    try {
-
-                        const response = await fetch(
-                            "{{ route('projects.build-process.partial', $project) }}"
-                        );
-
-                        const html =
-                            await response.text();
-
-                        container.innerHTML = html;
-
-                        loaded = true;
-
-                        // kalau partial berisi canvas
-                        setTimeout(() => {
-
-                            if (
-                                typeof initKurvaChart === 'function' &&
-                                document.getElementById('kurvaSChart')
-                            ) {
-                                initKurvaChart();
-                            }
-
-                        }, 100);
-
-                    } catch (e) {
-
-                        console.error(e);
-
-                        container.innerHTML = `
-                            <div class="alert alert-danger">
-                                Gagal memuat data pelaksanaan proyek.
-                            </div>
-                        `;
-                    }
+                    icon.classList.remove("ti-chevron-down");
+                    icon.classList.add("ti-chevron-up");
 
                 }
 
-            }
-});
+            });
+
+        });
+
+    });
 </script>
 @endpush

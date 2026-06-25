@@ -16,7 +16,7 @@
         ->keyBy('week_no');
 @endphp
 
-        {{-- <x-collapse-card title="Tahap Pelaksanaan Proyek" target="proyek-build-body"> --}}
+        <x-collapse-card title="Tahap Pelaksanaan Proyek" target="proyek-build-body">
             <div class="card-body">
                 
                     <table width="100%" style="margin-bottom:20px; margin-left:20px;">
@@ -440,7 +440,7 @@
                     </table>
                 </div>
             </div>
-        {{-- </x-collapse-card> --}}
+        </x-collapse-card>
         <x-collapse-card title="Kurva S Progress Proyek" target="kurva-body">
             <div class="chart-wrapper">
                 <canvas id="kurvaSChart"></canvas>
@@ -454,6 +454,108 @@
     </div>
     <div id="details-daily-reports">
         @include('projects.details.daily_reports')
+    </div>
+    <div class="offcanvas offcanvas-end"
+        tabindex="-1"
+        id="pdfSettingCanvas">
+
+        <div class="offcanvas-header">
+
+            <h5 class="offcanvas-title">
+                ⚙ Pengaturan Kurva PDF
+            </h5>
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="offcanvas">
+            </button>
+
+        </div>
+
+        <div class="offcanvas-body">
+
+            <div class="mb-3">
+                <label class="form-label">
+                    Posisi Kiri (mm)
+                </label>
+
+                <input type="number"
+                    class="form-control"
+                    id="curve_left_mm"
+                    value="{{ $project->curve_left_mm ?? 110 }}">
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">
+                    Posisi Atas (mm)
+                </label>
+
+                <input type="number"
+                    class="form-control"
+                    id="curve_top_mm"
+                    value="{{ $project->curve_top_mm ?? 80 }}">
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">
+                    Lebar Kurva (mm)
+                </label>
+
+                <input type="number"
+                    class="form-control"
+                    id="curve_width_mm"
+                    value="{{ $project->curve_width_mm ?? 220 }}">
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">
+                    Tinggi Kurva (mm)
+                </label>
+
+                <input type="number"
+                    class="form-control"
+                    id="curve_height_mm"
+                    value="{{ $project->curve_height_mm ?? 50 }}">
+            </div>
+
+            <hr>
+
+            <label class="form-label">
+                Geser Cepat
+            </label>
+
+            <div class="d-flex flex-wrap gap-2">
+
+                <button type="button"
+                        class="btn btn-outline-secondary move-curve"
+                        data-left="-5"
+                        data-top="0">
+                    ← Kiri
+                </button>
+
+                <button type="button"
+                        class="btn btn-outline-secondary move-curve"
+                        data-left="5"
+                        data-top="0">
+                    Kanan →
+                </button>
+
+                <button type="button"
+                        class="btn btn-outline-secondary move-curve"
+                        data-left="0"
+                        data-top="-5">
+                    ↑ Atas
+                </button>
+
+                <button type="button"
+                        class="btn btn-outline-secondary move-curve"
+                        data-left="0"
+                        data-top="5">
+                    ↓ Bawah
+                </button>
+
+            </div>
+        </div>
     </div>
 @push('js')
     <script>
