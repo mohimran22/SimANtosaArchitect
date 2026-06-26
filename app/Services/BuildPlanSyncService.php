@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\BuildPlans;
+use App\Models\BuildProcessItem;
 use App\Models\Project;
 use Illuminate\Support\Facades\DB;
 
@@ -200,10 +201,7 @@ class BuildPlanSyncService
             $totalBobot = $plans->sum('bobot_percent');
 
             $selisih = round(100 - $totalBobot, 10);
-            \Log::info('SYNC_BOBOT', [
-                'total_bobot' => $totalBobot,
-                'selisih' => $selisih,
-            ]);
+
             if (abs($selisih) > 0.0000001 && $plans->isNotEmpty()) {
 
                 $lastPlan = BuildPlans::where('project_id', $project->id)
@@ -217,6 +215,17 @@ class BuildPlanSyncService
                     $lastPlan->update([
                         'bobot_percent' => $lastPlan->bobot_percent + $selisih
                     ]);
+                }
+                $plans = BuildPlans::where('project_id', $project->id)
+                    ->get(['build_process_item_id', 'bobot_percent']);
+
+                foreach ($plans as $plan) {
+                    if ($plan->build_process_item_id) {
+                        BuildProcessItem::where('id', $plan->build_process_item_id)
+                            ->update([
+                                'bobot_percent' => $plan->bobot_percent,
+                            ]);
+                    }
                 }
             }
         });

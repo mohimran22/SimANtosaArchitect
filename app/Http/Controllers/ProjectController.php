@@ -645,15 +645,16 @@ public function loadTambahan(BuildProcessItem $item)
 }
 public function syncBuildPlan(Project $project)
 {
-    app(BuildPlanSyncService::class)
-        ->syncFull($project);
+    app(BuildPlanSyncService::class)->syncFull($project);
+    app(BuildProcessSyncService::class)->syncFull($project);
 
     $project->update([
         'need_sync_build' => false
     ]);
+
     return back()->with(
         'success',
-        'Build process berhasil disinkronkan.'
+        'Build Plan dan Build Process berhasil disinkronkan.'
     );
 }
 public function syncBuildProcess(Project $project)

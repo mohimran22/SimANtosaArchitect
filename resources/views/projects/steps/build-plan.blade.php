@@ -50,12 +50,12 @@
                     <div class="table-plan">
                         <table id="buildPlanTable" class="table card-table table-vcenter text-nowrap">
                             <colgroup>
-                                <col style="width:60px">
-                                <col style="width:320px">
+                                <col style="width:50px">
+                                <col style="width:2600px">
                                 <col style="width:80px">
-                                <col style="width:90px">
+                                <col style="width:80px">
                                 <col style="width:140px">
-                                <col style="width:100px">
+                                <col style="width:80px">
 
                                 @foreach($project->week_labels as $w)
                                     <col style="width:95px">
@@ -659,12 +659,12 @@
         scrollX: false,
         dom: 't',
         columnDefs: [
-            { targets: 0, width: '60px' },
-            { targets: 1, width: '320px' },
+            { targets: 0, width: '50px' },
+            { targets: 1, width: '260px' },
             { targets: 2, width: '80px' },
-            { targets: 3, width: '90px' },
+            { targets: 3, width: '80px' },
             { targets: 4, width: '140px' },
-            { targets: 5, width: '100px' },
+            { targets: 5, width: '80px' },
         ],
         ajax:{
             url:"{{ route('build-plan.data',$project->id) }}",

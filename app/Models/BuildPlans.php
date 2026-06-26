@@ -30,14 +30,11 @@ class BuildPlans extends Model
     ];
 
     protected $casts = [
-
-        'volume' => 'double',
-        'price' => 'double',
-        'total' => 'double',
-
-        'bobot_percent' => 'double',
-        'planned_progress' => 'double',
-
+        'volume' => 'decimal:2',
+        'price' => 'decimal:2',
+        'total' => 'decimal:2',
+        'bobot_percent' => 'decimal:6',
+        'planned_progress' => 'decimal:6',
         'category_order' => 'integer',
         'uraian_order' => 'integer',
         'item_order' => 'integer',

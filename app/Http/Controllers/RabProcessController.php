@@ -828,11 +828,6 @@ public function autosave(Request $request, RabProcess $rab)
             'grand_total' => $grandTotal,
             'updated_by' => auth()->id(),
         ]);
-        if ($rab->project?->buildItems()->exists()) {
-
-            app(BuildProcessSyncService::class)
-                ->syncLight($rab->project);
-        }
     });
 
     return response()->json([
