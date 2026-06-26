@@ -54,33 +54,41 @@
                             class="form-control">
                     </div>
 
-                    <div class="col-md-3 d-flex gap-2">
-                        @if(!$isReadOnly)
-                            <form action="{{ route('projects.sync-build', $project->id) }}"
-                                method="POST"
-                                class="d-inline"
-                                onsubmit="return confirm('Update form kemajuan pekerjaan dengan RAB terbaru?')">
+                <div class="col-md-3 d-flex gap-2">
+                    <button type="button" id="btn-reset-filter" class="btn btn-secondary">
+                        <i class="ti ti-filter-off"></i>
+                        Reset
+                    </button>
+                    @if(!$isReadOnly)
+                        <form action="{{ route('projects.sync-build', $project->id) }}"
+                            method="POST"
+                            class="d-inline"
+                            onsubmit="return confirm('Update form kemajuan pekerjaan dengan RAB terbaru?')">
 
-                                @csrf
-
-                                <button type="submit" class="btn btn-secondary">
-                                    <i class="ti ti-refresh"></i>
-                                    Update Form
-                                </button>
-
-                            </form>
-                        @endif
-                        <button type="button" id="btn-export-pdf" class="btn btn-dark"> 
-                            <i class="ti ti-file-export"></i> Ekspor PDF 
-                        </button>
-
-                        <form id="exportPdfForm" method="POST" action="{{ route('projects.export-pdf', $project->id) }}" target="_blank">
                             @csrf
-                            <input type="hidden" name="week" id="pdf_week">
-                            <input type="hidden" name="date" id="pdf_date">
-                            <input type="hidden" name="chart_image" id="chart_image">
+
+                            <button type="submit" class="btn outline-secondary">
+                                <i class="ti ti-refresh"></i>
+                                Update Form
+                            </button>
                         </form>
-                    </div>
+                    @endif
+
+                    <button type="button" id="btn-export-pdf" class="btn btn-dark">
+                        <i class="ti ti-file-export"></i>
+                        Ekspor PDF
+                    </button>
+
+                    <form id="exportPdfForm"
+                        method="POST"
+                        action="{{ route('projects.export-pdf', $project->id) }}"
+                        target="_blank">
+                        @csrf
+                        <input type="hidden" name="week" id="pdf_week">
+                        <input type="hidden" name="date" id="pdf_date">
+                        <input type="hidden" name="chart_image" id="chart_image">
+                    </form>
+                </div>
                 </div>
                 <div class="table-scroll-tops">
                     <div></div>
@@ -455,108 +463,6 @@
     <div id="details-daily-reports">
         @include('projects.details.daily_reports')
     </div>
-    <div class="offcanvas offcanvas-end"
-        tabindex="-1"
-        id="pdfSettingCanvas">
-
-        <div class="offcanvas-header">
-
-            <h5 class="offcanvas-title">
-                ⚙ Pengaturan Kurva PDF
-            </h5>
-
-            <button type="button"
-                    class="btn-close"
-                    data-bs-dismiss="offcanvas">
-            </button>
-
-        </div>
-
-        <div class="offcanvas-body">
-
-            <div class="mb-3">
-                <label class="form-label">
-                    Posisi Kiri (mm)
-                </label>
-
-                <input type="number"
-                    class="form-control"
-                    id="curve_left_mm"
-                    value="{{ $project->curve_left_mm ?? 110 }}">
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">
-                    Posisi Atas (mm)
-                </label>
-
-                <input type="number"
-                    class="form-control"
-                    id="curve_top_mm"
-                    value="{{ $project->curve_top_mm ?? 80 }}">
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">
-                    Lebar Kurva (mm)
-                </label>
-
-                <input type="number"
-                    class="form-control"
-                    id="curve_width_mm"
-                    value="{{ $project->curve_width_mm ?? 220 }}">
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">
-                    Tinggi Kurva (mm)
-                </label>
-
-                <input type="number"
-                    class="form-control"
-                    id="curve_height_mm"
-                    value="{{ $project->curve_height_mm ?? 50 }}">
-            </div>
-
-            <hr>
-
-            <label class="form-label">
-                Geser Cepat
-            </label>
-
-            <div class="d-flex flex-wrap gap-2">
-
-                <button type="button"
-                        class="btn btn-outline-secondary move-curve"
-                        data-left="-5"
-                        data-top="0">
-                    ← Kiri
-                </button>
-
-                <button type="button"
-                        class="btn btn-outline-secondary move-curve"
-                        data-left="5"
-                        data-top="0">
-                    Kanan →
-                </button>
-
-                <button type="button"
-                        class="btn btn-outline-secondary move-curve"
-                        data-left="0"
-                        data-top="-5">
-                    ↑ Atas
-                </button>
-
-                <button type="button"
-                        class="btn btn-outline-secondary move-curve"
-                        data-left="0"
-                        data-top="5">
-                    ↓ Bawah
-                </button>
-
-            </div>
-        </div>
-    </div>
 @push('js')
     <script>
             const table = document.querySelector(".progress-table");
@@ -719,41 +625,27 @@
                     }
                 });
             }
+            const weekCells = [...table.querySelectorAll('[data-week]')];
+            const weekCols = [...colgroup].filter(col => col.dataset.week);
 
-            // FILTER WEEK
-                function filterWeek(weekNo) {
-                    activeWeek = weekNo || null;
+            function filterWeek(weekNo) {
 
-                    // toggle COLGROUP (ini kunci utama)
-                    colgroup.forEach(col => {
-                        const w = col.dataset.week;
-                        if (!w) return;
+                weekCols.forEach(col => {
+                    col.classList.toggle(
+                        'col-hidden',
+                        weekNo && col.dataset.week != weekNo
+                    );
+                });
 
-                        if (!weekNo || w == weekNo) {
-                            col.classList.remove("col-hidden");
-                        } else {
-                            col.classList.add("col-hidden");
-                        }
-                    });
+                weekCells.forEach(cell => {
+                    cell.classList.toggle(
+                        'col-hidden',
+                        weekNo && cell.dataset.week != weekNo
+                    );
+                });
 
-                    // toggle header + body cell
-                    table.querySelectorAll('[data-week]').forEach(cell => {
-                        if (!weekNo || cell.dataset.week == weekNo) {
-                            cell.classList.remove("col-hidden");
-                        } else {
-                            cell.classList.add("col-hidden");
-                        }
-                    });
-                        table.style.display = "none";
-                        table.offsetHeight; 
-                        table.style.display = "";
-                    requestAnimationFrame(() => {
-                        applyAutoFreeze();
-                        recalcAll();
-                    });
-                }
+            }
 
-            // FILTER: select week
             const weekSelect = document.getElementById('filter-week');
             if (weekSelect) {
                 $('#filter-week').on('change', function () {
@@ -817,29 +709,37 @@
                         }
 
                     });
-                    console.log(weeks);
 
                     if (foundWeek) {
 
                         $('#filter-week')
                             .val(foundWeek)
                             .trigger('change');
-
-                        filterWeek(foundWeek);
-
                     } else {
-
                         $('#filter-week')
                             .val('')
                             .trigger('change');
-
-                        filterWeek(null);
                     }
                 });
             }
 
             // inisialisasi
             applyAutoFreeze();
+
+            window.addEventListener('resize', applyAutoFreeze);
+        });
+        $('#btn-reset-filter').on('click', function () {
+
+            // reset minggu
+            $('#filter-week')
+                .val('')
+                .trigger('change');
+
+            // reset tanggal
+            $('#filter-date')
+                .val('')
+                .trigger('change');
+
         });
     </script>
     <script>
