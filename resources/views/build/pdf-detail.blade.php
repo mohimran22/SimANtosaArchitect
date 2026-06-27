@@ -1,25 +1,25 @@
-<h3 style="text-align:center; margin-bottom:15px;">
+<h1 style="text-align:center; margin-bottom:15px;">
     BOBOT KEMAJUAN PEKERJAAN
-</h3>
+</h1>
 
 <table cellspacing="0" cellpadding="5" border="1">
     <thead>
 
-        <tr style="background:#c4c4c4; text-align:center; font-weight:bold;">
+        <tr style="background:#c4c4c4; text-align:center;">
 
-            <th rowspan="2" width="4%">
+            <th rowspan="2" width="35">
                 NO
             </th>
 
-            <th rowspan="2">
-                URAIAN PEKERJAAN
+            <th rowspan="2" width="260">
+                URAIAN
             </th>
 
-            <th colspan="2">
+            <th colspan="2" width="80">
                 TERKONTRAK
             </th>
 
-            <th colspan="1" width="8%">
+            <th colspan="1" width="2">
                 BOBOT
             </th>
 
@@ -41,16 +41,16 @@
 
         </tr>
 
-        <tr style="background:#d9d9d9; text-align:center; font-weight:bold;">
+        <tr style="background:#d9d9d9; text-align:center;">
 
-            <th width="5%">
-                SATUAN
+            <th width="40">
+                SAT
             </th>
 
-            <th width="5%">
+            <th width="50">
                 VOL
             </th>
-            <th width="5%">
+            <th width="10">
                 %
             </th>
 
@@ -109,7 +109,7 @@
 
             @endphp
 
-            <tr style="font-weight:bold; background:#c4c4c4;">
+            <tr class="category">
 
                 {{-- NO --}}
                 <td align="center">
@@ -143,7 +143,7 @@
 
             @foreach($category['uraians'] as $uraian)
 
-                <tr style="font-size:12px; font-weight:bold;">
+                <tr class="uraian">
 
                     <td align="center">
                         {{ $no }}
@@ -168,7 +168,7 @@
                             {{ $no }}.{{ $itemNo }}
                         </td>
 
-                        <td>
+                        <td style="white-space:normal">
                             {{ $item->uraian }}
                         </td>
 

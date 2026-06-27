@@ -196,7 +196,15 @@
 @php
 $totalBobot = 0;
 $totalRencana = 0;
-$totalRealisasi = 0;
+
+$totalPrestasiLalu = 0;
+$totalBobotLalu = 0;
+
+$totalPrestasiMingguIni = 0;
+$totalBobotMingguIni = 0;
+
+$totalPrestasiSdMingguIni = 0;
+$totalRealisasiSdMingguIni = 0;
 @endphp
 
 @foreach($rekap as $r)
@@ -207,7 +215,15 @@ $deviasi = $r['realisasi_sd_minggu_ini'] - $r['rencana'];
 
 $totalBobot += $r['bobot'];
 $totalRencana += $r['rencana'];
-$totalRealisasi += $r['realisasi_sd_minggu_ini'];
+
+$totalPrestasiLalu += $r['prestasi_lalu'];
+$totalBobotLalu += $r['bobot_lalu'];
+
+$totalPrestasiMingguIni += $r['prestasi_minggu_ini'];
+$totalBobotMingguIni += $r['bobot_minggu_ini'];
+
+$totalPrestasiSdMingguIni += $r['prestasi_sd_minggu_ini'];
+$totalRealisasiSdMingguIni += $r['realisasi_sd_minggu_ini'];
 
 @endphp
 
@@ -269,38 +285,87 @@ $totalRealisasi += $r['realisasi_sd_minggu_ini'];
 
 </tbody>
 
-<tfoot>
+    {{-- <tfoot>
 
-<tr>
+        <tr>
 
-    <th colspan="2">
-    </th>
+            <th colspan="2">
+            </th>
 
-    <th class="text-end">
-        {{ number_format($totalBobot) }}
-    </th>
+            <th class="text-end">
+                {{ number_format($totalBobot,2) }}
+            </th>
 
-    <th class="text-end">
-        {{ number_format($totalRencana,2) }}
-    </th>
+            <th class="text-end">
+                {{ number_format($totalRencana,2) }}
+            </th>
 
-    <th colspan="4"></th>
+            <th colspan="4"></th>
 
-    <th></th>
+            <th></th>
 
-    <th class="text-end">
-        {{ number_format($totalRealisasi,2) }}
-    </th>
+            <th class="text-end">
+                {{ number_format($totalRealisasi,2) }}
+            </th>
 
-    <th class="text-end">
-        {{ number_format(
-            $totalRealisasi - $totalRencana,
-            2
-        ) }}
-    </th>
+            <th class="text-end">
+                {{ number_format(
+                    $totalRealisasi - $totalRencana,
+                    2
+                ) }}
+            </th>
 
-</tr>
+        </tr>
 
-</tfoot>
+    </tfoot> --}}
+    <tfoot>
+
+        <tr>
+
+            <th colspan="2">
+            </th>
+
+            <th class="text-end">
+                {{ number_format($totalBobot,2) }}
+            </th>
+
+            <th class="text-end">
+                {{ number_format($totalRencana,2) }}
+            </th>
+
+            <th class="text-end">
+                {{-- {{ number_format($totalPrestasiLalu,2) }} --}}
+            </th>
+
+            <th class="text-end">
+                {{ number_format($totalBobotLalu,2) }}
+            </th>
+
+            <th class="text-end">
+                {{-- {{ number_format($totalPrestasiMingguIni,2) }} --}}
+            </th>
+
+            <th class="text-end">
+                {{ number_format($totalBobotMingguIni,2) }}
+            </th>
+
+            <th class="text-end">
+                {{-- {{ number_format($totalPrestasiSdMingguIni,2) }} --}}
+            </th>
+
+            <th class="text-end">
+                {{ number_format($totalRealisasiSdMingguIni,2) }}
+            </th>
+
+            <th class="text-end">
+                {{ number_format(
+                    $totalRealisasiSdMingguIni - $totalRencana,
+                    2
+                ) }}
+            </th>
+
+        </tr>
+
+    </tfoot>
 
 </table>

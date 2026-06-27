@@ -6,8 +6,15 @@
 <style>
 
 body{
-    font-family: DejaVu Sans, sans-serif;
-    font-size:10px;
+    font-family: sans-serif;
+    font-size:9px;
+    color:#000;
+}
+
+h1{
+    text-align:center;
+    font-size:18px;
+    margin-bottom:12px;
 }
 
 table{
@@ -15,22 +22,41 @@ table{
     border-collapse:collapse;
 }
 
-th,td{
-    border:1px solid #000;
-    padding:4px;
+th,
+td{
+    border:0.6px solid #000;
+    padding:3px 4px;
+    vertical-align:middle;
+}
+
+td{
+    white-space:nowrap;
+}
+
+thead th{
+    background:#d9d9d9;
+    text-align:center;
 }
 
 .text-center{
     text-align:center;
 }
 
-.text-end{
+.text-right{
     text-align:right;
 }
 
-.group{
-    background:#ddd;
+.category{
+    background:#eeeeee;
     font-weight:bold;
+}
+
+.uraian{
+    background:#f8f8f8;
+}
+
+.small{
+    font-size:8px;
 }
 
 </style>

@@ -26,6 +26,10 @@ thead th{
     text-align:center;
     font-weight:normal;
 }
+tfoot th{
+    text-align:center;
+    font-weight:normal;
+}
 .text-center{
     text-align:center;
 }
