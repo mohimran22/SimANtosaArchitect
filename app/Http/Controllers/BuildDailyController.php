@@ -54,13 +54,13 @@ class BuildDailyController extends Controller
         'diterima.*' => 'nullable|numeric|min:0',
         'ditolak.*' => 'nullable|numeric|min:0',
         'documentation_tenaga' => 'nullable|array',
-        'documentation_tenaga.*' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+        'documentation_tenaga.*' => 'nullable|file|mimes:jpg,jpeg,png,pdf',
 
         'documentation_pekerjaan' => 'nullable|array',
-        'documentation_pekerjaan.*' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+        'documentation_pekerjaan.*' => 'nullable|file|mimes:jpg,jpeg,png,pdf',
 
         'documentation_material' => 'nullable|array',
-        'documentation_material.*' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+        'documentation_material.*' => 'nullable|file|mimes:jpg,jpeg,png,pdf',
     ]);
     foreach($request->worker_id ?? [] as $i => $worker){
 

@@ -149,958 +149,1147 @@
 @endif
 @push('js')
 <script>
-document.addEventListener('DOMContentLoaded', function(){
+    document.addEventListener('DOMContentLoaded', function(){
 
-    const modal = new bootstrap.Modal(document.getElementById('dailyModal'));
-    const modalBody = document.getElementById('dailyModalBody');
+        const modal = new bootstrap.Modal(document.getElementById('dailyModal'));
+        const modalBody = document.getElementById('dailyModalBody');
 
-    let workIndex = 0;
-    let workerIndex = 0;
-    let materialIndex = 0;
-                function addWorkRow(){
-                
-                const tbody = document.querySelector('#worksTable tbody');
-
-                const row = `
-                <tr>
-                    <td class="row-number"></td>
-
-                    <td>
-                        <input type="text"
-                            name="works[${workIndex}][uraian_manual]"
-                            class="form-control">
-                    </td>
-
-                    <td>
-                        <input type="number" step="0.01"
-                            name="works[${workIndex}][volume]"
-                            class="form-control">
-                    </td>
-
-                    <td>
-                        <input type="text"
-                            name="works[${workIndex}][satuan]"
-                            class="form-control">
-                    </td>
-
-                    <td>
-                        <input type="text"
-                            name="works[${workIndex}][keterangan]"
-                            class="form-control">
-                    </td>
-
-                    <td>
-                        <button type="button"
-                            class="btn btn-sm btn-dark btn-remove-work">
-                            Hapus
-                        </button>
-                    </td>
-                </tr>`;
-
-                tbody.insertAdjacentHTML('beforeend', row);
-                workIndex++;
-                refreshNumber('#worksTable');
-            }
-            function addWorkerRow(){
-                                    const tbody = document.querySelector('#workersTable tbody');
-
-                                    const row = `
-                                    <tr>
-                                        <td class="row-number"></td>
-
-                                        <td>
-                                            <input type="text"
-                                                name="workers[${workerIndex}][keahlian]"
-                                                class="form-control">
-                                        </td>
-
-                                        <td>
-                                            <input type="number"
-                                                name="workers[${workerIndex}][jumlah]"
-                                                class="form-control" value="1">
-                                        </td>
-
-                                        <td>
-                                            <input type="text"
-                                                name="workers[${workerIndex}][alat]"
-                                                class="form-control">
-                                        </td>
-
-                                        <td>
-                                            <button type="button"
-                                                class="btn btn-sm btn-dark btn-remove-worker">
-                                                Hapus
-                                            </button>
-                                        </td>
-                                    </tr>`;
-
-                                    tbody.insertAdjacentHTML('beforeend', row);
-                                    workerIndex++;
-                                    refreshNumber('#workersTable');
-            }
-            function addMaterialRow(){
-                                    const tbody = document.querySelector('#materialsTable tbody');
-
-                                    const row = `
-                                    <tr>
-                                        <td class="row-number"></td>
-
-                                        <td>
-                                            <input type="text"
-                                                name="materials[${materialIndex}][nama_bahan]"
-                                                class="form-control">
-                                        </td>
-
-                                        <td>
-                                            <input type="number"
-                                                name="materials[${materialIndex}][diterima]"
-                                                class="form-control">
-                                        </td>
-
-                                        <td>
-                                            <input type="number"
-                                                name="materials[${materialIndex}][ditolak]"
-                                                class="form-control">
-                                        </td>
-
-                                        <td>
-                                            <button type="button"
-                                                class="btn btn-sm btn-dark btn-remove-material">
-                                                Hapus
-                                            </button>
-                                        </td>
-                                    </tr>`;
-
-                                    tbody.insertAdjacentHTML('beforeend', row);
-                                    materialIndex++;
-                                    refreshNumber('#materialsTable');
-            }
-            function handleDelete(e, tableId, urlPrefix){
-
-                const row = e.target.closest('tr');
-                const idInput = row.querySelector('input[name*="[id]"]');
-
-                if(idInput){
-
-                    const recordId = idInput.value;
-
-                    if(confirm('Yakin hapus data ini?')){
-
-                        fetch(`/${urlPrefix}/${recordId}`, {
-                            method: 'DELETE',
-                            headers: {
-                                'X-CSRF-TOKEN': document
-                                    .querySelector('meta[name="csrf-token"]')
-                                    .content,
-                                'Accept': 'application/json'
-                            }
-                        })
-                        .then(res => res.json())
-                        .then(res => {
-                            if(res.success){
-                                row.remove();
-                                refreshNumber(tableId);
-                            }
-                        });
-                    }
-
-                }else{
-                    row.remove();
-                    refreshNumber(tableId);
-                }
-            }
-            function refreshNumber(tableId){
-                document.querySelectorAll(`${tableId} tbody tr`)
-                    .forEach((row,index)=>{
-                        const cell = row.querySelector('.row-number');
-                        if(cell){
-                            cell.innerText = index + 1;
-                        }
-                    });
-            }
-    modalBody.addEventListener('click', function(e){
-
-        if(e.target.id === 'btnAddWork') addWorkRow();
-        if(e.target.id === 'btnAddWorker') addWorkerRow();
-        if(e.target.id === 'btnAddMaterial') addMaterialRow();
-
-        if(e.target.classList.contains('btn-remove-work')){
-            handleDelete(e, '#worksTable', 'daily-work');
-        }
-
-        if(e.target.classList.contains('btn-remove-worker')){
-            handleDelete(e, '#workersTable', 'daily-worker');
-        }
-
-        if(e.target.classList.contains('btn-remove-material')){
-            handleDelete(e, '#materialsTable', 'daily-material');
-        }
-
-    });
-    document.querySelectorAll('.btn-detail').forEach(btn => {
-
-        btn.addEventListener('click', function(){
-
-            const id = this.dataset.id;
+        let workIndex = 0;
+        let workerIndex = 0;
+        let materialIndex = 0;
+        function addWorkRow(){
             
-            modalBody.innerHTML = "";
-            workIndex = 0;
-            workerIndex = 0;
-            materialIndex = 0;
+            const tbody = document.querySelector('#worksTable tbody');
 
-            fetch(`/daily/${id}/detail`)
-            .then(res => res.json())
-            .then(data => {
-                let workTimeRows = '';
+            const row = `
+            <tr>
+                <td class="row-number"></td>
 
-                (data.work_times || []).forEach((t, i) => {
+                <td>
+                    <input type="text"
+                        name="works[${workIndex}][uraian_manual]"
+                        class="form-control">
+                </td>
 
-                    let badge = 'bg-secondary';
+                <td>
+                    <input type="number" step="0.01"
+                        name="works[${workIndex}][volume]"
+                        class="form-control">
+                </td>
 
-                    if(t.cuaca === 'Baik'){
-                        badge = 'bg-success';
-                    }else if(t.cuaca === 'Mendung'){
-                        badge = 'bg-warning text-dark';
-                    }else if(t.cuaca === 'Hujan'){
-                        badge = 'bg-primary';
-                    }
+                <td>
+                    <input type="text"
+                        name="works[${workIndex}][satuan]"
+                        class="form-control">
+                </td>
 
-                    workTimeRows += `
+                <td>
+                    <input type="text"
+                        name="works[${workIndex}][keterangan]"
+                        class="form-control">
+                </td>
+
+                <td>
+                    <button type="button"
+                        class="btn btn-sm btn-dark btn-remove-work">
+                        Hapus
+                    </button>
+                </td>
+            </tr>`;
+
+            tbody.insertAdjacentHTML('beforeend', row);
+            workIndex++;
+            refreshNumber('#worksTable');
+        }
+        function addWorkerRow(){
+            const tbody = document.querySelector('#workersTable tbody');
+
+            const row = `
+            <tr>
+                <td class="row-number"></td>
+
+                <td>
+                    <input type="text"
+                        name="workers[${workerIndex}][keahlian]"
+                        class="form-control">
+                </td>
+
+                <td>
+                    <input type="number"
+                        name="workers[${workerIndex}][jumlah]"
+                        class="form-control" value="1">
+                </td>
+
+                <td>
+                    <input type="text"
+                        name="workers[${workerIndex}][alat]"
+                        class="form-control">
+                </td>
+
+                <td>
+                    <button type="button"
+                        class="btn btn-sm btn-dark btn-remove-worker">
+                        Hapus
+                    </button>
+                </td>
+            </tr>`;
+
+            tbody.insertAdjacentHTML('beforeend', row);
+            workerIndex++;
+            refreshNumber('#workersTable');
+        }
+        function addMaterialRow(){
+            const tbody = document.querySelector('#materialsTable tbody');
+
+            const row = `
+            <tr>
+                <td class="row-number"></td>
+
+                <td>
+                    <input type="text"
+                        name="materials[${materialIndex}][nama_bahan]"
+                        class="form-control">
+                </td>
+
+                <td>
+                    <input type="number"
+                        name="materials[${materialIndex}][diterima]"
+                        class="form-control">
+                </td>
+
+                <td>
+                    <input type="number"
+                        name="materials[${materialIndex}][ditolak]"
+                        class="form-control">
+                </td>
+
+                <td>
+                    <button type="button"
+                        class="btn btn-sm btn-dark btn-remove-material">
+                        Hapus
+                    </button>
+                </td>
+            </tr>`;
+
+            tbody.insertAdjacentHTML('beforeend', row);
+            materialIndex++;
+            refreshNumber('#materialsTable');
+        }
+                function addCuacaRow(){
+                    const tbody = document.querySelector('#cuacaTable tbody');
+
+                    const row = `
                     <tr>
-
-                        <td>${t.jam_mulai ?? '-'}</td>
-
-                        <td>${t.jam_selesai ?? '-'}</td>
-
-                        <td>${parseFloat(t.total_jam ?? 0).toFixed(2)} Jam</td>
+                        <td class="row-number"></td>
 
                         <td>
-                            <span class="badge ${badge}">
-                                ${t.cuaca ?? '-'}
-                            </span>
+                            <input type="text"
+                                name="materials[${materialIndex}][nama_bahan]"
+                                class="form-control">
                         </td>
 
-                        <td>${t.keterangan ?? '-'}</td>
+                        <td>
+                            <input type="number"
+                                name="materials[${materialIndex}][diterima]"
+                                class="form-control">
+                        </td>
+
+                        <td>
+                            <input type="number"
+                                name="materials[${materialIndex}][ditolak]"
+                                class="form-control">
+                        </td>
+
+                        <td>
+                            <button type="button"
+                                class="btn btn-sm btn-dark btn-remove-material">
+                                Hapus
+                            </button>
+                        </td>
                     </tr>`;
-                });
-                let pekerjaanRows = '';
-                data.works.forEach((w,i)=>{
-                    pekerjaanRows += `
-                    <tr>
-                        <td>${w.rab_process_item 
-                            ? w.rab_process_item.job_name 
-                            : (w.uraian_manual ?? '-')}</td>
-                        <td>${w.volume}</td>
-                        <td>${w.satuan}</td>
-                        <td>${w.keterangan ?? '-'}</td>
-                    </tr>`;
-                });
 
-                let workerRows = '';
-                data.workers.forEach((w,i)=>{
-                    workerRows += `
-                    <tr>
-                        <td>${w.worker 
-                            ? w.worker.user.fullname 
-                            : (w.keahlian ?? '-')}</td>
-                        <td>${w.jumlah}</td>
-                        <td>${w.alat ?? '-'}</td>
-                    </tr>`;
-                });
+                    tbody.insertAdjacentHTML('beforeend', row);
+                    materialIndex++;
+                    refreshNumber('#materialsTable');
+                }
+                function handleDelete(e, tableId, urlPrefix){
 
-                let materialRows = '';
-                data.materials.forEach((m,i)=>{
-                    materialRows += `
-                    <tr>
-                        <td>${m.nama_bahan}</td>
-                        <td>${m.diterima}</td>
-                        <td>${m.ditolak}</td>
-                    </tr>`;
-                });
+                    const row = e.target.closest('tr');
+                    const idInput = row.querySelector('input[name*="[id]"]');
 
-                modalBody.innerHTML = `
+                    if(idInput){
 
-                <div id="viewMode">
-                <h6>Tenaga Kerja & Alat Bantu</h6>
-                <table class="table table-bordered mb-4">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Nama / Keahlian</th>
-                            <th>Jumlah</th>
-                            <th>Alat</th>
-                        </tr>
-                    </thead>
-                    <tbody>${workerRows}</tbody>
-                </table>
-                <h6 class="mt-4">File Upload Foto Tukang</h6>
-                ${renderDocumentation(data, 'tenaga')}
-                <hr>
-                <h6>Pekerjaan Yang Diselenggarakan Hari Ini</h6>
-                <table class="table table-bordered mb-4">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Uraian</th>
-                            <th>Volume</th>
-                            <th>Satuan</th>
-                            <th>Keterangan</th>
-                        </tr>
-                    </thead>
-                    <tbody>${pekerjaanRows}</tbody>
-                </table>
-                <h6 class="mt-4">File Upload Foto Pekerjaan</h6>
-                ${renderDocumentation(data, 'pekerjaan')}
-                <hr>
-                <h6>Bahan Yang Masuk</h6>
-                <table class="table table-bordered">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Nama Bahan</th>
-                            <th>Diterima</th>
-                            <th>Ditolak</th>
-                        </tr>
-                    </thead>
-                    <tbody>${materialRows}</tbody>
-                </table>
-                <h6 class="mt-4">File Upload Foto Bahan</h6>
-                ${renderDocumentation(data, 'material')}
-                <hr>
-                <h6>Jam Kerja & Cuaca</h6>
-                <table class="table table-bordered mb-4">
+                        const recordId = idInput.value;
 
-                    <thead class="table-light">
-                        <tr>
-                            <th width="150">Jam Mulai</th>
-                            <th width="150">Jam Selesai</th>
-                            <th width="120">Total Jam</th>
-                            <th width="150">Cuaca</th>
-                            <th>Keterangan</th>
-                        </tr>
-                    </thead>
+                        if(confirm('Yakin hapus data ini?')){
 
-                    <tbody>
-                        ${
-                            workTimeRows || `
-                            <tr>
-                                <td colspan="6" class="text-center text-muted">
-                                    Tidak ada data jam kerja
-                                </td>
-                            </tr>
-                            `
+                            fetch(`/${urlPrefix}/${recordId}`, {
+                                method: 'DELETE',
+                                headers: {
+                                    'X-CSRF-TOKEN': document
+                                        .querySelector('meta[name="csrf-token"]')
+                                        .content,
+                                    'Accept': 'application/json'
+                                }
+                            })
+                            .then(res => res.json())
+                            .then(res => {
+                                if(res.success){
+                                    row.remove();
+                                    refreshNumber(tableId);
+                                }
+                            });
                         }
-                    </tbody>
 
-                </table>
-                <div class="mt-3">
-                    <label class="fw-semibold">Catatan / Perintah Konsultan MK</label>
-                    <textarea class="form-control" readonly>${data.catatan ?? ''}</textarea>
-                </div>
-                <hr>
-                <h6 class="mt-4">Pengesahan</h6>
+                    }else{
+                        row.remove();
+                        refreshNumber(tableId);
+                    }
+                }
+                function refreshNumber(tableId){
+                    document.querySelectorAll(`${tableId} tbody tr`)
+                        .forEach((row,index)=>{
+                            const cell = row.querySelector('.row-number');
+                            if(cell){
+                                cell.innerText = index + 1;
+                            }
+                        });
+                }
+        modalBody.addEventListener('click', function(e){
 
-                <div class="row mt-4 text-center">
+            if(e.target.id === 'btnAddWork') addWorkRow();
+            if(e.target.id === 'btnAddWorker') addWorkerRow();
+            if(e.target.id === 'btnAddMaterial') addMaterialRow();
 
-                    <div class="col-md-6">
-                        <p class="fw-semibold">Side Manager</p>
-                        <br><br>
-                        <u>${
-                            data.mk_employee?.user?.fullname ?? '____________________'
-                        }</u>
-                    </div>
+            if(e.target.classList.contains('btn-remove-work')){
+                handleDelete(e, '#worksTable', 'daily-work');
+            }
 
-                    <div class="col-md-6">
-                        <p class="fw-semibold">Project Manager</p>
-                        <br><br>
-                        <u>${
-                            data.kontraktor_employee?.user?.fullname ?? '____________________'
-                        }</u>
-                    </div>
+            if(e.target.classList.contains('btn-remove-worker')){
+                handleDelete(e, '#workersTable', 'daily-worker');
+            }
 
-                </div>
-                </div>
-                <div id="editMode" style="display:none;">
-                    <form id="editDailyForm">
-                        <input type="hidden" name="id" value="${data.id}">
-                        <div class="row mb-3">
-                            <div class="col-md-3">
-                                <label>Tanggal</label>
-                                <input type="date" name="tanggal" class="form-control"
-                                    value="${data.tanggal_formatted ?? ''}" required>
-                            </div>
-                            <div class="col-md-3">
-                                <label>Jam Mulai</label>
-                                <input type="time" name="jam_mulai" class="form-control"
-                                    value="${data.jam_mulai ?? ''}">
-                            </div>
-                            <div class="col-md-3">
-                                <label>Jam Selesai</label>
-                                <input type="time" name="jam_selesai" class="form-control"
-                                    value="${data.jam_selesai ?? ''}">
-                            </div>
-                            <div class="col-md-3">
-                                <label>Cuaca</label>
-                                <input type="text" name="cuaca" class="form-control"
-                                    value="${data.cuaca ?? ''}">
-                            </div>
-                        </div>
-                        <div class="d-flex align-items-center gap-2 mb-3">
-                            <label class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" id="switchLibur">
-                                <span class="ms-2">Tandai sebagai Hari Libur</span>
-                            </label>
+            if(e.target.classList.contains('btn-remove-material')){
+                handleDelete(e, '#materialsTable', 'daily-material');
+            }
 
-                            <span id="statusHari" class="badge bg-success">Hari Kerja</span>
+        });
+        document.querySelectorAll('.btn-detail').forEach(btn => {
+
+            btn.addEventListener('click', function(){
+
+                const id = this.dataset.id;
+                
+                modalBody.innerHTML = "";
+                workIndex = 0;
+                workerIndex = 0;
+                materialIndex = 0;
+
+                fetch(`/daily/${id}/detail`)
+                .then(res => res.json())
+                .then(data => {
+                    let workTimeRows = '';
+
+                    (data.work_times || []).forEach((t, i) => {
+
+                        let badge = 'bg-secondary';
+
+                        if(t.cuaca === 'Baik'){
+                            badge = 'bg-success';
+                        }else if(t.cuaca === 'Mendung'){
+                            badge = 'bg-warning text-dark';
+                        }else if(t.cuaca === 'Hujan'){
+                            badge = 'bg-primary';
+                        }
+
+                        workTimeRows += `
+                        <tr>
+
+                            <td>${t.jam_mulai ?? '-'}</td>
+
+                            <td>${t.jam_selesai ?? '-'}</td>
+
+                            <td>${parseFloat(t.total_jam ?? 0).toFixed(2)} Jam</td>
+
+                            <td>
+                                <span class="badge ${badge}">
+                                    ${t.cuaca ?? '-'}
+                                </span>
+                            </td>
+
+                            <td>${t.keterangan ?? '-'}</td>
+                        </tr>`;
+                    });
+                    let pekerjaanRows = '';
+                    data.works.forEach((w,i)=>{
+                        pekerjaanRows += `
+                        <tr>
+                            <td>${w.rab_process_item 
+                                ? w.rab_process_item.job_name 
+                                : (w.uraian_manual ?? '-')}</td>
+                            <td>${w.volume}</td>
+                            <td>${w.satuan}</td>
+                            <td>${w.keterangan ?? '-'}</td>
+                        </tr>`;
+                    });
+
+                    let workerRows = '';
+                    data.workers.forEach((w,i)=>{
+                        workerRows += `
+                        <tr>
+                            <td>${w.worker 
+                                ? w.worker.user.fullname 
+                                : (w.keahlian ?? '-')}</td>
+                            <td>${w.jumlah}</td>
+                            <td>${w.alat ?? '-'}</td>
+                        </tr>`;
+                    });
+
+                    let materialRows = '';
+                    data.materials.forEach((m,i)=>{
+                        materialRows += `
+                        <tr>
+                            <td>${m.nama_bahan}</td>
+                            <td>${m.diterima}</td>
+                            <td>${m.ditolak}</td>
+                        </tr>`;
+                    });
+
+                    modalBody.innerHTML = `
+
+                    <div id="viewMode">
+                        <h6>Tenaga Kerja & Alat Bantu</h6>
+                            <table class="table table-bordered mb-4">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Nama / Keahlian</th>
+                                        <th>Jumlah</th>
+                                        <th>Alat</th>
+                                    </tr>
+                                </thead>
+                                <tbody>${workerRows}</tbody>
+                            </table>
+                        <h6 class="mt-4">File Upload Foto Tukang</h6>
+                        ${renderDocumentation(data, 'tenaga')}
+                        <hr>
+                        <h6>Pekerjaan Yang Diselenggarakan Hari Ini</h6>
+                        <table class="table table-bordered mb-4">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Uraian</th>
+                                    <th>Volume</th>
+                                    <th>Satuan</th>
+                                    <th>Keterangan</th>
+                                </tr>
+                            </thead>
+                            <tbody>${pekerjaanRows}</tbody>
+                        </table>
+                        <h6 class="mt-4">File Upload Foto Pekerjaan</h6>
+                        ${renderDocumentation(data, 'pekerjaan')}
+                        <hr>
+                        <h6>Bahan Yang Masuk</h6>
+                        <table class="table table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Nama Bahan</th>
+                                    <th>Diterima</th>
+                                    <th>Ditolak</th>
+                                </tr>
+                            </thead>
+                            <tbody>${materialRows}</tbody>
+                        </table>
+                        <h6 class="mt-4">File Upload Foto Bahan</h6>
+                        ${renderDocumentation(data, 'material')}
+                        <hr>
+                        <h6>Jam Kerja & Cuaca</h6>
+                        <table class="table table-bordered mb-4">
+
+                            <thead class="table-light">
+                                <tr>
+                                    <th width="150">Jam Mulai</th>
+                                    <th width="150">Jam Selesai</th>
+                                    <th width="120">Total Jam</th>
+                                    <th width="150">Cuaca</th>
+                                    <th>Keterangan</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                ${
+                                    workTimeRows || `
+                                    <tr>
+                                        <td colspan="6" class="text-center text-muted">
+                                            Tidak ada data jam kerja
+                                        </td>
+                                    </tr>
+                                    `
+                                }
+                            </tbody>
+
+                        </table>
+                        <div class="mt-3">
+                            <label class="fw-semibold">Catatan / Perintah Konsultan MK</label>
+                            <textarea class="form-control" readonly>${data.catatan ?? ''}</textarea>
                         </div>
                         <hr>
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h6 class="mb-0">Tenaga Kerja & Alat Bantu</h6>
-                            <button type="button" class="btn btn-sm btn-dark" id="btnAddWorker">
-                                + Tambah Tenaga
-                            </button>
+                        <h6 class="mt-4">Pengesahan</h6>
+
+                        <div class="row mt-4 text-center">
+
+                            <div class="col-md-6">
+                                <p class="fw-semibold">Side Manager</p>
+                                <br><br>
+                                <u>${
+                                    data.mk_employee?.user?.fullname ?? '____________________'
+                                }</u>
+                            </div>
+
+                            <div class="col-md-6">
+                                <p class="fw-semibold">Project Manager</p>
+                                <br><br>
+                                <u>${
+                                    data.kontraktor_employee?.user?.fullname ?? '____________________'
+                                }</u>
+                            </div>
+
                         </div>
-                        <table class="table table-bordered" id="workersTable">
+                    </div>
+                    <div id="editMode" style="display:none;">
+                        <form id="editDailyForm">
+                            <input type="hidden" name="id" value="${data.id}">
+                            <div class="row mb-3">
+                                <div class="col-md-3">
+                                    <label>Tanggal</label>
+                                    <input type="date" name="tanggal" class="form-control"
+                                        value="${data.tanggal_formatted ?? ''}" required>
+                                </div>
+                                <div class="col-md-3">
+                                    <label>Jam Mulai</label>
+                                    <input type="time" name="jam_mulai" class="form-control"
+                                        value="${data.jam_mulai ?? ''}">
+                                </div>
+                                <div class="col-md-3">
+                                    <label>Jam Selesai</label>
+                                    <input type="time" name="jam_selesai" class="form-control"
+                                        value="${data.jam_selesai ?? ''}">
+                                </div>
+                                <div class="col-md-3">
+                                    <label>Cuaca</label>
+                                    <input type="text" name="cuaca" class="form-control"
+                                        value="${data.cuaca ?? ''}">
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center gap-2 mb-3">
+                                <label class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="switchLibur">
+                                    <span class="ms-2">Tandai sebagai Hari Libur</span>
+                                </label>
+
+                                <span id="statusHari" class="badge bg-success">Hari Kerja</span>
+                            </div>
+                            <hr>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="mb-0">Tenaga Kerja & Alat Bantu</h6>
+                                <button type="button" class="btn btn-sm btn-dark" id="btnAddWorker">
+                                    + Tambah Tenaga
+                                </button>
+                            </div>
+                            <table class="table table-bordered" id="workersTable">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th width="50">No</th>
+                                        <th>Nama / Keahlian</th>
+                                        <th width="120">Jumlah</th>
+                                        <th width="150">Alat</th>
+                                        <th width="80">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                ${data.workers.map((w,i)=>`
+                                <tr>
+                                    <td class="row-number">${i+1}</td>
+                                    <td>
+                                        ${w.worker 
+                                            ? w.worker.user.fullname
+                                            : (w.keahlian ?? '-')}
+                                        <input type="hidden" name="workers[${i}][id]" value="${w.id}">
+                                    </td>
+                                    <td>
+                                        <input type="number"
+                                            name="workers[${i}][jumlah]"
+                                            class="form-control"
+                                            value="${w.jumlah}">
+                                    </td>
+                                    <td>
+                                        <input type="text"
+                                            name="workers[${i}][alat]"
+                                            class="form-control"
+                                            value="${w.alat ?? ''}">
+                                    </td>
+                                    <td>
+                                        <button type="button"
+                                            class="btn btn-sm btn-dark btn-remove-worker">
+                                            Hapus
+                                        </button>
+                                    </td>
+                                </tr>
+                                `).join('')}
+                                </tbody>
+                            </table>
+                            <h6 class="mt-4">File Upload Foto Tukang</h6>
+                            <div id="editDocsTenaga">
+                                ${renderDocumentationEdit(data, 'tenaga')}
+                            </div>
+
+                            <input type="file" name="new_files_tenaga[]" 
+                                class="form-control mt-2" multiple>
+                            <div id="previewTenaga"
+                                class="d-flex flex-wrap gap-3 mt-3">
+                            </div>
+                            <hr>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="mb-0">Pekerjaan</h6>
+                                <button type="button" class="btn btn-sm btn-dark" id="btnAddWork">
+                                    + Tambah Pekerjaan
+                                </button>
+                            </div>
+                            <table class="table table-bordered" id="worksTable">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>No</th>
+                                        <th>Uraian</th>
+                                        <th width="120">Volume</th>
+                                        <th width="120">Satuan</th>
+                                        <th>Keterangan</th>
+                                        <th width="40">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${data.works.map((w,i)=>`
+                                    <tr>
+                                        <td class="row-number">${i+1}</td>
+
+                                        <td>
+                                            <input type="hidden" name="works[${i}][id]" value="${w.id}">
+                                            <input type="text"
+                                                name="works[${i}][uraian_manual]"
+                                                class="form-control"
+                                                value="${
+                                                    w.rab_process_item 
+                                                    ? w.rab_process_item.job_name 
+                                                    : (w.uraian_manual ?? '')
+                                                }">
+                                        </td>
+                                        <td>
+                                            <input type="number" step="0.01"
+                                                name="works[${i}][volume]"
+                                                class="form-control"
+                                                value="${w.volume}">
+                                        </td>
+                                        <td>
+                                            <input type="text"
+                                                name="works[${i}][satuan]"
+                                                class="form-control"
+                                                value="${w.satuan}">
+                                        </td>
+                                        <td>
+                                            <input type="text"
+                                                name="works[${i}][keterangan]"
+                                                class="form-control"
+                                                value="${w.keterangan ?? '-'}">
+                                        </td>
+                                        <td>
+                                            <button type="button"
+                                                class="btn btn-sm btn-dark btn-remove-work">
+                                                Hapus
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                            <h6 class="mt-4">File Upload Foto Pekerjaan</h6>
+                            <div id="editDocsPekerjaan">
+                                ${renderDocumentationEdit(data, 'pekerjaan')}
+                            </div>
+
+                            <input type="file" name="new_files_pekerjaan[]" id="fileInputPekerjaan"
+                                class="form-control mt-2" multiple>
+                            <div id="previewPekerjaan"
+                                class="d-flex flex-wrap gap-3 mt-3">
+                            </div>
+                            <hr>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="mb-0">Bahan Yang Masuk</h6>
+                                <button type="button" class="btn btn-sm btn-dark" id="btnAddMaterial">
+                                    + Tambah Bahan
+                                </button>
+                            </div>
+                            <table class="table table-bordered" id="materialsTable">
                             <thead class="table-light">
                                 <tr>
                                     <th width="50">No</th>
-                                    <th>Nama / Keahlian</th>
-                                    <th width="120">Jumlah</th>
-                                    <th width="150">Alat</th>
+                                    <th>Nama Bahan</th>
+                                    <th>Diterima</th>
+                                    <th>Ditolak</th>
                                     <th width="80">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
-                            ${data.workers.map((w,i)=>`
+                            ${data.materials.map((m,i)=>`
                             <tr>
                                 <td class="row-number">${i+1}</td>
                                 <td>
-                                    ${w.worker 
-                                        ? w.worker.user.fullname
-                                        : (w.keahlian ?? '-')}
-                                    <input type="hidden" name="workers[${i}][id]" value="${w.id}">
+                                    ${m.nama_bahan}
+                                    <input type="hidden" name="materials[${i}][id]" value="${m.id}">
                                 </td>
                                 <td>
                                     <input type="number"
-                                        name="workers[${i}][jumlah]"
+                                        name="materials[${i}][diterima]"
                                         class="form-control"
-                                        value="${w.jumlah}">
+                                        value="${m.diterima}">
                                 </td>
                                 <td>
-                                    <input type="text"
-                                        name="workers[${i}][alat]"
+                                    <input type="number"
+                                        name="materials[${i}][ditolak]"
                                         class="form-control"
-                                        value="${w.alat ?? ''}">
+                                        value="${m.ditolak}">
                                 </td>
                                 <td>
                                     <button type="button"
-                                        class="btn btn-sm btn-dark btn-remove-worker">
+                                        class="btn btn-sm btn-dark btn-remove-material">
                                         Hapus
                                     </button>
                                 </td>
                             </tr>
                             `).join('')}
                             </tbody>
-                        </table>
-                        <h6 class="mt-4">File Upload Foto Tukang</h6>
-                        <div id="editDocsTenaga">
-                            ${renderDocumentationEdit(data, 'tenaga')}
-                        </div>
+                            </table>
+                            <h6 class="mt-4">File Upload Foto Bahan</h6>
+                            <div id="editDocsMaterial">
+                                ${renderDocumentationEdit(data, 'material')}
+                            </div>
 
-                        <input type="file" name="new_files_tenaga[]" 
-                            class="form-control mt-2" multiple>
-                        <div id="previewTenaga"
-                            class="d-flex flex-wrap gap-3 mt-3">
-                        </div>
-                        <hr>
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h6 class="mb-0">Pekerjaan</h6>
-                            <button type="button" class="btn btn-sm btn-dark" id="btnAddWork">
-                                + Tambah Pekerjaan
-                            </button>
-                        </div>
-                        <table class="table table-bordered" id="worksTable">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>No</th>
-                                    <th>Uraian</th>
-                                    <th width="120">Volume</th>
-                                    <th width="120">Satuan</th>
-                                    <th>Keterangan</th>
-                                    <th width="40">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${data.works.map((w,i)=>`
-                                <tr>
-                                    <td class="row-number">${i+1}</td>
+                            <input type="file" name="new_files_material[]" 
+                                class="form-control mt-2" multiple>
+                            <div id="previewMaterial"
+                                class="d-flex flex-wrap gap-3 mt-3">
+                            </div>
+                            <div class="mb-3">
+                                <div class="card shadow-sm border-0">
+                                    <div class="card-header fw-bold d-flex justify-content-between align-items-center">
+                                        <span>Jam Kerja & Cuaca</span>
 
-                                    <td>
-                                        <input type="hidden" name="works[${i}][id]" value="${w.id}">
-                                        <input type="text"
-                                            name="works[${i}][uraian_manual]"
-                                            class="form-control"
-                                            value="${
-                                                w.rab_process_item 
-                                                ? w.rab_process_item.job_name 
-                                                : (w.uraian_manual ?? '')
-                                            }">
-                                    </td>
-                                    <td>
-                                        <input type="number" step="0.01"
-                                            name="works[${i}][volume]"
-                                            class="form-control"
-                                            value="${w.volume}">
-                                    </td>
-                                    <td>
-                                        <input type="text"
-                                            name="works[${i}][satuan]"
-                                            class="form-control"
-                                            value="${w.satuan}">
-                                    </td>
-                                    <td>
-                                        <input type="text"
-                                            name="works[${i}][keterangan]"
-                                            class="form-control"
-                                            value="${w.keterangan ?? '-'}">
-                                    </td>
-                                    <td>
                                         <button type="button"
-                                            class="btn btn-sm btn-dark btn-remove-work">
-                                            Hapus
+                                            class="btn btn-sm btn-dark"
+                                            id="btnAddJamKerjaEdit">
+                                            <i class="ti ti-plus"></i>
                                         </button>
-                                    </td>
-                                </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-                        <h6 class="mt-4">File Upload Foto Pekerjaan</h6>
-                        <div id="editDocsPekerjaan">
-                            ${renderDocumentationEdit(data, 'pekerjaan')}
-                        </div>
+                                    </div>
 
-                        <input type="file" name="new_files_pekerjaan[]" id="fileInputPekerjaan"
-                            class="form-control mt-2" multiple>
-                        <div id="previewPekerjaan"
-                            class="d-flex flex-wrap gap-3 mt-3">
-                        </div>
-                        <hr>
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h6 class="mb-0">Bahan Yang Masuk</h6>
-                            <button type="button" class="btn btn-sm btn-dark" id="btnAddMaterial">
-                                + Tambah Bahan
+                                    <div class="card-body p-0">
+                                        <div class="table-responsive">
+                                            <table class="table table-bordered mb-0">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th width="170">Jam Mulai</th>
+                                                        <th width="170">Jam Selesai</th>
+                                                        <th width="120">Total Jam</th>
+                                                        <th width="180">Cuaca</th>
+                                                        <th>Keterangan</th>
+                                                        <th width="50"></th>
+                                                    </tr>
+                                                </thead>
+
+                                                <tbody id="editJamKerjaTable">
+                                                ${
+                                                    (data.jam_kerja && data.jam_kerja.length)
+                                                    ? data.jam_kerja.map((j,i)=>`
+                                                    <tr>
+                                                        <td>
+                                                            <input type="hidden"
+                                                                name="jam_kerja[${i}][id]"
+                                                                value="${j.id ?? ''}">
+
+                                                            <input type="time"
+                                                                name="jam_kerja[${i}][jam_mulai]"
+                                                                class="form-control jam-mulai"
+                                                                value="${j.jam_mulai ?? ''}">
+                                                        </td>
+
+                                                        <td>
+                                                            <input type="time"
+                                                                name="jam_kerja[${i}][jam_selesai]"
+                                                                class="form-control jam-selesai"
+                                                                value="${j.jam_selesai ?? ''}">
+                                                        </td>
+
+                                                        <td>
+                                                            <input type="number"
+                                                                step="0.01"
+                                                                readonly
+                                                                name="jam_kerja[${i}][total_jam]"
+                                                                class="form-control total-jam"
+                                                                value="${j.total_jam ?? ''}">
+                                                        </td>
+
+                                                        <td>
+                                                            <select
+                                                                name="jam_kerja[${i}][cuaca]"
+                                                                class="form-select">
+
+                                                                <option value="">-- Pilih Cuaca --</option>
+
+                                                                <option value="Cerah"
+                                                                    ${j.cuaca=='Cerah'?'selected':''}>
+                                                                    Cerah
+                                                                </option>
+
+                                                                <option value="Mendung"
+                                                                    ${j.cuaca=='Mendung'?'selected':''}>
+                                                                    Mendung
+                                                                </option>
+
+                                                                <option value="Hujan"
+                                                                    ${j.cuaca=='Hujan'?'selected':''}>
+                                                                    Hujan
+                                                                </option>
+                                                            </select>
+                                                        </td>
+
+                                                        <td>
+                                                            <input type="text"
+                                                                name="jam_kerja[${i}][keterangan]"
+                                                                class="form-control"
+                                                                value="${j.keterangan ?? ''}">
+                                                        </td>
+
+                                                        <td>
+                                                            <button type="button"
+                                                                class="btn btn-danger btn-sm btn-remove-jam">
+                                                                ×
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                    `).join('')
+                                                    :
+                                                    `
+                                                    <tr>
+                                                        <td>
+                                                            <input type="time"
+                                                                name="jam_kerja[0][jam_mulai]"
+                                                                class="form-control jam-mulai">
+                                                        </td>
+
+                                                        <td>
+                                                            <input type="time"
+                                                                name="jam_kerja[0][jam_selesai]"
+                                                                class="form-control jam-selesai">
+                                                        </td>
+
+                                                        <td>
+                                                            <input type="number"
+                                                                readonly
+                                                                step="0.01"
+                                                                name="jam_kerja[0][total_jam]"
+                                                                class="form-control total-jam">
+                                                        </td>
+
+                                                        <td>
+                                                            <select
+                                                                name="jam_kerja[0][cuaca]"
+                                                                class="form-select">
+                                                                <option value="">-- Pilih Cuaca --</option>
+                                                                <option value="Cerah">Cerah</option>
+                                                                <option value="Mendung">Mendung</option>
+                                                                <option value="Hujan">Hujan</option>
+                                                            </select>
+                                                        </td>
+
+                                                        <td>
+                                                            <input type="text"
+                                                                name="jam_kerja[0][keterangan]"
+                                                                class="form-control">
+                                                        </td>
+
+                                                        <td>
+                                                            <button type="button"
+                                                                class="btn btn-danger btn-sm btn-remove-jam">
+                                                                ×
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                    `
+                                                }
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label>Catatan</label>
+                                <textarea name="catatan" class="form-control">${data.catatan ?? ''}</textarea>
+                            </div>
+                            <button type="button" class="btn btn-dark" id="btnSaveAll">
+                                Simpan
                             </button>
-                        </div>
-                        <table class="table table-bordered" id="materialsTable">
-                        <thead class="table-light">
-                            <tr>
-                                <th width="50">No</th>
-                                <th>Nama Bahan</th>
-                                <th>Diterima</th>
-                                <th>Ditolak</th>
-                                <th width="80">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        ${data.materials.map((m,i)=>`
-                        <tr>
-                            <td class="row-number">${i+1}</td>
-                            <td>
-                                ${m.nama_bahan}
-                                <input type="hidden" name="materials[${i}][id]" value="${m.id}">
-                            </td>
-                            <td>
-                                <input type="number"
-                                    name="materials[${i}][diterima]"
-                                    class="form-control"
-                                    value="${m.diterima}">
-                            </td>
-                            <td>
-                                <input type="number"
-                                    name="materials[${i}][ditolak]"
-                                    class="form-control"
-                                    value="${m.ditolak}">
-                            </td>
-                                                <td>
-                        <button type="button"
-                            class="btn btn-sm btn-dark btn-remove-material">
-                            Hapus
-                        </button>
-                    </td>
-                        </tr>
-                        `).join('')}
-                        </tbody>
-                        </table>
-                        <h6 class="mt-4">File Upload Foto Bahan</h6>
-                        <div id="editDocsMaterial">
-                            ${renderDocumentationEdit(data, 'material')}
-                        </div>
+                        </form>
+                    </div>
+                    `;
+                    const switchLibur = document.getElementById('switchLibur');
+                    const statusHari = document.getElementById('statusHari');
 
-                        <input type="file" name="new_files_material[]" 
-                            class="form-control mt-2" multiple>
-                        <div id="previewMaterial"
-                            class="d-flex flex-wrap gap-3 mt-3">
-                        </div>
-                        <div class="mb-3">
-                            <label>Catatan</label>
-                            <textarea name="catatan" class="form-control">${data.catatan ?? ''}</textarea>
-                        </div>
-                        <button type="button" class="btn btn-dark" id="btnSaveAll">
-                            Simpan
-                        </button>
-                    </form>
-                </div>
-                `;
-                const switchLibur = document.getElementById('switchLibur');
-                const statusHari = document.getElementById('statusHari');
+                    switchLibur.checked = data.is_libur;
 
-                switchLibur.checked = data.is_libur;
+                    if(data.is_libur){
+                        statusHari.className = "badge bg-danger";
+                        statusHari.innerText = "Hari Libur";
+                    }else{
+                        statusHari.className = "badge bg-success";
+                        statusHari.innerText = "Hari Kerja";
+                    }
+                    
+                    switchLibur.addEventListener('change', function(){
 
-                if(data.is_libur){
-                    statusHari.className = "badge bg-danger";
-                    statusHari.innerText = "Hari Libur";
-                }else{
-                    statusHari.className = "badge bg-success";
-                    statusHari.innerText = "Hari Kerja";
-                }
-                
-                switchLibur.addEventListener('change', function(){
+                        let isLibur = this.checked ? 1 : 0;
 
-                    let isLibur = this.checked ? 1 : 0;
-
-                    fetch(`/daily-report/toggle-libur/${dailyId}`,{
-                        method: "POST",
-                        headers:{
-                            "Content-Type":"application/json",
-                            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content
-                        },
-                        body: JSON.stringify({
-                            is_libur: isLibur
+                        fetch(`/daily-report/toggle-libur/${dailyId}`,{
+                            method: "POST",
+                            headers:{
+                                "Content-Type":"application/json",
+                                "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content
+                            },
+                            body: JSON.stringify({
+                                is_libur: isLibur
+                            })
                         })
-                    })
-                    .then(res=>res.json())
-                    .then(res=>{
+                        .then(res=>res.json())
+                        .then(res=>{
 
-                        if(res.success){
+                            if(res.success){
 
-                            if(isLibur){
-                                statusHari.className = "badge bg-danger";
-                                statusHari.innerText = "Hari Libur";
-                            }else{
-                                statusHari.className = "badge bg-success";
-                                statusHari.innerText = "Hari Kerja";
+                                if(isLibur){
+                                    statusHari.className = "badge bg-danger";
+                                    statusHari.innerText = "Hari Libur";
+                                }else{
+                                    statusHari.className = "badge bg-success";
+                                    statusHari.innerText = "Hari Kerja";
+                                }
+
                             }
 
+                        });
+
+                    });
+                    const btnToggle = document.getElementById('btnToggleEdit');
+                    const viewMode = document.getElementById('viewMode');
+                    const editMode = document.getElementById('editMode');
+
+                    btnToggle.addEventListener('click', function(){
+
+                        if(viewMode.style.display !== 'none'){
+                            // Masuk mode edit
+                            viewMode.style.display = 'none';
+                            editMode.style.display = 'block';
+                            btnToggle.textContent = 'Kembali';
+                            btnToggle.classList.remove('btn-dark');
+                            btnToggle.classList.add('btn-secondary');
+                        }else{
+                            // Kembali ke view
+                            editMode.style.display = 'none';
+                            viewMode.style.display = 'block';
+                            btnToggle.textContent = 'Edit';
+                            btnToggle.classList.remove('btn-secondary');
+                            btnToggle.classList.add('btn-dark');
                         }
 
                     });
+                    workIndex = data.works.length;
+                    workerIndex = data.workers.length;
+                    materialIndex = data.materials.length;
 
+                    modal.show();
+                    setupAdvancedPreview('fileInputPekerjaan', 'previewPekerjaan');
+                    setupAdvancedPreview('fileInputTenaga', 'previewTenaga');
+                    setupAdvancedPreview('fileInputMaterial', 'previewMaterial');
                 });
-                const btnToggle = document.getElementById('btnToggleEdit');
-                const viewMode = document.getElementById('viewMode');
-                const editMode = document.getElementById('editMode');
-
-                btnToggle.addEventListener('click', function(){
-
-                    if(viewMode.style.display !== 'none'){
-                        // Masuk mode edit
-                        viewMode.style.display = 'none';
-                        editMode.style.display = 'block';
-                        btnToggle.textContent = 'Kembali';
-                        btnToggle.classList.remove('btn-dark');
-                        btnToggle.classList.add('btn-secondary');
-                    }else{
-                        // Kembali ke view
-                        editMode.style.display = 'none';
-                        viewMode.style.display = 'block';
-                        btnToggle.textContent = 'Edit';
-                        btnToggle.classList.remove('btn-secondary');
-                        btnToggle.classList.add('btn-dark');
-                    }
-
-                });
-                workIndex = data.works.length;
-                workerIndex = data.workers.length;
-                materialIndex = data.materials.length;
-
-                modal.show();
-                setupAdvancedPreview('fileInputPekerjaan', 'previewPekerjaan');
-                setupAdvancedPreview('fileInputTenaga', 'previewTenaga');
-                setupAdvancedPreview('fileInputMaterial', 'previewMaterial');
             });
-        });
 
-    });
-    function renderDocumentation(data, category) {
+        });
+        function renderDocumentation(data, category) {
+                let docs = (data.documentations || []).filter(doc =>
+                    doc.category.toLowerCase() === category.toLowerCase()
+                );
+
+            if(docs.length === 0){
+                return `<p class="text-muted">Tidak ada File Upload</p>`;
+            }
+
+            let html = `<div class="d-flex flex-wrap gap-3">`;
+
+            docs.forEach(doc => {
+
+                let fileUrl = "/storage/" + doc.file_path;
+
+                if(doc.file_type.startsWith("image")){
+
+                    html += `
+                        <div style="width:120px">
+                            <a href="${fileUrl}" target="_blank">
+                                <img src="${fileUrl}" 
+                                    class="img-fluid rounded shadow-sm mb-1">
+                            </a>
+                            <small class="d-block text-truncate">${doc.file_name}</small>
+                        </div>
+                    `;
+                }
+
+                else if(doc.file_type === "application/pdf"){
+
+                    html += `
+                        <div style="width:120px">
+                            <a href="${fileUrl}" 
+                            target="_blank"
+                            class="text-decoration-none">
+                                <div class="border rounded p-3 text-center shadow-sm">
+                                    📄
+                                </div>
+                                <small class="d-block text-truncate mt-1">
+                                    ${doc.file_name}
+                                </small>
+                            </a>
+                        </div>
+                    `;
+                }
+            });
+
+            html += `</div>`;
+
+            return html;
+        }
+        function renderDocumentationEdit(data, category) {
+
             let docs = (data.documentations || []).filter(doc =>
                 doc.category.toLowerCase() === category.toLowerCase()
             );
 
-        if(docs.length === 0){
-            return `<p class="text-muted">Tidak ada File Upload</p>`;
-        }
-
-        let html = `<div class="d-flex flex-wrap gap-3">`;
-
-        docs.forEach(doc => {
-
-            let fileUrl = "/storage/" + doc.file_path;
-
-            if(doc.file_type.startsWith("image")){
-
-                html += `
-                    <div style="width:120px">
-                        <a href="${fileUrl}" target="_blank">
-                            <img src="${fileUrl}" 
-                                class="img-fluid rounded shadow-sm mb-1">
-                        </a>
-                        <small class="d-block text-truncate">${doc.file_name}</small>
-                    </div>
-                `;
+            if(docs.length === 0){
+                return `<p class="text-muted">Tidak ada file</p>`;
             }
 
-            else if(doc.file_type === "application/pdf"){
+            let html = `<div class="d-flex flex-wrap gap-3">`;
+
+            docs.forEach(doc => {
+
+                let fileUrl = "/storage/" + doc.file_path;
 
                 html += `
-                    <div style="width:120px">
-                        <a href="${fileUrl}" 
-                        target="_blank"
-                        class="text-decoration-none">
-                            <div class="border rounded p-3 text-center shadow-sm">
-                                📄
-                            </div>
-                            <small class="d-block text-truncate mt-1">
-                                ${doc.file_name}
-                            </small>
-                        </a>
-                    </div>
-                `;
-            }
-        });
+                <div style="width:120px; position:relative">
+                    <input type="hidden" 
+                        name="existing_docs[]" 
+                        value="${doc.id}">
 
-        html += `</div>`;
-
-        return html;
-    }
-    function renderDocumentationEdit(data, category) {
-
-        let docs = (data.documentations || []).filter(doc =>
-            doc.category.toLowerCase() === category.toLowerCase()
-        );
-
-        if(docs.length === 0){
-            return `<p class="text-muted">Tidak ada file</p>`;
-        }
-
-        let html = `<div class="d-flex flex-wrap gap-3">`;
-
-        docs.forEach(doc => {
-
-            let fileUrl = "/storage/" + doc.file_path;
-
-            html += `
-            <div style="width:120px; position:relative">
-                <input type="hidden" 
-                    name="existing_docs[]" 
-                    value="${doc.id}">
-
-                <button type="button"
-                        class="btn btn-sm btn-danger btn-delete-doc"
-                        data-id="${doc.id}"
-                        style="position:absolute; top:-5px; right:-5px;">
-                    ×
-                </button>
-
-                <a href="${fileUrl}" target="_blank">
-                    <img src="${fileUrl}"
-                        class="img-fluid rounded shadow-sm mb-1">
-                </a>
-
-                <small class="d-block text-truncate">
-                    ${doc.file_name}
-                </small>
-            </div>`;
-        });
-
-        html += `</div>`;
-
-        return html;
-    }
-    function setupAdvancedPreview(inputId, previewContainerId){
-
-        const input = document.getElementById(inputId);
-        const previewContainer = document.getElementById(previewContainerId);
-
-        if(!input) return;
-
-        let fileStore = []; // ⬅ simpan file aktif disini
-
-        input.addEventListener('change', function(e){
-
-            const newFiles = Array.from(e.target.files);
-
-            // Tambah ke store (tidak replace)
-            fileStore = [...fileStore, ...newFiles];
-
-            renderPreview();
-            rebuildFileList();
-        });
-
-        function renderPreview(){
-
-            previewContainer.innerHTML = '';
-
-            fileStore.forEach((file, index)=>{
-
-                const reader = new FileReader();
-
-                reader.onload = function(e){
-
-                    let html = `
-                    <div style="width:120px; position:relative">
-                        <button type="button"
-                            class="btn btn-sm btn-danger remove-file"
-                            data-index="${index}"
+                    <button type="button"
+                            class="btn btn-sm btn-danger btn-delete-doc"
+                            data-id="${doc.id}"
                             style="position:absolute; top:-5px; right:-5px;">
-                            ×
-                        </button>`;
+                        ×
+                    </button>
 
-                    if(file.type.startsWith('image')){
-                        html += `
-                            <img src="${e.target.result}"
-                                class="img-fluid rounded shadow-sm mb-1">`;
-                    } else if(file.type === "application/pdf"){
-                        html += `
-                            <div class="border rounded p-4 text-center shadow-sm">
-                                📄 PDF
-                            </div>`;
-                    } else {
-                        html += `
-                            <div class="border rounded p-4 text-center shadow-sm">
-                                📎 File
-                            </div>`;
-                    }
+                    <a href="${fileUrl}" target="_blank">
+                        <img src="${fileUrl}"
+                            class="img-fluid rounded shadow-sm mb-1">
+                    </a>
 
-                    html += `
-                        <small class="d-block text-truncate">
-                            ${file.name}
-                        </small>
-                    </div>`;
-
-                    previewContainer.insertAdjacentHTML('beforeend', html);
-                };
-
-                reader.readAsDataURL(file);
-            });
-        }
-
-        function rebuildFileList(){
-
-            const dataTransfer = new DataTransfer();
-
-            fileStore.forEach(file => {
-                dataTransfer.items.add(file);
+                    <small class="d-block text-truncate">
+                        ${doc.file_name}
+                    </small>
+                </div>`;
             });
 
-            input.files = dataTransfer.files;
+            html += `</div>`;
+
+            return html;
         }
+        function setupAdvancedPreview(inputId, previewContainerId){
 
-        // Hapus individual file
-        previewContainer.addEventListener('click', function(e){
+            const input = document.getElementById(inputId);
+            const previewContainer = document.getElementById(previewContainerId);
 
-            if(e.target.classList.contains('remove-file')){
+            if(!input) return;
 
-                const index = e.target.dataset.index;
+            let fileStore = []; // ⬅ simpan file aktif disini
 
-                fileStore.splice(index, 1);
+            input.addEventListener('change', function(e){
+
+                const newFiles = Array.from(e.target.files);
+
+                // Tambah ke store (tidak replace)
+                fileStore = [...fileStore, ...newFiles];
 
                 renderPreview();
                 rebuildFileList();
+            });
+
+            function renderPreview(){
+
+                previewContainer.innerHTML = '';
+
+                fileStore.forEach((file, index)=>{
+
+                    const reader = new FileReader();
+
+                    reader.onload = function(e){
+
+                        let html = `
+                        <div style="width:120px; position:relative">
+                            <button type="button"
+                                class="btn btn-sm btn-danger remove-file"
+                                data-index="${index}"
+                                style="position:absolute; top:-5px; right:-5px;">
+                                ×
+                            </button>`;
+
+                        if(file.type.startsWith('image')){
+                            html += `
+                                <img src="${e.target.result}"
+                                    class="img-fluid rounded shadow-sm mb-1">`;
+                        } else if(file.type === "application/pdf"){
+                            html += `
+                                <div class="border rounded p-4 text-center shadow-sm">
+                                    📄 PDF
+                                </div>`;
+                        } else {
+                            html += `
+                                <div class="border rounded p-4 text-center shadow-sm">
+                                    📎 File
+                                </div>`;
+                        }
+
+                        html += `
+                            <small class="d-block text-truncate">
+                                ${file.name}
+                            </small>
+                        </div>`;
+
+                        previewContainer.insertAdjacentHTML('beforeend', html);
+                    };
+
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            function rebuildFileList(){
+
+                const dataTransfer = new DataTransfer();
+
+                fileStore.forEach(file => {
+                    dataTransfer.items.add(file);
+                });
+
+                input.files = dataTransfer.files;
+            }
+
+            // Hapus individual file
+            previewContainer.addEventListener('click', function(e){
+
+                if(e.target.classList.contains('remove-file')){
+
+                    const index = e.target.dataset.index;
+
+                    fileStore.splice(index, 1);
+
+                    renderPreview();
+                    rebuildFileList();
+                }
+
+            });
+
+        }
+        document.addEventListener('click', function(e){
+
+            if(e.target.classList.contains('btn-delete-doc')){
+
+                const id = e.target.dataset.id;
+
+                if(confirm('Yakin hapus file ini?')){
+
+                    fetch(`/daily/documentation/${id}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': document
+                                .querySelector('meta[name="csrf-token"]')
+                                .content,
+                            'Accept': 'application/json'
+                        }
+                    })
+                    .then(res => res.json())
+                    .then(res => {
+                        if(res.success){
+                            e.target.closest('div').remove();
+                        }
+                    });
+
+                }
             }
 
         });
+        document.addEventListener('click', function(e){
 
-    }
-    document.addEventListener('click', function(e){
+            if(e.target.id === 'btnSaveAll'){
 
-        if(e.target.classList.contains('btn-delete-doc')){
+                const form = document.getElementById('editDailyForm');
+                const formData = new FormData(form);
+                const id = formData.get('id');
 
-            const id = e.target.dataset.id;
-
-            if(confirm('Yakin hapus file ini?')){
-
-                fetch(`/daily/documentation/${id}`, {
-                    method: 'DELETE',
+                fetch(`/daily/${id}/update-all`, {
+                    method: 'POST',
                     headers: {
                         'X-CSRF-TOKEN': document
                             .querySelector('meta[name="csrf-token"]')
                             .content,
                         'Accept': 'application/json'
-                    }
+                    },
+                    body: formData
                 })
                 .then(res => res.json())
                 .then(res => {
                     if(res.success){
-                        e.target.closest('div').remove();
+                        alert('Semua data berhasil diupdate');
+                        location.reload();
+                        editMode.style.display = 'none';
+                        viewMode.style.display = 'block';
+
+                        btnToggle.textContent = 'Edit';
+                        btnToggle.classList.remove('btn-secondary');
+                        btnToggle.classList.add('btn-dark');
                     }
                 });
-
             }
-        }
+        });
+        function updateHeaderView(data){
 
-    });
-    document.addEventListener('click', function(e){
+            document.querySelector('#viewMode .col-md-3:nth-child(1)').innerHTML =
+                `<strong>Tanggal:</strong><br>
+                ${new Date(data.tanggal).toLocaleDateString('id-ID')}`;
 
-        if(e.target.id === 'btnSaveAll'){
+            document.querySelector('#viewMode .col-md-3:nth-child(2)').innerHTML =
+                `<strong>Jam Kerja:</strong><br>
+                ${(data.jam_mulai)} s/d ${(data.jam_selesai)}`;
 
-            const form = document.getElementById('editDailyForm');
-            const formData = new FormData(form);
-            const id = formData.get('id');
+            document.querySelector('#viewMode .col-md-3:nth-child(3)').innerHTML =
+                `<strong>Total Jam:</strong><br>
+                ${parseFloat(data.total_jam).toFixed(2)}`;
 
-            fetch(`/daily/${id}/update-all`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': document
-                        .querySelector('meta[name="csrf-token"]')
-                        .content,
-                    'Accept': 'application/json'
-                },
-                body: formData
-            })
-            .then(res => res.json())
-            .then(res => {
-                if(res.success){
-                    alert('Semua data berhasil diupdate');
-                    location.reload();
-                    editMode.style.display = 'none';
-                    viewMode.style.display = 'block';
+            document.querySelector('#viewMode .col-md-3:nth-child(4)').innerHTML =
+                `<strong>Cuaca:</strong><br>
+                ${data.cuaca ?? '-'}`;
 
-                    btnToggle.textContent = 'Edit';
-                    btnToggle.classList.remove('btn-secondary');
-                    btnToggle.classList.add('btn-dark');
-                }
-            });
+            document.querySelector('#viewMode textarea').value =
+                data.catatan ?? '';
         }
     });
-    function updateHeaderView(data){
-
-        document.querySelector('#viewMode .col-md-3:nth-child(1)').innerHTML =
-            `<strong>Tanggal:</strong><br>
-            ${new Date(data.tanggal).toLocaleDateString('id-ID')}`;
-
-        document.querySelector('#viewMode .col-md-3:nth-child(2)').innerHTML =
-            `<strong>Jam Kerja:</strong><br>
-            ${(data.jam_mulai)} s/d ${(data.jam_selesai)}`;
-
-        document.querySelector('#viewMode .col-md-3:nth-child(3)').innerHTML =
-            `<strong>Total Jam:</strong><br>
-            ${parseFloat(data.total_jam).toFixed(2)}`;
-
-        document.querySelector('#viewMode .col-md-3:nth-child(4)').innerHTML =
-            `<strong>Cuaca:</strong><br>
-            ${data.cuaca ?? '-'}`;
-
-        document.querySelector('#viewMode textarea').value =
-            data.catatan ?? '';
-    }
-});
 </script>
 <script>
 document.addEventListener("DOMContentLoaded", function(){
