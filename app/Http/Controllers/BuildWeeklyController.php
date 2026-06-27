@@ -188,6 +188,19 @@ public function exportPdf(Request $request, Project $project) {
     $rekap = collect($groupedItems)->map(function ($cat) use ($filteredWeeks, $project, $week) {
 
         $items = collect($cat['uraians'])->flatMap(fn($u) => $u['items']);
+        if ($cat['category_name'] == 'PEKERJAAN TANAH') {
+            dd(
+                $items->map(function ($i) {
+                    return [
+                        'id' => $i->id,
+                        'uraian' => $i->uraian,
+                        'category_order' => $i->category_order,
+                        'volume' => $i->volume,
+                        'progress' => $i->weeklyProgresses->pluck('volume', 'week_no'),
+                    ];
+                })
+            );
+        }
         $bobot = $items->sum('bobot_percent');
         $categoryId = $items->first()->category_order;
         $weekNow = $filteredWeeks->max('week_no');
@@ -300,16 +313,18 @@ public function exportPdf(Request $request, Project $project) {
             $bobot > 0
         ? ($realisasiKumulatif / $bobot) * 100
         : 0;
-        dd([
-            'category' => $cat['category_name'],
-            'weekNow' => $weekNow,
-            'bobot' => $bobot,
-            'rencana' => $rencana,
-            'bobotMingguIni' => $bobotMingguIni,
-            'bobotLalu' => $bobotLalu,
-            'realisasiKumulatif' => $realisasiKumulatif,
-            'prestasiKumulatif' => $prestasiKumulatif,
-        ]);
+        if ($cat['category_name'] == 'PEKERJAAN TANAH') {
+            dd([
+                'category' => $cat['category_name'],
+                'weekNow' => $weekNow,
+                'bobot' => $bobot,
+                'rencana' => $rencana,
+                'bobotMingguIni' => $bobotMingguIni,
+                'bobotLalu' => $bobotLalu,
+                'realisasiKumulatif' => $realisasiKumulatif,
+                'prestasiKumulatif' => $prestasiKumulatif,
+            ]);
+        }
         return [
             'category' => $cat['category_name'],
             'bobot' => $bobot,
