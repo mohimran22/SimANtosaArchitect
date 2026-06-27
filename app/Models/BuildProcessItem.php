@@ -28,6 +28,8 @@ class BuildProcessItem extends Model
 
     protected $casts = [
         'volume' => 'decimal:2',
+        'price' => 'decimal:2',
+        'total' => 'decimal:2',
         'bobot_percent' => 'decimal:6',
     ];
 

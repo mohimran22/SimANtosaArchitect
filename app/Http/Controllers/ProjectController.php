@@ -803,7 +803,8 @@ public function buildProcessPartial(Project $project)
         3
     );
 
-    $canEdit = auth()->user()->can('update-project');
+    $canEdit = auth()->user()->can('lihat daftar proyek');
+    $isReadOnly = !$canEdit;
 
     return view(
         'projects.steps.build-process',
@@ -812,7 +813,8 @@ public function buildProcessPartial(Project $project)
             $formData,
             compact(
                 'project',
-                'canEdit'
+                'canEdit',
+                'isReadOnly'
             )
         )
     );

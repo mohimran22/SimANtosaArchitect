@@ -1,55 +1,126 @@
-<h3 style="text-align:center">
+<h1>
     REKAPITULASI BOBOT KEMAJUAN
     PEKERJAAN MINGGUAN
-</h3>
+</h1>
 
-<table style="margin-bottom:15px;border:none">
+<table width="100%" style="border:none; margin-bottom:15px;">
+    <tr>
 
-<tr>
-    <td style="border:none;width:20%">
-        Pemilik Pekerjaan
-    </td>
+        {{-- KOLOM KIRI --}}
+        <td width="60%" valign="top" style="border:none;">
 
-    <td style="border:none">
-        : {{ $project->customer->display_name }}
-    </td>
-</tr>
-<tr>
-    <td style="border:none">
-        Tahun
-    </td>
+            <table style="border:none;" width="100%">
 
-    <td style="border:none">
-        : {{ $project->start_date ?? '-' }}
-    </td>
-</tr>
+                <tr>
+                    <td style="border:none;width:40%">
+                        Pemilik Pekerjaan
+                    </td>
+                    <td style="border:none">
+                        : {{ $project->customer->display_name }}
+                    </td>
+                </tr>
 
-<tr>
-    <td style="border:none">
-        Lokasi
-    </td>
+                <tr>
+                    <td style="border:none">
+                        Pelaksana Pekerjaan
+                    </td>
+                    <td style="border:none">
+                        : Antosa Architect
+                    </td>
+                </tr>
 
-    <td style="border:none">
-        : {{ $project->project_location ?? '-' }}
-    </td>
-</tr>
-<tr>
-    <td style="border:none">
-        Waktu Pelaksanaan Pekerjaan
-    </td>
+                <tr>
+                    <td style="border:none">
+                        Tahun
+                    </td>
+                    <td style="border:none">
+                        : {{ \Carbon\Carbon::parse($project->start_date)->format('Y') }}
+                    </td>
+                </tr>
 
-    <td style="border:none">
-        : {{ $project->job_duration ?? '-' }}
-    </td>
-</tr>
+                <tr>
+                    <td style="border:none">
+                        Lokasi
+                    </td>
+                    <td style="border:none">
+                        : {{ $project->project_location }}
+                    </td>
+                </tr>
 
+                <tr>
+                    <td style="border:none">
+                        Waktu Pelaksanaan
+                    </td>
+                    <td style="border:none">
+                        : {{ $project->job_duration ?? '-' }} Hari Kerja
+                    </td>
+                </tr>
+
+            </table>
+
+        </td>
+
+        {{-- KOLOM KANAN --}}
+        <td width="40%" valign="top" style="border:none;">
+
+            <table width="100%" style="border:none;">
+
+                <tr>
+                    <td colspan="2"
+                        style="border:none;
+                        text-align:right;
+                        padding-bottom:10px;">
+                        PRESTASI PEKERJAAN MINGGU INI
+                    </td>
+                </tr>
+
+                <tr>
+                    <td style="border:none">
+                        Minggu Ke : 
+                    </td>
+                    <td style="border:none;text-align:right">
+                        {{ $weekNow }}
+                    </td>
+                </tr>
+
+                <tr>
+                    <td style="border:none">
+                        Schedule Kerja : 
+                    </td>
+                    <td style="border:none;text-align:right">
+                        {{ number_format($rencanaKumulatif,2) }}%
+                    </td>
+                </tr>
+
+                <tr>
+                    <td style="border:none">
+                        Realisasi Fisik : 
+                    </td>
+                    <td style="border:none;text-align:right">
+                        {{ number_format($realisasiKumulatif,2) }}%
+                    </td>
+                </tr>
+
+                <tr>
+                    <td style="border:none">
+                        CEPAT (+) / LAMBAT (-) : 
+                    </td>
+                    <td style="border:none;text-align:right">
+                        {{ number_format($deviasi,2) }}%
+                    </td>
+                </tr>
+
+            </table>
+
+        </td>
+
+    </tr>
 </table>
-
 <table>
 
     <thead>
 
-        <tr style="background:#e5e5e5; text-align:center; font-weight:bold;">
+        <tr style="background:#e5e5e5; text-align:center;">
             <th rowspan="3" width="4%">
                 NO
             </th>
@@ -203,7 +274,6 @@ $totalRealisasi += $r['realisasi_sd_minggu_ini'];
 <tr>
 
     <th colspan="2">
-        TOTAL
     </th>
 
     <th class="text-end">

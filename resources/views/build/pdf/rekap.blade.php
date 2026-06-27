@@ -15,11 +15,17 @@ table{
     border-collapse:collapse;
 }
 
-th,td{
+th,
+td{
     border:1px solid #000;
     padding:4px;
+    vertical-align:middle;
 }
 
+thead th{
+    text-align:center;
+    font-weight:normal;
+}
 .text-center{
     text-align:center;
 }

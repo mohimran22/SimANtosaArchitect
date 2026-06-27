@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Support\Str;
+use Carbon\Carbon;
 
 class Project extends Model
 {
@@ -236,8 +237,6 @@ public function generateLevels()
                 ['level_order' => 6, 'level_name' => 'Invoice Tahap 1'],
                 ['level_order' => 7, 'level_name' => 'Pelaksanaan'],
                 ['level_order' => 8, 'level_name' => 'Serah Terima'],
-                // ['level_order' => 9, 'level_name' => 'Pelaksanaan & Pembayaran Tahap 3'],
-                // ['level_order' => 10, 'level_name' => 'Pelaksanaan & Pembayaran Tahap 4'],
             ],
         default => throw new \Exception('Jenis proyek tidak valid'),
     };
@@ -326,5 +325,14 @@ public function getFinalRouteAttribute()
     return $this->project_type == 3
         ? route('projects.finals-build.store', $this->id)
         : route('projects.finals.store', $this->id);
+}
+public function getJobDurationAttribute()
+{
+    if (!$this->start_date || !$this->end_date) {
+        return null;
+    }
+
+    return Carbon::parse($this->start_date)
+        ->diffInDays(Carbon::parse($this->end_date)) + 1;
 }
 }

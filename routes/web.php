@@ -695,9 +695,13 @@ Route::middleware(['auth', 'permission:kelola akun'])->group(function () {
     Route::post('/accounts/update-role', [AccountController::class, 'updateRole'])->name('accounts.update-role');
 });
 
-// Route::middleware(['auth', 'permission:lihat daftar dokumen'])->group(function () {
-//     route::resource('/documents', DocumentController::class);
-// });
+Route::middleware(['auth', 'permission:lihat daftar dokumen'])->group(function () {
+    route::resource('/documents', DocumentController::class);
+});
+
+Route::middleware(['auth', 'permission:lihat daftar dokumen'])->group(function () {
+    route::resource('/attendances', AttendanceController::class);
+});
 Route::middleware(['auth'])->group(function () {
     // sinkronisasi lisensi aktif dari navbar (POST dari form/navbar)
     // Route::post('/active-license', [LicenseSessionController::class, 'set'])->name('active-license.set');

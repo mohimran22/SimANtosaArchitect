@@ -153,10 +153,8 @@ public function exportPdf(Request $request, Project $project) {
     $filteredWeeks = collect($project->week_labels);
 
     if ($week) {
-
         $filteredWeeks = $filteredWeeks
             ->where('week_no', $week);
-
     }
 
     if ($date) {
@@ -291,15 +289,15 @@ public function exportPdf(Request $request, Project $project) {
                 : 0;
 
         });
-                $prestasiMingguIni =
-    $bobot > 0
+        $prestasiMingguIni =
+            $bobot > 0
         ? ($bobotMingguIni / $bobot) * 100
         : 0;
         // $prestasiKumulatif = $prestasiLalu + $prestasiMingguIni;
 
         $realisasiKumulatif = $bobotLalu + $bobotMingguIni;
-                $prestasiKumulatif =
-    $bobot > 0
+        $prestasiKumulatif =
+            $bobot > 0
         ? ($realisasiKumulatif / $bobot) * 100
         : 0;
 
@@ -327,7 +325,14 @@ public function exportPdf(Request $request, Project $project) {
         ->pluck('progress')
         ->values()
         ->toArray();
-
+    $weekNow = $filteredWeeks->max('week_no');
+    $realisasi = collect($realisasi)
+            ->map(function ($value, $index) use ($weekNow) {
+                // index dimulai dari 0, minggu dimulai dari 1
+                return ($index + 1) <= $weekNow ? $value : null;
+            })
+            ->values()
+            ->toArray();
     $plan = [];
     $jalan = 0;
 
@@ -381,7 +386,8 @@ public function exportPdf(Request $request, Project $project) {
                     'data' => $realisasi,
                     'borderColor' => 'blue',
                     'fill' => false,
-                ],
+                    'spanGaps' => false,
+                ]
             ],
         ],
     ];
@@ -419,31 +425,51 @@ public function exportPdf(Request $request, Project $project) {
     $svgWidth  = 900;
     $svgHeight = 300;
 
-    $paddingLeft = 50;
-    $paddingRight = 30;
+    $paddingLeft   = 35;
+    $paddingRight  = 15;
+    $paddingTop    = 20;
+    $paddingBottom = 30;
 
-    $chartWidth = $svgWidth - $paddingLeft - $paddingRight;
+    $chartWidth  = $svgWidth - $paddingLeft - $paddingRight;
+    $chartHeight = $svgHeight - $paddingTop - $paddingBottom;
 
-    $stepX = $chartWidth / max(count($allWeeks)-1,1);
+    $safeMax = max(
+        collect($plan)->max() ?: 1,
+        collect($realisasi)->filter()->max() ?: 1
+    );
+
+    $stepX = $chartWidth / max(count($allWeeks) - 1, 1);
 
     $planPoints = [];
-    $realPoints = [];
-    $columnWidth = $svgWidth / count($allWeeks);
+
     foreach ($plan as $i => $value) {
+
         $x = $paddingLeft + ($i * $stepX);
-        $y = $svgHeight - (($value / 100) * $svgHeight);
-        $planPoints[] =
-            round($x,2).','.
-            round($y,2);
+
+        $y = $paddingTop
+            + $chartHeight
+            - (($value / $safeMax) * $chartHeight);
+
+        $planPoints[] = round($x,2).','.round($y,2);
     }
+    $realPoints = [];
 
     foreach ($realisasi as $i => $value) {
-        $x = ($i * $columnWidth) + ($columnWidth / 2);
-        $y = $svgHeight - (($value / 100) * $svgHeight);
-        $realPoints[] =
-            round($x,2).','.
-            round($y,2);
+
+        if ($value === null) {
+            break;
+        }
+
+        $x = $paddingLeft + ($i * $stepX);
+
+        $y = $paddingTop
+            + $chartHeight
+            - (($value / $safeMax) * $chartHeight);
+
+        $realPoints[] = round($x,2).','.round($y,2);
     }
+    $columnWidth = $svgWidth / count($allWeeks);
+
 
     $svgPlan = implode(' ', $planPoints);
     $svgReal = implode(' ', $realPoints);
@@ -496,7 +522,6 @@ public function exportPdf(Request $request, Project $project) {
             'groupedItems' => $groupedItems,
             'chartUrl'     => $chartUrl,
             'totalCols'    => $totalColsSchedule,
-            'chartPath' => $chartPath,
             'plan'         => $plan,
             'realisasi'    => $realisasi,
             'planMap'         => $planMap,
@@ -504,19 +529,28 @@ public function exportPdf(Request $request, Project $project) {
             'svgHeight'    => $svgHeight,
             'svgPlan'      => $svgPlan,
             'svgReal'      => $svgReal,
-            'curveLeft' => $curveLeft,
-            'curveTop' => $curveTop,
-            'curveWidth' => $curveWidth,
-            'curveHeight' => $curveHeight,
+            'paddingLeft'   => $paddingLeft,
+            'paddingRight'  => $paddingRight,
+            'paddingTop'    => $paddingTop,
+            'paddingBottom' => $paddingBottom,
+            'chartWidth'    => $chartWidth,
+            'chartHeight'   => $chartHeight,
             'maxValue' => $maxValue,
+            'weekNow' => $weekNow,
+            'stepX'         => $stepX,
+            'safeMax'       => $safeMax,
         ]
     )->render();
 
     $rekapHtml = view(
         'build.pdf.rekap',
         [
-            'project' => $project,
-            'rekap'   => $rekap,
+            'project'             => $project,
+            'rekap'               => $rekap,
+            'weekNow'             => $weekNow,
+            'rencanaKumulatif'    => $rencanaKumulatif,
+            'realisasiKumulatif'  => $realisasiKumulatif,
+            'deviasi'             => $deviasi,
         ]
     )->render();
 
@@ -532,13 +566,23 @@ public function exportPdf(Request $request, Project $project) {
     $svg = view(
         'build.kurva-svg',
         [
-            'weeks' => $allWeeks,
-            'plan' => $plan,
-            'realisasi' => $realisasi,
-            'svgWidth' => $svgWidth,
-            'svgHeight' => $svgHeight,
-            'svgPlan' => $svgPlan,
-            'svgReal' => $svgReal,
+            'weeks'       => $allWeeks,
+            'plan'        => $plan,
+            'realisasi'   => $realisasi,
+            'svgWidth'    => $svgWidth,
+            'svgHeight'   => $svgHeight,
+            'svgPlan'     => $svgPlan,
+            'svgReal'     => $svgReal,
+            'weekNow'     => $weekNow,
+
+            'paddingLeft'   => $paddingLeft,
+            'paddingRight'  => $paddingRight,
+            'paddingTop'    => $paddingTop,
+            'paddingBottom' => $paddingBottom,
+            'chartWidth'    => $chartWidth,
+            'chartHeight'   => $chartHeight,
+            'stepX'         => $stepX,
+            'safeMax'       => $safeMax,
         ]
     )->render();
 

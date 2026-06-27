@@ -1,7 +1,9 @@
 window.initBuildProcess = function () {
 
-    const weeks = window.WEEK_LABELS || [];
-
+    const weeks = window.BUILD_PROCESS_CONFIG.weekLabels;
+        document
+        .querySelectorAll('.just-col, .just-head, col.just-col')
+        .forEach(el => el.classList.add('just-hidden'));
     applyAutoFreeze();
 
     setupJustekAccess();
@@ -9,16 +11,84 @@ window.initBuildProcess = function () {
     hitungFooter();
     filterWeek();
     hitungTotalPelaksanaan();
-
-    document
-        .querySelectorAll('.just-col, .just-head, col.just-col')
-        .forEach(el => el.classList.add('just-hidden'));
     
     calcTotal();
 
     updateKurvaChartRealtime();
-
+    initTopScroll();
 };
+
+    window.initKurvaChart = function () {
+        const ctx = document.getElementById('kurvaSChart');
+
+        if (!ctx || typeof Chart === 'undefined') {
+            return;
+        }
+        ctx.width = Math.max(BUILD_PROCESS_CONFIG.weekCount * 50, 900);
+        const weekCount = window.BUILD_PROCESS_CONFIG.weekCount;
+        const dataAwal = window.BUILD_PROCESS_CONFIG.kurvaData;
+
+        const labels = [];
+
+        for (let i = 1; i <= weekCount; i++) {
+            labels.push('M' + i);
+        }
+
+        const realisasi = [];
+
+        for (let i = 1; i <= weekCount; i++) {
+            const found = dataAwal.find(d => d.week == i);
+            realisasi.push(found ? found.progress : 0);
+        }
+
+        window.kurvaChart = new Chart(ctx, {
+
+            type: 'line',
+
+            data: {
+
+                labels: labels,
+
+                datasets: [
+
+                    {
+                        label:'Realisasi (%)',
+                        data: realisasi,
+                        tension:0.3
+                    },
+
+                    {
+                        label:'Rencana (%)',
+                        data:getPlanKumulatif(),
+                        tension:0.3
+                    }
+
+                ]
+
+            },
+
+            options:{
+                animation:false,
+                responsive:true,
+                maintainAspectRatio:false,
+
+                scales:{
+                    x:{
+                        ticks:{
+                            autoSkip:true,
+                            maxTicksLimit:5
+                        }
+                    },
+
+                    y:{
+                        beginAtZero:true,
+                        max:100
+                    }
+                }
+            }
+
+        });
+    }
 
             function applyAutoFreeze() {
                 const table = document.querySelector(".progress-table");
@@ -144,7 +214,7 @@ window.initBuildProcess = function () {
                 });
             }
 
-            // const weeks = window.WEEK_LABELS || [];
+            const weeks = window.BUILD_PROCESS_CONFIG.weekLabels;
             let activeWeek = null;
 
             const colsPerWeek = 6; 
@@ -154,79 +224,39 @@ window.initBuildProcess = function () {
                 angka = Number(angka || 0);
                 return new Intl.NumberFormat('id-ID').format(angka);
             }
-            // UTILITY: recalc total volume & nilai
-            function recalcAll() {
+
+            function filterWeek(weekNo) {
+                console.log("filterWeek()", weekNo);
                 const table = document.querySelector(".progress-table");
-
                 if (!table) return;
-                table.querySelectorAll('tr[data-item-id]').forEach(row => {
-                    const itemId = row.dataset.itemId;
-                    let totalVolume = 0;
 
-                    if (activeWeek) {
-                        const input = row.querySelector(`.week-vol[data-week="${activeWeek}"]`);
-                        totalVolume = parseFloat(input?.value || 0);
-                    } else {
-                        row.querySelectorAll('.week-vol').forEach(inp => {
-                            totalVolume += parseFloat(inp.value || 0);
-                        });
-                    }
+                const weekCells = [...table.querySelectorAll('[data-week]')];
 
-                    const priceCell = row.querySelector('.harga-kontrak');
-                    const price = parseFloat(priceCell?.dataset.price || 0);
+                const colgroup = table.querySelectorAll("colgroup col");
+                const weekCols = [...colgroup].filter(col => col.dataset.week);
 
-                    const totalCell = row.querySelector('.nilai-pelaksanaan');
-                    if (totalCell) {
-                        totalCell.textContent = formatRupiah(totalVolume * price);
-                    }
+                weekCols.forEach(col => {
+                    col.classList.toggle(
+                        'col-hidden',
+                        weekNo && col.dataset.week != weekNo
+                    );
+                });
+
+                weekCells.forEach(cell => {
+                    cell.classList.toggle(
+                        'col-hidden',
+                        weekNo && cell.dataset.week != weekNo
+                    );
                 });
             }
 
-            // FILTER WEEK
-                function filterWeek(weekNo) {
-                    const table = document.querySelector(".progress-table");
+            const weekSelect = $('#filter-week');
 
-    if (!table) return;
-        const colgroup =
-        table.querySelectorAll("colgroup col");
-                    activeWeek = weekNo || null;
-
-                    // toggle COLGROUP (ini kunci utama)
-                    colgroup.forEach(col => {
-                        const w = col.dataset.week;
-                        if (!w) return;
-
-                        if (!weekNo || w == weekNo) {
-                            col.classList.remove("col-hidden");
-                        } else {
-                            col.classList.add("col-hidden");
-                        }
-                    });
-
-                    // toggle header + body cell
-                    table.querySelectorAll('[data-week]').forEach(cell => {
-                        if (!weekNo || cell.dataset.week == weekNo) {
-                            cell.classList.remove("col-hidden");
-                        } else {
-                            cell.classList.add("col-hidden");
-                        }
-                    });
-                        table.style.display = "none";
-                        table.offsetHeight; 
-                        table.style.display = "";
-                    requestAnimationFrame(() => {
-                        applyAutoFreeze();
-                        recalcAll();
-                    });
-                }
-
-            // FILTER: select week
-            const weekSelect = document.getElementById('filter-week');
-            if (weekSelect) {
-                $('#filter-week').on('change', function () {
-                    filterWeek(this.value);
-                });
-            }
+            weekSelect.off('change');   // hapus event lama
+            weekSelect.on('change', function () {
+                console.log('change', this.value);
+                filterWeek(this.value);
+            });
             // helper parse tanggal lokal (ANTI timezone shift)
             function parseLocalDate(dateStr) {
 
@@ -292,7 +322,7 @@ window.initBuildProcess = function () {
                             .val(foundWeek)
                             .trigger('change');
 
-                        filterWeek(foundWeek);
+                        // filterWeek(foundWeek);
 
                     } else {
 
@@ -300,15 +330,23 @@ window.initBuildProcess = function () {
                             .val('')
                             .trigger('change');
 
-                        filterWeek(null);
+                        // filterWeek(null);
                     }
                 });
             }
+        $('#btn-reset-filter').on('click', function () {
 
-            // inisialisasi
-            // applyAutoFreeze();
-    
-    
+            // reset minggu
+            $('#filter-week')
+                .val('')
+                .trigger('change');
+
+            // reset tanggal
+            $('#filter-date')
+                .val('')
+                .trigger('change');
+
+        });
         function updateTotalDisplay(total) {
 
             document.querySelectorAll('.totalBobotKontrak')
@@ -695,7 +733,7 @@ window.initBuildProcess = function () {
             }
         });
 
-        const WEEK_LABELS = window.WEEK_LABELS || [];
+        const WEEK_LABELS = window.BUILD_PROCESS_CONFIG.weekLabels;
 
             document.addEventListener('click', async function(e) {
 
@@ -930,10 +968,7 @@ window.initBuildProcess = function () {
             });
             function setupJustekAccess() {
                 document.querySelectorAll('tr[data-item-id]').forEach(row => {
-                                console.log(
-                row.dataset.itemId,
-                row.classList.contains('table-warning')
-            );
+
                     const isTambahan = row.classList.contains('table-warning');
 
                     const inputKurang = row.querySelectorAll('.just-kurang');
@@ -1001,11 +1036,9 @@ window.initBuildProcess = function () {
 
                 e.preventDefault();
 
-                const week =
-                    exportBtn.getElementById('filter-week').value;
+                const week = exportBtn.getElementById('filter-week').value;
 
-                const date =
-                    exportBtn.getElementById('filter-date').value;
+                const date = exportBtn.getElementById('filter-date').value;
 
                 let url = window.BUILD_PROCESS_CONFIG.routes.exportPdf;
 
@@ -1026,46 +1059,45 @@ window.initBuildProcess = function () {
 
             });
         }
-            document.addEventListener('DOMContentLoaded', function () {
+        function initTopScroll() {
 
-    const topScroll = document.querySelector('.table-scroll-tops');
-    const bottomScroll = document.querySelector('.table-real');
+            const topScroll = document.querySelector('.table-scroll-tops');
+            const bottomScroll = document.querySelector('.table-real');
 
-    if (!topScroll || !bottomScroll) {
-        return;
-    }
+            if (!topScroll || !bottomScroll) {
+                return;
+            }
 
-    const topContent = topScroll.querySelector('div');
+            const topContent = topScroll.querySelector('div');
 
-    if (!topContent) {
-        return;
-    }
+            if (!topContent) {
+                return;
+            }
 
-    function syncWidth() {
+            function syncWidth() {
 
-        const w = bottomScroll.scrollWidth;
+                const w = bottomScroll.scrollWidth;
 
-        if (w > 0) {
-            topContent.style.width = w + 'px';
+                if (w > 0) {
+                    topContent.style.width = w + 'px';
+                }
+            }
+
+            const observer = new ResizeObserver(() => {
+                syncWidth();
+            });
+
+            observer.observe(bottomScroll);
+
+            window.addEventListener('resize', syncWidth);
+
+            topScroll.addEventListener('scroll', () => {
+                bottomScroll.scrollLeft = topScroll.scrollLeft;
+            });
+
+            bottomScroll.addEventListener('scroll', () => {
+                topScroll.scrollLeft = bottomScroll.scrollLeft;
+            });
+
+            syncWidth();
         }
-    }
-
-    const observer = new ResizeObserver(() => {
-        syncWidth();
-    });
-
-    observer.observe(bottomScroll);
-
-    window.addEventListener('resize', syncWidth);
-
-    topScroll.addEventListener('scroll', () => {
-        bottomScroll.scrollLeft = topScroll.scrollLeft;
-    });
-
-    bottomScroll.addEventListener('scroll', () => {
-        topScroll.scrollLeft = bottomScroll.scrollLeft;
-    });
-
-    syncWidth();
-});
-    

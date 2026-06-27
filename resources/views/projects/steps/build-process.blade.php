@@ -1,14 +1,10 @@
 @php
-    $isReadOnly = !$canEdit;
-
     $weekCount = count($project->week_labels);
     $colsFixed   = 6;
     $colsNormal  = 3;
     $colsJustek  = 3;
     $colsPerWeek = $colsNormal + $colsJustek;
     $colsTotal   = 4;
-
-    $weekCount = count($project->week_labels);
 
     $totalCols = $colsFixed + ($weekCount * $colsPerWeek) + $colsTotal;
 
@@ -54,41 +50,41 @@
                             class="form-control">
                     </div>
 
-                <div class="col-md-3 d-flex gap-2">
-                    <button type="button" id="btn-reset-filter" class="btn btn-secondary">
-                        <i class="ti ti-filter-off"></i>
-                        Reset
-                    </button>
-                    @if(!$isReadOnly)
-                        <form action="{{ route('projects.sync-build', $project->id) }}"
+                    <div class="col-md-3 d-flex gap-2">
+                        <button type="button" id="btn-reset-filter" class="btn btn-secondary">
+                            <i class="ti ti-filter-off"></i>
+                            Reset
+                        </button>
+                        @if(!$isReadOnly)
+                            <form action="{{ route('projects.sync-build', $project->id) }}"
+                                method="POST"
+                                class="d-inline"
+                                onsubmit="return confirm('Update form kemajuan pekerjaan dengan RAB terbaru?')">
+
+                                @csrf
+
+                                <button type="submit" class="btn outline-secondary">
+                                    <i class="ti ti-refresh"></i>
+                                    Update Form
+                                </button>
+                            </form>
+                        @endif
+
+                        <button type="button" id="btn-export-pdf" class="btn btn-dark">
+                            <i class="ti ti-file-export"></i>
+                            Ekspor PDF
+                        </button>
+
+                        <form id="exportPdfForm"
                             method="POST"
-                            class="d-inline"
-                            onsubmit="return confirm('Update form kemajuan pekerjaan dengan RAB terbaru?')">
-
+                            action="{{ route('projects.export-pdf', $project->id) }}"
+                            target="_blank">
                             @csrf
-
-                            <button type="submit" class="btn outline-secondary">
-                                <i class="ti ti-refresh"></i>
-                                Update Form
-                            </button>
+                            <input type="hidden" name="week" id="pdf_week">
+                            <input type="hidden" name="date" id="pdf_date">
+                            <input type="hidden" name="chart_image" id="chart_image">
                         </form>
-                    @endif
-
-                    <button type="button" id="btn-export-pdf" class="btn btn-dark">
-                        <i class="ti ti-file-export"></i>
-                        Ekspor PDF
-                    </button>
-
-                    <form id="exportPdfForm"
-                        method="POST"
-                        action="{{ route('projects.export-pdf', $project->id) }}"
-                        target="_blank">
-                        @csrf
-                        <input type="hidden" name="week" id="pdf_week">
-                        <input type="hidden" name="date" id="pdf_date">
-                        <input type="hidden" name="chart_image" id="chart_image">
-                    </form>
-                </div>
+                    </div>
                 </div>
                 <div class="table-scroll-tops">
                     <div></div>
@@ -602,29 +598,7 @@
                 return new Intl.NumberFormat('id-ID').format(angka);
             }
             // UTILITY: recalc total volume & nilai
-            function recalcAll() {
-                table.querySelectorAll('tr[data-item-id]').forEach(row => {
-                    const itemId = row.dataset.itemId;
-                    let totalVolume = 0;
 
-                    if (activeWeek) {
-                        const input = row.querySelector(`.week-vol[data-week="${activeWeek}"]`);
-                        totalVolume = parseFloat(input?.value || 0);
-                    } else {
-                        row.querySelectorAll('.week-vol').forEach(inp => {
-                            totalVolume += parseFloat(inp.value || 0);
-                        });
-                    }
-
-                    const priceCell = row.querySelector('.harga-kontrak');
-                    const price = parseFloat(priceCell?.dataset.price || 0);
-
-                    const totalCell = row.querySelector('.nilai-pelaksanaan');
-                    if (totalCell) {
-                        totalCell.textContent = formatRupiah(totalVolume * price);
-                    }
-                });
-            }
             const weekCells = [...table.querySelectorAll('[data-week]')];
             const weekCols = [...colgroup].filter(col => col.dataset.week);
 

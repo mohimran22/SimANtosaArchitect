@@ -420,7 +420,7 @@
                                     <select name="cuaca[]"
                                             class="form-select select2">
                                         <option value="">-- Pilih Cuaca --</option>
-                                        <option value="Baik">Baik</option>
+                                        <option value="Cerah">Cerah</option>
                                         <option value="Mendung">Mendung</option>
                                         <option value="Hujan">Hujan</option>
                                     </select>
@@ -470,7 +470,7 @@
                                 <select name="cuaca[]"
                                         class="form-select select2">
                                     <option value="">-- Pilih Cuaca --</option>
-                                    <option value="Baik">Baik</option>
+                                    <option value="Cerah">Cerah</option>
                                     <option value="Mendung">Mendung</option>
                                     <option value="Hujan">Hujan</option>
                                 </select>

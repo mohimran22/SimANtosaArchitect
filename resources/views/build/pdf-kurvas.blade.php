@@ -104,20 +104,14 @@
     width:100%;
 ">
 
-    {{-- <div style="
-        font-size:14px;
-        font-weight:bold;
-        margin-bottom:8px;
-    ">
-        KURVA S PROGRES PEKERJAAN
-    </div> --}}
-
 
     <div style="
+        margin-top:15mm;
         width:100%;
-        height:70mm;
-        border:1px solid #ccc;
-        padding:5mm;
+        height:80mm;
+        border:1px solid #bdbdbd;
+        padding:3mm;
+        box-sizing:border-box;
     ">
 
         @include('build.kurva-svg')
