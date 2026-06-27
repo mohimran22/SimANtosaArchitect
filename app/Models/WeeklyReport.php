@@ -9,7 +9,6 @@ class WeeklyReport extends Model
     protected $fillable = [
         'project_id',
         'minggu',
-        'catatan',
         'capaian',
         'kendala',
         'rencana',
