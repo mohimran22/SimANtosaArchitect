@@ -157,6 +157,7 @@
         let workIndex = 0;
         let workerIndex = 0;
         let materialIndex = 0;
+        let workTimeIndex = 0;
         function addWorkRow(){
             
             const tbody = document.querySelector('#worksTable tbody');
@@ -275,92 +276,112 @@
             materialIndex++;
             refreshNumber('#materialsTable');
         }
-                function addCuacaRow(){
-                    const tbody = document.querySelector('#cuacaTable tbody');
+        function addCuacaRow(){
 
-                    const row = `
-                    <tr>
-                        <td class="row-number"></td>
+            const tbody = document.querySelector('#editJamKerjaTable');
 
-                        <td>
-                            <input type="text"
-                                name="materials[${materialIndex}][nama_bahan]"
-                                class="form-control">
-                        </td>
+            const row = `
+            <tr>
 
-                        <td>
-                            <input type="number"
-                                name="materials[${materialIndex}][diterima]"
-                                class="form-control">
-                        </td>
+                <td>
+                    <input type="time"
+                        name="jam_kerja[${workTimeIndex}][jam_mulai]"
+                        class="form-control jam-mulai">
+                </td>
 
-                        <td>
-                            <input type="number"
-                                name="materials[${materialIndex}][ditolak]"
-                                class="form-control">
-                        </td>
+                <td>
+                    <input type="time"
+                        name="jam_kerja[${workTimeIndex}][jam_selesai]"
+                        class="form-control jam-selesai">
+                </td>
 
-                        <td>
-                            <button type="button"
-                                class="btn btn-sm btn-dark btn-remove-material">
-                                Hapus
-                            </button>
-                        </td>
-                    </tr>`;
+                <td>
+                    <input type="number"
+                        name="jam_kerja[${workTimeIndex}][total_jam]"
+                        class="form-control total-jam"
+                        step="0.01"
+                        readonly>
+                </td>
 
-                    tbody.insertAdjacentHTML('beforeend', row);
-                    materialIndex++;
-                    refreshNumber('#materialsTable');
-                }
-                function handleDelete(e, tableId, urlPrefix){
+                <td>
+                    <select
+                        name="jam_kerja[${workTimeIndex}][cuaca]"
+                        class="form-select">
+                        <option value="">-- Pilih Cuaca --</option>
+                        <option value="Cerah">Cerah</option>
+                        <option value="Mendung">Mendung</option>
+                        <option value="Hujan">Hujan</option>
+                    </select>
+                </td>
 
-                    const row = e.target.closest('tr');
-                    const idInput = row.querySelector('input[name*="[id]"]');
+                <td>
+                    <input type="text"
+                        name="jam_kerja[${workTimeIndex}][keterangan]"
+                        class="form-control">
+                </td>
 
-                    if(idInput){
+                <td>
+                    <button type="button"
+                        class="btn btn-sm btn-dark btn-remove-cuaca">
+                        Hapus
+                    </button>
+                </td>
 
-                        const recordId = idInput.value;
+            </tr>`;
 
-                        if(confirm('Yakin hapus data ini?')){
+            tbody.insertAdjacentHTML('beforeend', row);
 
-                            fetch(`/${urlPrefix}/${recordId}`, {
-                                method: 'DELETE',
-                                headers: {
-                                    'X-CSRF-TOKEN': document
-                                        .querySelector('meta[name="csrf-token"]')
-                                        .content,
-                                    'Accept': 'application/json'
-                                }
-                            })
-                            .then(res => res.json())
-                            .then(res => {
-                                if(res.success){
-                                    row.remove();
-                                    refreshNumber(tableId);
-                                }
-                            });
+            workTimeIndex++;
+        }
+        function handleDelete(e, tableId, urlPrefix){
+
+            const row = e.target.closest('tr');
+            const idInput = row.querySelector('input[name*="[id]"]');
+
+            if(idInput){
+
+                const recordId = idInput.value;
+
+                if(confirm('Yakin hapus data ini?')){
+
+                    fetch(`/${urlPrefix}/${recordId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': document
+                                .querySelector('meta[name="csrf-token"]')
+                                .content,
+                            'Accept': 'application/json'
                         }
+                    })
+                    .then(res => res.json())
+                    .then(res => {
+                        if(res.success){
+                            row.remove();
+                            refreshNumber(tableId);
+                        }
+                    });
+                }
 
-                    }else{
-                        row.remove();
-                        refreshNumber(tableId);
+            }else{
+                row.remove();
+                refreshNumber(tableId);
+            }
+        }
+        function refreshNumber(tableId){
+            document.querySelectorAll(`${tableId} tbody tr`)
+                .forEach((row,index)=>{
+                    const cell = row.querySelector('.row-number');
+                    if(cell){
+                        cell.innerText = index + 1;
                     }
-                }
-                function refreshNumber(tableId){
-                    document.querySelectorAll(`${tableId} tbody tr`)
-                        .forEach((row,index)=>{
-                            const cell = row.querySelector('.row-number');
-                            if(cell){
-                                cell.innerText = index + 1;
-                            }
-                        });
-                }
+                });
+        }
         modalBody.addEventListener('click', function(e){
 
             if(e.target.id === 'btnAddWork') addWorkRow();
             if(e.target.id === 'btnAddWorker') addWorkerRow();
             if(e.target.id === 'btnAddMaterial') addMaterialRow();
-
+            if(e.target.id === 'btnAddJamKerjaEdit') addCuacaRow();
             if(e.target.classList.contains('btn-remove-work')){
                 handleDelete(e, '#worksTable', 'daily-work');
             }
@@ -372,7 +393,9 @@
             if(e.target.classList.contains('btn-remove-material')){
                 handleDelete(e, '#materialsTable', 'daily-material');
             }
-
+            if(e.target.classList.contains('btn-remove-cuaca')){
+                handleDelete(e, '#editJamKerjaTable', 'daily-work-time');
+            }
         });
         document.querySelectorAll('.btn-detail').forEach(btn => {
 
@@ -384,6 +407,7 @@
                 workIndex = 0;
                 workerIndex = 0;
                 materialIndex = 0;
+                workTimeIndex = 0;
 
                 fetch(`/daily/${id}/detail`)
                 .then(res => res.json())
@@ -1008,7 +1032,7 @@
                     workIndex = data.works.length;
                     workerIndex = data.workers.length;
                     materialIndex = data.materials.length;
-
+                    workTimeIndex = data.work_times.length;
                     modal.show();
                     setupAdvancedPreview('fileInputPekerjaan', 'previewPekerjaan');
                     setupAdvancedPreview('fileInputTenaga', 'previewTenaga');

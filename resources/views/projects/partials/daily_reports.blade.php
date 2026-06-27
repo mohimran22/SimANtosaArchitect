@@ -155,7 +155,7 @@
                 </div>
                 <div class="md-6 mb-4 ps-4">
                     <label class="fw-bold">File Upload Foto Tukang</label>
-                    <div class="text-muted mb-2">Bisa berupa foto atau dokumen</div>
+                    <div class="text-muted mb-2">Bisa berupa foto atau dokumen (Maks ukuran 1Mb)</div>
                     <input type="file" id="documentation_tenaga"
                         name="documentation_tenaga[]"
                         class="d-none image-input"
@@ -311,7 +311,7 @@
                 </div>
                 <div class="md-6 mb-4 ps-4">
                     <label class="fw-bold">File Upload Foto Pekerjaan</label>
-                    <div class="text-muted mb-2">Bisa berupa foto atau dokumen</div>
+                    <div class="text-muted mb-2">Bisa berupa foto atau dokumen (Maks ukuran 1Mb)</div>
                     <input type="file"
                         id="documentation_pekerjaan"
                         name="documentation_pekerjaan[]"
@@ -378,7 +378,7 @@
                 </div>
                 <div class="md-6 mb-4 ps-4">
                     <label class="fw-bold">File Upload Foto Bahan</label>
-                    <div class="text-muted mb-2">Bisa berupa foto atau dokumen</div>
+                    <div class="text-muted mb-2">Bisa berupa foto atau dokumen (Maks ukuran 1Mb)</div>
                     <input type="file" id="documentation_material"
                         name="documentation_material[]"
                         class="d-none image-input"
