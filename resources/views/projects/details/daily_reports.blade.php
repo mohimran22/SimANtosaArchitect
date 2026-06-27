@@ -306,7 +306,7 @@
                 <td>
                     <select
                         name="jam_kerja[${workTimeIndex}][cuaca]"
-                        class="form-select">
+                        class="form-select select2">
                         <option value="">-- Pilih Cuaca --</option>
                         <option value="Cerah">Cerah</option>
                         <option value="Mendung">Mendung</option>
@@ -827,8 +827,8 @@
 
                                                 <tbody id="editJamKerjaTable">
                                                 ${
-                                                    (data.jam_kerja && data.jam_kerja.length)
-                                                    ? data.jam_kerja.map((j,i)=>`
+                                                    (data.work_times && data.work_times.length)
+                                                    ? data.work_times.map((j,i)=>`
                                                     <tr>
                                                         <td>
                                                             <input type="hidden"
@@ -860,7 +860,7 @@
                                                         <td>
                                                             <select
                                                                 name="jam_kerja[${i}][cuaca]"
-                                                                class="form-select">
+                                                                class="form-select select2">
 
                                                                 <option value="">-- Pilih Cuaca --</option>
 

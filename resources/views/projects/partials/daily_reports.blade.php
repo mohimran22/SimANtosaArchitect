@@ -205,17 +205,12 @@
                                                     class="form-select select2 rab-select">
                                                 <option value="">-- Pilih Dari RAB --</option>
 
-                                                {{-- @foreach($rabs as $rab)
+                                                @foreach($rabs as $rab)
                                                     <option value="{{ $rab->id }}"
                                                         data-volume="{{ $rab->volume }}"
                                                         data-satuan="{{ $rab->satuan }}"
                                                         {{ $rabId == $rab->id ? 'selected' : '' }}>
                                                         {{ $rab->job_name }} ({{ $rab->rab->job_location }})
-                                                    </option>
-                                                @endforeach --}}
-                                                @foreach($rabs as $rab)
-                                                    <option value="{{ $rab->id }}">
-                                                        {{ $rab->id }} - {{ $rab->job_name }}
                                                     </option>
                                                 @endforeach
 
