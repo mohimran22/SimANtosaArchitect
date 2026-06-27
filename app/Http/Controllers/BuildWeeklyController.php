@@ -224,13 +224,13 @@ public function exportPdf(Request $request, Project $project) {
 
                         : 0;
             });
-        $status = 'Belum Dimulai';
+        // $status = 'Belum Dimulai';
 
-        if ($rencana >= $bobot) {
-            $status = 'Selesai';
-        } elseif ($rencana > 0) {
-            $status = 'Sedang Berlangsung';
-        }
+        // if ($realisasiKumulatif >= $bobot) {
+        //     $status = 'Selesai';
+        // } elseif ($realisasiKumulatif > 0) {
+        //     $status = 'Sedang Berlangsung';
+        // }
         $bobotLalu = $items->sum(function ($item) use ($weekPrev) {
 
             $sum = 0;
@@ -298,6 +298,11 @@ public function exportPdf(Request $request, Project $project) {
             $bobot > 0
         ? ($realisasiKumulatif / $bobot) * 100
         : 0;
+        $status = match (true) {
+            $prestasiKumulatif >= 100 => 'Selesai',
+            $prestasiKumulatif > 0    => 'Sedang Berlangsung',
+            default                   => 'Belum Dimulai',
+        };
         return [
             'category' => $cat['category_name'],
             'bobot' => $bobot,

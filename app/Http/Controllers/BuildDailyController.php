@@ -290,7 +290,9 @@ class BuildDailyController extends Controller
         DB::rollBack();
         \Log::error($e);
 
-        return back()->with('error','Terjadi kesalahan saat menyimpan laporan.');
+        return back()
+            ->with('error', 'Terjadi kesalahan saat menyimpan laporan.')
+            ->withInput();
     }
 
 }

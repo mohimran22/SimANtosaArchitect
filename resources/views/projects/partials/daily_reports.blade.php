@@ -41,11 +41,11 @@
                             id="nextDate"
                             name="tanggal"
                             class="form-control"
-                            value="{{ $nextDate->format('Y-m-d') }}">
+                            value="{{ old('tanggal', $nextDate->format('Y-m-d')) }}">
                     </div>
                     <div class="col-md-3">
                         <label>Kontraktor</label>
-                            <input name="kontraktor" class="form-control" value="Antosa Architect">
+                            <input name="kontraktor" class="form-control" value="{{ old('kontraktor', 'Antosa Architect') }}">
                     </div>
                 </div>
             </div>
@@ -70,43 +70,49 @@
                                     <th width="40"></th>
                                 </tr>
                             </thead>
-
+                            @php
+                                $workersOld = old('worker_id', ['']);
+                            @endphp
                             <tbody id="tenagaTable">
-                                <!-- BARIS DEFAULT -->
-                                <tr>
-                                    <td>
-                                        <select name="worker_id[]" class="form-select select2 worker-select">
-                                            <option value="">-- Pilih Tenaga Kerja --</option>
-
-                                            @foreach($workers as $worker)
-                                                <option value="{{ $worker->id }}">
-                                                    {{ $worker->user->fullname }}
+                                @foreach($workersOld as $i => $workerId)
+                                    <tr>
+                                        <td>
+                                            <select name="worker_id[]" class="form-select select2 worker-select">
+                                                <option value="">-- Pilih Tenaga Kerja --</option>
+                                                    @foreach($workers as $worker)
+                                                        <option value="{{ $worker->id }}"
+                                                            {{ $workerId == $worker->id ? 'selected' : '' }}>
+                                                            {{ $worker->user->fullname }}
+                                                        </option>
+                                                    @endforeach
+                                                <option value="manual"
+                                                    {{ $workerId == 'manual' ? 'selected' : '' }}>
+                                                    + Manual Input
                                                 </option>
-                                            @endforeach
+                                            </select>
 
-                                            <option value="manual">+ Manual Input</option>
-                                        </select>
+                                            <input
+                                                type="text"
+                                                name="keahlian[]"
+                                                class="form-control mt-2 manual-input {{ $workerId=='manual' ? '' : 'd-none' }}"
+                                                value="{{ old('keahlian.'.$i) }}">
+                                        </td>
 
-                                        <input type="text"
-                                            name="keahlian[]"
-                                            class="form-control mt-2 manual-input d-none"
-                                            placeholder="Isi keahlian manual">
-                                    </td>
+                                        <td>
+                                            <input type="number" name="jumlah[]" class="form-control" value="{{ old('jumlah.'.$i) }}">
+                                        </td>
 
-                                    <td>
-                                        <input type="number" name="jumlah[]" class="form-control">
-                                    </td>
+                                        <td>
+                                            <input name="alat[]" class="form-control" value="{{ old('alat.'.$i) }}">
+                                        </td>
 
-                                    <td>
-                                        <input name="alat[]" class="form-control">
-                                    </td>
-
-                                    <td>
-                                        <button type="button" class="btn btn-danger btn-sm removeTenaga">
-                                            ×
-                                        </button>
-                                    </td>
-                                </tr>
+                                        <td>
+                                            <button type="button" class="btn btn-danger btn-sm removeTenaga">
+                                                ×
+                                            </button>
+                                        </td>
+                                    </tr>
+                                @endforeach
                             </tbody>
                         </table>
                     </div>
@@ -188,54 +194,70 @@
                                     <th width="40"></th>
                                 </tr>
                             </thead>
-
+                            @php
+                                $rabOld = old('rab_process_item_id', ['']);
+                            @endphp
                             <tbody id="workTable">
-                                <!-- BARIS DEFAULT -->
-                                <tr>
-                                    <td>
-                                        <select name="rab_process_item_id[]" 
-                                                class="form-select select2 rab-select">
-                                            <option value="">-- Pilih Dari RAB --</option>
+                                @foreach($rabOld as $i => $rabId)
+                                    <tr>
+                                        <td>
+                                            <select name="rab_process_item_id[]" 
+                                                    class="form-select select2 rab-select">
+                                                <option value="">-- Pilih Dari RAB --</option>
 
-                                            @foreach($rabs as $rab)
-                                                <option value="{{ $rab->id }}"
-                                                    data-volume="{{ $rab->volume }}"
-                                                    data-satuan="{{ $rab->satuan }}">
-                                                    {{ $rab->job_name }} ({{ $rab->rab->job_location }})
+                                                {{-- @foreach($rabs as $rab)
+                                                    <option value="{{ $rab->id }}"
+                                                        data-volume="{{ $rab->volume }}"
+                                                        data-satuan="{{ $rab->satuan }}"
+                                                        {{ $rabId == $rab->id ? 'selected' : '' }}>
+                                                        {{ $rab->job_name }} ({{ $rab->rab->job_location }})
+                                                    </option>
+                                                @endforeach --}}
+                                                @foreach($rabs as $rab)
+                                                    <option value="{{ $rab->id }}">
+                                                        {{ $rab->id }} - {{ $rab->job_name }}
+                                                    </option>
+                                                @endforeach
+
+                                                <option value="manual"
+                                                    {{ $rabId == 'manual' ? 'selected' : '' }}>
+                                                    + Manual Input
                                                 </option>
-                                            @endforeach
+                                            </select>
 
-                                            <option value="manual">+ Manual Input</option>
-                                        </select>
+                                            <input
+                                                type="text"
+                                                name="uraian_manual[]"
+                                                class="form-control mt-2 manual-rab {{ $rabId == 'manual' ? '' : 'd-none' }}"
+                                                value="{{ old('uraian_manual.'.$i) }}"
+                                                placeholder="Isi uraian manual">
+                                        </td>
+                                        <td>
+                                            <input name="daily[satuan][]" 
+                                                type="text"
+                                                class="form-control satuan-input"
+                                                    value="{{ old('daily.satuan.'.$i) }}">
+                                        </td>
+                                        <td>
+                                            <input name="daily[volume][]" 
+                                                type="number" 
+                                                step="0.01"
+                                                class="form-control volume-input"
+                                                value="{{ old('daily.volume.'.$i) }}">
+                                        </td>
 
-                                        <input type="text"
-                                            name="uraian_manual[]"
-                                            class="form-control mt-2 manual-rab d-none"
-                                            placeholder="Isi uraian manual">
-                                    </td>
-                                    <td>
-                                        <input name="daily[satuan][]" 
-                                            type="text"
-                                            class="form-control satuan-input">
-                                    </td>
-                                    <td>
-                                        <input name="daily[volume][]" 
-                                            type="number" 
-                                            step="0.01"
-                                            class="form-control volume-input">
-                                    </td>
+                                        <td>
+                                            <input name="ket[]" class="form-control"     value="{{ old('ket.'.$i) }}">
+                                        </td>
 
-                                    <td>
-                                        <input name="ket[]" class="form-control">
-                                    </td>
-
-                                    <td>
-                                        <button type="button" 
-                                                class="btn btn-danger btn-sm removeWork">
-                                            ×
-                                        </button>
-                                    </td>
-                                </tr>
+                                        <td>
+                                            <button type="button" 
+                                                    class="btn btn-danger btn-sm removeWork">
+                                                ×
+                                            </button>
+                                        </td>
+                                    </tr>
+                                @endforeach
                             </tbody>
                         </table>
                     </div>
@@ -328,16 +350,20 @@
                                     <th width="40"></th>
                                 </tr>
                             </thead>
+                            @php
+                                $materials = old('bahan', ['']);
+                            @endphp
                             <tbody id="materialTable">
+                                @foreach($materials as $i => $x)
                                 <tr>
                                     <td>
-                                        <input name="bahan[]" class="form-control">
+                                        <input name="bahan[]" class="form-control" value="{{ old('bahan.'.$i) }}">
                                     </td>
                                     <td>
-                                        <input type="number" name="diterima[]" class="form-control">
+                                        <input type="number" name="diterima[]" class="form-control" value="{{ old('diterima.'.$i) }}">
                                     </td>
                                     <td>
-                                        <input type="number" name="ditolak[]" class="form-control">
+                                        <input type="number" name="ditolak[]" class="form-control" value="{{ old('ditolak.'.$i) }}">
                                     </td>
                                     <td>
                                         <button type="button" class="btn btn-danger btn-sm removeMaterial">
@@ -345,6 +371,7 @@
                                         </button>
                                     </td>
                                 </tr>
+                                @endforeach
                             </tbody>
                         </table>
                     </div>
@@ -391,56 +418,59 @@
                                 <th width="40"></th>
                             </tr>
                         </thead>
-
+                        @php
+                            $jamMulai = old('jam_mulai', ['']);
+                        @endphp
                         <tbody id="jamKerjaTable">
+                            @foreach($jamMulai as $i => $jam)
+                                <tr>
+                                    <td>
+                                        <input type="time"
+                                            name="jam_mulai[]"
+                                            class="form-control jam-mulai" value="{{ old('jam_mulai.'.$i) }}">
+                                    </td>
 
-                            {{-- BARIS DEFAULT --}}
-                            <tr>
-                                <td>
-                                    <input type="time"
-                                        name="jam_mulai[]"
-                                        class="form-control jam-mulai">
-                                </td>
+                                    <td>
+                                        <input type="time"
+                                            name="jam_selesai[]"
+                                            class="form-control jam-selesai" value="{{ old('jam_selesai.'.$i) }}">
+                                    </td>
 
-                                <td>
-                                    <input type="time"
-                                        name="jam_selesai[]"
-                                        class="form-control jam-selesai">
-                                </td>
+                                    <td>
+                                        <input type="number"
+                                            name="total_jam[]"
+                                            value="{{ old('total_jam.'.$i) }}"
+                                            class="form-control total-jam"
+                                            step="0.01"
+                                            readonly>
+                                    </td>
 
-                                <td>
-                                    <input type="number"
-                                        name="total_jam[]"
-                                        class="form-control total-jam"
-                                        step="0.01"
-                                        readonly>
-                                </td>
+                                    <td>
+                                        <select name="cuaca[]"
+                                                class="form-select select2">
+                                            <option value="">-- Pilih Cuaca --</option>
+                                            <option value="Cerah" {{ old('cuaca.'.$i)=='Cerah' ? 'selected':'' }}>Cerah</option>
+                                            <option value="Mendung" {{ old('cuaca.'.$i)=='Mendung' ? 'selected':'' }}>Mendung</option>
+                                            <option value="Hujan" {{ old('cuaca.'.$i)=='Hujan' ? 'selected':'' }}>Hujan</option>
+                                        </select>
+                                    </td>
 
-                                <td>
-                                    <select name="cuaca[]"
-                                            class="form-select select2">
-                                        <option value="">-- Pilih Cuaca --</option>
-                                        <option value="Cerah">Cerah</option>
-                                        <option value="Mendung">Mendung</option>
-                                        <option value="Hujan">Hujan</option>
-                                    </select>
-                                </td>
+                                    <td>
+                                        <input type="text"
+                                            name="cuaca_keterangan[]"
+                                            class="form-control"
+                                            value="{{ old('cuaca_keterangan.'.$i) }}"
+                                            placeholder="Keterangan tambahan">
+                                    </td>
 
-                                <td>
-                                    <input type="text"
-                                        name="cuaca_keterangan[]"
-                                        class="form-control"
-                                        placeholder="Keterangan tambahan">
-                                </td>
-
-                                <td>
-                                    <button type="button"
-                                            class="btn btn-danger btn-sm removeJamKerja">
-                                        ×
-                                    </button>
-                                </td>
-                            </tr>
-
+                                    <td>
+                                        <button type="button"
+                                                class="btn btn-danger btn-sm removeJamKerja">
+                                            ×
+                                        </button>
+                                    </td>
+                                </tr>
+                            @endforeach
                         </tbody>
                     </table>
                     <template id="jamKerjaTemplate">
@@ -500,7 +530,7 @@
                     Catatan / Perintah Konsultan MK
                 </div>
                 <div class="card-body">
-                    <textarea name="catatan" class="form-control" rows="5"></textarea>
+                    <textarea name="catatan" class="form-control" rows="5">{{ old('catatan') }}</textarea>
                 </div>
             </div>
         <div class="card shadow-sm border-0 mb-4">
@@ -515,7 +545,9 @@
                         <select name="mk_id" class="form-select select2">
                             <option value="mk_id">-- Pilih Side Manager --</option>
                             @foreach($employees as $emp)
-                                <option value="{{ $emp->id }}">
+                                <option
+                                    value="{{ $emp->id }}"
+                                    {{ old('mk_id')==$emp->id ? 'selected':'' }}>
                                     {{ $emp->user->fullname }}
                                 </option>
                             @endforeach
@@ -528,7 +560,9 @@
                         <select name="kontraktor_ttd_id" class="form-select select2">
                             <option value="kontraktor_ttd_id">-- Pilih Project Manager --</option>
                             @foreach($employees as $emp)
-                                <option value="{{ $emp->id }}">
+                                <option
+                                    value="{{ $emp->id }}"
+                                    {{ old('kontraktor_ttd_id')==$emp->id ? 'selected':'' }}>
                                     {{ $emp->user->fullname }}
                                 </option>
                             @endforeach
@@ -565,108 +599,110 @@ flatpickr("#nextDate", {
 
 </script>
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-    $('.select2').select2({ width:'100%' });
-    document.getElementById('addTenaga').addEventListener('click', function() {
-        let template = document.getElementById('tenagaTemplate');
-        let clone = template.content.cloneNode(true);
-        document.querySelector('#tenagaTable').appendChild(clone);
-        $('#tenagaTable .select2').last().select2({ width:'100%' });
-    });
-    document.addEventListener('click', function(e) {
+    document.addEventListener("DOMContentLoaded", function() {
+        $('.select2').select2({ width:'100%' });
+        document.getElementById('addTenaga').addEventListener('click', function() {
+            let template = document.getElementById('tenagaTemplate');
+            let clone = template.content.cloneNode(true);
+            document.querySelector('#tenagaTable').appendChild(clone);
+            $('#tenagaTable .select2').last().select2({ width:'100%' });
+        });
+        document.addEventListener('click', function(e) {
 
-        if(e.target.classList.contains('removeTenaga')) {
+            if(e.target.classList.contains('removeTenaga')) {
 
-            let rows = document.querySelectorAll('#tenagaTable tr');
+                let rows = document.querySelectorAll('#tenagaTable tr');
 
-            if(rows.length > 1){
-                e.target.closest('tr').remove();
-            } else {
-                alert('Minimal 1 baris harus ada');
+                if(rows.length > 1){
+                    e.target.closest('tr').remove();
+                } else {
+                    alert('Minimal 1 baris harus ada');
+                }
             }
-        }
 
+        });
+        $(document).on('change', '.worker-select', function(){
+
+            let row = $(this).closest('tr');
+            let manualInput = row.find('.manual-input');
+
+            if($(this).val() === 'manual'){
+                manualInput.removeClass('d-none');
+            } else {
+                manualInput.addClass('d-none');
+                manualInput.val('');
+            }
+
+        });
     });
-    $(document).on('change', '.worker-select', function(){
-
-        let row = $(this).closest('tr');
-        let manualInput = row.find('.manual-input');
-
-        if($(this).val() === 'manual'){
-            manualInput.removeClass('d-none');
-        } else {
-            manualInput.addClass('d-none');
-            manualInput.val('');
-        }
-
-    });
-});
 </script>
 <script>
-document.addEventListener("DOMContentLoaded", function() {
+    document.addEventListener("DOMContentLoaded", function() {
 
-    // INIT SELECT2
-    $('.select2').select2({ width:'100%' });
+        // INIT SELECT2
+        $('.select2').select2({ width:'100%' });
+        $('.worker-select').trigger('change');
+        $('.rab-select').trigger('change');
+        document.getElementById('addWork').addEventListener('click', function() {
 
-    // TAMBAH PEKERJAAN
-    document.getElementById('addWork').addEventListener('click', function() {
+            let template = document.getElementById('kerjaTemplate');
+            let clone = template.content.cloneNode(true);
 
-        let template = document.getElementById('kerjaTemplate');
-        let clone = template.content.cloneNode(true);
+            document.querySelector('#workTable').appendChild(clone);
 
-        document.querySelector('#workTable').appendChild(clone);
+            // init select2 hanya yang baru
+            $('#workTable .select2').last().select2({ width:'100%' });
 
-        // init select2 hanya yang baru
-        $('#workTable .select2').last().select2({ width:'100%' });
+        });
 
-    });
+        // HAPUS PEKERJAAN (minimal 1 baris)
+        document.addEventListener('click', function(e) {
 
-    // HAPUS PEKERJAAN (minimal 1 baris)
-    document.addEventListener('click', function(e) {
+            if(e.target.classList.contains('removeWork')) {
 
-        if(e.target.classList.contains('removeWork')) {
+                let rows = document.querySelectorAll('#workTable tr');
 
-            let rows = document.querySelectorAll('#workTable tr');
-
-            if(rows.length > 1){
-                e.target.closest('tr').remove();
-            } else {
-                alert('Minimal 1 baris harus ada');
+                if(rows.length > 1){
+                    e.target.closest('tr').remove();
+                } else {
+                    alert('Minimal 1 baris harus ada');
+                }
             }
-        }
 
+        });
+
+        $(document).on('change', '.rab-select', function () {
+
+            let row = $(this).closest('tr');
+            let selectedOption = $(this).find(':selected');
+
+            let volumeInput = row.find('.volume-input');
+            let satuanInput = row.find('.satuan-input');
+            let manualInput = row.find('.manual-rab');
+
+            if ($(this).val() === 'manual') {
+
+                manualInput.removeClass('d-none');
+
+            } else {
+
+                manualInput.addClass('d-none');
+                manualInput.val('');
+
+                let volume = selectedOption.data('volume');
+                let satuan = selectedOption.data('satuan');
+
+                if (!volumeInput.val()) {
+                    volumeInput.val(volume ?? '');
+                }
+
+                if (!satuanInput.val()) {
+                    satuanInput.val(satuan ?? '');
+                }
+            }
+
+        });
     });
-
-    $(document).on('change', '.rab-select', function(){
-
-        let row = $(this).closest('tr');
-        let selectedOption = $(this).find(':selected');
-
-        let volumeInput = row.find('.volume-input');
-        let satuanInput = row.find('.satuan-input');
-        let manualInput = row.find('.manual-rab');
-
-        if($(this).val() === 'manual'){
-
-            manualInput.removeClass('d-none');
-            volumeInput.val('');
-            satuanInput.val('');
-
-        } else {
-
-            manualInput.addClass('d-none');
-            manualInput.val('');
-
-            let volume = selectedOption.data('volume');
-            let satuan = selectedOption.data('satuan');
-
-            volumeInput.val(volume ?? '');
-            satuanInput.val(satuan ?? '');
-
-        }
-
-    });
-});
 </script>
 <script>
     document.getElementById('addMaterial').addEventListener('click', function() {
@@ -694,112 +730,110 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 </script>
 <script>
-document.addEventListener("change", function(e){
+    document.addEventListener("change", function(e){
 
-    if(e.target.classList.contains("image-input")){
+        if(e.target.classList.contains("image-input")){
 
-        let previewId = e.target.dataset.preview;
-        let previewContainer = document.getElementById(previewId);
+            let previewId = e.target.dataset.preview;
+            let previewContainer = document.getElementById(previewId);
 
-        previewContainer.innerHTML = "";
+            previewContainer.innerHTML = "";
 
-        Array.from(e.target.files).forEach(file => {
+            Array.from(e.target.files).forEach(file => {
 
-            let div = document.createElement("div");
-            div.style.width = "120px";
+                let div = document.createElement("div");
+                div.style.width = "120px";
 
-            // JIKA IMAGE
-            if(file.type.startsWith("image/")){
+                // JIKA IMAGE
+                if(file.type.startsWith("image/")){
 
-                let reader = new FileReader();
+                    let reader = new FileReader();
 
-                reader.onload = function(event){
+                    reader.onload = function(event){
+
+                        div.innerHTML = `
+                            <img src="${event.target.result}" 
+                                class="img-fluid rounded shadow-sm mb-2">
+                            <small class="d-block text-truncate">${file.name}</small>
+                        `;
+
+                        previewContainer.appendChild(div);
+                    }
+
+                    reader.readAsDataURL(file);
+
+                }
+                // JIKA PDF
+                else if(file.type === "application/pdf"){
 
                     div.innerHTML = `
-                        <img src="${event.target.result}" 
-                             class="img-fluid rounded shadow-sm mb-2">
-                        <small class="d-block text-truncate">${file.name}</small>
+                        <div class="border rounded p-3 text-center shadow-sm">
+                            📄
+                            <div class="small mt-2 text-truncate">${file.name}</div>
+                        </div>
                     `;
 
                     previewContainer.appendChild(div);
                 }
 
-                reader.readAsDataURL(file);
+            });
 
-            }
-            // JIKA PDF
-            else if(file.type === "application/pdf"){
+        }
 
-                div.innerHTML = `
-                    <div class="border rounded p-3 text-center shadow-sm">
-                        📄
-                        <div class="small mt-2 text-truncate">${file.name}</div>
-                    </div>
-                `;
-
-                previewContainer.appendChild(div);
-            }
-
-        });
-
-    }
-
-});
+    });
 </script>
 <script>
-document.getElementById('addJamKerja')
-    ?.addEventListener('click', function () {
+    document.getElementById('addJamKerja')
+        ?.addEventListener('click', function () {
 
-    const template = document
-        .getElementById('jamKerjaTemplate')
-        .content
-        .cloneNode(true);
+        const template = document
+            .getElementById('jamKerjaTemplate')
+            .content
+            .cloneNode(true);
 
-    document
-        .getElementById('jamKerjaTable')
-        .appendChild(template);
+        document
+            .getElementById('jamKerjaTable')
+            .appendChild(template);
 
-    $('.select2').select2({
-        width: '100%'
+        $('.select2').select2({
+            width: '100%'
+        });
     });
-});
+    document.addEventListener('click', function(e){
 
-document.addEventListener('click', function(e){
-
-    if (e.target.classList.contains('removeJamKerja')) {
-        e.target.closest('tr').remove();
-    }
-});
-
-document.addEventListener('input', function(e){
-
-    const row = e.target.closest('tr');
-
-    if (!row) return;
-
-    if (
-        e.target.classList.contains('jam-mulai') ||
-        e.target.classList.contains('jam-selesai')
-    ) {
-
-        const mulai = row.querySelector('.jam-mulai').value;
-        const selesai = row.querySelector('.jam-selesai').value;
-
-        if (mulai && selesai) {
-
-            const start = new Date(`2000-01-01 ${mulai}`);
-            const end   = new Date(`2000-01-01 ${selesai}`);
-
-            let diff = (end - start) / 1000 / 60 / 60;
-
-            if (diff < 0) {
-                diff += 24;
-            }
-
-            row.querySelector('.total-jam').value =
-                diff.toFixed(2);
+        if (e.target.classList.contains('removeJamKerja')) {
+            e.target.closest('tr').remove();
         }
-    }
-});
+    });
+    document.addEventListener('input', function(e){
+
+        const row = e.target.closest('tr');
+
+        if (!row) return;
+
+        if (
+            e.target.classList.contains('jam-mulai') ||
+            e.target.classList.contains('jam-selesai')
+        ) {
+
+            const mulai = row.querySelector('.jam-mulai').value;
+            const selesai = row.querySelector('.jam-selesai').value;
+
+            if (mulai && selesai) {
+
+                const start = new Date(`2000-01-01 ${mulai}`);
+                const end   = new Date(`2000-01-01 ${selesai}`);
+
+                let diff = (end - start) / 1000 / 60 / 60;
+
+                if (diff < 0) {
+                    diff += 24;
+                }
+
+                row.querySelector('.total-jam').value =
+                    diff.toFixed(2);
+            }
+        }
+    });
 </script>
 @endpush
