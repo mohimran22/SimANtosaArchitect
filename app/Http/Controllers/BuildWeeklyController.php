@@ -300,7 +300,16 @@ public function exportPdf(Request $request, Project $project) {
             $bobot > 0
         ? ($realisasiKumulatif / $bobot) * 100
         : 0;
-
+        dd([
+            'category' => $cat['category_name'],
+            'weekNow' => $weekNow,
+            'bobot' => $bobot,
+            'rencana' => $rencana,
+            'bobotMingguIni' => $bobotMingguIni,
+            'bobotLalu' => $bobotLalu,
+            'realisasiKumulatif' => $realisasiKumulatif,
+            'prestasiKumulatif' => $prestasiKumulatif,
+        ]);
         return [
             'category' => $cat['category_name'],
             'bobot' => $bobot,
