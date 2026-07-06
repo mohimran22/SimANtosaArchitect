@@ -115,5 +115,42 @@ points="{{ $svgPlan }}"
     </text>
 
 @endforeach
+<line
+    x1="{{ $paddingLeft }}"
+    y1="{{ $paddingTop + $chartHeight }}"
+    x2="{{ $paddingLeft + ($countWeek - 1) * $stepX }}"
+    y2="{{ $paddingTop + $chartHeight }}"
+    stroke="#000"
+    stroke-width="1"
+/>
+@foreach($weeks as $i => $w)
 
+    @php
+        $x = $paddingLeft + ($i * $stepX);
+        $axisY = $paddingTop + $chartHeight;
+    @endphp
+
+    {{-- Tick --}}
+    <line
+        x1="{{ $x }}"
+        y1="{{ $axisY }}"
+        x2="{{ $x }}"
+        y2="{{ $axisY + 5 }}"
+        stroke="#000"
+        stroke-width="1"
+    />
+
+    {{-- Label --}}
+    <text
+        x="{{ $x }}"
+        y="{{ $axisY + 18 }}"
+        font-size="8"
+        text-anchor="middle"
+        fill="#000">
+
+        M{{ $w['week_no'] }}
+
+    </text>
+
+@endforeach
 </svg>

@@ -201,7 +201,7 @@
                                 @foreach($rabOld as $i => $rabId)
                                     <tr>
                                         <td>
-                                            <select name="rab_process_item_id[]" 
+                                            {{-- <select name="rab_process_item_id[]" 
                                                     class="form-select select2 rab-select">
                                                 <option value="">-- Pilih Dari RAB --</option>
 
@@ -218,8 +218,43 @@
                                                     {{ $rabId == 'manual' ? 'selected' : '' }}>
                                                     + Manual Input
                                                 </option>
-                                            </select>
+                                            </select> --}}
+                                            <select name="rab_process_item_id[]" class="form-select select2 rab-select">
 
+                                                <option value="">-- Pilih Dari RAB --</option>
+
+                                                @foreach($categories as $category)
+
+                                                    <option disabled style="font-weight:bold;">
+                                                        {{ number_to_letters($category->order_no) }}. {{ strtoupper($category->name) }}
+                                                    </option>
+
+                                                    @foreach($category->uraians as $uraian)
+                                                        <option disabled>
+                                                            &nbsp;&nbsp;{{ $loop->iteration }}. {{ $uraian->name }}
+                                                        </option>
+
+                                                        @foreach($uraian->items as $rab)
+                                                            <option value="{{ $rab->id }}"
+                                                                    data-volume="{{ $rab->volume }}"
+                                                                    data-satuan="{{ $rab->satuan }}"
+                                                                    {{ $rabId == $rab->id ? 'selected' : '' }}>
+                                                                &nbsp;&nbsp;&nbsp;&nbsp;
+                                                                {{ $loop->parent->iteration }}.{{ $loop->iteration }}
+                                                                {{ $rab->job_name }}
+                                                            </option>
+                                                        @endforeach
+
+                                                    @endforeach
+
+                                                @endforeach
+
+                                                <option value="manual"
+                                                    {{ $rabId == 'manual' ? 'selected' : '' }}>
+                                                    + Manual Input
+                                                </option>
+
+                                            </select>
                                             <input
                                                 type="text"
                                                 name="uraian_manual[]"
@@ -259,20 +294,43 @@
                     <template id="kerjaTemplate">
                         <tr>
                             <td>
-                                <select name="rab_process_item_id[]" 
-                                        class="form-select select2 rab-select">
-                                    <option value="">-- Pilih Dari RAB --</option>
+                                            <select name="rab_process_item_id[]" class="form-select select2 rab-select">
 
-                                    @foreach($rabs as $rab)
-                                        <option value="{{ $rab->id }}"
-                                            data-volume="{{ $rab->volume }}"
-                                            data-satuan="{{ $rab->satuan }}">
-                                            {{ $rab->job_name }} ({{ $rab->rab->job_location }})
-                                        </option>
-                                    @endforeach
+                                                <option value="">-- Pilih Dari RAB --</option>
 
-                                    <option value="manual">+ Manual Input</option>
-                                </select>
+                                                @foreach($categories as $category)
+
+                                                    <option disabled>📁 {{ $category->name }}</option>
+
+                                                    @foreach($category->uraians as $uraian)
+
+                                                        <option disabled>
+                                                            &nbsp;&nbsp;📂 {{ $uraian->name }}
+                                                        </option>
+
+                                                        @foreach($uraian->items as $rab)
+
+                                                            <option value="{{ $rab->id }}"
+                                                                    data-volume="{{ $rab->volume }}"
+                                                                    data-satuan="{{ $rab->satuan }}"
+                                                                    {{ $rabId == $rab->id ? 'selected' : '' }}>
+
+                                                                ↳ {{ $rab->job_name }}
+
+                                                            </option>
+
+                                                        @endforeach
+
+                                                    @endforeach
+
+                                                @endforeach
+
+                                                <option value="manual"
+                                                    {{ $rabId == 'manual' ? 'selected' : '' }}>
+                                                    + Manual Input
+                                                </option>
+
+                                            </select>
 
                                 <input type="text"
                                     name="uraian_manual[]"
@@ -535,10 +593,10 @@
             <div class="card-body">
                 <div class="row text-center">
                     <div class="col-md-6">
-                        Side Manager
+                        Site Manager
                         <br><br><br><br>
                         <select name="mk_id" class="form-select select2">
-                            <option value="mk_id">-- Pilih Side Manager --</option>
+                            <option value="mk_id">-- Pilih Site Manager --</option>
                             @foreach($employees as $emp)
                                 <option
                                     value="{{ $emp->id }}"
@@ -687,13 +745,11 @@ flatpickr("#nextDate", {
                 let volume = selectedOption.data('volume');
                 let satuan = selectedOption.data('satuan');
 
-                if (!volumeInput.val()) {
-                    volumeInput.val(volume ?? '');
-                }
+                satuanInput.val(satuan ?? '');
 
-                if (!satuanInput.val()) {
-                    satuanInput.val(satuan ?? '');
-                }
+                // volume hanya sebagai placeholder
+                volumeInput.val('');
+                volumeInput.attr('placeholder', volume ?? '');
             }
 
         });

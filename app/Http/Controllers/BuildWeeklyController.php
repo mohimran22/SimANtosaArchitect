@@ -399,7 +399,7 @@ public function exportPdf(Request $request, Project $project) {
         'app/public/kurva-'.$project->id.'.png'
     );
 
-    $image = Http::get($chartUrl);
+    $image = Http::withoutVerifying()->get($chartUrl);
 
     if ($image->successful()) {
 
@@ -430,7 +430,7 @@ public function exportPdf(Request $request, Project $project) {
     $paddingLeft   = 35;
     $paddingRight  = 15;
     $paddingTop    = 20;
-    $paddingBottom = 30;
+    $paddingBottom = 40;
 
     $chartWidth  = $svgWidth - $paddingLeft - $paddingRight;
     $chartHeight = $svgHeight - $paddingTop - $paddingBottom;

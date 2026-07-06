@@ -26,8 +26,12 @@ class RabProcessCategory extends Model
         ->orderBy('order_no');
 }
 
-//     public function getLetterAttribute()
-// {
-//     return number_to_letters($this->order_no);
-// }
+    public function getLetterAttribute()
+{
+    return number_to_letters($this->order_no);
+}
+public function rabProcess()
+{
+    return $this->belongsTo(RabProcess::class, 'rab_process_id');
+}
 }

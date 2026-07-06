@@ -19,7 +19,7 @@ use App\Models\ProjectLevel;
 use App\Models\ProjectTask;
 use App\Models\JobCategory;
 use App\Models\RabProcess;
-use App\Models\RabProcessItem;
+use App\Models\RabProcessCategory;
 use App\Models\BuildDailyReport;
 use App\Models\BuildProcessItem;
 use App\Models\BuildPlans;
@@ -604,13 +604,18 @@ private function formData($project = null, int $activeStep = 1, ?int $projectTyp
     // ── RAB processes & items — hanya jika edit form offer aktif ──
     // Ini bisa di-lazy-load via AJAX di masa depan
     if ($activeStep >= 5 && $project?->customer_id) {
+
         $data['rabProcesses'] = RabProcess::whereHas('project', function ($q) use ($project) {
             $q->where('customer_id', $project->customer_id);
         })->get();
-        $data['rabs'] = RabProcessItem::whereHas('rab.project', function ($q) use ($project) {
+
+        $data['categories'] = RabProcessCategory::with([
+            'uraians.items.rab'
+        ])
+        ->whereHas('rabProcess.project', function ($q) use ($project) {
             $q->where('customer_id', $project->customer_id);
         })
-        ->orderBy('job_name')
+        ->orderBy('order_no')
         ->get();
     }
     return array_merge($data, $merge);
