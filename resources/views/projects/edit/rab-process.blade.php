@@ -624,7 +624,7 @@
 
                 setTimeout(()=>{
                     saveOrderToServer()
-                },100)
+                },500)
             },
 
             onMove: function(evt){
