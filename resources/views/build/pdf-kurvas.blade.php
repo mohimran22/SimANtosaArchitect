@@ -111,11 +111,45 @@
         height:80mm;
         border:1px solid #bdbdbd;
         padding:3mm;
-        box-sizing:border-box;
     ">
 
         @include('build.kurva-svg')
+        {{-- <table style="
+            width:100%;
+            margin-top:3mm;
+            border-collapse:collapse;
+            font-size:7px;
+        ">
+            <tr style="background:#f5f5f5;">
+                <th style="width:35mm;">Minggu</th>
 
+                @foreach($weeks as $w)
+                    <td align="center">
+                        M{{ $w['week_no'] }}
+                    </td>
+                @endforeach
+            </tr>
+
+            <tr>
+                <th>Rencana (%)</th>
+
+                @foreach($plan as $nilai)
+                    <td align="center">
+                        {{ number_format($nilai,1) }}
+                    </td>
+                @endforeach
+            </tr>
+
+            <tr>
+                <th>Realisasi (%)</th>
+
+                @foreach($realisasi as $nilai)
+                    <td align="center">
+                        {{ $nilai !== null ? number_format($nilai,1) : '-' }}
+                    </td>
+                @endforeach
+            </tr>
+        </table> --}}
     </div>
 
 </div>

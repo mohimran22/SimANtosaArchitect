@@ -429,7 +429,7 @@ public function exportPdf(Request $request, Project $project) {
 
     $paddingLeft   = 35;
     $paddingRight  = 15;
-    $paddingTop    = 20;
+    $paddingTop    = 50;
     $paddingBottom = 40;
 
     $chartWidth  = $svgWidth - $paddingLeft - $paddingRight;

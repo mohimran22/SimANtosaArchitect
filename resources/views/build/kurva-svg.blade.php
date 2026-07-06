@@ -42,17 +42,77 @@ $countWeek = max(count($weeks),1);
     />
 
 @endfor
+{{-- ================= LEGEND ================= --}}
+@php
+    $legendY = 12;
 
+    $boxW = 18;
+    $boxH = 10;
+
+    $text1 = 55; // "Realisasi (%)"
+    $text2 = 50; // "Rencana (%)"
+
+    $gap = 28;
+
+    $item1 = $boxW + 6 + $text1;
+    $item2 = $boxW + 6 + $text2;
+
+    $total = $item1 + $gap + $item2;
+
+    $startX = ($svgWidth - $total) / 2;
+
+    $legend1X = $startX;
+    $legend2X = $startX + $item1 + $gap;
+@endphp
+
+{{-- ================= REALISASI ================= --}}
+<rect
+    x="{{ $legend1X }}"
+    y="{{ $legendY }}"
+    width="{{ $boxW }}"
+    height="{{ $boxH }}"
+    fill="rgba(54,162,235,.2)"
+    stroke="rgb(54,162,235)"
+    stroke-width="2"
+/>
+
+<text
+    x="{{ $legend1X + $boxW + 6 }}"
+    y="{{ $legendY + 8 }}"
+    font-size="10"
+    fill="#666">
+    Realisasi (%)
+</text>
+
+{{-- ================= RENCANA ================= --}}
+<rect
+    x="{{ $legend2X }}"
+    y="{{ $legendY }}"
+    width="{{ $boxW }}"
+    height="{{ $boxH }}"
+    fill="rgba(255,99,132,.2)"
+    stroke="rgb(255,99,132)"
+    stroke-width="2"
+/>
+
+<text
+    x="{{ $legend2X + $boxW + 6 }}"
+    y="{{ $legendY + 8 }}"
+    font-size="10"
+    fill="#666">
+    Rencana (%)
+</text>
+{{-- ========================================== --}}
 <polyline
 fill="none"
-stroke="#16a34a"
+stroke="rgb(255,99,132)"
 stroke-width="3"
 points="{{ $svgPlan }}"
 />
 
 <polyline
     fill="none"
-    stroke="#0000ff"
+    stroke="rgb(54,162,235)"
     stroke-width="3"
     points="{{ $svgReal }}"
 />
@@ -71,15 +131,15 @@ points="{{ $svgPlan }}"
         cx="{{ $x }}"
         cy="{{ $y }}"
         r="3"
-        fill="#0000ff"
+        fill="rgb(255,99,132)"
     />
 
     <text
         x="{{ $x }}"
-        y="{{ $y - 8 }}"
+        y="{{ $y - 10 }}"
         font-size="8"
         text-anchor="middle"
-        fill="#0000ff">
+        fill="#0000">
 
         {{ round($value,1) }}
 
@@ -101,14 +161,14 @@ points="{{ $svgPlan }}"
         cx="{{ $x }}"
         cy="{{ $y }}"
         r="4"
-        fill="#ff0000"
+        fill="rgb(54,162,235)"
     />
 
     <text
         x="{{ $x }}"
-        y="{{ $y - 8 }}"
+        y="{{ $y + 14 }}"
         font-size="8"
-        fill="#ff0000">
+        fill="#0000">
 
         {{ round($value,1) }}
 
@@ -130,7 +190,6 @@ points="{{ $svgPlan }}"
         $axisY = $paddingTop + $chartHeight;
     @endphp
 
-    {{-- Tick --}}
     <line
         x1="{{ $x }}"
         y1="{{ $axisY }}"
@@ -140,7 +199,6 @@ points="{{ $svgPlan }}"
         stroke-width="1"
     />
 
-    {{-- Label --}}
     <text
         x="{{ $x }}"
         y="{{ $axisY + 18 }}"

@@ -87,14 +87,13 @@
                         <div class="modal-content">
 
                             <div class="modal-header">
-                                <h5 class="modal-title">Detail Laporan Harian</h5>
-
-                                    <div class="ms-auto d-flex gap-2">
+                                    <h5 class="modal-title flex-grow-1">
+                                        Detail Laporan Harian
+                                    </h5>
                                         <button class="btn btn-dark" id="btnToggleEdit">
                                             Edit
                                         </button>
                                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                    </div>
                             </div>
 
                             <div class="modal-body" id="dailyModalBody">
@@ -558,20 +557,20 @@
                         <hr>
                         <h6 class="mt-4">Pengesahan</h6>
 
-                        <div class="row mt-4 text-center">
+                        <div class="d-flex justify-content-between text-center gap-3">
 
-                            <div class="col-md-6">
+                            <div class="flex-fill">
                                 <p class="fw-semibold">Side Manager</p>
                                 <br><br>
-                                <u>${
+                                <u class="pengesahan-name">${
                                     data.mk_employee?.user?.fullname ?? '____________________'
                                 }</u>
                             </div>
 
-                            <div class="col-md-6">
+                            <div class="flex-fill">
                                 <p class="fw-semibold">Project Manager</p>
                                 <br><br>
-                                <u>${
+                                <u class="pengesahan-name">${
                                     data.kontraktor_employee?.user?.fullname ?? '____________________'
                                 }</u>
                             </div>

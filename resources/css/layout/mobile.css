@@ -56,7 +56,6 @@
 
     .card{
         border-radius: 14px;
-        overflow: hidden !important;
     }
 
     .card-header{
@@ -249,7 +248,13 @@
     #datatable-search-container .dt-search{
         display:flex !important;
     }
+    .modal {
+        z-index: 2000 !important;
+    }
 
+    .modal-backdrop {
+        z-index: 1999 !important;
+    }
 }
 @media (min-width: 576px){
 
