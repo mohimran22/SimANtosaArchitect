@@ -269,8 +269,10 @@
 
                                                 {{-- MODE TAMPIL --}}
                                                 <p class="mb-1 price-text">
-                                                    <strong class="text-dark price-label">
-                                                        Rp {{ number_format($product->pivot->selling_prices) }}
+                                                    <strong
+                                                        class="text-dark price-label"
+                                                        data-price="{{ $product->pivot->selling_prices }}">
+                                                        Rp {{ number_format($product->pivot->selling_prices, 2, ',', '.') }}
                                                     </strong>
 
                                                     <button type="button"
@@ -730,17 +732,50 @@ $(document).ready(function () {
 <script>
 
 function formatRupiah(angka) {
+
     angka = Number(angka);
 
     if (isNaN(angka)) return '0';
 
     return new Intl.NumberFormat('id-ID', {
-        minimumFractionDigits: 0
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
     }).format(angka);
 }
+function formatInputNumber(value) {
 
+    if (!value) return '';
+
+    // Hapus semua selain angka dan koma
+    value = value.replace(/[^\d,]/g, '');
+
+    // Hanya boleh ada satu koma
+    const parts = value.split(',');
+
+    let integer = parts[0];
+    let decimal = parts.length > 1 ? parts.slice(1).join('') : '';
+
+    // Maksimal 4 digit desimal
+    decimal = decimal.substring(0, 4);
+
+    // Format ribuan
+    integer = integer.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+
+    return decimal !== ''
+        ? integer + ',' + decimal
+        : integer;
+}
 function cleanNumber(value) {
-    return parseFloat(value.replace(/[^\d]/g, '')) || 0;
+
+    if (!value) return 0;
+
+    value = value.toString();
+
+    value = value.replace(/\./g, '');
+
+    value = value.replace(',', '.');
+
+    return parseFloat(value) || 0;
 }
 
 function recalculatePrice() {
@@ -861,18 +896,16 @@ $(document).on('click', '.btn-edit-price', function () {
     let input = wrapper.find('.price-input');
 
     // ambil angka asli dari text (misal: Rp 10.000 → 10000)
-    let raw = cleanNumber(wrapper.find('.price-label').text());
-
-    // set ke input dalam format Rp
-    input.val(formatRupiah(raw));
+    let raw = wrapper.find('.price-label').data('price');
+    if (raw == null || raw === '') {
+        raw = cleanNumber(wrapper.find('.price-label').text());
+    }
+    input.val(formatInputNumber(
+        raw.toString().replace('.', ',')
+    ));
 
     wrapper.find('.price-text').addClass('d-none');
     wrapper.find('.price-edit').removeClass('d-none');
-});
-
-$(document).on('input', '.price-input', function () {
-    let val = cleanNumber($(this).val());
-    $(this).val(formatRupiah(val));
 });
 
 $(document).on('click', '.btn-cancel-price', function () {
@@ -911,8 +944,9 @@ $(document).on('click', '.btn-save-price', function () {
     .then(res => {
 
         if (res.success) {
-            // wrapper.find('.price-label').text(res.price);
-            wrapper.find('.price-label').text(formatRupiah(res.price));
+            wrapper.find('.price-label')
+                .data('price', res.price)
+                .text('Rp ' + formatRupiah(res.price));
         }
 
         wrapper.find('.price-edit').addClass('d-none');
