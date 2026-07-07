@@ -622,9 +622,11 @@
 
                 renumberAll()
 
-                setTimeout(()=>{
-                    saveOrderToServer()
-                },500)
+                clearTimeout(autosaveTimer)
+
+                saveOrderToServer()
+
+                triggerAutosave(true)
             },
 
             onMove: function(evt){
@@ -1370,7 +1372,6 @@
 
         </tr>
         `)
-        triggerAutosave()
         setTimeout(() => {
 
             const select = $(`#${jobId} .job-select`)
@@ -1616,7 +1617,7 @@
 
         document.querySelectorAll('.category-row').forEach((cat, i)=>{
 
-            const catId = cat.dataset.category
+            const catId = cat.id;
 
             // 🔥 renumber kategori (A, B, C)
             const letter = numberToLetters(i)
