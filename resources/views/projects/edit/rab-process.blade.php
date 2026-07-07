@@ -886,7 +886,8 @@
                         <td>
                             <input type="number"
                                 class="form-control vol"
-                                value="${job.volume}"
+                                step="0.001"
+                                value="${Number(job.volume).toFixed(3)}"
                                 oninput="rabEditCalculate('${jobId}')">
                         </td>
 
@@ -1339,7 +1340,7 @@
 
             <td>
                 <input type="number"
-                    step="0.01"
+                    step="0.001"
                     class="form-control vol"
                     oninput="rabEditCalculate('${jobId}')">
             </td>

@@ -587,7 +587,7 @@ public function autosave(Request $request, RabProcess $rab)
                 if ($category) {
                     $category->update([
                         'name' => $cat['name'],
-                        'order_no' => $i
+                        'order_no' => $cat['order'],
                     ]);
 
                     $usedCategoryIds[] = $category->id;
@@ -595,7 +595,7 @@ public function autosave(Request $request, RabProcess $rab)
                     $category = RabProcessCategory::create([
                         'rab_process_id' => $rab->id,
                         'name' => $cat['name'],
-                        'order_no' => $i,
+                        'order_no' => $cat['order'],
                         'is_draft' => true
                     ]);
 
@@ -607,7 +607,7 @@ public function autosave(Request $request, RabProcess $rab)
                 $category = RabProcessCategory::create([
                     'rab_process_id' => $rab->id,
                     'name' => $cat['name'],
-                    'order_no' => $i,
+                    'order_no' => $cat['order'],
                     'is_draft' => true
                 ]);
 
