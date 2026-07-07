@@ -342,165 +342,6 @@ public function upload(Request $request)
     ]);
 }
 
-public function update(Request $request, Project $project, RabProcess $rab)
-{
-    abort_if(auth()->user()->cannot('ubah data proyek'), 403);
-
-    $request->validate([
-        'contact_name' => 'required|string',
-        'job_location' => 'required|string',
-        'job_duration' => 'nullable|string',
-
-        'items' => 'required|array|min:1',
-        'items.*.job_category_id' => 'required|exists:job_categories,id',
-        'items.*.job_name' => 'required|string',
-        'items.*.satuan' => 'required|string',
-        'items.*.volume' => 'required|numeric|min:0',
-        'items.*.base_price' => 'required|numeric|min:0',
-        'items.*.price' => 'required|numeric|min:0',
-        'items.*.total' => 'required|numeric|min:0',
-
-        'profit' => 'required|numeric|max:100',
-        'overhead' => 'required|numeric|max:100',
-
-        'discount' => 'nullable|numeric|min:0',
-        'tax_rate' => 'nullable|numeric|min:0|max:100',
-        'shipping' => 'nullable|numeric|min:0',
-
-        'notes' => 'nullable|string',
-    ]);
-
-    DB::transaction(function () use ($request, $rab) {
-
-        $subtotal = collect($request->items)->sum(fn($i) => (float) $i['total']);
-
-        $discount = (float) ($request->discount ?? 0);
-        $taxRate  = (float) ($request->tax_rate ?? 0);
-        $shipping = (float) ($request->shipping ?? 0);
-
-        $subtotalAfterDiscount = max($subtotal - $discount, 0);
-        $taxTotal = $subtotalAfterDiscount * ($taxRate / 100);
-        $grandTotal = $subtotalAfterDiscount + $taxTotal + $shipping;
-
-        $rab->update([
-            'contact_name' => $request->contact_name,
-            'job_location' => $request->job_location,
-            'job_duration' => $request->job_duration,
-
-            'base_subtotal' => $subtotal,
-            'subtotal' => $subtotal,
-            'discount' => $discount,
-            'subtotal_after_discount' => $subtotalAfterDiscount,
-
-            'tax_rate' => $taxRate,
-            'tax_total' => $taxTotal,
-
-            'profit' => $request->profit,
-            'overhead' => $request->overhead,
-
-            'shipping' => $shipping,
-            'grand_total' => $grandTotal,
-
-            'notes' => $request->notes,
-            'updated_by' => auth()->id(),
-        ]);
-
-        RabProcessItem::where('rab_process_id', $rab->id)->delete();
-        RabProcessUraian::where('rab_process_id', $rab->id)->delete();
-        RabProcessCategory::where('rab_process_id', $rab->id)->delete();
-        $categoryMap = [];
-
-        foreach ($request->items as $item) {
-
-            $key = $item['category_key'] ?? null;
-
-            if (!$key) {
-                continue;
-            }
-
-            if (!isset($categoryMap[$key])) {
-
-                $category = RabProcessCategory::create([
-                    'rab_process_id' => $rab->id,
-                    'name' => $item['category_name'] ?? 'Kategori'
-                ]);
-
-                $categoryMap[$key] = $category->id;
-            }
-        }
-
-        $uraianMap = [];
-
-        foreach ($request->items ?? [] as $item) {
-
-            $key = $item['uraian_key'] ?? null;
-
-            if(!$key){
-                continue;
-            }
-
-            if (!isset($uraianMap[$key])) {
-                $categoryId = $categoryMap[$item['category_key']] ?? null;
-
-                if (!$categoryId) {
-                    continue;
-                }
-
-                $uraian = RabProcessUraian::create([
-                    'rab_process_id' => $rab->id,
-                    // 'job_category_id' => $item['job_category_id'],
-                    'category_id' => $categoryId,
-                    'uraian_key' => $key,
-                    'name' => $item['uraian_name'],
-                ]);
-
-                $uraianMap[$key] = $uraian->id;
-            }
-
-            RabProcessItem::create([
-                'rab_process_id' => $rab->id,
-                'uraian_id' => $uraianMap[$key],
-
-                'job_category_id' => $item['job_category_id'],
-                'job_name' => $item['job_name'],
-
-                'base_price' => $item['base_price'],
-                'satuan' => $item['satuan'],
-                'volume' => $item['volume'],
-
-                'price' => $item['price'],
-                'total' => $item['total'],
-            ]);
-        }
-        RabUraianImage::where('rab_id', $rab->id)->delete();
-
-        foreach(($request->uraian_images ?? []) as $uraianKey => $images){
-
-            foreach(($images ?? []) as $imgId){
-
-                $exists = \App\Models\RabImage::where('id', $imgId)->exists();
-
-                if(!$exists){
-                    continue;
-                }
-
-                RabUraianImage::create([
-                    'rab_id' => $rab->id,
-                    'uraian_key' => $uraianKey,
-                    'image_id' => $imgId
-                ]);
-
-            }
-
-        }
-
-    });
-
-    return response()->json([
-        'success' => true,
-        'message' => 'RAB berhasil diupdate'
-    ]);
-}
 public function destroy($id)
 {
     $img = RabImage::findOrFail($id);
@@ -544,29 +385,32 @@ public function structure($id)
         'categories' => $rab->categories
     ]);
 }
-public function autosave(Request $request, RabProcess $rab)
+public function update(Request $request, Project $project, RabProcess $rab)
 {
     abort_if(auth()->user()->cannot('ubah data proyek'), 403);
-
+        \Log::info([
+        'contact_name' => $request->contact_name,
+        'job_location' => $request->job_location,
+        'job_duration' => $request->job_duration,
+        'profit' => $request->profit,
+        'categories' => $request->categories,
+        'items_count' => count($request->items ?? []),
+    ]);
     $categoryMap = [];
 
     $uraianMap = [];
     
     $itemMap = [];
-
     DB::transaction(function () use ($request, $rab, &$categoryMap, &$uraianMap, &$itemMap) {
         $existingCategories = RabProcessCategory::where('rab_process_id', $rab->id)
-            ->where('is_draft', true)
             ->get()
             ->keyBy('id');
 
         $existingUraians = RabProcessUraian::where('rab_process_id', $rab->id)
-            ->where('is_draft', true)
             ->get()
             ->keyBy('id');
 
         $existingItems = RabProcessItem::where('rab_process_id', $rab->id)
-            ->where('is_draft', true)
             ->get()
             ->keyBy('id');
 
@@ -580,9 +424,9 @@ public function autosave(Request $request, RabProcess $rab)
 
             $category = null; 
 
-            if (!empty($cat['db_id'])) {
+            if (!empty($cat['id'])) {
 
-                $category = $existingCategories[$cat['db_id']] ?? null;
+                $category = $existingCategories[$cat['id']] ?? null;
 
                 if ($category) {
                     $category->update([
@@ -615,7 +459,7 @@ public function autosave(Request $request, RabProcess $rab)
             }
 
             if ($category) {
-                $categoryMap[$cat['id']] = $category->id;
+                $categoryMap[$cat['temp_id']] = $category->id;
             }
             if (!$category) {
                 \Log::error('CATEGORY NULL', [
@@ -625,7 +469,6 @@ public function autosave(Request $request, RabProcess $rab)
         }
 
         RabProcessCategory::where('rab_process_id', $rab->id)
-            ->where('is_draft', true)
             ->when(
                 count($usedCategoryIds),
                 fn($q) => $q->whereNotIn('id', $usedCategoryIds)
@@ -642,14 +485,14 @@ public function autosave(Request $request, RabProcess $rab)
 
                 if (empty($uraian['name'])) continue;
 
-                $categoryId = $categoryMap[$cat['id']] ?? null;
+                $categoryId = $categoryMap[$cat['temp_id']] ?? null;
                 if (!$categoryId) continue;
 
                 $u = null; 
 
-                if (!empty($uraian['db_id'])) {
+                if (!empty($uraian['id'])) {
 
-                    $u = $existingUraians[$uraian['db_id']] ?? null;
+                    $u = $existingUraians[$uraian['id']] ?? null;
 
                     if ($u) {
                         $u->update([
@@ -664,7 +507,7 @@ public function autosave(Request $request, RabProcess $rab)
                             'rab_process_id' => $rab->id,
                             'category_id' => $categoryId,
                             'name' => $uraian['name'],
-                            'uraian_key' => $uraian['id'],
+                            'uraian_key' => $uraian['temp_id'],
                             'order_no' => $uraian['order'] ?? $j,
                             'is_draft' => true
                         ]);
@@ -678,7 +521,7 @@ public function autosave(Request $request, RabProcess $rab)
                         'rab_process_id' => $rab->id,
                         'category_id' => $categoryId,
                         'name' => $uraian['name'],
-                        'uraian_key' => $uraian['id'],
+                        'uraian_key' => $uraian['temp_id'],
                         'order_no' => $uraian['order'] ?? $j,
                         'is_draft' => true
                     ]);
@@ -687,7 +530,7 @@ public function autosave(Request $request, RabProcess $rab)
                 }
 
                 if ($u) {
-                    $uraianMap[$uraian['id']] = $u->id;
+                    $uraianMap[$uraian['temp_id']] = $u->id;
                 }
                 if (!$u) {
                     \Log::error('URAIAN NULL', [
@@ -698,7 +541,6 @@ public function autosave(Request $request, RabProcess $rab)
         }
 
         RabProcessUraian::where('rab_process_id', $rab->id)
-        ->where('is_draft', true)
         ->when(
             count($usedUraianIds),
             fn($q) => $q->whereNotIn('id', $usedUraianIds)
@@ -742,9 +584,9 @@ public function autosave(Request $request, RabProcess $rab)
 
             $total = round($volume * $price);
 
-            if (!empty($item['db_id'])) {
+            if (!empty($item['id'])) {
 
-                $existing = $existingItems[$item['db_id']] ?? null;
+                $existing = $existingItems[$item['id']] ?? null;
 
                 if ($existing) {
                     $existing->update([
@@ -789,7 +631,6 @@ public function autosave(Request $request, RabProcess $rab)
         }
 
         RabProcessItem::where('rab_process_id', $rab->id)
-            ->where('is_draft', true)
             ->when(
                 count($usedItemIds),
                 fn($q) => $q->whereNotIn('id', $usedItemIds)
@@ -801,7 +642,6 @@ public function autosave(Request $request, RabProcess $rab)
             ->delete();
 
         $subtotal = RabProcessItem::where('rab_process_id', $rab->id)
-            ->where('is_draft', true)
             ->sum('total');
 
         $discount = (float) $request->discount;

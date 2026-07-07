@@ -31,7 +31,6 @@
         @endif
         @foreach($groups as $key => $label)
 
-            {{-- HEADER GROUP --}}
             <tr class="table-secondary fw-bold">
                 <td colspan="9">{{ $label }}</td>
             </tr>

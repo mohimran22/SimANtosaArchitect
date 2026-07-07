@@ -311,94 +311,6 @@
     let draftLoaded = false
     let isLoadingDraft = false
 
-    function triggerAutosave(force = false){
-
-        if(isLoadingDraft) return
-
-        syncDiscountShipping()
-
-        if(isDragging && !force) return
-
-        if(currentMode === 'drag' && !force) return
-
-        if(document.querySelector('.editing')){
-            return
-        }
-
-        clearTimeout(autosaveTimer)
-
-        autosaveTimer = setTimeout(() => {
-        if(!isSaving){   
-            autoSaveToServer()
-        }
-        }, 2000)
-    }
-    
-    function autoSaveToServer(){
-        if(isSaving) return 
-
-        isSaving = true
-
-            if(!window.currentRabId){
-                console.warn('Autosave skip: currentRabId belum ada')
-                isSaving = false
-                return
-            }
-
-            fetch(`/rab/autosave/${window.currentRabId}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                },
-                body: JSON.stringify({
-                    categories: collectCategories(),
-                    items: collectItems(),
-                    uraian_images: collectUraianImages(),
-                    contact_name: document.querySelector('[name=contact_name]')?.value || '',
-                    job_location: document.querySelector('[name=job_location]')?.value || '',
-                    job_duration: document.querySelector('[name=job_duration]')?.value || 0,
-                    profit: globalProfit,
-                    overhead: globalOverhead,
-                    discount: Number(document.getElementById('rab_discount_edit').value || 0),
-                    tax_rate: Number(document.getElementById('rab_tax_rate_edit').value || 0),
-                    shipping: Number(document.getElementById('rab_shipping_edit').value || 0)
-                })
-            }).then(res => res.json())
-                .then(res => {
-                    if(res.category_map){
-                        Object.entries(res.category_map).forEach(([tempId, dbId]) => {
-                            const el = document.getElementById(tempId)
-                            if(el){
-                                el.dataset.id = dbId
-                            }
-                        })
-                    }
-
-                    if(res.uraian_map){
-                        Object.entries(res.uraian_map).forEach(([tempId, dbId]) => {
-                            const el = document.getElementById(tempId)
-                            if(el){
-                                el.dataset.id = dbId
-                            }
-                        })
-                    }
-                    if(res.item_map){
-                        Object.entries(res.item_map).forEach(([tempId, dbId]) => {
-                            const el = document.getElementById(tempId)
-                            if(el){
-                                el.dataset.id = dbId
-                            }
-                        })
-                    }
-                })
-            .catch(err => {
-                console.error('Autosave error:', err)
-            })
-                .finally(() => {
-            isSaving = false
-        })
-    }
     function collectCategories(){
 
         let data = []
@@ -625,8 +537,6 @@
                 clearTimeout(autosaveTimer)
 
                 saveOrderToServer()
-
-                triggerAutosave(true)
             },
 
             onMove: function(evt){
@@ -972,23 +882,6 @@
 
     }
 
-    function loadDraft(){
-
-        if(!window.currentRabId) return
-        if(draftLoaded) return
-
-        draftLoaded = true
-        isLoadingDraft = true
-
-        fetch(`/rab/autosave/${window.currentRabId}`)
-        .then(res => res.json())
-        .then(data => {
-            loadExistingRab(data)
-        })
-        .finally(() => {
-            isLoadingDraft = false
-        })
-    }
     function collectUraianImages(){
 
         let result = {}
@@ -1111,7 +1004,6 @@
                 </button>
             </td>
         `
-        triggerAutosave()
     }
 
     function editCategory(catId){
@@ -1198,7 +1090,6 @@
             }
         },100)
         renumberUraian(catId)
-        triggerAutosave()
     }
 
     function saveUraianEdit(uraianId){
@@ -1253,7 +1144,6 @@
         setTimeout(() => {
             delete row.dataset.processing
         }, 300)
-        triggerAutosave()
     }
     function editUraian(uraianId){
 
@@ -1462,7 +1352,6 @@
         updateCategorySubtotal(row.dataset.category)
         if(triggerSave){
             rabEditCalculateSummary()
-            triggerAutosave()
         }
     }
     function updateCategorySubtotal(catId){
@@ -1545,7 +1434,6 @@
         }
 
         rabEditCalculateSummary()
-        triggerAutosave()
     }
     function removeUraianEdit(id){
         const row = document.getElementById(id)
@@ -1562,7 +1450,6 @@
         updateCategorySubtotal(catId)
 
         rabEditCalculateSummary()
-        triggerAutosave()
     }
     function removeCat(catId){
         const catRow = document.getElementById(catId)
@@ -1587,7 +1474,6 @@
 
         renumberCategory()
         rabEditCalculateSummary()
-        triggerAutosave()
     }
     function renumberCategory(){
 
@@ -1818,7 +1704,6 @@
 
                         renderGalleryEdit()
 
-                        triggerAutosave(true)
                     })
 
                     .catch(err=>{
@@ -1833,13 +1718,11 @@
             document.getElementById('rab_profit_display_edit').addEventListener('input', function(){
                 globalProfit = Number(this.value) || 0
                 updateHargaSemua()
-                triggerAutosave()
             })
 
             document.getElementById('rab_overhead_display_edit').addEventListener('input', function(){
                 globalOverhead = Number(this.value) || 0
                 updateHargaSemua()
-                triggerAutosave()
             })
             const discountEl = document.getElementById('rab_discount_display_edit')
 
@@ -1850,7 +1733,6 @@
                 document.getElementById('rab_discount_edit').value = raw
 
                 rabEditCalculateSummary()
-                triggerAutosave()
             })
 
             discountEl.addEventListener('blur', function(){
@@ -1866,23 +1748,14 @@
                 document.getElementById('rab_shipping_edit').value = raw
 
                 rabEditCalculateSummary()
-                triggerAutosave()
             })
 
             shippingEl.addEventListener('blur', function(){
                 this.value = formatRupiah(parseRupiah(this.value))
             })
 
-    document.querySelectorAll('[name=contact_name], [name=job_location], [name=job_duration]')
-    .forEach(el => {
-        el.addEventListener('input', () => {
-            triggerAutosave()
-        })
-    })
-
     document.getElementById('rab_tax_rate_edit').addEventListener('input', function () {
         rabEditCalculateSummary()
-        triggerAutosave()
     });
 
     function collectItems(){
@@ -1980,145 +1853,164 @@
     document.getElementById('btnDragMode').addEventListener('click',()=>{
         setMode('drag')
     })
-</script>
-<script>
 
-        const needRefresh = @json($needRefresh)
+    const needRefresh = @json($needRefresh)
 
-            const btnSubmit = document.getElementById('btnSubmitRab')
+    const btnSubmit = document.getElementById('btn-save-rab')
 
-            if(btnSubmit){
-                btnSubmit.addEventListener('click', function(e){
+    if(btnSubmit){
+        btnSubmit.addEventListener('click', function(e){
 
-                    e.preventDefault()
+            e.preventDefault()
+            
+            const categories = collectCategories();
+            const items = collectItems()
 
-                    const items = collectItems()
+            if(items.length === 0){
+                Swal.fire({
+                    icon:'warning',
+                    title:'Belum ada item pekerjaan'
+                })
+                return
+            }
+            const formData = new FormData()
+            categories.forEach((cat, i) => {
 
-                    if(items.length === 0){
-                        Swal.fire({
-                            icon:'warning',
-                            title:'Belum ada item pekerjaan'
-                        })
-                        return
+                if(cat.db_id){
+                    formData.append(`categories[${i}][id]`, cat.db_id);
+                }
+
+                formData.append(`categories[${i}][temp_id]`, cat.id);
+                formData.append(`categories[${i}][name]`, cat.name);
+                formData.append(`categories[${i}][order]`, cat.order);
+
+                cat.uraians.forEach((u, j) => {
+
+                    if(u.db_id){
+                        formData.append(`categories[${i}][uraians][${j}][id]`, u.db_id);
                     }
 
-                    const formData = new FormData()
+                    formData.append(`categories[${i}][uraians][${j}][temp_id]`, u.id);
+                    formData.append(`categories[${i}][uraians][${j}][name]`, u.name);
+                    formData.append(`categories[${i}][uraians][${j}][order]`, u.order);
 
-                    formData.append('contact_name', document.querySelector('[name=contact_name]').value)
-                    formData.append('job_location', document.querySelector('[name=job_location]').value)
-                    formData.append('job_duration', document.querySelector('[name=job_duration]').value)
+                });
 
-                    formData.append('profit', parsePercent(document.getElementById('rab_profit_display_edit').value))
-                    formData.append('overhead', parsePercent(document.getElementById('rab_overhead_display_edit').value))
-                    formData.append('discount', parseRupiah(document.getElementById('rab_discount_edit').value))
-                    formData.append('tax_rate', parsePercent(document.getElementById('rab_tax_rate_edit').value))
-                    formData.append('shipping', parseRupiah(document.getElementById('rab_shipping_edit').value))
+            });
+            formData.append('contact_name', document.querySelector('[name=contact_name]')?.value || '')
+            formData.append('job_location', document.querySelector('[name=job_location]')?.value || '')
+            formData.append('job_duration', document.querySelector('[name=job_duration]')?.value || 0)
+            formData.append('profit', parsePercent(document.getElementById('rab_profit_display_edit').value))
+            formData.append('overhead', parsePercent(document.getElementById('rab_overhead_display_edit').value))
+            formData.append('discount', parseRupiah(document.getElementById('rab_discount_edit').value))
+            formData.append('tax_rate', parsePercent(document.getElementById('rab_tax_rate_edit').value))
+            formData.append('shipping', parseRupiah(document.getElementById('rab_shipping_edit').value))
 
-                    items.forEach((item,i)=>{
-                        if(item.id !== null){
-                            formData.append(`items[${i}][id]`, item.id)
-                        }
-                        formData.append(`items[${i}][job_category_id]`, item.job_category_id)
-                        formData.append(`items[${i}][job_name]`, item.job_name)
-                        formData.append(`items[${i}][satuan]`, item.satuan)
-                        formData.append(`items[${i}][volume]`, item.volume)
-                        formData.append(`items[${i}][base_price]`, item.base_price)
-                        formData.append(`items[${i}][price]`, item.price)
-                        formData.append(`items[${i}][total]`, item.total)
-                        formData.append(`items[${i}][uraian_key]`, item.uraian_key)
-                        formData.append(`items[${i}][category_key]`, item.category_key)
-                        formData.append(`items[${i}][uraian_name]`, item.uraian_name)
-                        formData.append(`items[${i}][category_name]`, item.category_name)
-                    })
-                    Object.keys(uraianImages).forEach(key => {
+            items.forEach((item,i)=>{
+                if(item.id){
+                    formData.append(`items[${i}][id]`, item.id)
+                }
+                formData.append(`items[${i}][job_category_id]`, item.job_category_id)
+                formData.append(`items[${i}][job_name]`, item.job_name)
+                formData.append(`items[${i}][order]`, item.order ?? i)
+                formData.append(`items[${i}][satuan]`, item.satuan)
+                formData.append(`items[${i}][volume]`, item.volume)
+                formData.append(`items[${i}][base_price]`, item.base_price)
+                formData.append(`items[${i}][price]`, item.price)
+                formData.append(`items[${i}][total]`, item.total)
+                formData.append(`items[${i}][uraian_key]`, item.uraian_key)
+                formData.append(`items[${i}][category_key]`, item.category_key)
+                formData.append(`items[${i}][uraian_name]`, item.uraian_name)
+                formData.append(`items[${i}][category_name]`, item.category_name)
+            })
+            Object.keys(uraianImages).forEach(key => {
 
-                        uraianImages[key].forEach(img => {
+                uraianImages[key].forEach(img => {
 
-                            formData.append(`uraian_images[${key}][]`, img.id)
+                    formData.append(`uraian_images[${key}][]`, img.id)
 
-                        })
-
-                    })
-
-                    fetch(`/projects/{{ $project->id }}/rab/{{ $rab->id }}`,{
-                        method:'PUT',
-                        headers:{
-                            'X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]').content,
-                            'X-HTTP-Method-Override':'PUT',
-                            'Accept':'application/json'
-                        },
-                        body:formData
-                    })
-                    .then(async res => {
-
-                        if(!res.ok){
-
-                            const error = await res.json()
-
-                            console.log("VALIDATION ERROR:", error)
-
-                            Swal.fire({
-                                icon:'error',
-                                title:'Validation error',
-                                text: JSON.stringify(error.errors ?? error.message)
-                            })
-
-                            throw new Error('HTTP '+res.status)
-                        }
-
-                        return res.json()
-                    })
-                    .then(res=>{
-                        location.reload()
-                    })
-                        .catch(async err=>{
-
-                            console.error(err)
-
-                            const res = await err.response?.json?.()
-
-                            console.log(res)
-
-                            Swal.fire({
-                                icon:'error',
-                                title:'Terjadi error saat menyimpan'
-                            })
-
-                        })
                 })
-            }
 
-            const btnRefresh = document.getElementById('btnRefreshRab')
+            })
+            formData.append('_method', 'PUT');
+            fetch(`/projects/{{ $project->id }}/rab/{{ $rab->id }}`,{
+                method:'POST',
+                headers:{
+                    'X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept':'application/json'
+                },
+                body: formData
+            })
+            .then(async res => {
 
-            if(btnRefresh){
-                btnRefresh.addEventListener('click', function(){
+                if(!res.ok){
+
+                    const error = await res.json()
+
+                    console.log("VALIDATION ERROR:", error)
 
                     Swal.fire({
-                        title: 'Refresh harga dari master?',
-                        text: 'Dengan merefresh ini, harga RAB akan mengikuti harga analisa terbaru.',
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonText: 'Ya, Refresh',
-                        cancelButtonText: 'Batal'
-                    }).then((result) => {
-
-                        if (!result.isConfirmed) return
-
-                        fetch("{{ route('rab.refreshFromMaster', $rab->id) }}", {
-                            method: 'POST',
-                            headers: {
-                                'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
-                                'Accept': 'application/json'
-                            }
-                        })
-                        .then(res => res.json())
-                        .then(res => {
-                            if (res.success) {
-                                location.reload()
-                            }
-                        })
+                        icon:'error',
+                        title:'Validation error',
+                        text: JSON.stringify(error.errors ?? error.message)
                     })
+
+                    throw new Error('HTTP '+res.status)
+                }
+
+                return res.json()
+            })
+            .then(res=>{
+                location.reload()
+            })
+                .catch(async err=>{
+
+                    console.error(err)
+
+                    const res = await err.response?.json?.()
+
+                    console.log(res)
+
+                    Swal.fire({
+                        icon:'error',
+                        title:'Terjadi error saat menyimpan'
+                    })
+
                 })
-            }
+        })
+    }
+
+    const btnRefresh = document.getElementById('btnRefreshRab')
+
+    if(btnRefresh){
+        btnRefresh.addEventListener('click', function(){
+
+            Swal.fire({
+                title: 'Refresh harga dari master?',
+                text: 'Dengan merefresh ini, harga RAB akan mengikuti harga analisa terbaru.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Refresh',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+
+                if (!result.isConfirmed) return
+
+                fetch("{{ route('rab.refreshFromMaster', $rab->id) }}", {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(res => res.json())
+                .then(res => {
+                    if (res.success) {
+                        location.reload()
+                    }
+                })
+            })
+        })
+    }
 </script>
 @endpush

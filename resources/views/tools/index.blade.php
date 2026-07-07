@@ -169,7 +169,7 @@
                             _token: '{{ csrf_token() }}'
                         },
                         success: function(res) {
-                            $('#jobTable').DataTable().ajax.reload(null, false);
+                            $('#toolsTable').DataTable().ajax.reload(null, false);
 
                             Swal.fire({
                                 icon: 'success',

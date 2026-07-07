@@ -447,14 +447,32 @@
                     <x-slot:actions>
                         @if($project->project_type == 2)
                             @can('ubah data proyek')
-                            <div class="btn-group">
+
+                            <div class="d-flex align-items-center gap-2">
+
                                 <button type="button"
                                         id="btn-edit-rab"
-                                        class="btn btn-sm btn-dark me-2"
+                                        class="btn btn-sm btn-dark"
                                         title="Edit Data">
                                     <i class="ti ti-edit"></i>
                                 </button>
+
+                                <button type="button"
+                                        id="btn-save-rab"
+                                        class="btn btn-sm btn-dark d-none"
+                                        title="Simpan">
+                                    <i class="ti ti-device-floppy"></i>
+                                </button>
+
+                                <button type="button"
+                                        id="btn-cancel-rab"
+                                        class="btn btn-sm btn-danger d-none"
+                                        title="Batal">
+                                    <i class="ti ti-x"></i>
+                                </button>
+
                             </div>
+
                             @endcan
                         @endif
                     </x-slot:actions>
@@ -996,65 +1014,75 @@ document.addEventListener('click', function (e) {
 });
 </script>
 <script>
-let rabLoaded = false
-let isEditMode = false
+let rabLoaded = false;
+let isEditMode = false;
 
 document.addEventListener("DOMContentLoaded", () => {
 
     const view = document.getElementById("rab-view");
     const edit = document.getElementById("rab-edit");
-    const btn = document.getElementById("btn-edit-rab");
 
-    btn?.addEventListener("click", () => {
+    const btnEdit = document.getElementById("btn-edit-rab");
+    const btnSave = document.getElementById("btn-save-rab");
+    const btnCancel = document.getElementById("btn-cancel-rab");
 
-        if(!isEditMode){
+    function enterEditMode() {
 
-            view.style.display = "none";
-            edit.style.display = "block";
+        view.style.display = "none";
+        edit.style.display = "block";
 
-            btn.classList.remove('btn-dark')
-            btn.classList.add('btn-danger')
-            btn.innerHTML = '<i class="ti ti-x"></i>' 
-            btn.title = "Cancel"
+        btnEdit.classList.add("d-none");
+        btnSave.classList.remove("d-none");
+        btnCancel.classList.remove("d-none");
 
-            if(!rabLoaded){
+        if (!rabLoaded) {
 
-                const rabId = @json($rab?->id);
+            const rabId = @json($rab?->id);
 
-                fetch(`/rab/${rabId}/structure`)
-                    .then(res => res.json())
-                    .then(data => {
+            fetch(`/rab/${rabId}/structure`)
+                .then(res => res.json())
+                .then(data => {
 
-                        loadExistingRab(data);
+                    loadExistingRab(data);
 
-                        setTimeout(() => {
-                            initRabEdit()
-                        }, 100)
+                    setTimeout(() => {
+                        initRabEdit();
+                    }, 100);
 
-                        rabLoaded = true
-                    });
-
-            }else{
-                setTimeout(() => {
-                    initRabEdit()
-                }, 100)
-            }
-
-            isEditMode = true
+                    rabLoaded = true;
+                });
 
         } else {
-            
-            edit.style.display = "none";
-            view.style.display = "block";
 
-            btn.classList.remove('btn-danger')
-            btn.classList.add('btn-dark')
-            btn.innerHTML = '<i class="ti ti-edit"></i>'
-            btn.title = "Edit Data"
+            setTimeout(() => {
+                initRabEdit();
+            }, 100);
 
-            isEditMode = false
         }
 
+        isEditMode = true;
+    }
+
+    function exitEditMode() {
+
+        edit.style.display = "none";
+        view.style.display = "block";
+
+        btnEdit.classList.remove("d-none");
+        btnSave.classList.add("d-none");
+        btnCancel.classList.add("d-none");
+
+        isEditMode = false;
+    }
+
+    btnEdit.addEventListener("click", enterEditMode);
+
+    btnCancel.addEventListener("click", () => {
+
+        // kalau ingin reload data dari server saat cancel
+        // location.reload();
+
+        exitEditMode();
     });
 
 });
