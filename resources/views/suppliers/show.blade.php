@@ -779,8 +779,7 @@ function cleanNumber(value) {
 }
 
 function recalculatePrice() {
-    let basePriceRaw = $('#base_price').val();
-    let basePrice    = cleanNumber(basePriceRaw);
+    let basePrice = cleanNumber($('#base_price').val());
 
     let tax      = parseFloat($('#tax').val()) || 0;
     let discount = parseFloat($('#discount').val()) || 0;
@@ -820,7 +819,7 @@ function recalculatePrice() {
     // ✅ SAFETY
     if (finalPrice < 0) finalPrice = 0;
 
-    let finalRounded = Math.round(finalPrice);
+    let finalRounded = finalPrice;
 
     // ✅ TAMPILAN (PAKAI RUPIAH)
     $('#final_price_display').val(formatRupiah(finalRounded));
@@ -835,14 +834,13 @@ function recalculatePrice() {
 }
 
 // ✅ FORMAT RUPIAH SAAT KETIK
-$('#base_price').on('keyup', function () {
-    let val = cleanNumber($(this).val());
-    $(this).val(formatRupiah(val));
+$('#base_price').on('input', function () {
+    $(this).val(formatInputNumber($(this).val()));
     recalculatePrice();
 });
 
 // ✅ TRIGGER OTOMATIS
-$(document).on('keyup change', '#tax, #discount', function () {
+$(document).on('input change', '#tax, #discount', function () {
     recalculatePrice();
 });
 </script>
