@@ -559,7 +559,10 @@ public function datatableProducts(Request $request, Supplier $supplier)
                 data-url="'.route('supplier-product.update-price').'">
 
                 <span class="price-text">
-                    Rp <span class="price-label">'.number_format($row->selling_prices).'</span>
+                    <span class="price-label"
+                        data-price="'.$row->selling_prices.'">
+                        Rp '.number_format($row->selling_prices, 2, ',', '.').'
+                    </span>
                     <button class="btn btn-sm btn-dark ms-1 btn-edit-price">
                         <i class="ti ti-pencil"></i>
                     </button>
@@ -567,7 +570,7 @@ public function datatableProducts(Request $request, Supplier $supplier)
 
                 <span class="price-edit d-none">
                     <input type="text" class="form-control form-control-sm price-input"
-                        value="'.$row->selling_prices.'" style="width:120px;display:inline-block">
+                        value="'.number_format($row->selling_prices, 2, ',', '.').'" style="width:120px;display:inline-block">
 
                     <button class="btn btn-sm btn-success btn-save-price">
                         <i class="ti ti-check"></i>

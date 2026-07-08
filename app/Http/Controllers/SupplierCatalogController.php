@@ -145,7 +145,7 @@ public function updatePrice(Request $request)
 
     return response()->json([
         'success' => true,
-        'price'   => (float) ($request->price)
+        'price'   => $request->price
     ]);
 }
 public function updateLabel(Request $request)
