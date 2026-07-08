@@ -1875,40 +1875,34 @@
             })
             .then(async res => {
 
-                if(!res.ok){
+                const text = await res.text();
 
-                    const error = await res.json()
+                console.log("STATUS:", res.status);
+                console.log("RAW RESPONSE:", text);
 
-                    console.log("VALIDATION ERROR:", error)
-
-                    Swal.fire({
-                        icon:'error',
-                        title:'Validation error',
-                        text: JSON.stringify(error.errors ?? error.message)
-                    })
-
-                    throw new Error('HTTP '+res.status)
+                if (!res.ok) {
+                    throw new Error(text);
                 }
 
-                return res.json()
+                try {
+                    return JSON.parse(text);
+                } catch (e) {
+                    console.error("Bukan JSON:", text);
+                    throw e;
+                }
             })
             .then(res=>{
                 location.reload()
             })
-                .catch(async err=>{
+            .catch(err => {
+                console.error(err);
 
-                    console.error(err)
-
-                    const res = await err.response?.json?.()
-
-                    console.log(res)
-
-                    Swal.fire({
-                        icon:'error',
-                        title:'Terjadi error saat menyimpan'
-                    })
-
-                })
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Terjadi Error',
+                    html: `<pre style="text-align:left">${err.message}</pre>`
+                });
+            });
         })
     }
 
