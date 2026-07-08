@@ -388,14 +388,7 @@ public function structure($id)
 public function update(Request $request, Project $project, RabProcess $rab)
 {
     abort_if(auth()->user()->cannot('ubah data proyek'), 403);
-        \Log::info([
-        'contact_name' => $request->contact_name,
-        'job_location' => $request->job_location,
-        'job_duration' => $request->job_duration,
-        'profit' => $request->profit,
-        'categories' => $request->categories,
-        'items_count' => count($request->items ?? []),
-    ]);
+
     $categoryMap = [];
 
     $uraianMap = [];

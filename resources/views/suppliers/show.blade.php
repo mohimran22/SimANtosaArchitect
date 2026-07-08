@@ -272,7 +272,7 @@
                                                     <strong
                                                         class="text-dark price-label"
                                                         data-price="{{ $product->pivot->selling_prices }}">
-                                                        Rp {{ number_format($product->pivot->selling_prices, 2, ',', '.') }}
+                                                        Rp {{ number_format($product->pivot->selling_prices, 4, ',', '.') }}
                                                     </strong>
 
                                                     <button type="button"
@@ -738,8 +738,8 @@ function formatRupiah(angka) {
     if (isNaN(angka)) return '0';
 
     return new Intl.NumberFormat('id-ID', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
+        minimumFractionDigits: 4,
+        maximumFractionDigits: 4
     }).format(angka);
 }
 function formatInputNumber(value) {

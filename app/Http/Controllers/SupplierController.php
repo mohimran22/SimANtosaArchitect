@@ -561,7 +561,7 @@ public function datatableProducts(Request $request, Supplier $supplier)
                 <span class="price-text">
                     <span class="price-label"
                         data-price="'.$row->selling_prices.'">
-                        Rp '.number_format($row->selling_prices, 2, ',', '.').'
+                        Rp '.number_format($row->selling_prices, 4, ',', '.').'
                     </span>
                     <button class="btn btn-sm btn-dark ms-1 btn-edit-price">
                         <i class="ti ti-pencil"></i>
@@ -570,7 +570,7 @@ public function datatableProducts(Request $request, Supplier $supplier)
 
                 <span class="price-edit d-none">
                     <input type="text" class="form-control form-control-sm price-input"
-                        value="'.number_format($row->selling_prices, 2, ',', '.').'" style="width:120px;display:inline-block">
+                        value="'.number_format($row->selling_prices, 4, ',', '.').'" style="width:120px;display:inline-block">
 
                     <button class="btn btn-sm btn-success btn-save-price">
                         <i class="ti ti-check"></i>

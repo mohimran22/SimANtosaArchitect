@@ -113,10 +113,10 @@
                     </td>
                     <td class="text-end">{{ number_format($item->coefisien, 4) }}</td>
                     <td class="text-end" id="unit_price_{{ $item->id }}">
-                        Rp {{ number_format($item->base_unit_price, 2, ',', '.') }}
+                        Rp {{ number_format($item->base_unit_price, 3, ',', '.') }}
                     </td>
                     <td class="text-end" id="total_price_{{ $item->id }}">
-                        Rp {{ number_format($item->total_price, 2, ',', '.') }}
+                        Rp {{ number_format($item->total_price, 3, ',', '.') }}
                     </td>
                     <td class="text-center">
                         <form action="{{ route('job-categories.items.delete', $item->id) }}"
@@ -154,11 +154,13 @@
                             : '' }}" 
                         @endif
                         @if($key == 'product') id="effective_product" value="{{ $jobCategory->effective_product 
-    ? number_format($jobCategory->effective_product, 2, ',', '.') 
-    : '' }}" @endif
+                            ? number_format($jobCategory->effective_product, 2, ',', '.') 
+                            : '' }}" 
+                        @endif
                         @if($key == 'equipment') id="effective_equipment" value="{{ $jobCategory->effective_equipment 
-    ? number_format($jobCategory->effective_equipment, 2, ',', '.') 
-    : '' }}" @endif
+                            ? number_format($jobCategory->effective_equipment, 2, ',', '.') 
+                            : '' }}" 
+                        @endif
 
                         placeholder="Kosong = otomatis">
                 </td>
@@ -192,7 +194,7 @@
         <tr>
             <td colspan="6" class="text-end fw-bold">JUMLAH (A + B + C)</td>
             <td class="text-end fw-bold" id="subtotal">
-                Rp {{ number_format($subTotal, 2, ',', '.') }}
+                Rp {{ number_format($subTotal, 3, ',', '.') }}
             </td>
         </tr>
 
@@ -232,7 +234,7 @@
                 HARGA SATUAN PEKERJAAN
             </td>
             <td class="text-end fw-bold" id="grand_total">
-                Rp {{ number_format($grandTotal, 0, ',', '.') }}
+                Rp {{ number_format($grandTotal, 3, ',', '.') }}
             </td>
         </tr>
     </tbody>
