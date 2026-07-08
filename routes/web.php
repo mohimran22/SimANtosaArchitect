@@ -536,9 +536,9 @@ Route::get(
     [\App\Http\Controllers\RabProcessController::class, 'uraianImages']
 )->name('rab.uraian-images');
 Route::get('/rab/{id}/structure', [\App\Http\Controllers\RabProcessController::class,'structure']);
-Route::post('/rab/autosave/{rab}', [\App\Http\Controllers\RabProcessController::class, 'autosave']);
-Route::post('/rab/reorder/{rab}', [\App\Http\Controllers\RabProcessController::class, 'reorder']);
-Route::get('/rab/autosave/{rab}', [\App\Http\Controllers\RabProcessController::class, 'loadDraft']);
+// Route::post('/rab/autosave/{rab}', [\App\Http\Controllers\RabProcessController::class, 'autosave']);
+// Route::post('/rab/reorder/{rab}', [\App\Http\Controllers\RabProcessController::class, 'reorder']);
+// Route::get('/rab/autosave/{rab}', [\App\Http\Controllers\RabProcessController::class, 'loadDraft']);
 Route::post('projects/offerbuild', [\App\Http\Controllers\OfferBuildController::class, 'store'])
     ->name('projects.offerbuild.store');
     

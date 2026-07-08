@@ -440,7 +440,6 @@ public function update(Request $request, Project $project, RabProcess $rab)
                         'rab_process_id' => $rab->id,
                         'name' => $cat['name'],
                         'order_no' => $cat['order'],
-                        'is_draft' => true
                     ]);
 
                     $usedCategoryIds[] = $category->id;
@@ -452,7 +451,6 @@ public function update(Request $request, Project $project, RabProcess $rab)
                     'rab_process_id' => $rab->id,
                     'name' => $cat['name'],
                     'order_no' => $cat['order'],
-                    'is_draft' => true
                 ]);
 
                 $usedCategoryIds[] = $category->id;
@@ -509,7 +507,6 @@ public function update(Request $request, Project $project, RabProcess $rab)
                             'name' => $uraian['name'],
                             'uraian_key' => $uraian['temp_id'],
                             'order_no' => $uraian['order'] ?? $j,
-                            'is_draft' => true
                         ]);
 
                         $usedUraianIds[] = $u->id;
@@ -523,7 +520,6 @@ public function update(Request $request, Project $project, RabProcess $rab)
                         'name' => $uraian['name'],
                         'uraian_key' => $uraian['temp_id'],
                         'order_no' => $uraian['order'] ?? $j,
-                        'is_draft' => true
                     ]);
 
                     $usedUraianIds[] = $u->id;
@@ -620,7 +616,6 @@ public function update(Request $request, Project $project, RabProcess $rab)
                     'price' => $price,
                     'total' => $total,
                     'order_no' => $item['order'],
-                    'is_draft' => true
                 ]);
 
                 $usedItemIds[] = $new->id;
@@ -672,9 +667,6 @@ public function update(Request $request, Project $project, RabProcess $rab)
 
     return response()->json([
         'status' => 'saved',
-        'category_map' => $categoryMap,
-        'uraian_map' => $uraianMap,
-        'item_map' => $itemMap
     ]);
 }
 public function loadDraft(RabProcess $rab)

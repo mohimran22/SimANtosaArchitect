@@ -5,7 +5,6 @@
 
 @endphp
 
-
 <form action="{{ route('projects.rab.update', [$project->id, $rab->id]) }}" method="POST">
     @csrf
     @method('PUT')
@@ -535,8 +534,6 @@
                 renumberAll()
 
                 clearTimeout(autosaveTimer)
-
-                saveOrderToServer()
             },
 
             onMove: function(evt){
@@ -553,76 +550,6 @@
     }
     function isDragMode(){
         return currentMode === 'drag'
-    }
-    function collectOrder(){
-
-        let data = []
-
-        document.querySelectorAll('.category-row').forEach((cat, catIndex) => {
-
-            const catId = cat.dataset.id
-            if(!catId) return
-
-            let catData = {
-                id: catId,
-                order: catIndex,
-                uraians: []
-            }
-
-            document.querySelectorAll(`.uraian-row[data-category="${cat.id}"]`)
-            .forEach((uraian, uraianIndex) => {
-
-                const uraianId = uraian.dataset.id
-                if(!uraianId) return
-
-                let uraianData = {
-                    id: uraianId,
-                    order: uraianIndex,
-                    items: []
-                }
-
-                document.querySelectorAll(`.job-row[data-parent="${uraian.id}"]`)
-                .forEach((row, itemIndex) => {
-
-                    const itemId = row.dataset.id
-                    if(!itemId) return
-
-                    uraianData.items.push({
-                        id: itemId,
-                        order: itemIndex
-                    })
-                })
-
-                catData.uraians.push(uraianData)
-            })
-
-            data.push(catData)
-        })
-
-        return data
-    }
-    let isReordering = false
-
-    function saveOrderToServer(){
-
-        if(isReordering) return
-
-        isReordering = true
-
-        fetch(`/rab/reorder/${window.currentRabId}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-            },
-            body: JSON.stringify({
-                structure: collectOrder()
-            })
-        })
-        .catch(err => console.error('Reorder error:', err))
-        .finally(() => {
-            isReordering = false
-        })
     }
     
     function loadExistingRab(data){
@@ -764,9 +691,14 @@
 
                     <tr class="job-row"
                         id="${jobId}"
+
                         data-id="${job.id ?? ''}"
+
                         data-parent="${uraianId}"
-                        data-category="${catId}">
+                        data-parent-id="${uraian.id}"
+
+                        data-category="${catId}"
+                        data-category-id="${cat.id}">
 
                         <td></td>
 
@@ -1187,22 +1119,24 @@
         const idx = jobIndex++
         const jobId = 'job_'+idx
 
-        const uraianRow = document.getElementById(uraianId)
-
+        const uraian = document.getElementById(uraianId);
+        const category = document.getElementById(uraian.dataset.category);
         const relatedRows = [
             ...document.querySelectorAll(`.job-row[data-parent="${uraianId}"]`)
         ]
 
         const lastRow = relatedRows.length
             ? relatedRows[relatedRows.length - 1]
-            : uraianRow
+            : uraian
 
         lastRow.insertAdjacentHTML('afterend', `
-        <tr class="job-row"
+       <tr class="job-row"
             id="${jobId}"
             data-id=""
             data-parent="${uraianId}"
-            data-category="${document.getElementById(uraianId).dataset.category}"
+            data-parent-id="${uraian.dataset.id || ''}"
+            data-category="${uraian.dataset.category}"
+            data-category-id="${category.dataset.id || ''}"
             data-index="${idx}">
 
             <td></td>
@@ -1760,69 +1694,67 @@
 
     function collectItems(){
 
-        let items = []
-        globalIndex = 0
+        let items = [];
+
         document.querySelectorAll('.uraian-row').forEach(uraian => {
 
-        const uraianId = uraian.id
+            const uraianId = uraian.id;
 
             document.querySelectorAll(`.job-row[data-parent="${uraianId}"]`)
-            .forEach((row) => {
+            .forEach((row, itemOrder) => {
 
-                const jobSelect = row.querySelector('.job-select')
-                if(!jobSelect || !jobSelect.value) return
+                const jobSelect = row.querySelector('.job-select');
+                if(!jobSelect || !jobSelect.value) return;
 
                 const volume = Number(
-                    parseFloat(
-                        row.querySelector('.vol')?.value || 0
-                    ).toFixed(10)
-                )
+                    parseFloat(row.querySelector('.vol')?.value || 0).toFixed(3)
+                );
 
-                const satuan = row.querySelector('.sat')?.innerText || ''
+                const hargaInput = row.querySelector('.harga');
 
-                const jobName = jobSelect.options[jobSelect.selectedIndex]?.text || ''
+                const basePrice = Number(hargaInput.dataset.value || 0);
 
-                const hargaInput = row.querySelector('.harga')
+                const price =
+                    basePrice +
+                    (basePrice * globalProfit / 100) +
+                    (basePrice * globalOverhead / 100);
 
-                const basePrice = Number(hargaInput?.dataset.value || 0)
+                const total = Math.round(volume * price);
 
-                // const price = parseRupiah(hargaInput?.value || 0)
-                const price = Number(hargaInput?.dataset.value || 0)
-
-                const total = volume * price
+                const categoryRow = document.getElementById(uraian.dataset.category);
 
                 items.push({
 
                     id: row.dataset.id || null,
-                    db_id: row.dataset.id || null,
 
                     job_category_id: jobSelect.value,
 
-                    order: globalIndex++,
+                    order: itemOrder,
 
-                    job_name: jobName,
-                    satuan: satuan,
+                    job_name: jobSelect.options[jobSelect.selectedIndex].text,
+                    satuan: row.querySelector('.sat').innerText,
 
                     volume: volume,
                     base_price: basePrice,
                     price: price,
                     total: total,
 
-                    uraian_key: uraian.id, 
-                    category_key: row.dataset.category,
+                    uraian_key: uraian.id,
+                    category_key: uraian.dataset.category,
 
-                    uraian_name:
-                        uraian.dataset.name || '',
+                    uraian_db_id: row.dataset.parentId,
+                    category_db_id: row.dataset.categoryId,
 
-                    category_name:
-                        document.getElementById(row.dataset.category)?.dataset.name || 'Kategori'
+                    uraian_name: uraian.dataset.name || '',
+                    category_name: categoryRow?.dataset.name || ''
 
-                })
+                });
 
-            })
-        })
+            });
 
-        return items
+        });
+
+        return items;
     }
     function syncDiscountShipping(){
 
