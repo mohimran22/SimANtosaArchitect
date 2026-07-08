@@ -578,7 +578,7 @@ public function update(Request $request, Project $project, RabProcess $rab)
 
             $volume = (float) $item['volume'];
 
-            $total = round($volume * $price);
+            $total = $volume * $price;
 
             if (!empty($item['id'])) {
 
@@ -645,7 +645,7 @@ public function update(Request $request, Project $project, RabProcess $rab)
 
         $afterDiscount = max(0, $subtotal - $discount);
         $tax = round($afterDiscount * $taxRate / 100);
-        $grandTotal = round($afterDiscount + $tax + $shipping);
+        $grandTotal = $afterDiscount + $tax + $shipping;
 
         $rab->update([
             'contact_name' => $request->contact_name,

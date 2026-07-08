@@ -18,7 +18,6 @@ class RabProcessUraian extends Model
 public function items()
 {
     return $this->hasMany(RabProcessItem::class,'uraian_id')
-        ->where('is_draft', true)
         ->orderBy('order_no');
 }
 public function images()

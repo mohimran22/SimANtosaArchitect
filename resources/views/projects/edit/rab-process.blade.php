@@ -729,7 +729,7 @@
                             <input type="number"
                                 class="form-control vol"
                                 step="0.001"
-                                value="${Number(job.volume).toFixed(3)}"
+                                value="${(job.volume)}"
                                 oninput="rabEditCalculate('${jobId}')">
                         </td>
 
@@ -1266,7 +1266,7 @@
 
         let hargaFinal = basePrice + profitValue + overheadValue
 
-        let total = round(vol * hargaFinal)
+        let total = vol * hargaFinal
 
         const hargaEl = row.querySelector('.harga')
         const totalEl = row.querySelector('.total')
@@ -1344,7 +1344,7 @@
         let shipping = parseRupiah(document.getElementById('rab_shipping_edit').value)
 
         // grand total
-        let grand = round(subAfterDiscount + taxTotal + shipping)
+        let grand = subAfterDiscount + taxTotal + shipping
 
         const grandEl = document.getElementById('rab_grandTotalDisplay_edit')
 
@@ -1719,7 +1719,7 @@
                     (basePrice * globalProfit / 100) +
                     (basePrice * globalOverhead / 100);
 
-                const total = Math.round(volume * price);
+                const total = volume * price;
 
                 const categoryRow = document.getElementById(uraian.dataset.category);
 

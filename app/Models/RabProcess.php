@@ -39,9 +39,10 @@ class RabProcess extends Model
         return $this->hasMany(RabProcessItem::class, 'rab_process_id');
     }
 
-        public function categories()
+    public function categories()
     {
-        return $this->hasMany(RabProcessCategory::class);
+        return $this->hasMany(RabProcessCategory::class)
+            ->orderBy('order_no');
     }
 
         public function uraians()

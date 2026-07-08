@@ -15,7 +15,6 @@ class RabProcessCategory extends Model
     public function uraians()
     {
         return $this->hasMany(RabProcessUraian::class,'category_id')
-            ->where('is_draft', true)
             ->orderBy('order_no');
     }
 
