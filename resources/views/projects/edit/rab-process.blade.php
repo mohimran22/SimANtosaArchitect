@@ -1708,7 +1708,7 @@
                 if(!jobSelect || !jobSelect.value) return;
 
                 const volume = Number(
-                    parseFloat(row.querySelector('.vol')?.value || 0).toFixed(3)
+                    row.querySelector('.vol')?.value || 0
                 );
 
                 const hargaInput = row.querySelector('.harga');
