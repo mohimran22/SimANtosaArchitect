@@ -564,25 +564,14 @@ public function update(Request $request, Project $project, RabProcess $rab)
             if (!$job) continue;
 
             $basePrice = $job->grand_total;
-            $profitValue = bcdiv(
-                bcmul($basePrice, $profit, 10),
-                '100',
-                10
-            );
-            $overheadValue = bcdiv(
-                bcmul($basePrice, $overhead, 10),
-                '100',
-                10
-            );
-            $price = bcadd(
-                bcadd($basePrice, $profitValue, 10),
-                $overheadValue,
-                10
-            );
 
-            $volume = (string) $item['volume'];
+            $price = $basePrice +
+                ($basePrice * $profit / 100) +
+                ($basePrice * $overhead / 100);
 
-            $total = bcmul($volume, $price, 10);
+            $volume = $item['volume'];
+
+            $total = $volume * $price;
 
             if (!empty($item['id'])) {
 
@@ -649,11 +638,7 @@ public function update(Request $request, Project $project, RabProcess $rab)
 
         $afterDiscount = max(0, $subtotal - $discount);
         $tax = round($afterDiscount * $taxRate / 100);
-        $grandTotal = bcadd(
-            bcadd($afterDiscount, $tax, 10),
-            $shipping,
-            10
-        );
+        $grandTotal = $afterDiscount + $tax + $shipping;
 
         $rab->update([
             'contact_name' => $request->contact_name,
