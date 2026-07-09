@@ -1326,7 +1326,7 @@
         document.getElementById('rab_subtotalDisplay_edit').innerText = formatRupiah(subtotal)
 
         // let discount = parseRupiah(document.getElementById('rab_discount_edit').value)
-        let discount = Number(document.getElementById('rab_discount_edit').value || 0)
+        let discount = parseRupiah(document.getElementById('rab_discount_edit').value || 0)
 
         let subAfterDiscount = Math.max(0, subtotal - discount)
 
