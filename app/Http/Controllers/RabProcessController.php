@@ -632,9 +632,9 @@ public function update(Request $request, Project $project, RabProcess $rab)
         $subtotal = RabProcessItem::where('rab_process_id', $rab->id)
             ->sum('total');
 
-        $discount = (float) $request->discount;
-        $taxRate  = (float) $request->tax_rate;
-        $shipping = (float) $request->shipping;
+        $discount = $request->discount;
+        $taxRate  = $request->tax_rate;
+        $shipping = $request->shipping;
 
         $afterDiscount = max(0, $subtotal - $discount);
         $tax = round($afterDiscount * $taxRate / 100);
