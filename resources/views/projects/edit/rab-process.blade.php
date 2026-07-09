@@ -809,7 +809,6 @@
         $('.select2-row').select2()
 
         setTimeout(()=>{
-            syncDiscountShipping()
             rabEditCalculateSummary()
         },300)
 
@@ -1325,7 +1324,7 @@
         document.getElementById('rab_subtotal').value = subtotal
         document.getElementById('rab_subtotalDisplay_edit').innerText = formatRupiah(subtotal)
 
-        // let discount = parseRupiah(document.getElementById('rab_discount_edit').value)
+        console.log(document.getElementById('rab_discount_edit').value);
         let discount = parseRupiah(document.getElementById('rab_discount_edit').value || 0)
 
         let subAfterDiscount = Math.max(0, subtotal - discount)
@@ -1665,6 +1664,7 @@
 
                 let raw = parseRupiah(this.value)
 
+                console.log("raw =", raw);
                 document.getElementById('rab_discount_edit').value = raw
 
                 rabEditCalculateSummary()
