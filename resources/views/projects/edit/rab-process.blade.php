@@ -1835,9 +1835,9 @@
             formData.append('job_duration', document.querySelector('[name=job_duration]')?.value || 0)
             formData.append('profit', parsePercent(document.getElementById('rab_profit_display_edit').value))
             formData.append('overhead', parsePercent(document.getElementById('rab_overhead_display_edit').value))
-            formData.append('discount', parseRupiah(document.getElementById('rab_discount_edit').value))
+            formData.append('discount', Number(document.getElementById('rab_discount_edit').value))
             formData.append('tax_rate', parsePercent(document.getElementById('rab_tax_rate_edit').value))
-            formData.append('shipping', parseRupiah(document.getElementById('rab_shipping_edit').value))
+            formData.append('shipping', Number(document.getElementById('rab_shipping_edit').value))
 
             items.forEach((item,i)=>{
                 if(item.id){
