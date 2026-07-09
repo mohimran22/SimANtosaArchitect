@@ -114,7 +114,7 @@ function numberToLetters($num) {
 
                             <td>{{ $item->satuan }}</td>
 
-                            <td>{{ rtrim(rtrim(number_format($item->volume, 10, '.', ''), '0'), '.') }}</td>
+                            <td>{{ rtrim(rtrim(number_format($item->volume, 2, '.', ''), '0'), '.') }}</td>
 
                             <td>
                                 Rp {{ number_format($item->price,2,',','.') }}
