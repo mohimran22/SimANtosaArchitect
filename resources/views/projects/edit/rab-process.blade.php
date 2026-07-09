@@ -730,7 +730,7 @@
                                 class="form-control vol"
                                 step="0.0000000001"
                                 data-value="${job.volume}"
-                                value="${parseFloat(job.volume)}"
+                                value="${(job.volume)}"
                                 oninput="rabEditCalculate('${jobId}')">
                         </td>
 
