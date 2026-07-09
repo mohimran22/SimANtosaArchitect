@@ -57,84 +57,84 @@ function numberToLetters($num) {
 
             <tbody>
 
-            @foreach($rab->categories as $category)
+                @foreach($rab->categories as $category)
 
-                @php
-                    $categoryLetter = numberToLetters($loop->index);
-                    $uraianNo = 1;
+                    @php
+                        $categoryLetter = numberToLetters($loop->index);
+                        $uraianNo = 1;
 
-                    $categoryTotal = $category->uraians
-                        ->flatMap->items
-                        ->sum('total');
-                @endphp
+                        $categoryTotal = $category->uraians
+                            ->flatMap->items
+                            ->sum('total');
+                    @endphp
 
-                    <tr class="table-secondary">
-                        <th>{{ $categoryLetter }}</th>
-                        <th colspan="4">{{ strtoupper($category->name) }}</th>
-                        <th class="text-end">
-                            Rp {{ number_format($categoryTotal,2,',','.') }}
-                        </th>
-                    </tr>
+                        <tr class="table-secondary">
+                            <th>{{ $categoryLetter }}</th>
+                            <th colspan="4">{{ strtoupper($category->name) }}</th>
+                            <th class="text-end">
+                                Rp {{ number_format($categoryTotal,2,',','.') }}
+                            </th>
+                        </tr>
 
-                @foreach($category->uraians as $uraian)
+                    @foreach($category->uraians as $uraian)
 
-                    <tr class="fw-bold">
-                        <td>{{ $uraianNo }}</td>
+                        <tr class="fw-bold">
+                            <td>{{ $uraianNo }}</td>
 
-                        <td colspan="5">
-                            <div class="d-flex align-items-center gap-2">
+                            <td colspan="5">
+                                <div class="d-flex align-items-center gap-2">
 
-                                {{ ucwords($uraian->name) }}
+                                    {{ ucwords($uraian->name) }}
 
-                                <button type="button"
-                                    class="btn btn-sm btn-gambar"
-                                    onclick="bukagaleri(
-                                        '{{ route('rab.uraian-images', $uraian->id) }}',
-                                        '{{ $uraian->name }}'
-                                    )">
+                                    <button type="button"
+                                        class="btn btn-sm btn-gambar"
+                                        onclick="bukagaleri(
+                                            '{{ route('rab.uraian-images', $uraian->id) }}',
+                                            '{{ $uraian->name }}'
+                                        )">
 
-                                    <i class="ti ti-photo"></i>
+                                        <i class="ti ti-photo"></i>
 
-                                </button>
+                                    </button>
 
-                            </div>
-                        </td>
+                                </div>
+                            </td>
 
-                    </tr>
+                        </tr>
 
-                    @php $itemNo = 1; @endphp
+                        @php $itemNo = 1; @endphp
 
-                    @foreach($uraian->items as $item)
+                        @foreach($uraian->items as $item)
 
-                    <tr>
+                        <tr>
 
-                        <td>{{ $uraianNo.'.'.$itemNo }}</td>
+                            <td>{{ $uraianNo.'.'.$itemNo }}</td>
 
-                        <td>{{ $item->job_name }}</td>
+                            <td>{{ $item->job_name }}</td>
 
-                        <td>{{ $item->satuan }}</td>
+                            <td>{{ $item->satuan }}</td>
 
-                        <td>{{ number_format($item->volume,2) }}</td>
+                            <td>{{ rtrim(rtrim(number_format($item->volume, 10, '.', ''), '0'), '.') }}</td>
 
-                        <td>
-                            Rp {{ number_format($item->price,2,',','.') }}
-                        </td>
+                            <td>
+                                Rp {{ number_format($item->price,2,',','.') }}
+                            </td>
 
-                        <td class="text-end">
-                            Rp {{ number_format($item->total,2,',','.') }}
-                        </td>
+                            <td class="text-end">
+                                Rp {{ number_format($item->total,2,',','.') }}
+                            </td>
 
-                    </tr>
+                        </tr>
 
-                    @php $itemNo++; @endphp
+                        @php $itemNo++; @endphp
+
+                        @endforeach
+
+                        @php $uraianNo++; @endphp
 
                     @endforeach
 
-                    @php $uraianNo++; @endphp
-
                 @endforeach
-
-            @endforeach
 
             </tbody>
 

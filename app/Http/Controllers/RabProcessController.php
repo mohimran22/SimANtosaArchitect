@@ -550,8 +550,8 @@ public function update(Request $request, Project $project, RabProcess $rab)
             ->get()
             ->keyBy('id');
 
-        $profit = (float) str_replace(',', '.', $request->profit ?? 0);
-        $overhead = (float) str_replace(',', '.', $request->overhead ?? 0);
+        $profit = str_replace(',', '.', $request->profit ?? 0);
+        $overhead = str_replace(',', '.', $request->overhead ?? 0);
 
         foreach ($request->items ?? [] as $index => $item) {
 
@@ -564,14 +564,25 @@ public function update(Request $request, Project $project, RabProcess $rab)
             if (!$job) continue;
 
             $basePrice = $job->grand_total;
+            $profitValue = bcdiv(
+                bcmul($basePrice, $profit, 10),
+                '100',
+                10
+            );
+            $overheadValue = bcdiv(
+                bcmul($basePrice, $overhead, 10),
+                '100',
+                10
+            );
+            $price = bcadd(
+                bcadd($basePrice, $profitValue, 10),
+                $overheadValue,
+                10
+            );
 
-            $price = $basePrice +
-                ($basePrice * $profit / 100) +
-                ($basePrice * $overhead / 100);
+            $volume = (string) $item['volume'];
 
-            $volume = (float) $item['volume'];
-
-            $total = $volume * $price;
+            $total = bcmul($volume, $price, 10);
 
             if (!empty($item['id'])) {
 
@@ -632,13 +643,17 @@ public function update(Request $request, Project $project, RabProcess $rab)
         $subtotal = RabProcessItem::where('rab_process_id', $rab->id)
             ->sum('total');
 
-        $discount = (float) $request->discount;
-        $taxRate  = (float) $request->tax_rate;
-        $shipping = (float) $request->shipping;
+        $discount = $request->discount;
+        $taxRate  = $request->tax_rate;
+        $shipping = $request->shipping;
 
         $afterDiscount = max(0, $subtotal - $discount);
         $tax = round($afterDiscount * $taxRate / 100);
-        $grandTotal = $afterDiscount + $tax + $shipping;
+        $grandTotal = bcadd(
+            bcadd($afterDiscount, $tax, 10),
+            $shipping,
+            10
+        );
 
         $rab->update([
             'contact_name' => $request->contact_name,
