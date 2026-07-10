@@ -783,53 +783,52 @@ flatpickr("#nextDate", {
 <script>
     document.addEventListener("change", function(e){
 
-        if(e.target.classList.contains("image-input")){
+        // if(e.target.classList.contains("image-input")){
+        //     let previewId = e.target.dataset.preview;
+        //     let previewContainer = document.getElementById(previewId);
 
-            let previewId = e.target.dataset.preview;
-            let previewContainer = document.getElementById(previewId);
+        //     previewContainer.innerHTML = "";
 
-            previewContainer.innerHTML = "";
+        //     Array.from(e.target.files).forEach(file => {
 
-            Array.from(e.target.files).forEach(file => {
+        //         let div = document.createElement("div");
+        //         div.style.width = "120px";
 
-                let div = document.createElement("div");
-                div.style.width = "120px";
+        //         // JIKA IMAGE
+        //         if(file.type.startsWith("image/")){
 
-                // JIKA IMAGE
-                if(file.type.startsWith("image/")){
+        //             let reader = new FileReader();
 
-                    let reader = new FileReader();
+        //             reader.onload = function(event){
 
-                    reader.onload = function(event){
+        //                 div.innerHTML = `
+        //                     <img src="${event.target.result}" 
+        //                         class="img-fluid rounded shadow-sm mb-2">
+        //                     <small class="d-block text-truncate">${file.name}</small>
+        //                 `;
 
-                        div.innerHTML = `
-                            <img src="${event.target.result}" 
-                                class="img-fluid rounded shadow-sm mb-2">
-                            <small class="d-block text-truncate">${file.name}</small>
-                        `;
+        //                 previewContainer.appendChild(div);
+        //             }
 
-                        previewContainer.appendChild(div);
-                    }
+        //             reader.readAsDataURL(file);
 
-                    reader.readAsDataURL(file);
+        //         }
+        //         // JIKA PDF
+        //         else if(file.type === "application/pdf"){
 
-                }
-                // JIKA PDF
-                else if(file.type === "application/pdf"){
+        //             div.innerHTML = `
+        //                 <div class="border rounded p-3 text-center shadow-sm">
+        //                     📄
+        //                     <div class="small mt-2 text-truncate">${file.name}</div>
+        //                 </div>
+        //             `;
 
-                    div.innerHTML = `
-                        <div class="border rounded p-3 text-center shadow-sm">
-                            📄
-                            <div class="small mt-2 text-truncate">${file.name}</div>
-                        </div>
-                    `;
+        //             previewContainer.appendChild(div);
+        //         }
 
-                    previewContainer.appendChild(div);
-                }
+        //     });
 
-            });
-
-        }
+        // }
 
     });
 </script>

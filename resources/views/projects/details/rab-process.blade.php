@@ -141,18 +141,18 @@ function numberToLetters($num) {
             <tfoot>
                 <tr>
                     <th colspan="5" class="text-end">SUBTOTAL</th>
-                    <th>Rp {{ number_format($rab->subtotal,2,',','.') }}</th>
+                    <th>Rp {{ number_format($rab->subtotal,3,',','.') }}</th>
                 </tr>
  
                 <tr>
                     <th colspan="5" class="text-end">DISCOUNT</th>
-                    <th>Rp {{ number_format($rab->discount,2,',','.') }}</th>
+                    <th>Rp {{ number_format($rab->discount,3,',','.') }}</th>
                     
                 </tr>
 
                 <tr>
                     <th colspan="5" class="text-end">SUBTOTAL AFTER DISCOUNT</th>
-                    <th>Rp {{ number_format($rab->subtotal_after_discount,2,',','.') }}</th>
+                    <th>Rp {{ number_format($rab->subtotal_after_discount,3,',','.') }}</th>
                 </tr>
 
                 <tr>
@@ -175,7 +175,7 @@ function numberToLetters($num) {
                 <tr>
                     <th colspan="5" class="text-end fw-bold">GRAND TOTAL</th>
                     <th class="fw-bold">
-                        Rp {{ number_format($rab->grand_total,2,',','.') }}
+                        Rp {{ number_format($rab->grand_total,3,',','.') }}
                     </th>
                     
                 </tr>

@@ -232,61 +232,6 @@
     });
 </script>
 @endpush
-{{-- <script>
-document.addEventListener('DOMContentLoaded', () => {
-
-    const fileStores = new Map();
-
-    document.querySelectorAll('.image-input').forEach(input => {
-        fileStores.set(input, new DataTransfer());
-
-        input.addEventListener('change', () => {
-            const previewEl = document.getElementById(input.dataset.preview);
-            const store     = fileStores.get(input);
-
-            const selectedFiles = Array.from(input.files);
-            input.value = '';
-
-            selectedFiles.forEach(file => {
-                store.items.add(file);
-
-                const reader = new FileReader();
-                reader.onload = e => {
-                    const div = document.createElement('div');
-                    div.className = 'position-relative';
-                    div.innerHTML = `
-                        <img src="${e.target.result}"
-                             class="rounded border"
-                             style="width:120px;height:120px;object-fit:cover">
-                        <button type="button"
-                                class="btn btn-sm btn-danger position-absolute top-0 end-0 remove-image">
-                            ×
-                        </button>
-                    `;
-
-                    div.querySelector('.remove-image').addEventListener('click', () => {
-                        const index = Array.from(store.files).findIndex(
-                            f => f.name === file.name && f.size === file.size
-                        );
-
-                        if (index > -1) {
-                            store.items.remove(index);
-                            input.files = store.files;
-                        }
-
-                        div.remove();
-                    });
-
-                    previewEl.appendChild(div);
-                };
-                reader.readAsDataURL(file);
-            });
-
-            input.files = store.files;
-        });
-    });
-});
-</script> --}}
 
 
 

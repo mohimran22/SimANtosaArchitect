@@ -844,14 +844,55 @@ document.addEventListener('DOMContentLoaded', () => {
             selectedFiles.forEach(file => {
                 store.items.add(file);
 
-                const reader = new FileReader();
-                reader.onload = e => {
+                if (file.type.startsWith("image/")) {
+
+                    const reader = new FileReader();
+
+                    reader.onload = e => {
+
+                        const div = document.createElement('div');
+                        div.className = 'position-relative';
+
+                        div.innerHTML = `
+                            <img src="${e.target.result}"
+                                class="rounded border"
+                                style="width:120px;height:120px;object-fit:cover">
+
+                            <button type="button"
+                                    class="btn btn-sm btn-danger position-absolute top-0 end-0 remove-image">
+                                ×
+                            </button>
+                        `;
+
+                        div.querySelector('.remove-image').addEventListener('click', () => {
+                            const index = Array.from(store.files).findIndex(
+                                f => f.name === file.name && f.size === file.size
+                            );
+
+                            if (index > -1) {
+                                store.items.remove(index);
+                                input.files = store.files;
+                            }
+
+                            div.remove();
+                        });
+
+                        previewEl.appendChild(div);
+                    };
+
+                    reader.readAsDataURL(file);
+
+                } else if (file.type === "application/pdf") {
+
                     const div = document.createElement('div');
                     div.className = 'position-relative';
+
                     div.innerHTML = `
-                        <img src="${e.target.result}"
-                             class="rounded border"
-                             style="width:120px;height:120px;object-fit:cover">
+                        <div class="border rounded d-flex align-items-center justify-content-center"
+                            style="width:120px;height:120px;">
+                            📄 PDF
+                        </div>
+
                         <button type="button"
                                 class="btn btn-sm btn-danger position-absolute top-0 end-0 remove-image">
                             ×
@@ -872,8 +913,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
 
                     previewEl.appendChild(div);
-                };
-                reader.readAsDataURL(file);
+                }
             });
 
             input.files = store.files;

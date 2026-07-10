@@ -451,7 +451,7 @@
                                 ? w.rab_process_item.job_name 
                                 : (w.uraian_manual ?? '-')}</td>
                             <td>${w.volume}</td>
-                            <td>${w.satuan}</td>
+                            <td>${w.satuan ?? '-'}</td>
                             <td>${w.keterangan ?? '-'}</td>
                         </tr>`;
                     });
