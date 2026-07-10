@@ -440,6 +440,7 @@ label {
     overflow-y: auto;
     overflow-x: hidden;
     padding: 15px 15px 20px 0;
+    -webkit-overflow-scrolling:touch;
 }
 
 .sidebar-menu-wrapper .navbar-nav {
@@ -611,7 +612,17 @@ z-index: 1035;
 .file-wrapper .text-muted{
     line-height: 1.2;
 }
+.dropdown-menu-card .card{
+    display:flex;
+    flex-direction:column;
+    max-height:500px;
+}
 
+#notification-list{
+    flex:1;
+    overflow-y:auto;
+    max-height:400px;
+}
 .btn-delete-file {
     position: absolute;
     top: 0px;

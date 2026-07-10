@@ -90,6 +90,11 @@
                                     <h5 class="modal-title flex-grow-1">
                                         Detail Laporan Harian
                                     </h5>
+                                    {{-- <div class="d-flex align-items-center gap-2">
+                                        <span class="badge bg-dark" id="badgeWeek"></span>
+
+                                        <span class="badge bg-secondary" id="badgeTanggal"></span>
+                                    </div> --}}
                                         <button class="btn btn-dark" id="btnToggleEdit">
                                             Edit
                                         </button>
@@ -191,8 +196,8 @@
 
                 <td>
                     <button type="button"
-                        class="btn btn-sm btn-dark btn-remove-work">
-                        Hapus
+                        class="btn btn-sm btn-danger btn-remove-work">
+                        ×
                     </button>
                 </td>
             </tr>`;
@@ -228,8 +233,8 @@
 
                 <td>
                     <button type="button"
-                        class="btn btn-sm btn-dark btn-remove-worker">
-                        Hapus
+                        class="btn btn-sm btn-danger btn-remove-worker">
+                        ×
                     </button>
                 </td>
             </tr>`;
@@ -265,8 +270,8 @@
 
                 <td>
                     <button type="button"
-                        class="btn btn-sm btn-dark btn-remove-material">
-                        Hapus
+                        class="btn btn-sm btn-danger btn-remove-material">
+                        ×
                     </button>
                 </td>
             </tr>`;
@@ -277,7 +282,7 @@
         }
         function addCuacaRow(){
 
-            const tbody = document.querySelector('#editJamKerjaTable');
+            const tbody = document.querySelector('#editJamKerjaTable tbody');
 
             const row = `
             <tr>
@@ -321,8 +326,8 @@
 
                 <td>
                     <button type="button"
-                        class="btn btn-sm btn-dark btn-remove-cuaca">
-                        Hapus
+                        class="btn btn-danger btn-sm btn-remove-jam">
+                        ×
                     </button>
                 </td>
 
@@ -377,22 +382,24 @@
         }
         modalBody.addEventListener('click', function(e){
 
-            if(e.target.id === 'btnAddWork') addWorkRow();
-            if(e.target.id === 'btnAddWorker') addWorkerRow();
-            if(e.target.id === 'btnAddMaterial') addMaterialRow();
-            if(e.target.id === 'btnAddJamKerjaEdit') addCuacaRow();
-            if(e.target.classList.contains('btn-remove-work')){
+            if(e.target.closest('#btnAddWork')) addWorkRow();
+            if(e.target.closest('#btnAddWorker')) addWorkerRow();
+            if(e.target.closest('#btnAddMaterial')) addMaterialRow();
+            if(e.target.closest('#btnAddJamKerjaEdit')) addCuacaRow();
+
+            if(e.target.closest('.btn-remove-work')){
                 handleDelete(e, '#worksTable', 'daily-work');
             }
 
-            if(e.target.classList.contains('btn-remove-worker')){
+            if(e.target.closest('.btn-remove-worker')){
                 handleDelete(e, '#workersTable', 'daily-worker');
             }
 
-            if(e.target.classList.contains('btn-remove-material')){
+            if(e.target.closest('.btn-remove-material')){
                 handleDelete(e, '#materialsTable', 'daily-material');
             }
-            if(e.target.classList.contains('btn-remove-cuaca')){
+
+            if(e.target.closest('.btn-remove-jam')){
                 handleDelete(e, '#editJamKerjaTable', 'daily-work-time');
             }
         });
@@ -580,28 +587,7 @@
                     <div id="editMode" style="display:none;">
                         <form id="editDailyForm">
                             <input type="hidden" name="id" value="${data.id}">
-                            <div class="row mb-3">
-                                <div class="col-md-3">
-                                    <label>Tanggal</label>
-                                    <input type="date" name="tanggal" class="form-control"
-                                        value="${data.tanggal_formatted ?? ''}" required>
-                                </div>
-                                <div class="col-md-3">
-                                    <label>Jam Mulai</label>
-                                    <input type="time" name="jam_mulai" class="form-control"
-                                        value="${data.jam_mulai ?? ''}">
-                                </div>
-                                <div class="col-md-3">
-                                    <label>Jam Selesai</label>
-                                    <input type="time" name="jam_selesai" class="form-control"
-                                        value="${data.jam_selesai ?? ''}">
-                                </div>
-                                <div class="col-md-3">
-                                    <label>Cuaca</label>
-                                    <input type="text" name="cuaca" class="form-control"
-                                        value="${data.cuaca ?? ''}">
-                                </div>
-                            </div>
+            
                             <div class="d-flex align-items-center gap-2 mb-3">
                                 <label class="form-check form-switch">
                                     <input class="form-check-input" type="checkbox" id="switchLibur">
@@ -613,8 +599,12 @@
                             <hr>
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <h6 class="mb-0">Tenaga Kerja & Alat Bantu</h6>
-                                <button type="button" class="btn btn-sm btn-dark" id="btnAddWorker">
-                                    + Tambah Tenaga
+                                
+                                <button type="button"
+                                    class="btn btn-sm btn-dark"
+                                    id="btnAddWorker"
+                                    title="Tambah Tenaga">
+                                    <i class="ti ti-plus"></i>
                                 </button>
                             </div>
                             <table class="table table-bordered" id="workersTable">
@@ -651,8 +641,8 @@
                                     </td>
                                     <td>
                                         <button type="button"
-                                            class="btn btn-sm btn-dark btn-remove-worker">
-                                            Hapus
+                                            class="btn btn-sm btn-danger btn-remove-worker">
+                                            ×
                                         </button>
                                     </td>
                                 </tr>
@@ -672,8 +662,11 @@
                             <hr>
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <h6 class="mb-0">Pekerjaan</h6>
-                                <button type="button" class="btn btn-sm btn-dark" id="btnAddWork">
-                                    + Tambah Pekerjaan
+                                <button type="button"
+                                    class="btn btn-sm btn-dark"
+                                    id="btnAddWork"
+                                    title="Tambah Pekerjaan">
+                                    <i class="ti ti-plus"></i>
                                 </button>
                             </div>
                             <table class="table table-bordered" id="worksTable">
@@ -713,7 +706,7 @@
                                             <input type="text"
                                                 name="works[${i}][satuan]"
                                                 class="form-control"
-                                                value="${w.satuan}">
+                                                value="${w.satuan ?? '-'}">
                                         </td>
                                         <td>
                                             <input type="text"
@@ -723,8 +716,8 @@
                                         </td>
                                         <td>
                                             <button type="button"
-                                                class="btn btn-sm btn-dark btn-remove-work">
-                                                Hapus
+                                                class="btn btn-sm btn-danger btn-remove-work">
+                                                ×
                                             </button>
                                         </td>
                                     </tr>
@@ -744,8 +737,11 @@
                             <hr>
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <h6 class="mb-0">Bahan Yang Masuk</h6>
-                                <button type="button" class="btn btn-sm btn-dark" id="btnAddMaterial">
-                                    + Tambah Bahan
+                                <button type="button"
+                                    class="btn btn-sm btn-dark"
+                                    id="btnAddMaterial"
+                                    title="Tambah Pekerjaan">
+                                    <i class="ti ti-plus"></i>
                                 </button>
                             </div>
                             <table class="table table-bordered" id="materialsTable">
@@ -780,8 +776,8 @@
                                 </td>
                                 <td>
                                     <button type="button"
-                                        class="btn btn-sm btn-dark btn-remove-material">
-                                        Hapus
+                                        class="btn btn-sm btn-danger btn-remove-material">
+                                        ×
                                     </button>
                                 </td>
                             </tr>
@@ -812,7 +808,7 @@
 
                                     <div class="card-body p-0">
                                         <div class="table-responsive">
-                                            <table class="table table-bordered mb-0">
+                                            <table class="table table-bordered mb-0" id="editJamKerjaTable">
                                                 <thead class="table-light">
                                                     <tr>
                                                         <th width="170">Jam Mulai</th>
@@ -824,7 +820,7 @@
                                                     </tr>
                                                 </thead>
 
-                                                <tbody id="editJamKerjaTable">
+                                                <tbody>
                                                 ${
                                                     (data.work_times && data.work_times.length)
                                                     ? data.work_times.map((j,i)=>`
@@ -1036,6 +1032,11 @@
                     setupAdvancedPreview('fileInputPekerjaan', 'previewPekerjaan');
                     setupAdvancedPreview('fileInputTenaga', 'previewTenaga');
                     setupAdvancedPreview('fileInputMaterial', 'previewMaterial');
+                    document.getElementById('badgeWeek').textContent =
+                        `Minggu ${data.week_no}`;
+
+                    document.getElementById('badgeTanggal').textContent =
+                        data.tanggal_formatted;
                 });
             });
 
@@ -1260,7 +1261,9 @@
         });
         document.addEventListener('click', function(e){
 
-            if(e.target.id === 'btnSaveAll'){
+            if(e.target.closest('#btnSaveAll')){
+
+                console.log('Button Save diklik');
 
                 const form = document.getElementById('editDailyForm');
                 const formData = new FormData(form);
@@ -1276,18 +1279,32 @@
                     },
                     body: formData
                 })
-                .then(res => res.json())
-                .then(res => {
-                    if(res.success){
-                        alert('Semua data berhasil diupdate');
-                        location.reload();
-                        editMode.style.display = 'none';
-                        viewMode.style.display = 'block';
+                .then(async res => {
+                    console.log(res.status);
 
-                        btnToggle.textContent = 'Edit';
-                        btnToggle.classList.remove('btn-secondary');
-                        btnToggle.classList.add('btn-dark');
+                    const data = await res.json();
+                    console.log(data);
+
+                    return data;
+                })
+                .then(res => {
+
+                    if(res.success){
+
+                        alert('Semua data berhasil diupdate');
+
+                        location.reload();
+
+                    }else{
+
+                        alert(res.message);
                     }
+
+                })
+                .catch(err => {
+
+                    console.error(err);
+
                 });
             }
         });

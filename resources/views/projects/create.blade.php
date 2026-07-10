@@ -922,55 +922,55 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 <script>
-document.addEventListener('DOMContentLoaded', () => {
+// document.addEventListener('DOMContentLoaded', () => {
 
-    const fileStores = new Map();
+//     const fileStores = new Map();
 
-    document.querySelectorAll('.pdf-input').forEach(input => {
-        fileStores.set(input, new DataTransfer());
+//     document.querySelectorAll('.pdf-input').forEach(input => {
+//         fileStores.set(input, new DataTransfer());
 
-        input.addEventListener('change', () => {
-            const previewEl = document.getElementById(input.dataset.preview);
-            const store = fileStores.get(input);
+//         input.addEventListener('change', () => {
+//             const previewEl = document.getElementById(input.dataset.preview);
+//             const store = fileStores.get(input);
 
-            const files = Array.from(input.files);
-            input.value = ''; // reset awal
+//             const files = Array.from(input.files);
+//             input.value = ''; // reset awal
 
-            files.forEach(file => {
-                store.items.add(file);
+//             files.forEach(file => {
+//                 store.items.add(file);
 
-                const row = document.createElement('div');
-                row.className = 'd-flex align-items-center justify-content-between border rounded p-2';
+//                 const row = document.createElement('div');
+//                 row.className = 'd-flex align-items-center justify-content-between border rounded p-2';
 
-                row.innerHTML = `
-                    <div class="d-flex align-items-center gap-2">
-                        <i class="ti ti-file-text fs-4 text-danger"></i>
-                        <span>${file.name}</span>
-                        <small class="text-muted">(${(file.size/1024).toFixed(1)} KB)</small>
-                    </div>
-                    <button type="button" class="btn btn-sm btn-danger">Hapus</button>
-                `;
+//                 row.innerHTML = `
+//                     <div class="d-flex align-items-center gap-2">
+//                         <i class="ti ti-file-text fs-4 text-danger"></i>
+//                         <span>${file.name}</span>
+//                         <small class="text-muted">(${(file.size/1024).toFixed(1)} KB)</small>
+//                     </div>
+//                     <button type="button" class="btn btn-sm btn-danger">Hapus</button>
+//                 `;
 
-                row.querySelector('button').addEventListener('click', () => {
-                    const index = Array.from(store.files).findIndex(
-                        f => f.name === file.name && f.size === file.size
-                    );
+//                 row.querySelector('button').addEventListener('click', () => {
+//                     const index = Array.from(store.files).findIndex(
+//                         f => f.name === file.name && f.size === file.size
+//                     );
 
-                    if (index > -1) {
-                        store.items.remove(index);
-                        input.files = store.files;
-                    }
+//                     if (index > -1) {
+//                         store.items.remove(index);
+//                         input.files = store.files;
+//                     }
 
-                    row.remove();
-                });
+//                     row.remove();
+//                 });
 
-                previewEl.appendChild(row);
-            });
+//                 previewEl.appendChild(row);
+//             });
 
-            input.files = store.files;
-        });
-    });
-});
+//             input.files = store.files;
+//         });
+//     });
+// });
 </script>
 <script>
 document.addEventListener('click', function(e) {

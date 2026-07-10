@@ -338,14 +338,11 @@ public function updateAll(Request $request, $id)
         $daily = BuildDailyReport::with([
             'works',
             'workers',
-            'materials'
+            'materials',
+            'workTimes',
         ])->findOrFail($id);
 
         $daily->update([
-            'tanggal'      => $request->tanggal,
-            'jam_mulai'    => $request->jam_mulai,
-            'jam_selesai'  => $request->jam_selesai,
-            'cuaca'        => $request->cuaca,
             'catatan'      => $request->catatan,
         ]);
 
@@ -481,16 +478,52 @@ public function updateAll(Request $request, $id)
         $deleteMaterialIds = array_diff($existingMaterialIds, $requestMaterialIds);
         BuildDailyMaterial::whereIn('id', $deleteMaterialIds)->delete();
 
-        if ($daily->jam_mulai && $daily->jam_selesai) {
-            $start = Carbon::parse($daily->jam_mulai);
-            $end   = Carbon::parse($daily->jam_selesai);
+        $existingWorkTimeIds = $daily->workTimes->pluck('id')->toArray();
+        $requestWorkTimeIds = [];
 
-            $totalJam = $start->diffInMinutes($end) / 60;
+        foreach ($request->jam_kerja ?? [] as $jam) {
 
-            $daily->update([
-                'total_jam' => $totalJam
-            ]);
+            $jamMulai = $jam['jam_mulai'] ?? null;
+            $jamSelesai = $jam['jam_selesai'] ?? null;
+
+            $totalJam = null;
+
+            if ($jamMulai && $jamSelesai) {
+                $start = Carbon::parse($jamMulai);
+                $end = Carbon::parse($jamSelesai);
+
+                $totalJam = $start->diffInMinutes($end) / 60;
+            }
+
+            if (!empty($jam['id'])) {
+
+                $requestWorkTimeIds[] = $jam['id'];
+
+                BuildDailyWorkTime::where('id', $jam['id'])->update([
+                    'jam_mulai'  => $jamMulai,
+                    'jam_selesai'=> $jamSelesai,
+                    'total_jam'  => $totalJam,
+                    'cuaca'      => $jam['cuaca'] ?? null,
+                    'keterangan' => $jam['keterangan'] ?? null,
+                ]);
+
+            } else {
+
+                $daily->workTimes()->create([
+                    'build_daily_report_id' => $daily->id,
+                    'jam_mulai'             => $jamMulai,
+                    'jam_selesai'           => $jamSelesai,
+                    'total_jam'             => $totalJam,
+                    'cuaca'                 => $jam['cuaca'] ?? null,
+                    'keterangan'            => $jam['keterangan'] ?? null,
+                ]);
+
+            }
         }
+
+        $deleteWorkTimeIds = array_diff($existingWorkTimeIds, $requestWorkTimeIds);
+
+        BuildDailyWorkTime::whereIn('id', $deleteWorkTimeIds)->delete();
 
         DB::commit();
 
