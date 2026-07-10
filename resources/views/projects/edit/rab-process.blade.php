@@ -375,9 +375,11 @@
 
     function formatRupiah(number){
 
-        number = Number(number) || 0
+        number = Number(number) || 0;
 
-        return 'Rp ' + number.toLocaleString('id-ID')
+        return 'Rp ' + number.toLocaleString('id-ID',{
+            maximumFractionDigits:3
+        });
 
     }
 
@@ -566,6 +568,17 @@
 
         globalProfit = parseFloat(data.meta.profit) || 0
         globalOverhead = parseFloat(data.meta.overhead) || 0
+        document.getElementById('rab_discount_edit').value =
+            data.meta.discount ?? 0;
+
+        document.getElementById('rab_discount_display_edit').value =
+            formatRupiah(data.meta.discount ?? 0);
+
+        document.getElementById('rab_shipping_edit').value =
+            data.meta.shipping ?? 0;
+
+        document.getElementById('rab_shipping_display_edit').value =
+            formatRupiah(data.meta.shipping ?? 0);
         uraianGlobalIndex = Date.now()
         data.categories.forEach(cat => {
 
@@ -1325,7 +1338,7 @@
         document.getElementById('rab_subtotalDisplay_edit').innerText = formatRupiah(subtotal)
 
         console.log(document.getElementById('rab_discount_edit').value);
-        let discount = parseRupiah(document.getElementById('rab_discount_edit').value || 0)
+        let discount = Number(document.getElementById('rab_discount_edit').value || 0)
 
         let subAfterDiscount = Math.max(0, subtotal - discount)
 
@@ -1341,7 +1354,7 @@
         document.getElementById('rab_totalTaxDisplay_edit').innerText = formatRupiah(taxTotal)
 
         // shipping
-        let shipping = parseRupiah(document.getElementById('rab_shipping_edit').value)
+        let shipping = Number(document.getElementById('rab_shipping_edit').value)
 
         // grand total
         let grand = subAfterDiscount + taxTotal + shipping
@@ -1352,6 +1365,12 @@
         grandEl.innerText = formatRupiah(grand)
 
         document.getElementById('rab_grand_total').value = grand
+        console.log({
+            subtotal,
+            discount,
+            subAfterDiscount,
+            shipping
+        });
     }
     function removeJob(id){
 
@@ -1664,7 +1683,6 @@
 
                 let raw = parseRupiah(this.value)
 
-                console.log("raw =", raw);
                 document.getElementById('rab_discount_edit').value = raw
 
                 rabEditCalculateSummary()
@@ -1756,27 +1774,6 @@
         });
 
         return items;
-    }
-    function syncDiscountShipping(){
-
-        const discountDisplay =
-            document.getElementById('rab_discount_display_edit')
-
-        const shippingDisplay =
-            document.getElementById('rab_shipping_display_edit')
-
-        if(discountDisplay){
-
-            document.getElementById('rab_discount_edit').value =
-                parseRupiah(discountDisplay.value)
-
-        }
-
-        if(shippingDisplay){
-
-            document.getElementById('rab_shipping_edit').value =
-                parseRupiah(shippingDisplay.value)
-        }
     }
 
     document.getElementById('btnEditMode').addEventListener('click',()=>{
