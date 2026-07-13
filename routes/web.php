@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AccountingAccountController;
+use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\AccountingJournalController;
 use App\Http\Controllers\AccountingReportController;
 use App\Http\Controllers\AccountingPeriodController;
@@ -699,8 +700,18 @@ Route::middleware(['auth', 'permission:lihat daftar dokumen'])->group(function (
     route::resource('/documents', DocumentController::class);
 });
 
-Route::middleware(['auth', 'permission:lihat daftar dokumen'])->group(function () {
-    route::resource('/attendances', AttendanceController::class);
+Route::middleware(['auth'])->group(function () {
+
+    Route::resource('attendances', AttendanceController::class)
+        ->middleware('permission:lihat daftar absensi');
+
+    Route::post('attendances/check-in', [AttendanceController::class, 'checkIn'])
+        // ->middleware('permission:tambah data absensi')
+        ->name('attendances.check-in');
+
+    Route::post('attendances/check-out', [AttendanceController::class, 'checkOut'])
+        // ->middleware('permission:tambah data absensi')
+        ->name('attendances.check-out');
 });
 Route::middleware(['auth'])->group(function () {
     // sinkronisasi lisensi aktif dari navbar (POST dari form/navbar)

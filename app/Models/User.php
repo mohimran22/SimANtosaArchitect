@@ -184,5 +184,17 @@ public function getShortNameAttribute()
         ->take(2)
         ->implode(' ');
 }
+public function isInternal(): bool
+{
+    return $this->roles()
+        ->where('role_group', 'Internal')
+        ->exists();
+}
 
+public function isExternal(): bool
+{
+    return $this->roles()
+        ->where('role_group', 'External')
+        ->exists();
+}
 }
