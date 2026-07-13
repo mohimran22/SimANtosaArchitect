@@ -383,12 +383,13 @@ public function exportPdf(Request $request, Project $project) {
         $dailyReports = BuildDailyReport::with([
             'documentations' => function ($q) {
                 $q->where('file_type', 'like', 'image/%');
+                // ->whereIn('category', ['pekerjaan', 'bahan'])
             }
         ])
-->where('project_id', $project->id)
-->whereBetween('tanggal', [$startWeek, $endWeek])
-->orderBy('tanggal')
-->get();
+        ->where('project_id', $project->id)
+        ->whereBetween('tanggal', [$startWeek, $endWeek])
+        ->orderBy('tanggal')
+        ->get();
     $chartConfig = [
         'type' => 'line',
         'data' => [

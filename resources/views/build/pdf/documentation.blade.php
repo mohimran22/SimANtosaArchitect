@@ -15,40 +15,25 @@
 
     @if($report->documentations->count())
 
-        <table width="100%" cellpadding="5" cellspacing="0" style="border-collapse:collapse;">
-            <tr>
-
-                @foreach($report->documentations->take(3) as $doc)
-
-                    <td width="33%" align="center" style="border:none; vertical-align:top;">
-
-                        <img
-                            src="file://{{ storage_path('app/public/'.$doc->file_path) }}"
-                            style="width:170px; height:120px; object-fit:cover;">
-
-                    </td>
-
-                    @if($loop->iteration % 3 == 0 && !$loop->last)
-                        </tr><tr>
-                    @endif
-
-                @endforeach
-
-            </tr>
-        </table>
-
+            <table
+                align="center"
+                cellpadding="2"
+                cellspacing="0"
+                style="border-collapse:collapse;margin-bottom:10px;">
+                <tr>
+                    @foreach($report->documentations->take(3) as $doc)
+                        <td width="33%" align="center" style="border:none; vertical-align:top;">
+                            <img
+                                src="file://{{ storage_path('app/public/'.$doc->file_path) }}"
+                                style="width:170px; height:120px; object-fit:cover;">
+                        </td>
+                        @if($loop->iteration % 3 == 0 && !$loop->last)
+                            </tr><tr>
+                        @endif
+                    @endforeach
+                </tr>
+            </table>
     @else
-
-        {{-- <div style="
-            text-align:center;
-            padding:20px;
-            color:#777;
-            font-style:italic;
-            border:1px dashed #ccc;
-            margin-bottom:20px;
-        ">
-            Mohon maaf, foto dokumentasi masih belum tersedia.
-        </div> --}}
         <div style="
             text-align:center;
             padding:25px;
@@ -62,7 +47,6 @@
             <strong>{{ $report->tanggal_formatted }}</strong>
             masih belum tersedia.
         </div>
-
     @endif
 
     <br>
