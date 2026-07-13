@@ -42,145 +42,146 @@ function numberToLetters($num) {
         </div>
 
         <h5 class="fw-bold mt-5 mb-3">Rincian Pekerjaan</h5>
+        <div class="table-responsive">
+            <table class="table table-bordered align-middle">
+                <thead>
+                    <tr>
+                        <th width="50">NO</th>
+                        <th>URAIAN PEKERJAAN</th>
+                        <th>SAT</th>
+                        <th>VOL</th>
+                        <th>HARGA SATUAN</th>
+                        <th>JUMLAH HARGA</th>
+                    </tr>
+                </thead>
 
-        <table class="table table-bordered align-middle">
-            <thead>
-                <tr>
-                    <th width="50">NO</th>
-                    <th>URAIAN PEKERJAAN</th>
-                    <th>SAT</th>
-                    <th>VOL</th>
-                    <th>HARGA SATUAN</th>
-                    <th>JUMLAH HARGA</th>
-                </tr>
-            </thead>
+                <tbody>
 
-            <tbody>
+                    @foreach($rab->categories as $category)
 
-                @foreach($rab->categories as $category)
+                        @php
+                            $categoryLetter = numberToLetters($loop->index);
+                            $uraianNo = 1;
 
-                    @php
-                        $categoryLetter = numberToLetters($loop->index);
-                        $uraianNo = 1;
+                            $categoryTotal = $category->uraians
+                                ->flatMap->items
+                                ->sum('total');
+                        @endphp
 
-                        $categoryTotal = $category->uraians
-                            ->flatMap->items
-                            ->sum('total');
-                    @endphp
+                            <tr class="table-secondary">
+                                <th>{{ $categoryLetter }}</th>
+                                <th colspan="4">{{ strtoupper($category->name) }}</th>
+                                <th class="text-end">
+                                    Rp {{ number_format($categoryTotal,2,',','.') }}
+                                </th>
+                            </tr>
 
-                        <tr class="table-secondary">
-                            <th>{{ $categoryLetter }}</th>
-                            <th colspan="4">{{ strtoupper($category->name) }}</th>
-                            <th class="text-end">
-                                Rp {{ number_format($categoryTotal,2,',','.') }}
-                            </th>
-                        </tr>
+                        @foreach($category->uraians as $uraian)
 
-                    @foreach($category->uraians as $uraian)
+                            <tr class="fw-bold">
+                                <td>{{ $uraianNo }}</td>
 
-                        <tr class="fw-bold">
-                            <td>{{ $uraianNo }}</td>
+                                <td colspan="5">
+                                    <div class="d-flex align-items-center gap-2">
 
-                            <td colspan="5">
-                                <div class="d-flex align-items-center gap-2">
+                                        {{ ucwords($uraian->name) }}
 
-                                    {{ ucwords($uraian->name) }}
+                                        <button type="button"
+                                            class="btn btn-sm btn-gambar"
+                                            onclick="bukagaleri(
+                                                '{{ route('rab.uraian-images', $uraian->id) }}',
+                                                '{{ $uraian->name }}'
+                                            )">
 
-                                    <button type="button"
-                                        class="btn btn-sm btn-gambar"
-                                        onclick="bukagaleri(
-                                            '{{ route('rab.uraian-images', $uraian->id) }}',
-                                            '{{ $uraian->name }}'
-                                        )">
+                                            <i class="ti ti-photo"></i>
 
-                                        <i class="ti ti-photo"></i>
+                                        </button>
 
-                                    </button>
+                                    </div>
+                                </td>
 
-                                </div>
-                            </td>
+                            </tr>
 
-                        </tr>
+                            @php $itemNo = 1; @endphp
 
-                        @php $itemNo = 1; @endphp
+                            @foreach($uraian->items as $item)
 
-                        @foreach($uraian->items as $item)
+                            <tr>
 
-                        <tr>
+                                <td>{{ $uraianNo.'.'.$itemNo }}</td>
 
-                            <td>{{ $uraianNo.'.'.$itemNo }}</td>
+                                <td>{{ $item->job_name }}</td>
 
-                            <td>{{ $item->job_name }}</td>
+                                <td>{{ $item->satuan }}</td>
 
-                            <td>{{ $item->satuan }}</td>
+                                <td>{{ rtrim(rtrim(number_format($item->volume, 2, '.', ''), '0'), '.') }}</td>
 
-                            <td>{{ rtrim(rtrim(number_format($item->volume, 2, '.', ''), '0'), '.') }}</td>
+                                <td>
+                                    Rp {{ number_format($item->price,2,',','.') }}
+                                </td>
 
-                            <td>
-                                Rp {{ number_format($item->price,2,',','.') }}
-                            </td>
+                                <td class="text-end">
+                                    Rp {{ number_format($item->total,2,',','.') }}
+                                </td>
 
-                            <td class="text-end">
-                                Rp {{ number_format($item->total,2,',','.') }}
-                            </td>
+                            </tr>
 
-                        </tr>
+                            @php $itemNo++; @endphp
 
-                        @php $itemNo++; @endphp
+                            @endforeach
+
+                            @php $uraianNo++; @endphp
 
                         @endforeach
 
-                        @php $uraianNo++; @endphp
-
                     @endforeach
 
-                @endforeach
+                </tbody>
 
-            </tbody>
+                <tfoot>
+                    <tr>
+                        <th colspan="5" class="text-end">SUBTOTAL</th>
+                        <th>Rp {{ number_format($rab->subtotal,3,',','.') }}</th>
+                    </tr>
+    
+                    <tr>
+                        <th colspan="5" class="text-end">DISCOUNT</th>
+                        <th>Rp {{ number_format($rab->discount,3,',','.') }}</th>
+                        
+                    </tr>
 
-            <tfoot>
-                <tr>
-                    <th colspan="5" class="text-end">SUBTOTAL</th>
-                    <th>Rp {{ number_format($rab->subtotal,3,',','.') }}</th>
-                </tr>
- 
-                <tr>
-                    <th colspan="5" class="text-end">DISCOUNT</th>
-                    <th>Rp {{ number_format($rab->discount,3,',','.') }}</th>
-                    
-                </tr>
+                    <tr>
+                        <th colspan="5" class="text-end">SUBTOTAL AFTER DISCOUNT</th>
+                        <th>Rp {{ number_format($rab->subtotal_after_discount,3,',','.') }}</th>
+                    </tr>
 
-                <tr>
-                    <th colspan="5" class="text-end">SUBTOTAL AFTER DISCOUNT</th>
-                    <th>Rp {{ number_format($rab->subtotal_after_discount,3,',','.') }}</th>
-                </tr>
+                    <tr>
+                        <th colspan="5" class="text-end">TAX RATE</th>
+                        <th>{{ $rab->tax_rate }}%</th>
+                    </tr>
 
-                <tr>
-                    <th colspan="5" class="text-end">TAX RATE</th>
-                    <th>{{ $rab->tax_rate }}%</th>
-                </tr>
+                    <tr>
+                        <th colspan="5" class="text-end">TOTAL TAX</th>
+                        <th>Rp {{ number_format($rab->tax_total,2,',','.') }}</th>
+                        
+                    </tr>
 
-                <tr>
-                    <th colspan="5" class="text-end">TOTAL TAX</th>
-                    <th>Rp {{ number_format($rab->tax_total,2,',','.') }}</th>
-                    
-                </tr>
+                    <tr>
+                        <th colspan="5" class="text-end">SHIPPING / HANDLING</th>
+                        <th>Rp {{ number_format($rab->shipping,2,',','.') }}</th>
+                        
+                    </tr>
 
-                <tr>
-                    <th colspan="5" class="text-end">SHIPPING / HANDLING</th>
-                    <th>Rp {{ number_format($rab->shipping,2,',','.') }}</th>
-                    
-                </tr>
-
-                <tr>
-                    <th colspan="5" class="text-end fw-bold">GRAND TOTAL</th>
-                    <th class="fw-bold">
-                        Rp {{ number_format($rab->grand_total,3,',','.') }}
-                    </th>
-                    
-                </tr>
-            </tfoot>
-        </table>
+                    <tr>
+                        <th colspan="5" class="text-end fw-bold">GRAND TOTAL</th>
+                        <th class="fw-bold">
+                            Rp {{ number_format($rab->grand_total,3,',','.') }}
+                        </th>
+                        
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
 
         @if($rab->notes)
             <div class="mt-4">

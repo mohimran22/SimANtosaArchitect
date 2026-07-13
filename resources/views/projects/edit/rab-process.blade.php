@@ -76,83 +76,85 @@
                 🔀 Urutkan Daftar Pekerjaan
             </button>
         </div>
-        <table class="table table-bordered align-middle" id="rabItemsTableEdit">
-            <colgroup>
-                <col><col><col><col><col><col><col>
-            </colgroup>
-            <thead>
-                <tr>
-                    <th width="50">NO</th>
-                    <th>URAIAN PEKERJAAN</th>
-                    <th>SAT</th>
-                    <th>VOL</th>
-                    <th>HARGA SATUAN</th>
-                    <th>JUMLAH HARGA</th>
-                    <th width="1%"></th>
-                </tr>
-            </thead>
-            <tbody id="rab_offerItemsBody_edit">
-            </tbody>
-            <tfoot>
-                <tr>
-                    <td colspan="6">
-                        <button type="button"
-                            class="btn btn-link fw-bold text-decoration-none"
-                            onclick="addCategoryEdit()">
-                            + Kategori Pekerjaan
-                        </button>
-                    </td>
-                </tr>
-                <tr>
-                    <th colspan="5" class="text-end">SUBTOTAL</th>
-                    <th id="rab_subtotalDisplay_edit">Rp 0</th>
-                </tr>
+        <div class="table-responsive">
+            <table class="table table-bordered align-middle" id="rabItemsTableEdit">
+                <colgroup>
+                    <col><col><col><col><col><col><col>
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th width="50">NO</th>
+                        <th>URAIAN PEKERJAAN</th>
+                        <th>SAT</th>
+                        <th>VOL</th>
+                        <th>HARGA SATUAN</th>
+                        <th>JUMLAH HARGA</th>
+                        <th width="1%"></th>
+                    </tr>
+                </thead>
+                <tbody id="rab_offerItemsBody_edit">
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="6">
+                            <button type="button"
+                                class="btn btn-link fw-bold text-decoration-none"
+                                onclick="addCategoryEdit()">
+                                + Kategori Pekerjaan
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th colspan="5" class="text-end">SUBTOTAL</th>
+                        <th id="rab_subtotalDisplay_edit">Rp 0</th>
+                    </tr>
 
-                <tr>
-                    <th colspan="5" class="text-end">DISCOUNT</th>
-                    <th>
-                        <input type="text" class="form-control"
-                            id="rab_discount_display_edit"
-                            value="{{ number_format($rab->discount,3,',','.') }}">
-                        <input type="hidden" name="discount" id="rab_discount_edit" value="{{ $rab->discount }}">
-                    </th>
-                </tr>
+                    <tr>
+                        <th colspan="5" class="text-end">DISCOUNT</th>
+                        <th>
+                            <input type="text" class="form-control"
+                                id="rab_discount_display_edit"
+                                value="{{ number_format($rab->discount,3,',','.') }}">
+                            <input type="hidden" name="discount" id="rab_discount_edit" value="{{ $rab->discount }}">
+                        </th>
+                    </tr>
 
-                <tr>
-                    <th colspan="5" class="text-end">SUBTOTAL AFTER DISCOUNT</th>
-                    <th id="rab_subAfterDiscountDisplay_edit">Rp 0</th>
-                </tr>
+                    <tr>
+                        <th colspan="5" class="text-end">SUBTOTAL AFTER DISCOUNT</th>
+                        <th id="rab_subAfterDiscountDisplay_edit">Rp 0</th>
+                    </tr>
 
-                <tr>
-                    <th colspan="5" class="text-end">TAX RATE (%)</th>
-                    <th>
-                        <input type="number" class="form-control"
-                            id="rab_tax_rate_edit"
-                            value="{{ $rab->tax_rate }}">
-                    </th>
-                </tr>
+                    <tr>
+                        <th colspan="5" class="text-end">TAX RATE (%)</th>
+                        <th>
+                            <input type="number" class="form-control"
+                                id="rab_tax_rate_edit"
+                                value="{{ $rab->tax_rate }}">
+                        </th>
+                    </tr>
 
-                <tr>
-                    <th colspan="5" class="text-end">TOTAL TAX</th>
-                    <th id="rab_totalTaxDisplay_edit">Rp 0</th>
-                </tr>
+                    <tr>
+                        <th colspan="5" class="text-end">TOTAL TAX</th>
+                        <th id="rab_totalTaxDisplay_edit">Rp 0</th>
+                    </tr>
 
-                <tr>
-                    <th colspan="5" class="text-end">SHIPPING / HANDLING</th>
-                    <th>
-                        <input type="text" class="form-control"
-                            id="rab_shipping_display_edit"
-                            value="{{ number_format($rab->shipping,3,',','.') }}">
-                        <input type="hidden" name="shipping" id="rab_shipping_edit" value="{{ $rab->shipping }}">
-                    </th>
-                </tr>
+                    <tr>
+                        <th colspan="5" class="text-end">SHIPPING / HANDLING</th>
+                        <th>
+                            <input type="text" class="form-control"
+                                id="rab_shipping_display_edit"
+                                value="{{ number_format($rab->shipping,3,',','.') }}">
+                            <input type="hidden" name="shipping" id="rab_shipping_edit" value="{{ $rab->shipping }}">
+                        </th>
+                    </tr>
 
-                <tr>
-                    <th colspan="5" class="text-end">GRAND TOTAL</th>
-                    <th id="rab_grandTotalDisplay_edit">Rp 0</th>
-                </tr>
-            </tfoot>
-        </table>
+                    <tr>
+                        <th colspan="5" class="text-end">GRAND TOTAL</th>
+                        <th id="rab_grandTotalDisplay_edit">Rp 0</th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
     </div>
     <div class="modal fade" id="uraianGalleryModalEdit">
         <div class="modal-dialog modal-lg modal-dialog-centered">

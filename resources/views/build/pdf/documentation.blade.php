@@ -14,25 +14,29 @@
     </p>
 
     @if($report->documentations->count())
+        <div style="overflow:hidden;">
 
-            <table
-                align="center"
-                cellpadding="2"
-                cellspacing="0"
-                style="border-collapse:collapse;margin-bottom:10px;">
-                <tr>
-                    @foreach($report->documentations->take(3) as $doc)
-                        <td width="33%" align="center" style="border:none; vertical-align:top;">
-                            <img
-                                src="file://{{ storage_path('app/public/'.$doc->file_path) }}"
-                                style="width:170px; height:120px; object-fit:cover;">
-                        </td>
-                        @if($loop->iteration % 3 == 0 && !$loop->last)
-                            </tr><tr>
-                        @endif
-                    @endforeach
-                </tr>
-            </table>
+            @foreach($report->documentations->take(3) as $doc)
+
+                <div style="
+                    float:left;
+                    width:32%;
+                    margin-right:2%;
+                ">
+
+                    <img
+                        src="file://{{ storage_path('app/public/'.$doc->file_path) }}"
+                        style="
+                            width:165px;
+                            height:120px;
+                            object-fit:cover;
+                        ">
+
+                </div>
+
+            @endforeach
+
+        </div>
     @else
         <div style="
             text-align:center;

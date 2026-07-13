@@ -345,6 +345,13 @@ document.addEventListener('click', function(e){
         padding:8px;
     }
 
+    .sidebar-menu-wrapper .navbar-nav::after{
+        content: "";
+        display: block;
+        margin: 20px 16px 0;
+        border-top: 1px solid #e9ecef;
+    }
+
 }
 
 </style>

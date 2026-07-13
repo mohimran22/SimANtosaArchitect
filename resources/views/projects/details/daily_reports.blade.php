@@ -7,80 +7,82 @@
         <div class="card-body">
             <div class="border rounded p-3 mb-4">
                 <div id="daily-report-page" data-project="{{ $project->id }}">
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th width="20">No</th>
-                                <th>Tanggal</th>
-                                <th>Minggu</th>
-                                <th width="120">Aksi</th>
-                            </tr>
-                        </thead>
-
-                        @foreach($reports as $minggu => $items)
-                            @php
-                                $weeklyReport = $weeklyReports[$minggu] ?? null;
-                            @endphp
-                            <tbody id="reportTable">
-                                <tr class="table-secondary week-header" data-week="{{ $minggu }}">
-                                    <td colspan="3"
-                                        class="fw-bold week-header"
-                                        {{-- data-week="{{ $minggu }}" --}}
-                                        style="cursor:pointer;">
-
-                                        <span class="week-icon">▼</span>
-                                        Minggu ke-{{ $minggu }}
-                                        (<span class="hari-kerja">
-                                            {{ $items->where('is_libur', false)->count() }}
-                                        </span> Hari Kerja)
-                                    </td>
-                                    <td class="text-center">
-                                        {{-- @if($items->where('is_libur', true)->count() >= 7) --}}
-                                        <button
-                                            class="btn btn-sm btn-dark btn-weekly-note"
-                                            data-week="{{ $minggu }}"
-                                            data-report-id="{{ $weeklyReport?->id }}"
-                                            data-capaian="{{ $weeklyReport?->capaian }}"
-                                            data-kendala="{{ $weeklyReport?->kendala }}"
-                                            data-rencana="{{ $weeklyReport?->rencana }}">
-                                            <i class="ti ti-{{ isset($weeklyReports[$minggu]) ? 'pencil' : 'plus' }}"></i>
-                                        </button>
-                                    </td>
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th width="20">No</th>
+                                    <th>Tanggal</th>
+                                    <th>Minggu</th>
+                                    <th width="120">Aksi</th>
                                 </tr>
+                            </thead>
 
-                                @foreach($items as $report)
-                                    <tr id="report-row-{{ $report->id }}"
-                                            data-week="{{ $minggu }}"
-                                            class="week-row week-{{ $minggu }} {{ $report->is_libur ? 'table-warning' : '' }}">
-                                        <td>{{ $loop->iteration }}</td>
+                            @foreach($reports as $minggu => $items)
+                                @php
+                                    $weeklyReport = $weeklyReports[$minggu] ?? null;
+                                @endphp
+                                <tbody id="reportTable">
+                                    <tr class="table-secondary week-header" data-week="{{ $minggu }}">
+                                        <td colspan="3"
+                                            class="fw-bold week-header"
+                                            {{-- data-week="{{ $minggu }}" --}}
+                                            style="cursor:pointer;">
 
-                                        <td>
-                                            {{ \Carbon\Carbon::parse($report->tanggal)->format('d/m/Y') }}
-
-                                            @if($report->is_libur)
-                                                <span class="badge bg-warning text-dark ms-2">
-                                                    Libur
-                                                </span>
-                                            @endif
+                                            <span class="week-icon">▼</span>
+                                            Minggu ke-{{ $minggu }}
+                                            (<span class="hari-kerja">
+                                                {{ $items->where('is_libur', false)->count() }}
+                                            </span> Hari Kerja)
                                         </td>
-
-                                        <td>Minggu ke-{{ $report->minggu }}</td>
-
-                                        <td>
-                                            <button class="btn btn-sm btn-dark btn-detail" title="Detail"
-                                                data-id="{{ $report->id }}">
-                                                <i class="ti ti-eye"></i>
-                                            </button>
-                                            <button class="btn btn-sm btn-dark btn-hapus" title="Hapus"
-                                                data-id="{{ $report->id }}">
-                                                <i class="ti ti-trash"></i>
+                                        <td class="text-center">
+                                            {{-- @if($items->where('is_libur', true)->count() >= 7) --}}
+                                            <button
+                                                class="btn btn-sm btn-dark btn-weekly-note"
+                                                data-week="{{ $minggu }}"
+                                                data-report-id="{{ $weeklyReport?->id }}"
+                                                data-capaian="{{ $weeklyReport?->capaian }}"
+                                                data-kendala="{{ $weeklyReport?->kendala }}"
+                                                data-rencana="{{ $weeklyReport?->rencana }}">
+                                                <i class="ti ti-{{ isset($weeklyReports[$minggu]) ? 'pencil' : 'plus' }}"></i>
                                             </button>
                                         </td>
                                     </tr>
-                                @endforeach
-                            </tbody>
-                        @endforeach
-                    </table>
+
+                                    @foreach($items as $report)
+                                        <tr id="report-row-{{ $report->id }}"
+                                                data-week="{{ $minggu }}"
+                                                class="week-row week-{{ $minggu }} {{ $report->is_libur ? 'table-warning' : '' }}">
+                                            <td>{{ $loop->iteration }}</td>
+
+                                            <td>
+                                                {{ \Carbon\Carbon::parse($report->tanggal)->format('d/m/Y') }}
+
+                                                @if($report->is_libur)
+                                                    <span class="badge bg-warning text-dark ms-2">
+                                                        Libur
+                                                    </span>
+                                                @endif
+                                            </td>
+
+                                            <td>Minggu ke-{{ $report->minggu }}</td>
+
+                                            <td>
+                                                <button class="btn btn-sm btn-dark btn-detail" title="Detail"
+                                                    data-id="{{ $report->id }}">
+                                                    <i class="ti ti-eye"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-dark btn-hapus" title="Hapus"
+                                                    data-id="{{ $report->id }}">
+                                                    <i class="ti ti-trash"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            @endforeach
+                        </table>
+                    </div>
                 </div>
                 <div class="modal fade" id="dailyModal" tabindex="-1">
                     <div class="modal-dialog modal-xl modal-dialog-scrollable">
@@ -608,7 +610,7 @@
                     <div id="editMode" style="display:none;">
                         <form id="editDailyForm">
                             <input type="hidden" name="id" value="${data.id}">
-            
+                            <!--
                             <div class="d-flex align-items-center gap-2 mb-3">
                                 <label class="form-check form-switch">
                                     <input class="form-check-input" type="checkbox" id="switchLibur">
@@ -616,8 +618,8 @@
                                 </label>
 
                                 <span id="statusHari" class="badge bg-success">Hari Kerja</span>
-                            </div>
-                            <hr>
+                            </div> -->
+                            
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <h6 class="mb-0">Tenaga Kerja & Alat Bantu</h6>
                                 
@@ -977,51 +979,51 @@
                         </form>
                     </div>
                     `;
-                    const switchLibur = document.getElementById('switchLibur');
-                    const statusHari = document.getElementById('statusHari');
+                    // const switchLibur = document.getElementById('switchLibur');
+                    // const statusHari = document.getElementById('statusHari');
 
-                    switchLibur.checked = data.is_libur;
+                    // switchLibur.checked = data.is_libur;
 
-                    if(data.is_libur){
-                        statusHari.className = "badge bg-danger";
-                        statusHari.innerText = "Hari Libur";
-                    }else{
-                        statusHari.className = "badge bg-success";
-                        statusHari.innerText = "Hari Kerja";
-                    }
+                    // if(data.is_libur){
+                    //     statusHari.className = "badge bg-danger";
+                    //     statusHari.innerText = "Hari Libur";
+                    // }else{
+                    //     statusHari.className = "badge bg-success";
+                    //     statusHari.innerText = "Hari Kerja";
+                    // }
                     
-                    switchLibur.addEventListener('change', function(){
+                    // switchLibur.addEventListener('change', function(){
 
-                        let isLibur = this.checked ? 1 : 0;
+                    //     let isLibur = this.checked ? 1 : 0;
 
-                        fetch(`/daily-report/toggle-libur/${dailyId}`,{
-                            method: "POST",
-                            headers:{
-                                "Content-Type":"application/json",
-                                "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content
-                            },
-                            body: JSON.stringify({
-                                is_libur: isLibur
-                            })
-                        })
-                        .then(res=>res.json())
-                        .then(res=>{
+                    //     fetch(`/daily-report/toggle-libur/${dailyId}`,{
+                    //         method: "POST",
+                    //         headers:{
+                    //             "Content-Type":"application/json",
+                    //             "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content
+                    //         },
+                    //         body: JSON.stringify({
+                    //             is_libur: isLibur
+                    //         })
+                    //     })
+                    //     .then(res=>res.json())
+                    //     .then(res=>{
 
-                            if(res.success){
+                    //         if(res.success){
 
-                                if(isLibur){
-                                    statusHari.className = "badge bg-danger";
-                                    statusHari.innerText = "Hari Libur";
-                                }else{
-                                    statusHari.className = "badge bg-success";
-                                    statusHari.innerText = "Hari Kerja";
-                                }
+                    //             if(isLibur){
+                    //                 statusHari.className = "badge bg-danger";
+                    //                 statusHari.innerText = "Hari Libur";
+                    //             }else{
+                    //                 statusHari.className = "badge bg-success";
+                    //                 statusHari.innerText = "Hari Kerja";
+                    //             }
 
-                            }
+                    //         }
 
-                        });
+                    //     });
 
-                    });
+                    // });
                     const btnToggle = document.getElementById('btnToggleEdit');
                     const viewMode = document.getElementById('viewMode');
                     const editMode = document.getElementById('editMode');

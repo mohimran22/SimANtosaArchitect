@@ -439,8 +439,7 @@ label {
     flex: 1;
     overflow-y: auto;
     overflow-x: hidden;
-    padding: 15px 15px 20px 0;
-    -webkit-overflow-scrolling:touch;
+    padding: 15px 15px 60px 0;
 }
 
 .sidebar-menu-wrapper .navbar-nav {
@@ -903,7 +902,7 @@ tr.row-uraian td.sticky-col{
 #rabItemsTableEdit col:nth-child(1){ width:50px }
 #rabItemsTableEdit col:nth-child(2){ width:35% }
 #rabItemsTableEdit col:nth-child(3){ width:90px }
-#rabItemsTableEdit col:nth-child(4){ width:110px }
+#rabItemsTableEdit col:nth-child(4){ width:140px }
 #rabItemsTableEdit col:nth-child(5){ width:150px }
 #rabItemsTableEdit col:nth-child(6){ width:160px }
 
@@ -1152,4 +1151,26 @@ input[type=number]::-webkit-outer-spin-button {
     #datatable-search-container{
         display:none;
     }
+}
+.documentation-table{
+    width:100%;
+    border-collapse:separate;
+    border-spacing:12px 8px;   /* horizontal vertical */
+    margin-bottom:10px;
+}
+
+.documentation-table td{
+    width:33.33%;
+    border:none;
+    text-align:center;
+    vertical-align:top;
+    padding:0;
+}
+
+.documentation-table img{
+    width:180px;
+    height:125px;
+    object-fit:cover;
+    display:inline-block;
+    margin:0;
 }
