@@ -1,34 +1,34 @@
-<h2 style="text-align:center;margin-bottom:20px">
+<h2 style="text-align:center; margin-bottom:20px;">
     Dokumentasi Proyek
 </h2>
 
 @foreach($dailyReports as $report)
 
+    <h4 style="margin-bottom:5px;">
+        {{ $report->tanggal_formatted }}
+        (Minggu {{ $report->minggu }})
+    </h4>
+
+    <p style="margin-top:0; margin-bottom:10px;">
+        {{ $report->pekerjaan }}
+    </p>
+
     @if($report->documentations->count())
 
-        <h4>
-            {{ $report->tanggal_formatted }}
-            (Minggu {{ $report->minggu }})
-        </h4>
-
-        <p>
-            {{ $report->pekerjaan }}
-        </p>
-
-        <table width="100%" cellpadding="5">
+        <table width="100%" cellpadding="5" cellspacing="0" style="border-collapse:collapse;">
             <tr>
 
-                @foreach($report->documentations as $doc)
+                @foreach($report->documentations->take(3) as $doc)
 
-                    <td width="33%" align="center">
+                    <td width="33%" align="center" style="border:none; vertical-align:top;">
 
-                    <img
-                        src="file://{{ storage_path('app/public/'.$doc->file_path) }}"
-                        style="width:170px;height:120px;object-fit:cover;">
+                        <img
+                            src="file://{{ storage_path('app/public/'.$doc->file_path) }}"
+                            style="width:170px; height:120px; object-fit:cover;">
 
                     </td>
 
-                    @if(($loop->iteration % 3)==0)
+                    @if($loop->iteration % 3 == 0 && !$loop->last)
                         </tr><tr>
                     @endif
 
@@ -37,8 +37,34 @@
             </tr>
         </table>
 
-        <br>
+    @else
+
+        {{-- <div style="
+            text-align:center;
+            padding:20px;
+            color:#777;
+            font-style:italic;
+            border:1px dashed #ccc;
+            margin-bottom:20px;
+        ">
+            Mohon maaf, foto dokumentasi masih belum tersedia.
+        </div> --}}
+        <div style="
+            text-align:center;
+            padding:25px;
+            color:#666;
+            font-size:12px;
+            border:1px dashed #999;
+            background:#f8f8f8;
+        ">
+            <strong>Dokumentasi Belum Tersedia</strong><br><br>
+            Mohon maaf, foto dokumentasi untuk tanggal
+            <strong>{{ $report->tanggal_formatted }}</strong>
+            masih belum tersedia.
+        </div>
 
     @endif
+
+    <br>
 
 @endforeach

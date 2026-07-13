@@ -55,7 +55,7 @@
                                         <td>{{ $loop->iteration }}</td>
 
                                         <td>
-                                            {{ \Carbon\Carbon::parse($report->tanggal)->format('d-m-Y') }}
+                                            {{ \Carbon\Carbon::parse($report->tanggal)->format('d/m/Y') }}
 
                                             @if($report->is_libur)
                                                 <span class="badge bg-warning text-dark ms-2">
@@ -86,26 +86,34 @@
                     <div class="modal-dialog modal-xl modal-dialog-scrollable">
                         <div class="modal-content">
 
-                            <div class="modal-header">
-                                <div class="flex-grow-1">
+                            <div class="modal-header flex-column">
 
-                                    <h5 class="modal-title mb-1">
+                                <div class="d-flex w-100 justify-content-between align-items-center">
+
+                                    <h5 class="modal-title mt-2">
                                         Detail Laporan Harian
                                     </h5>
 
                                     <div class="d-flex align-items-center gap-2">
 
-                                        <span class="badge bg-dark" id="badgeWeek"></span>
+                                        <button class="btn btn-dark btn-sm" id="btnToggleEdit">
+                                            <i class="ti ti-edit"></i> Edit
+                                        </button>
 
-                                        <span class="badge bg-secondary" id="badgeTanggal"></span>
+                                        <button
+                                            class="btn-close"
+                                            data-bs-dismiss="modal">
+                                        </button>
 
                                     </div>
 
                                 </div>
-                                        <button class="btn btn-dark" id="btnToggleEdit">
-                                            Edit
-                                        </button>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+
+                                <div class="d-flex gap-2 mt-2 w-100">
+                                    <span class="badge bg-dark" id="badgeWeek"></span>
+                                    <span class="badge bg-secondary" id="badgeTanggal"></span>
+                                </div>
+
                             </div>
 
                             <div class="modal-body" id="dailyModalBody">

@@ -184,7 +184,9 @@
                 cell.style.width = "";
             });
 
-        if (window.innerWidth < 576) return;
+            if (window.innerWidth < 576) {
+                return;
+            }
 
         const offsets = [];
         let left = 0;
