@@ -913,6 +913,21 @@ tr.row-uraian td.sticky-col{
 #rabItemsTable col:nth-child(5){ width:150px }
 #rabItemsTable col:nth-child(6){ width:160px }
 
+@media (max-width:576px){
+
+    /* Kolom Volume */
+    #rabItemsTableEdit td:nth-child(4){
+        min-width:120px !important;
+    }
+
+    /* Input Volume */
+    #rabItemsTableEdit .vol{
+        min-width:100px !important;
+        width:100% !important;
+        box-sizing:border-box;
+    }
+
+}
 .uraian-row{
 position:relative;
 }
