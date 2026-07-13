@@ -27,6 +27,7 @@ class BuildDailyReport extends Model
         'jam_selesai' => 'datetime:H:i',
     ];
     protected $appends = [
+        'minggu',
         'tanggal_formatted',
         'jam_mulai_formatted',
         'jam_selesai_formatted',
@@ -83,8 +84,10 @@ public function getMingguAttribute()
 }
 public function getTanggalFormattedAttribute()
 {
-    return $this->tanggal 
-        ? $this->tanggal->format('Y-m-d') 
+    return $this->tanggal
+        ? \Carbon\Carbon::parse($this->tanggal)
+            ->locale('id')
+            ->translatedFormat('l, d F Y')
         : null;
 }
 

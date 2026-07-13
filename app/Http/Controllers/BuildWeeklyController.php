@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use App\Models\Project;
+use App\Models\BuildDailyReport;
 use App\Models\WeeklyReport;
 use App\Models\BuildWeeklyProgress;
 use App\Models\BuildProcessItem;
@@ -371,7 +372,23 @@ public function exportPdf(Request $request, Project $project) {
         ->groupBy(function ($item) {
             return $item->buildPlan->category_order;
         });
+        $startWeek = Carbon::parse($project->start_date)
+            ->addWeeks($weekNow - 1)
+            ->startOfDay();
 
+        $endWeek = (clone $startWeek)
+            ->addDays(6)
+            ->endOfDay();
+
+        $dailyReports = BuildDailyReport::with([
+            'documentations' => function ($q) {
+                $q->where('file_type', 'like', 'image/%');
+            }
+        ])
+->where('project_id', $project->id)
+->whereBetween('tanggal', [$startWeek, $endWeek])
+->orderBy('tanggal')
+->get();
     $chartConfig = [
         'type' => 'line',
         'data' => [
@@ -471,7 +488,6 @@ public function exportPdf(Request $request, Project $project) {
         $realPoints[] = round($x,2).','.round($y,2);
     }
     $columnWidth = $svgWidth / count($allWeeks);
-
 
     $svgPlan = implode(' ', $planPoints);
     $svgReal = implode(' ', $realPoints);
@@ -591,7 +607,13 @@ public function exportPdf(Request $request, Project $project) {
     $svgPath = storage_path('app/public/kurva-'.$project->id.'.svg');
 
     file_put_contents($svgPath, $svg);
-    
+    $dokumentasiHtml = view(
+        'build.pdf.documentation',
+        [
+            'project' => $project,
+            'dailyReports' => $dailyReports,
+        ]
+    )->render();
     ini_set('pcre.backtrack_limit', '5000000');
     ini_set('pcre.recursion_limit', '5000000');
     $mpdf = new Mpdf([
@@ -646,6 +668,15 @@ public function exportPdf(Request $request, Project $project) {
     // </div>
     // ');
     $mpdf->WriteHTML($detailHtml);
+    $mpdf->AddPage('P');
+
+    $mpdf->SetHTMLHeader('
+    <div>
+        <img src="'.$headerDetail.'" width="100%">
+    </div>
+    ');
+
+    $mpdf->WriteHTML($dokumentasiHtml);
 
     return response(
         $mpdf->Output(

@@ -87,14 +87,21 @@
                         <div class="modal-content">
 
                             <div class="modal-header">
-                                    <h5 class="modal-title flex-grow-1">
+                                <div class="flex-grow-1">
+
+                                    <h5 class="modal-title mb-1">
                                         Detail Laporan Harian
                                     </h5>
-                                    {{-- <div class="d-flex align-items-center gap-2">
+
+                                    <div class="d-flex align-items-center gap-2">
+
                                         <span class="badge bg-dark" id="badgeWeek"></span>
 
                                         <span class="badge bg-secondary" id="badgeTanggal"></span>
-                                    </div> --}}
+
+                                    </div>
+
+                                </div>
                                         <button class="btn btn-dark" id="btnToggleEdit">
                                             Edit
                                         </button>
@@ -380,6 +387,7 @@
                     }
                 });
         }
+
         modalBody.addEventListener('click', function(e){
 
             if(e.target.closest('#btnAddWork')) addWorkRow();
@@ -418,6 +426,11 @@
                 fetch(`/daily/${id}/detail`)
                 .then(res => res.json())
                 .then(data => {
+                    document.getElementById('badgeWeek').textContent =
+                        `Minggu ${data.minggu}`;
+
+                    document.getElementById('badgeTanggal').textContent =
+                        data.tanggal_formatted;
                     let workTimeRows = '';
 
                     (data.work_times || []).forEach((t, i) => {
@@ -439,7 +452,7 @@
 
                             <td>${t.jam_selesai ?? '-'}</td>
 
-                            <td>${parseFloat(t.total_jam ?? 0).toFixed(2)} Jam</td>
+                            <td>${formatDurasi(t.total_jam)}</td>
 
                             <td>
                                 <span class="badge ${badge}">
@@ -484,7 +497,7 @@
                             <td>${m.ditolak}</td>
                         </tr>`;
                     });
-
+                    
                     modalBody.innerHTML = `
 
                     <div id="viewMode">
@@ -1032,11 +1045,6 @@
                     setupAdvancedPreview('fileInputPekerjaan', 'previewPekerjaan');
                     setupAdvancedPreview('fileInputTenaga', 'previewTenaga');
                     setupAdvancedPreview('fileInputMaterial', 'previewMaterial');
-                    document.getElementById('badgeWeek').textContent =
-                        `Minggu ${data.week_no}`;
-
-                    document.getElementById('badgeTanggal').textContent =
-                        data.tanggal_formatted;
                 });
             });
 
@@ -1230,6 +1238,23 @@
 
             });
 
+        }
+        function formatDurasi(totalJam) {
+
+            totalJam = Number(totalJam || 0);
+
+            const jam = Math.floor(totalJam);
+            const menit = Math.round((totalJam - jam) * 60);
+
+            if (jam > 0 && menit > 0) {
+                return `${jam} Jam ${menit} Menit`;
+            }
+
+            if (jam > 0) {
+                return `${jam} Jam`;
+            }
+
+            return `${menit} Menit`;
         }
         document.addEventListener('click', function(e){
 
