@@ -271,33 +271,26 @@ if(modal){
             }
         });
         camera.srcObject = stream;
-        if(navigator.geolocation){
+        if ('geolocation' in navigator) {
 
             navigator.geolocation.getCurrentPosition(
-
-                function(position){
-
+                (position) => {
                     latInput.value = position.coords.latitude;
                     lngInput.value = position.coords.longitude;
-
-                    console.log(position.coords.latitude);
-                    console.log(position.coords.longitude);
-
                 },
-
-                function(error){
-
-                    alert("Lokasi tidak dapat diakses.");
-
+                (err) => {
+                    console.error(err);
+                    alert("Tidak bisa mendapatkan lokasi.");
                 },
-
                 {
-                    enableHighAccuracy:true,
-                    timeout:10000
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
                 }
-
             );
 
+        } else {
+            alert("Browser tidak mendukung Geolocation.");
         }
     });
 }
