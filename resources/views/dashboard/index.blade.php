@@ -114,13 +114,15 @@
 
                                 </div>
 
-                                <form action="{{ route('attendances.check-out') }}" method="POST" class="mt-4">
-                                    @csrf
-                                    <button class="btn btn-danger btn-lg rounded-pill">
-                                        <i class="ti ti-logout me-2"></i>
-                                        Pulang
-                                    </button>
-                                </form>
+                                <button
+                                    class="btn btn-danger btn-lg rounded-pill"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#checkOutModal">
+
+                                    <i class="ti ti-logout me-2"></i>
+                                    Pulang
+
+                                </button>
 
                             </div>
 
@@ -165,33 +167,71 @@
                         <h5>Absensi Masuk</h5>
                     </div>
 
-                <form action="{{ route('attendances.check-in') }}" method="POST">
-                    @csrf
-                    <div class="modal-body text-center">
-                        <video id="camera" autoplay playsinline class="img-fluid rounded border"></video>
-                        <canvas
-                            id="canvas"
-                            class="d-none">
-                        </canvas>
+                    <form action="{{ route('attendances.check-in') }}" method="POST">
+                        @csrf
+                        <div class="modal-body text-center">
+                            <video id="camera" autoplay playsinline class="img-fluid rounded border"></video>
+                            <canvas
+                                id="canvas"
+                                class="d-none">
+                            </canvas>
 
-                        <img id="preview" class="img-fluid rounded border d-none">
-                        <input type="hidden" id="photo" name="photo">
-                        <input type="hidden" name="check_in_lat" id="check_in_lat">
-                        <input type="hidden" name="check_in_lng" id="check_in_lng">
+                            <img id="preview" class="img-fluid rounded border d-none">
+                            <input type="hidden" id="photo" name="photo">
+                            <input type="hidden" name="check_in_lat" id="check_in_lat">
+                            <input type="hidden" name="check_in_lng" id="check_in_lng">
+                        </div>
+
+                        <div class="modal-footer justify-content-center">
+                            <button type="button" id="capture" class="btn btn-dark">
+                                📸 Ambil Foto
+                            </button>
+                            <button type="button" id="retake" class="btn btn-secondary d-none">
+                                🔄 Ambil Ulang
+                            </button>
+                            <button type="submit" id="confirm" class="btn btn-success d-none">
+                                ✅ Konfirmasi Hadir
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="checkOutModal">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+
+                    <div class="modal-header">
+                        <h5>Absensi Pulang</h5>
                     </div>
 
-                    <div class="modal-footer justify-content-center">
-                        <button type="button" id="capture" class="btn btn-dark">
-                            📸 Ambil Foto
-                        </button>
-                        <button type="button" id="retake" class="btn btn-secondary d-none">
-                            🔄 Ambil Ulang
-                        </button>
-                        <button type="submit" id="confirm" class="btn btn-success d-none">
-                            ✅ Konfirmasi Hadir
-                        </button>
-                    </div>
-                </form>
+                    <form action="{{ route('attendances.check-out') }}" method="POST">
+                        @csrf
+                        <div class="modal-body text-center">
+                            <video id="cameraCheckout" autoplay playsinline class="img-fluid rounded border"></video>
+                            <canvas
+                                id="canvasCheckout"
+                                class="d-none">
+                            </canvas>
+
+                            <img id="previewCheckout" class="img-fluid rounded border d-none">
+                            <input type="hidden" id="photoCheckOut" name="photo">
+                            <input type="hidden" name="check_out_lat" id="check_out_lat">
+                            <input type="hidden" name="check_out_lng" id="check_out_lng">
+                        </div>
+
+                        <div class="modal-footer justify-content-center">
+                            <button type="button" id="captureCheckout" class="btn btn-dark">
+                                📸 Ambil Foto
+                            </button>
+                            <button type="button" id="retakeCheckout" class="btn btn-secondary d-none">
+                                🔄 Ambil Ulang
+                            </button>
+                            <button type="submit" id="confirmCheckout" class="btn btn-success d-none">
+                                ✅ Konfirmasi Hadir
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
@@ -244,19 +284,29 @@ function updateClock() {
 updateClock();
 setInterval(updateClock, 1000);
 let stream;
+const modal = document.getElementById('checkInModal');
+const modalOut = document.getElementById('checkOutModal');
 
 const camera = document.getElementById('camera');
 const canvas = document.getElementById('canvas');
 const preview = document.getElementById('preview');
-
 const capture = document.getElementById('capture');
 const retake = document.getElementById('retake');
 const confirm = document.getElementById('confirm');
-
 const photo = document.getElementById('photo');
 const latInput = document.getElementById('check_in_lat');
 const lngInput = document.getElementById('check_in_lng');
-const modal = document.getElementById('checkInModal');
+
+const cameraOut = document.getElementById('cameraCheckout');
+const canvasOut = document.getElementById('canvasCheckout');
+const previewOut = document.getElementById('previewCheckout');
+const captureOut = document.getElementById('captureCheckout');
+const retakeOut = document.getElementById('retakeCheckout');
+const confirmOut = document.getElementById('confirmCheckout');
+const photoOut = document.getElementById('photoCheckOut');
+const latOutInput = document.getElementById('check_out_lat');
+const lngOutInput = document.getElementById('check_out_lng');
+
 if(modal){
     modal.addEventListener('shown.bs.modal', async () => {
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -323,6 +373,74 @@ retake.addEventListener('click',()=>{
     retake.classList.add('d-none');
 
     confirm.classList.add('d-none');
+
+});
+if(modalOut){
+    modalOut.addEventListener('shown.bs.modal', async () => {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+
+            alert("Browser tidak mendukung Camera API.");
+
+            return;
+        }
+        stream = await navigator.mediaDevices.getUserMedia({
+            video:{
+                facingMode:"user"
+            }
+        });
+        cameraOut.srcObject = stream;
+        if ('geolocation' in navigator) {
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    latOutInput.value = position.coords.latitude;
+                    lngOutInput.value = position.coords.longitude;
+                },
+                (err) => {
+                    console.error(err);
+                    alert("Tidak bisa mendapatkan lokasi.");
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                }
+            );
+
+        } else {
+            alert("Browser tidak mendukung Geolocation.");
+        }
+    });
+}
+captureOut.addEventListener('click',()=>{
+
+    canvasOut.width = cameraOut.videoWidth;
+    canvasOut.height = cameraOut.videoHeight;
+
+    canvasOut.getContext('2d')
+        .drawImage(cameraOut,0,0);
+
+    const image = canvasOut.toDataURL('image/jpeg');
+
+    photoOut.value = image;
+    previewOut.src = image;
+    previewOut.classList.remove('d-none');
+    cameraOut.classList.add('d-none');
+    captureOut.classList.add('d-none');
+    retakeOut.classList.remove('d-none');
+    confirmOut.classList.remove('d-none');
+});
+retake.addEventListener('click',()=>{
+    photoOut.value = '';
+    previewOut.classList.add('d-none');
+
+    cameraOut.classList.remove('d-none');
+
+    captureOut.classList.remove('d-none');
+
+    retakeOut.classList.add('d-none');
+
+    confirmOut.classList.add('d-none');
 
 });
 </script>

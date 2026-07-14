@@ -18,7 +18,12 @@ class Attendance extends Model
         'check_in_photo',
         'check_out_photo',
         'check_in_lat',
-        'check_in_lng'
+        'check_in_lng',
+        'check_out_lat',
+        'check_out_lng',
+        'work_minutes', 
+        'attendance_code', 
+        'is_full_work' 
     ];
 
     protected $casts = [

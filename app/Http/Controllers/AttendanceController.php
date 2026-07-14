@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Attendance;
+use App\Services\AttendanceService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
@@ -76,6 +77,12 @@ class AttendanceController extends Controller
 
     public function checkOut(Request $request)
     {
+        $request->validate([
+            'photo' => 'required|string',
+            'check_out_lat' => 'required|numeric',
+            'check_out_lng' => 'required|numeric',
+        ]);
+
         $employee = auth()->user()->employee;
 
         if (!$employee) {
@@ -94,11 +101,34 @@ class AttendanceController extends Controller
             return back()->with('warning', 'Anda sudah melakukan absensi pulang.');
         }
 
-        $attendance->update([
-            'status'    => 'go_home',
-            'check_out' => now(),
-        ]);
+        // Simpan foto
+        $photoPath = null;
 
+        if ($request->filled('photo')) {
+
+            $image = $request->photo;
+
+            $image = preg_replace('/^data:image\/\w+;base64,/', '', $image);
+            $image = str_replace(' ', '+', $image);
+
+            $filename = 'attendance/checkout/' . Str::uuid() . '.jpg';
+
+            Storage::disk('public')->put(
+                $filename,
+                base64_decode($image)
+            );
+
+            $photoPath = $filename;
+        }
+
+        $attendance->update([
+            'status'           => 'go_home',
+            'check_out'        => now(),
+            'check_out_photo'  => $photoPath,
+            'check_out_lat'    => $request->check_out_lat,
+            'check_out_lng'    => $request->check_out_lng,
+        ]);
+        app(AttendanceService::class)->calculate($attendance);
         return back()->with('success', 'Berhasil melakukan absensi pulang.');
     }
 }
