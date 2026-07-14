@@ -702,9 +702,13 @@ Route::middleware(['auth', 'permission:lihat daftar dokumen'])->group(function (
 
 Route::middleware(['auth'])->group(function () {
 
-    Route::resource('attendances', AttendanceController::class)
-        ->middleware('permission:lihat daftar absensi');
+    // Route::resource('attendances', AttendanceController::class)
+    //     ->middleware('permission:lihat daftar absensi');
+    Route::get('/attendances', [AttendanceController::class, 'index'])
+    ->name('attendances.index');
 
+    Route::get('/attendances/datatable', [AttendanceController::class, 'datatable'])
+        ->name('attendances.datatable');
     Route::post('attendances/check-in', [AttendanceController::class, 'checkIn'])
         // ->middleware('permission:tambah data absensi')
         ->name('attendances.check-in');

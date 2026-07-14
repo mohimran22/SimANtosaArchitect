@@ -41,35 +41,33 @@
                         @if(session('success'))
                             <div class="alert alert-success">{{ session('success') }}</div>
                         @endif
-                    <div class="table-responsive">
-                        <table id="absenTable" class="table card-table table-vcenter text-nowrap">
-                            <thead>
-                                <tr>
-                                    <th>No.</th>
-                                    <th>Nama Karyawan</th>
-                                    <th>Jabatan</th>
-                                    <th>Divisi</th>
-                                    <th>H</th>
-                                    <th>TL A</th>
-                                    <th>TL B</th>
-                                    <th>TL C</th>
-                                    <th>DL</th>
-                                    <th>I</th>
-                                    <th>S</th>
-                                    <th>C</th>
-                                    <th>A</th>
-                                    <th>Total Hari Kerja</th>
-                                    <th>Total Hari Kehadiran</th>
-                                    <th>Kehadiran</th>
-                                    <th>Ketepatan Waktu</th>
-                                    <th>Total Jam Lembur</th>
-                                    <th>Keterangan</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                            </tbody>
-                        </table>
-                    </div>
+                        <div class="table-responsive">
+                            <table id="absenTable" class="table table-bordered table-striped align-middle w-100">
+                                <thead>
+                                    <tr>
+                                        <th>No</th>
+                                        <th>Nama</th>
+                                        <th>Jabatan</th>
+                                        <th>Divisi</th>
+                                        <th>H</th>
+                                        <th>TL A</th>
+                                        <th>TL B</th>
+                                        <th>TL C</th>
+                                        <th>DL</th>
+                                        <th>I</th>
+                                        <th>S</th>
+                                        <th>C</th>
+                                        <th>A</th>
+                                        <th>Hari Kerja</th>
+                                        <th>Kehadiran</th>
+                                        <th>% Hadir</th>
+                                        <th>% Tepat Waktu</th>
+                                        <th>Lembur</th>
+                                        <th>Keterangan</th>
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
                 </div>
             </div>
         </div>
@@ -112,16 +110,113 @@
                 serverSide: true,
                 processing: true,
                 responsive: false,
-                ajax: '{{ route("attendances.index") }}',
-                columns: [
-                    { data: 'DT_RowIndex', orderable:false, searchable:false },
-                    { data: 'text' },
-                    { data: 'url' },
-                    { data: 'parent_name' },
-                    { data: 'order' },
-                    { data: 'active_badge', orderable:false, searchable:false },
-                    { data: 'permission_name' },
-                    { data: 'actions', orderable:false, searchable:false },
+                
+                ajax: {
+
+                    url: "{{ route('attendances.datatable') }}",
+
+                    data: function(d){
+
+                        const month = $('#month').val();
+
+                        if(month){
+
+                            const split = month.split('-');
+
+                            d.year = split[0];
+
+                            d.month = split[1];
+
+                        }
+
+                    }
+
+                },
+
+                columns:[
+
+                    {
+                        data:'DT_RowIndex',
+                        name:'DT_RowIndex',
+                        searchable:false,
+                        orderable:false
+                    },
+
+                    {
+                        data:'fullname',
+                        name:'fullname'
+                    },
+
+                    {
+                        data:'position.name',
+                        defaultContent:'-'
+                    },
+
+                    {
+                        data:'division.name',
+                        defaultContent:'-'
+                    },
+
+                    {
+                        data:'h'
+                    },
+
+                    {
+                        data:'tla'
+                    },
+
+                    {
+                        data:'tlb'
+                    },
+
+                    {
+                        data:'tlc'
+                    },
+
+                    {
+                        data:'dl'
+                    },
+
+                    {
+                        data:'izin'
+                    },
+
+                    {
+                        data:'sakit'
+                    },
+
+                    {
+                        data:'cuti'
+                    },
+
+                    {
+                        data:'alpha'
+                    },
+
+                    {
+                        data:'total_hari_kerja'
+                    },
+
+                    {
+                        data:'total_hari_kehadiran'
+                    },
+
+                    {
+                        data:'kehadiran'
+                    },
+
+                    {
+                        data:'ketepatan_waktu'
+                    },
+
+                    {
+                        data:'lembur'
+                    },
+
+                    {
+                        data:'keterangan'
+                    }
+
                 ],
                 language: {
                     search: "",
