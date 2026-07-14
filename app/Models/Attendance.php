@@ -15,6 +15,8 @@ class Attendance extends Model
         'check_in',
         'check_out',
         'status',
+        'check_in_photo',
+        'check_out_photo',
     ];
 
     protected $casts = [

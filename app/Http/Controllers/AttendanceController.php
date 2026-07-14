@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Attendance;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class AttendanceController extends Controller
 {
@@ -19,6 +21,11 @@ class AttendanceController extends Controller
 
     public function checkIn(Request $request)
     {
+        $request->validate([
+            'photo' => 'required|string',
+            'check_in_lat' => 'required|numeric',
+            'check_in_lng' => 'required|numeric',
+        ]);
         $employee = auth()->user()->employee;
 
         if (!$employee) {
@@ -27,7 +34,6 @@ class AttendanceController extends Controller
 
         $today = Carbon::today();
 
-        // Sudah check in hari ini?
         $attendance = Attendance::where('employee_id', $employee->id)
             ->whereDate('attendance_date', $today)
             ->first();
@@ -36,11 +42,33 @@ class AttendanceController extends Controller
             return back()->with('warning', 'Anda sudah melakukan absensi hari ini.');
         }
 
+        $photoPath = null;
+
+        if ($request->filled('photo')) {
+
+            $image = $request->photo;
+
+            $image = preg_replace('/^data:image\/\w+;base64,/', '', $image);
+            $image = str_replace(' ', '+', $image);
+
+            $filename = 'attendance/checkin/' . Str::uuid() . '.jpg';
+
+            Storage::disk('public')->put(
+                $filename,
+                base64_decode($image)
+            );
+
+            $photoPath = $filename;
+        }
+
         Attendance::create([
-            'employee_id'     => $employee->id,
-            'attendance_date' => $today,
-            'check_in'        => now(),
-            'status'          => 'present',
+            'employee_id'      => $employee->id,
+            'attendance_date'  => $today,
+            'check_in'         => now(),
+            'status'           => 'present',
+            'check_in_photo'   => $photoPath,
+            'check_in_lat'     => $request->check_in_lat,
+            'check_in_lng'     => $request->check_in_lng,
         ]);
 
         return back()->with('success', 'Berhasil melakukan absensi masuk.');

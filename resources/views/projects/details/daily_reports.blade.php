@@ -867,12 +867,14 @@
                                                         </td>
 
                                                         <td>
-                                                            <input type="number"
-                                                                step="0.01"
-                                                                readonly
+                                                            <input type="hidden"
                                                                 name="jam_kerja[${i}][total_jam]"
-                                                                class="form-control total-jam"
+                                                                class="total-jam-value"
                                                                 value="${j.total_jam ?? ''}">
+
+                                                            <input type="text"
+                                                                class="form-control total-jam-text"
+                                                                readonly>
                                                         </td>
 
                                                         <td>
@@ -930,11 +932,14 @@
                                                         </td>
 
                                                         <td>
-                                                            <input type="number"
-                                                                readonly
-                                                                step="0.01"
-                                                                name="jam_kerja[0][total_jam]"
-                                                                class="form-control total-jam">
+                                                            <input type="hidden"
+                                                                name="jam_kerja[${i}][total_jam]"
+                                                                class="total-jam-value"
+                                                                value="${j.total_jam ?? ''}">
+
+                                                            <input type="text"
+                                                                class="form-control total-jam-text"
+                                                                readonly>
                                                         </td>
 
                                                         <td>
@@ -1055,6 +1060,9 @@
                     setupAdvancedPreview('fileInputPekerjaan', 'previewPekerjaan');
                     setupAdvancedPreview('fileInputTenaga', 'previewTenaga');
                     setupAdvancedPreview('fileInputMaterial', 'previewMaterial');
+                    document.querySelectorAll('#editJamKerjaTable tbody tr').forEach(function(row){
+                        hitungTotalJamEdit(row);
+                    });
                 });
             });
 
@@ -1266,6 +1274,59 @@
 
             return `${menit} Menit`;
         }
+        function hitungTotalJamEdit(row){
+
+            const mulai = row.querySelector('.jam-mulai').value;
+            const selesai = row.querySelector('.jam-selesai').value;
+
+            if(!mulai || !selesai){
+                row.querySelector('.total-jam-value').value = '';
+                row.querySelector('.total-jam-text').value = '';
+                return;
+            }
+
+            const start = new Date(`2000-01-01 ${mulai}`);
+            const end   = new Date(`2000-01-01 ${selesai}`);
+
+            let diffMenit = (end - start) / 1000 / 60;
+
+            if(diffMenit < 0){
+                diffMenit += 24 * 60;
+            }
+
+            const jam = Math.floor(diffMenit / 60);
+            const menit = diffMenit % 60;
+
+            const decimal = diffMenit / 60;
+
+            let text = '';
+
+            if(jam > 0){
+                text += `${jam} Jam`;
+            }
+
+            if(menit > 0){
+                if(text !== '') text += ' ';
+                text += `${menit} Menit`;
+            }
+
+            if(text === ''){
+                text = '0 Jam';
+            }
+
+            row.querySelector('.total-jam-value').value = decimal.toFixed(2);
+            row.querySelector('.total-jam-text').value = text;
+        }
+        document.addEventListener('input', function(e){
+
+            if(
+                e.target.classList.contains('jam-mulai') ||
+                e.target.classList.contains('jam-selesai')
+            ){
+                hitungTotalJamEdit(e.target.closest('tr'));
+            }
+
+        });
         document.addEventListener('click', function(e){
 
             if(e.target.classList.contains('btn-delete-doc')){

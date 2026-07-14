@@ -86,7 +86,7 @@
                                     data-bs-target="#checkInModal">
 
                                     <i class="ti ti-login me-2"></i>
-                                    Hadir Sekarang
+                                    Silahkan absen
 
                                 </button>
 
@@ -157,70 +157,44 @@
         </div>
 
         @endif
-                            <div class="modal fade" id="checkInModal">
-                                <div class="modal-dialog modal-dialog-centered">
-                                    <div class="modal-content">
+        <div class="modal fade" id="checkInModal">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
 
-                                        <div class="modal-header">
-                                            <h5>Absensi Masuk</h5>
-                                        </div>
+                    <div class="modal-header">
+                        <h5>Absensi Masuk</h5>
+                    </div>
 
-                                        <div class="modal-body text-center">
+                <form action="{{ route('attendances.check-in') }}" method="POST">
+                    @csrf
+                    <div class="modal-body text-center">
+                        <video id="camera" autoplay playsinline class="img-fluid rounded border"></video>
+                        <canvas
+                            id="canvas"
+                            class="d-none">
+                        </canvas>
 
-                                            <video
-                                                id="camera"
-                                                autoplay
-                                                playsinline
-                                                class="img-fluid rounded border">
-                                            </video>
+                        <img id="preview" class="img-fluid rounded border d-none">
+                        <input type="hidden" id="photo" name="photo">
+                        <input type="hidden" name="check_in_lat" id="check_in_lat">
+                        <input type="hidden" name="check_in_lng" id="check_in_lng">
+                    </div>
 
-                                            <canvas
-                                                id="canvas"
-                                                class="d-none">
-                                            </canvas>
-
-                                            <img
-                                                id="preview"
-                                                class="img-fluid rounded border d-none">
-
-                                            <input
-                                                type="hidden"
-                                                id="photo"
-                                                name="photo">
-
-                                        </div>
-
-                                        <div class="modal-footer justify-content-center">
-
-                                            <button
-                                                id="capture"
-                                                class="btn btn-primary">
-
-                                                📸 Ambil Foto
-
-                                            </button>
-
-                                            <button
-                                                id="retake"
-                                                class="btn btn-warning d-none">
-
-                                                🔄 Ambil Ulang
-
-                                            </button>
-
-                                            <button
-                                                id="confirm"
-                                                class="btn btn-success d-none">
-
-                                                ✅ Konfirmasi Hadir
-
-                                            </button>
-
-                                        </div>
-
-                                    </div>
-                                </div>
-                            </div>
+                    <div class="modal-footer justify-content-center">
+                        <button type="button" id="capture" class="btn btn-dark">
+                            📸 Ambil Foto
+                        </button>
+                        <button type="button" id="retake" class="btn btn-secondary d-none">
+                            🔄 Ambil Ulang
+                        </button>
+                        <button type="submit" id="confirm" class="btn btn-success d-none">
+                            ✅ Konfirmasi Hadir
+                        </button>
+                    </div>
+                </form>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 @endsection
@@ -280,7 +254,8 @@ const retake = document.getElementById('retake');
 const confirm = document.getElementById('confirm');
 
 const photo = document.getElementById('photo');
-
+const latInput = document.getElementById('check_in_lat');
+const lngInput = document.getElementById('check_in_lng');
 const modal = document.getElementById('checkInModal');
 if(modal){
     modal.addEventListener('shown.bs.modal', async () => {
@@ -295,9 +270,35 @@ if(modal){
                 facingMode:"user"
             }
         });
-
         camera.srcObject = stream;
+        if(navigator.geolocation){
 
+            navigator.geolocation.getCurrentPosition(
+
+                function(position){
+
+                    latInput.value = position.coords.latitude;
+                    lngInput.value = position.coords.longitude;
+
+                    console.log(position.coords.latitude);
+                    console.log(position.coords.longitude);
+
+                },
+
+                function(error){
+
+                    alert("Lokasi tidak dapat diakses.");
+
+                },
+
+                {
+                    enableHighAccuracy:true,
+                    timeout:10000
+                }
+
+            );
+
+        }
     });
 }
 capture.addEventListener('click',()=>{
@@ -311,21 +312,12 @@ capture.addEventListener('click',()=>{
     const image = canvas.toDataURL('image/jpeg');
 
     photo.value = image;
-
     preview.src = image;
-
     preview.classList.remove('d-none');
-
     camera.classList.add('d-none');
-
-    preview.classList.remove('d-none');
-
     capture.classList.add('d-none');
-
     retake.classList.remove('d-none');
-
     confirm.classList.remove('d-none');
-
 });
 retake.addEventListener('click',()=>{
     photo.value = '';

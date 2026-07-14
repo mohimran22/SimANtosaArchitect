@@ -465,10 +465,10 @@
                             <tr>
                                 <th width="180">Jam Mulai</th>
                                 <th width="180">Jam Selesai</th>
-                                <th width="150">Total Jam</th>
+                                <th width="160">Total Jam</th>
                                 <th>Cuaca</th>
                                 <th>Keterangan</th>
-                                <th width="40"></th>
+                                <th width="50"></th>
                             </tr>
                         </thead>
                         @php
@@ -490,11 +490,13 @@
                                     </td>
 
                                     <td>
-                                        <input type="number"
+                                        <input type="hidden"
                                             name="total_jam[]"
-                                            value="{{ old('total_jam.'.$i) }}"
-                                            class="form-control total-jam"
-                                            step="0.01"
+                                            class="total-jam-value"
+                                            value="{{ old('total_jam.'.$i) }}">
+
+                                        <input type="text"
+                                            class="form-control total-jam-text"
                                             readonly>
                                     </td>
 
@@ -542,10 +544,13 @@
                             </td>
 
                             <td>
-                                <input type="number"
+                                <input type="hidden"
                                     name="total_jam[]"
-                                    class="form-control total-jam"
-                                    step="0.01"
+                                    class="total-jam-value"
+                                    value="{{ old('total_jam.'.$i) }}">
+
+                                <input type="text"
+                                    class="form-control total-jam-text"
                                     readonly>
                             </td>
 
@@ -855,35 +860,61 @@ flatpickr("#nextDate", {
             e.target.closest('tr').remove();
         }
     });
+    function hitungTotalJam(row){
+
+        const mulai = row.querySelector('.jam-mulai').value;
+        const selesai = row.querySelector('.jam-selesai').value;
+
+        if(!mulai || !selesai){
+            row.querySelector('.total-jam-value').value = '';
+            row.querySelector('.total-jam-text').value = '';
+            return;
+        }
+
+        const start = new Date(`2000-01-01 ${mulai}`);
+        const end   = new Date(`2000-01-01 ${selesai}`);
+
+        let diffMenit = (end - start) / 1000 / 60;
+
+        if(diffMenit < 0){
+            diffMenit += 24 * 60;
+        }
+
+        const jam = Math.floor(diffMenit / 60);
+        const menit = diffMenit % 60;
+
+        const totalDecimal = diffMenit / 60;
+
+        let hasil = '';
+
+        if(jam > 0){
+            hasil += `${jam} Jam`;
+        }
+
+        if(menit > 0){
+            if(hasil !== '') hasil += ' ';
+            hasil += `${menit} Menit`;
+        }
+
+        if(hasil === ''){
+            hasil = '0 Jam';
+        }
+
+        row.querySelector('.total-jam-value').value = totalDecimal.toFixed(2);
+        row.querySelector('.total-jam-text').value = hasil;
+    }
     document.addEventListener('input', function(e){
 
-        const row = e.target.closest('tr');
-
-        if (!row) return;
-
-        if (
+        if(
             e.target.classList.contains('jam-mulai') ||
             e.target.classList.contains('jam-selesai')
-        ) {
-
-            const mulai = row.querySelector('.jam-mulai').value;
-            const selesai = row.querySelector('.jam-selesai').value;
-
-            if (mulai && selesai) {
-
-                const start = new Date(`2000-01-01 ${mulai}`);
-                const end   = new Date(`2000-01-01 ${selesai}`);
-
-                let diff = (end - start) / 1000 / 60 / 60;
-
-                if (diff < 0) {
-                    diff += 24;
-                }
-
-                row.querySelector('.total-jam').value =
-                    diff.toFixed(2);
-            }
+        ){
+            hitungTotalJam(e.target.closest('tr'));
         }
+
+    });
+    document.querySelectorAll('#jamKerjaTable tr').forEach(function(row){
+        hitungTotalJam(row);
     });
 </script>
 @endpush
