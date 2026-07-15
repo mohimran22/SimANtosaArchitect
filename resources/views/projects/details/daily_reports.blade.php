@@ -98,7 +98,7 @@
 
                                     <div class="d-flex align-items-center gap-2">
 
-                                        <button class="btn btn-dark btn-sm" id="btnToggleEdit">
+                                        <button class="btn btn-dark btn-sm" id="btnEditDaily">
                                             <i class="ti ti-edit"></i> Edit
                                         </button>
 
@@ -114,6 +114,12 @@
                                 <div class="d-flex gap-2 mt-2 w-100">
                                     <span class="badge bg-dark" id="badgeWeek"></span>
                                     <span class="badge bg-secondary" id="badgeTanggal"></span>
+                                        <input
+                                            type="text"
+                                            id="editTanggal"
+                                            name="tanggal"
+                                            class="form-control form-control-sm d-none"
+                                            style="width:180px;">
                                 </div>
 
                             </div>
@@ -179,18 +185,28 @@
         let workerIndex = 0;
         let materialIndex = 0;
         let workTimeIndex = 0;
+        let categories = [];
+        let workerOptions = [];
         function addWorkRow(){
             
             const tbody = document.querySelector('#worksTable tbody');
-
             const row = `
             <tr>
                 <td class="row-number"></td>
 
                 <td>
-                    <input type="text"
+                    <select
+                        name="works[${workIndex}][rab_process_item_id]"
+                        class="form-select select2 rab-select">
+
+                        ${buildRabOptions()}
+
+                    </select>
+                    <input
+                        type="text"
                         name="works[${workIndex}][uraian_manual]"
-                        class="form-control">
+                        class="form-control mt-2 manual-work d-none">
+
                 </td>
 
                 <td>
@@ -220,36 +236,70 @@
             </tr>`;
 
             tbody.insertAdjacentHTML('beforeend', row);
+            const select = tbody.lastElementChild.querySelector('.rab-select');
+
+            $(select).select2({
+                width: '100%',
+                dropdownParent: $('#dailyModal')
+            });
             workIndex++;
             refreshNumber('#worksTable');
         }
-        function addWorkerRow(){
+        function addWorkerRow() {
+
             const tbody = document.querySelector('#workersTable tbody');
+
+            const options = workerOptions.map(worker => `
+                <option value="${worker.id}">
+                    ${worker.user.fullname}
+                </option>
+            `).join('');
 
             const row = `
             <tr>
                 <td class="row-number"></td>
 
                 <td>
-                    <input type="text"
+
+                    <select
+                        name="workers[${workerIndex}][worker_id]"
+                        class="form-select select2 worker-select">
+
+                        <option value="">-- Pilih Tukang --</option>
+
+                        ${options}
+
+                        <option value="manual">
+                            + Manual Input
+                        </option>
+
+                    </select>
+
+                    <input
+                        type="text"
                         name="workers[${workerIndex}][keahlian]"
-                        class="form-control">
+                        class="form-control mt-2 manual-input d-none">
+
                 </td>
 
                 <td>
-                    <input type="number"
+                    <input
+                        type="number"
                         name="workers[${workerIndex}][jumlah]"
-                        class="form-control" value="1">
+                        class="form-control"
+                        value="1">
                 </td>
 
                 <td>
-                    <input type="text"
+                    <input
+                        type="text"
                         name="workers[${workerIndex}][alat]"
                         class="form-control">
                 </td>
 
                 <td>
-                    <button type="button"
+                    <button
+                        type="button"
                         class="btn btn-sm btn-danger btn-remove-worker">
                         ×
                     </button>
@@ -257,6 +307,11 @@
             </tr>`;
 
             tbody.insertAdjacentHTML('beforeend', row);
+            const select = tbody.lastElementChild.querySelector('.worker-select');
+            $(select).select2({
+                width: '100%',
+                dropdownParent: $('#dailyModal')
+            });
             workerIndex++;
             refreshNumber('#workersTable');
         }
@@ -397,6 +452,57 @@
                     }
                 });
         }
+        function buildRabOptions(selectedId = null) {
+
+            let html = `
+                <option value="">-- Pilih Dari RAB --</option>
+            `;
+
+            categories.forEach(category => {
+
+                html += `
+                    <option disabled>
+                        ${numberToLetters(category.order_no)}. ${category.name.toUpperCase()}
+                    </option>
+                `;
+
+                category.uraians.forEach((uraian, u) => {
+
+                    html += `
+                        <option disabled>
+                            &nbsp;&nbsp;${u + 1}. ${uraian.name}
+                        </option>
+                    `;
+
+                    uraian.items.forEach((item, i) => {
+
+                        html += `
+                            <option
+                                value="${item.id}"
+                                data-volume="${item.volume}"
+                                data-satuan="${item.satuan}"
+                                ${item.id == selectedId ? 'selected' : ''}
+                            >
+                                &nbsp;&nbsp;&nbsp;&nbsp;
+                                ${u + 1}.${i + 1}
+                                ${item.job_name}
+                            </option>
+                        `;
+                    });
+
+                });
+
+            });
+
+            html += `
+                <option value="manual"
+                    ${selectedId == 'manual' ? 'selected' : ''}>
+                    + Manual Input
+                </option>
+            `;
+
+            return html;
+        }
 
         modalBody.addEventListener('click', function(e){
 
@@ -435,7 +541,10 @@
 
                 fetch(`/daily/${id}/detail`)
                 .then(res => res.json())
-                .then(data => {
+                .then(response => {
+                    const data = response.daily;
+                    workerOptions = response.worker_options;
+                    categories = response.categories;
                     document.getElementById('badgeWeek').textContent =
                         `Minggu ${data.minggu}`;
 
@@ -645,16 +754,33 @@
                                 <tr>
                                     <td class="row-number">${i+1}</td>
                                     <td>
-                                        <input type="hidden" name="workers[${i}][id]" value="${w.id}">
 
-                                        <input type="text"
-                                            class="form-control"
-                                            name="workers[${i}][keahlian]"
-                                            value="${
-                                                w.worker
-                                                    ? w.worker.user.fullname
-                                                    : (w.keahlian ?? '')
-                                            }">
+                                    <input type="hidden"
+                                        name="workers[${i}][id]"
+                                        value="${w.id ?? ''}">
+
+                                    <select name="workers[${i}][worker_id]" class="form-select select2 worker-select">
+                                        ${workerOptions.map(worker => `
+                                            <option
+                                                value="${worker.id}"
+                                                ${worker.id == w.worker_id ? 'selected' : ''}
+                                            >
+                                                ${worker.user.fullname}
+                                            </option>
+                                        `).join('')}
+                                            <option
+                                                value="manual"
+                                                ${!w.worker_id ? 'selected' : ''}>
+                                                + Manual Input
+                                            </option>
+                                    </select>
+
+                                    <input
+                                        type="text"
+                                        name="workers[${i}][keahlian]"
+                                        value="${w.keahlian ?? ''}"
+                                        class="form-control mt-2 manual-input ${w.worker_id ? 'd-none' : ''}">
+
                                     </td>
                                     <td>
                                         <input type="number"
@@ -716,14 +842,19 @@
 
                                         <td>
                                             <input type="hidden" name="works[${i}][id]" value="${w.id}">
-                                            <input type="text"
-                                                name="works[${i}][uraian_manual]"
-                                                class="form-control"
-                                                value="${
-                                                    w.rab_process_item 
-                                                    ? w.rab_process_item.job_name 
-                                                    : (w.uraian_manual ?? '')
-                                                }">
+                                            <select
+                                                name="works[${i}][rab_process_item_id]"
+                                                class="form-select select2 rab-select">
+
+                                                ${buildRabOptions(w.rab_process_item_id ?? 'manual')}
+
+                                            </select>
+
+                                                    <input
+                                                        type="text"
+                                                        name="works[${i}][uraian_manual]"
+                                                        value="${w.uraian_manual ?? ''}"
+                                                        class="form-control mt-2 manual-work ${w.rab_process_item_id ? 'd-none' : ''}">
                                         </td>
                                         <td>
                                             <input type="number" step="0.01"
@@ -994,6 +1125,48 @@
                         </form>
                     </div>
                     `;
+                    $('#workersTable .worker-select').each(function () {
+                        $(this).select2({
+                            width: '100%',
+                            dropdownParent: $('#dailyModal')
+                        });
+
+                        $(this).trigger('change');
+                    });
+                    $('#worksTable .rab-select').each(function () {
+                        $(this).select2({
+                            width: '100%',
+                            dropdownParent: $('#dailyModal')
+                        });
+
+                        $(this).trigger('change');
+                    });
+                    $(document).on('change', '.rab-select', function () {
+
+                        const tr = $(this).closest('tr');
+
+                        const manual = tr.find('.manual-work');
+                        const satuan = tr.find('input[name$="[satuan]"]');
+                        const volume  = tr.find('input[name$="[volume]"]');
+
+                        if ($(this).val() === 'manual') {
+
+                            manual.removeClass('d-none').focus();
+
+                            satuan.val('');
+                            volume.val('');
+
+                            return;
+                        }
+
+                        manual.addClass('d-none').val('');
+
+                        const option = $(this).find(':selected');
+
+                        satuan.val(option.data('satuan') || '');
+                        volume.val(option.data('volume') || '');
+                    });
+
                     // const switchLibur = document.getElementById('switchLibur');
                     // const statusHari = document.getElementById('statusHari');
 
@@ -1039,7 +1212,7 @@
                     //     });
 
                     // });
-                    const btnToggle = document.getElementById('btnToggleEdit');
+                    const btnToggle = document.getElementById('btnEditDaily');
                     const viewMode = document.getElementById('viewMode');
                     const editMode = document.getElementById('editMode');
 
@@ -1062,6 +1235,20 @@
                         }
 
                     });
+                    
+                    $(document).on('change', '.worker-select', function () {
+
+                        const input = $(this)
+                            .closest('td')
+                            .find('.manual-input');
+
+                        if ($(this).val() === 'manual') {
+                            input.removeClass('d-none').focus();
+                        } else {
+                            input.addClass('d-none').val('');
+                        }
+
+                    });
                     workIndex = data.works.length;
                     workerIndex = data.workers.length;
                     materialIndex = data.materials.length;
@@ -1075,7 +1262,6 @@
                     });
                 });
             });
-
         });
         function renderDocumentation(data, category) {
                 let docs = (data.documentations || []).filter(doc =>

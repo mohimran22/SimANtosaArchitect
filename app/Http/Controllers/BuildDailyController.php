@@ -11,6 +11,7 @@ use App\Models\BuildDailyMaterial;
 use App\Models\BuildProcessItem;
 use App\Models\DailyDocumentation;
 use App\Models\Project;
+use App\Models\RabProcessCategory;
 use App\Models\Worker;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
@@ -309,8 +310,26 @@ public function detail($id)
         'mkEmployee.user',
         'kontraktorEmployee.user'
     ])->findOrFail($id);
+            
+    $workerOptions = Worker::with('user')
+        ->orderBy('id')
+        ->get();
 
-    return response()->json($daily);
+    $project = $daily->project;
+
+    $categories = RabProcessCategory::with([
+        'uraians.items.rab'
+    ])
+    ->whereHas('rabProcess.project', function ($q) use ($project) {
+        $q->where('customer_id', $project->customer_id);
+    })
+    ->orderBy('order_no')
+    ->get();
+    return response()->json([
+        'daily' => $daily,
+        'worker_options' => $workerOptions,
+        'categories'     => $categories,
+    ]);
 }
 public function deleteWork($id)
 {
@@ -402,20 +421,35 @@ public function updateAll(Request $request, $id)
                 $requestWorkIds[] = $work['id'];
 
                 BuildDailyWork::where('id', $work['id'])->update([
-                    'uraian_manual' => $work['uraian_manual'] ?? null,
-                    'volume'        => $work['volume'],
-                    'satuan'        => $work['satuan'],
-                    'keterangan'    => $work['keterangan'],
+                    'rab_process_item_id' => $work['rab_process_item_id'] != 'manual'
+                        ? ($work['rab_process_item_id'] ?: null)
+                        : null,
+
+                    'uraian_manual' => $work['rab_process_item_id'] == 'manual'
+                        ? ($work['uraian_manual'] ?? null)
+                        : null,
+
+                    'volume'     => $work['volume'],
+                    'satuan'     => $work['satuan'],
+                    'keterangan' => $work['keterangan'],
                 ]);
 
             } else {
 
                 $daily->works()->create([
-                    'uraian_manual'         => $work['uraian_manual'] ?? null,
-                    'volume'                => $work['volume'],
-                    'satuan'                => $work['satuan'],
-                    'keterangan'            => $work['keterangan'],
-                    'build_daily_report_id' => $daily->id
+                    'build_daily_report_id' => $daily->id,
+
+                    'rab_process_item_id' => $work['rab_process_item_id'] != 'manual'
+                        ? ($work['rab_process_item_id'] ?: null)
+                        : null,
+
+                    'uraian_manual' => $work['rab_process_item_id'] == 'manual'
+                        ? ($work['uraian_manual'] ?? null)
+                        : null,
+
+                    'volume'     => $work['volume'],
+                    'satuan'     => $work['satuan'],
+                    'keterangan' => $work['keterangan'],
                 ]);
             }
         }
@@ -433,6 +467,14 @@ public function updateAll(Request $request, $id)
                 $requestWorkerIds[] = $worker['id'];
 
                 BuildDailyWorker::where('id', $worker['id'])->update([
+                    'worker_id' => ($worker['worker_id'] ?? null) === 'manual'
+                        ? null
+                        : ($worker['worker_id'] ?? null),
+
+                    'keahlian' => ($worker['worker_id'] ?? null) === 'manual'
+                        ? ($worker['keahlian'] ?? null)
+                        : null,
+
                     'jumlah' => $worker['jumlah'],
                     'alat'   => $worker['alat'],
                 ]);
@@ -441,9 +483,15 @@ public function updateAll(Request $request, $id)
 
                 $daily->workers()->create([
                     'daily_report_id' => $daily->id,
+                    'worker_id' => ($worker['worker_id'] ?? null) === 'manual'
+                        ? null
+                        : ($worker['worker_id'] ?? null),
+
+                    'keahlian' => ($worker['worker_id'] ?? null) === 'manual'
+                        ? ($worker['keahlian'] ?? null)
+                        : null,
                     'jumlah'          => $worker['jumlah'],
                     'alat'            => $worker['alat'],
-                    'keahlian'        => $worker['keahlian'] ?? null,
                 ]);
             }
         }
