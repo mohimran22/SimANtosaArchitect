@@ -71,112 +71,114 @@
                             </div>
 
                             <h4>Detail Akun</h4>
-                            <table class="table table-bordered">
-                                <thead>
-                                    <tr>
-                                        <th style="width:20%">Akun</th>
-                                        <th style="width:20%">Deskripsi</th>
-                                        <th style="width:20%">User</th>
-                                        <th style="width:10%">Debit</th>
-                                        <th style="width:10%">Kredit</th>
-                                        <th style="width:5%">Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="detail-rows">
-                                    @if(isset($journal) && $journal->details)
-                                        @foreach ($journal->details as $i => $detail)
-                                            <tr>
-                                                <td>
-                                                    <select name="details[{{ $i }}][account_id]" 
-                                                            class="form-select select2 account-select" 
-                                                            data-row="{{ $i }}" required>
-                                                        <option value="{{ $detail->account_id }}" 
-                                                            data-code="{{ $detail->account->account_code }}"
-                                                            data-person-type="{{ $detail->account->person_type }}" 
-                                                            selected>
-                                                            {{ $detail->account->account_code }} - {{ $detail->account->account_name }}
-                                                        </option>
-                                                    </select>
-                                                </td>
-
-                                                {{-- Deskripsi --}}
-                                                <td>
-                                                    <input type="text" 
-                                                        name="details[{{ $i }}][description]" 
-                                                        class="form-control"
-                                                        value="{{ old("details.$i.description", $detail->description) }}">
-                                                </td>
-
-                                                <td>
-                                                    <select name="details[{{ $i }}][person]" 
-                                                            class="form-select select2 user-select" 
-                                                            data-row="{{ $i }}" 
-                                                            data-selected="{{ $detail->person ?? '' }}">
-                                                        <option value="">-- Pilih User --</option>
-                                                        @php
-                                                            if ($detail->person_type === 'employee') {
-                                                                $users = $employees;
-                                                            } elseif ($detail->person_type === 'customer') {
-                                                                $users = $customers;
-                                                            } elseif ($detail->person_type === 'worker') {
-                                                                $users = $workers;
-                                                            } else {
-                                                                $users = collect();
-                                                            }
-                                                        @endphp
-                                                        @foreach ($users as $u)
-                                                            <option value="{{ $u->id }}" {{ $u->id == $detail->person ? 'selected' : '' }}>
-                                                                {{ $u->fullname }}
+                            <div class="table-responsive mb-4">
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th style="width:20%">Akun</th>
+                                            <th style="width:20%">Deskripsi</th>
+                                            <th style="width:20%">User</th>
+                                            <th style="width:10%">Debit</th>
+                                            <th style="width:10%">Kredit</th>
+                                            <th style="width:5%">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="detail-rows">
+                                        @if(isset($journal) && $journal->details)
+                                            @foreach ($journal->details as $i => $detail)
+                                                <tr>
+                                                    <td>
+                                                        <select name="details[{{ $i }}][account_id]" 
+                                                                class="form-select select2 account-select" 
+                                                                data-row="{{ $i }}" required>
+                                                            <option value="{{ $detail->account_id }}" 
+                                                                data-code="{{ $detail->account->account_code }}"
+                                                                data-person-type="{{ $detail->account->person_type }}" 
+                                                                selected>
+                                                                {{ $detail->account->account_code }} - {{ $detail->account->account_name }}
                                                             </option>
-                                                        @endforeach
-                                                    </select>
-                                                </td>
-                                                
-                                                <td>
-                                                    <input type="text"
-                                                        name="details[{{ $i }}][debit]" 
-                                                        class="form-control debit-input" 
-                                                        value="{{ old("details.$i.debit", $detail->debit) }}"
-                                                        {{ $detail->credit ? 'disabled' : '' }}>
+                                                        </select>
+                                                    </td>
 
-                                                    @if($detail->credit)
-                                                        <input type="hidden" name="details[{{ $i }}][debit]" value="{{ $detail->debit }}">
-                                                    @endif
-                                                </td>
+                                                    {{-- Deskripsi --}}
+                                                    <td>
+                                                        <input type="text" 
+                                                            name="details[{{ $i }}][description]" 
+                                                            class="form-control"
+                                                            value="{{ old("details.$i.description", $detail->description) }}">
+                                                    </td>
 
-                                                
-                                                <td>
-                                                    <input type="text" 
-                                                        name="details[{{ $i }}][credit]" 
-                                                        class="form-control credit-input" 
-                                                        value="{{ old("details.$i.credit", $detail->credit) }}"
-                                                        {{ $detail->debit ? 'disabled' : '' }}>
+                                                    <td>
+                                                        <select name="details[{{ $i }}][person]" 
+                                                                class="form-select select2 user-select" 
+                                                                data-row="{{ $i }}" 
+                                                                data-selected="{{ $detail->person ?? '' }}">
+                                                            <option value="">-- Pilih User --</option>
+                                                            @php
+                                                                if ($detail->person_type === 'employee') {
+                                                                    $users = $employees;
+                                                                } elseif ($detail->person_type === 'customer') {
+                                                                    $users = $customers;
+                                                                } elseif ($detail->person_type === 'worker') {
+                                                                    $users = $workers;
+                                                                } else {
+                                                                    $users = collect();
+                                                                }
+                                                            @endphp
+                                                            @foreach ($users as $u)
+                                                                <option value="{{ $u->id }}" {{ $u->id == $detail->person ? 'selected' : '' }}>
+                                                                    {{ $u->fullname }}
+                                                                </option>
+                                                            @endforeach
+                                                        </select>
+                                                    </td>
+                                                    
+                                                    <td>
+                                                        <input type="text"
+                                                            name="details[{{ $i }}][debit]" 
+                                                            class="form-control debit-input" 
+                                                            value="{{ old("details.$i.debit", $detail->debit) }}"
+                                                            {{ $detail->credit ? 'disabled' : '' }}>
 
-                                                    @if($detail->debit)
-                                                        <input type="hidden" name="details[{{ $i }}][credit]" value="{{ $detail->credit }}">
-                                                    @endif
-                                                </td>
-                                                <td><button type="button" class="btn btn-sm btn-dark remove-row" title="Hapus">
-                                                            <i class="ti ti-trash"></i>
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    @endif
-                                </tbody>
+                                                        @if($detail->credit)
+                                                            <input type="hidden" name="details[{{ $i }}][debit]" value="{{ $detail->debit }}">
+                                                        @endif
+                                                    </td>
 
-                                <tfoot>
-                                    <tr>
-                                        <td colspan="6"><button type="button" id="add-row" class="btn btn-sm btn-dark text-white">Tambah Baris</button></td>
-                                    </tr>
-                                    <tr>
-                                        <th colspan="3">Subtotal</th>
-                                        <th id="subtotal-debit">{{ $journal->details->sum('debit') }}</th>
-                                        <th id="subtotal-credit">{{ $journal->details->sum('credit') }}</th>
-                                        <th colspan="3"></th>
-                                    </tr>
-                                </tfoot>
-                            </table>
+                                                    
+                                                    <td>
+                                                        <input type="text" 
+                                                            name="details[{{ $i }}][credit]" 
+                                                            class="form-control credit-input" 
+                                                            value="{{ old("details.$i.credit", $detail->credit) }}"
+                                                            {{ $detail->debit ? 'disabled' : '' }}>
+
+                                                        @if($detail->debit)
+                                                            <input type="hidden" name="details[{{ $i }}][credit]" value="{{ $detail->credit }}">
+                                                        @endif
+                                                    </td>
+                                                    <td><button type="button" class="btn btn-sm btn-dark remove-row" title="Hapus">
+                                                                <i class="ti ti-trash"></i>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        @endif
+                                    </tbody>
+
+                                    <tfoot>
+                                        <tr>
+                                            <td colspan="6"><button type="button" id="add-row" class="btn btn-sm btn-dark text-white">Tambah Baris</button></td>
+                                        </tr>
+                                        <tr>
+                                            <th colspan="3">Subtotal</th>
+                                            <th id="subtotal-debit">{{ $journal->details->sum('debit') }}</th>
+                                            <th id="subtotal-credit">{{ $journal->details->sum('credit') }}</th>
+                                            <th colspan="3"></th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
                             @php
                                 $isBalanced = $journal->details->sum('debit') == $journal->details->sum('credit');
                             @endphp
@@ -196,14 +198,30 @@
                                 <input type="file" name="enclosure" class="form-control">
 
                                 @if($journal->enclosure)
-                                    <div class="mt-2">
-                                        <p>File saat ini:</p>
-                                        @if(\Illuminate\Support\Str::endsWith($journal->enclosure, ['.jpg', '.jpeg', '.png']))
-                                            <img src="{{ asset('storage/'.$journal->enclosure) }}" alt="Enclosure" width="200">
-                                        @elseif(\Illuminate\Support\Str::endsWith($journal->enclosure, ['.pdf']))
-                                            <a href="{{ asset('storage/'.$journal->enclosure) }}" target="_blank">Lihat PDF</a>
+                                <div id="enclosure-preview" class="mt-3">
+                                    <div class="position-relative border rounded p-2 d-inline-block">
+
+                                        <button type="button"
+                                                class="btn btn-sm btn-danger position-absolute top-0 end-0"
+                                                id="remove-enclosure"
+                                                title="Hapus lampiran">
+                                            <i class="ti ti-x"></i>
+                                        </button>
+
+                                        @if(Str::endsWith($journal->enclosure, ['.jpg', '.jpeg', '.png']))
+                                            <img src="{{ asset('storage/'.$journal->enclosure) }}"
+                                                alt="Lampiran"
+                                                width="200">
+                                        @elseif(Str::endsWith($journal->enclosure, ['.pdf']))
+                                            <a href="{{ asset('storage/'.$journal->enclosure) }}"
+                                            target="_blank">
+                                                <i class="ti ti-file-type-pdf"></i> Lihat PDF
+                                            </a>
                                         @endif
+
+                                        <input type="hidden" name="remove_enclosure" id="remove_enclosure" value="0">
                                     </div>
+                                </div>
                                 @endif
                             </div>
 
@@ -526,8 +544,28 @@ $(document).ready(function () {
     });
 
     calculateSubtotals();
-});
+    $(document).on('click', '#remove-enclosure', function () {
 
+        Swal.fire({
+            title: 'Hapus lampiran?',
+            text: 'Lampiran akan dihapus setelah Anda menyimpan perubahan.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Ya',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+
+            if (result.isConfirmed) {
+                $('#remove_enclosure').val('1');
+
+                // langsung sembunyikan preview
+                $('#enclosure-preview').hide();
+            }
+
+        });
+
+    });
+});
 </script>
 
 @endpush

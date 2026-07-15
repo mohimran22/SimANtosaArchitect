@@ -71,7 +71,7 @@
             </div>
             <div class="card shadow-sm">
                 <div class="table-responsive">
-                    <table class="table table-hover table-sm align-middle mb-0 w-100">
+                    <table class="table table-hover align-middle gen-table">
                         <thead class="table-light">
                             <tr>
                                 <th>Tanggal</th>
@@ -104,9 +104,13 @@
                                             </td>
                                         @endif
 
-                                        <td>{{ $detail->description ?? '-' }}</td>
+                                        <td title="{{ $detail->description ?? '-' }}">
+                                            {{ Str::limit($detail->description ?? '-', 35) }}
+                                        </td>
                                         <td>{{ $detail->account->account_code }}</td>
-                                        <td>{{ $detail->account->account_name }}</td>
+                                        <td title="{{ $detail->account->account_name ?? '-' }}">
+                                            {{ Str::limit($detail->account->account_name ?? '-', 40) }}
+                                        </td>
 
                                         <td class="text-end text-success fw-semibold">
                                             Rp {{ number_format($detail->debit, 0, ',', '.') }}

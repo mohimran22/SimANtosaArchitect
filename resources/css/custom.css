@@ -329,6 +329,26 @@ label {
 .jurnal-table td:nth-child(3) {
     width: 250px;
 }
+.gen-table {
+    table-layout: fixed;
+}
+.gen-table th:nth-child(1),
+.gen-table td:nth-child(1){
+    width: 50px;
+}
+.gen-table th:nth-child(2),
+.gen-table td:nth-child(2){
+    width: 50px;
+}
+.gen-table th:nth-child(3),
+.gen-table td:nth-child(3){
+    width: 260px;
+}
+
+.gen-table th:nth-child(5),
+.gen-table td:nth-child(5) {
+    width: 250px;
+}
 .sidebar-header {
     display: flex;
     align-items: center;

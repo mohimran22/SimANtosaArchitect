@@ -39,9 +39,7 @@ class AccountingJournalController extends Controller
                 'users.fullname as creator_name'
             )
             ->leftJoin('users', 'accounting_journals.created_by', '=', 'users.id')
-            ->where('accounting_journals.license_id', $licenseId)
-            ->orderByDesc('accounting_journals.transaction_date');
-
+            ->where('accounting_journals.license_id', $licenseId);
         return DataTables::of($journals)
             ->addIndexColumn()
 
@@ -49,16 +47,16 @@ class AccountingJournalController extends Controller
                 return \Carbon\Carbon::parse($row->transaction_date)->format('d/m/Y');
             })
 
-            ->addColumn('journal_code', function ($row) {
-                return '<a href="' . route('journals.show', $row->id) . '" 
+            ->editColumn('journal_code', function ($row) {
+                return '<a href="'.route('journals.show',$row->id).'"
                         class="fw-bold text-primary">'
-                        . $row->journal_code . '</a>';
+                        .$row->journal_code.
+                        '</a>';
             })
 
-            ->addColumn('creator', function ($row) {
-                return $row->creator_name 
-                    ? e($row->creator_name)
-                    : '<small class="fst-italic text-muted">dibuat oleh sistem</small>';
+            ->editColumn('creator_name', function ($row) {
+                return $row->creator_name
+                    ?: '<small class="fst-italic text-muted">dibuat oleh sistem</small>';
             })
 
             ->addColumn('action', function ($journal) {
@@ -289,12 +287,10 @@ public function edit(AccountingJournal $journal)
 
 public function update(UpdateAccountingJournalRequest $request, AccountingJournal $journal)
 {
-    // 🔐 Optional: lock ke license config
     if ($journal->license_id !== config('app.license_id')) {
         abort(403, 'Akses tidak valid.');
     }
 
-    // ✅ Validasi balance
     $totalDebit = collect($request->details)->sum('debit');
     $totalCredit = collect($request->details)->sum('credit');
 
@@ -304,9 +300,15 @@ public function update(UpdateAccountingJournalRequest $request, AccountingJourna
         ]);
     }
 
-    // 📎 File
     $enclosurePath = $journal->enclosure;
+    if ($request->remove_enclosure == '1') {
 
+        if ($journal->enclosure && Storage::disk('public')->exists($journal->enclosure)) {
+            Storage::disk('public')->delete($journal->enclosure);
+        }
+
+        $enclosurePath = null;
+    }
     if ($request->hasFile('enclosure')) {
         if ($journal->enclosure && Storage::disk('public')->exists($journal->enclosure)) {
             Storage::disk('public')->delete($journal->enclosure);
@@ -321,7 +323,6 @@ public function update(UpdateAccountingJournalRequest $request, AccountingJourna
         );
     }
 
-    // 🔹 Update jurnal
     $journal->update([
         'transaction_date' => $request->transaction_date,
         'description' => $request->description,

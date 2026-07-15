@@ -71,7 +71,6 @@
                             </div>
                         </div>
 
-                        {{-- TABLE --}}
                         <div class="table-responsive mb-4">
                             <table class="table table-hover align-middle jurnal-table">
                                 <thead class="table-light">
@@ -129,8 +128,7 @@
                                 </tfoot>
                             </table>
                         </div>
-
-                        {{-- KETERANGAN --}}
+                        
                         <div class="mb-4">
                             <label class="form-label fw-bold">Keterangan</label>
                             <div class="border rounded p-3 bg-light">

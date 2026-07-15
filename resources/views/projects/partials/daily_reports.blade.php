@@ -294,44 +294,38 @@
                     <template id="kerjaTemplate">
                         <tr>
                             <td>
-                                            <select name="rab_process_item_id[]" class="form-select select2 rab-select">
+                                <select name="rab_process_item_id[]" class="form-select select2 rab-select">
 
-                                                <option value="">-- Pilih Dari RAB --</option>
+                                    <option value="">-- Pilih Dari RAB --</option>
 
-                                                @foreach($categories as $category)
+                                    @foreach($categories as $category)
 
-                                                    <option disabled>📁 {{ $category->name }}</option>
+                                        <option disabled style="font-weight:bold;">
+                                            {{ number_to_letters($category->order_no) }}. {{ strtoupper($category->name) }}
+                                        </option>
 
-                                                    @foreach($category->uraians as $uraian)
+                                        @foreach($category->uraians as $uraian)
 
-                                                        <option disabled>
-                                                            &nbsp;&nbsp;📂 {{ $uraian->name }}
-                                                        </option>
-
-                                                        @foreach($uraian->items as $rab)
-
-                                                            <option value="{{ $rab->id }}"
-                                                                    data-volume="{{ $rab->volume }}"
-                                                                    data-satuan="{{ $rab->satuan }}"
-                                                                    {{ $rabId == $rab->id ? 'selected' : '' }}>
-
-                                                                ↳ {{ $rab->job_name }}
-
-                                                            </option>
-
-                                                        @endforeach
-
-                                                    @endforeach
-
-                                                @endforeach
-
-                                                <option value="manual"
-                                                    {{ $rabId == 'manual' ? 'selected' : '' }}>
-                                                    + Manual Input
+                                            <option disabled>
+                                                &nbsp;&nbsp;{{ $loop->iteration }}. {{ $uraian->name }}
+                                            </option>
+                                            @foreach($uraian->items as $rab)
+                                                <option value="{{ $rab->id }}"
+                                                        data-volume="{{ $rab->volume }}"
+                                                        data-satuan="{{ $rab->satuan }}"
+                                                        {{ $rabId == $rab->id ? 'selected' : '' }}>
+                                                    &nbsp;&nbsp;&nbsp;&nbsp;
+                                                    {{ $loop->parent->iteration }}.{{ $loop->iteration }}
+                                                    {{ $rab->job_name }}
                                                 </option>
-
-                                            </select>
-
+                                            @endforeach
+                                        @endforeach
+                                    @endforeach
+                                    <option value="manual"
+                                        {{ $rabId == 'manual' ? 'selected' : '' }}>
+                                        + Manual Input
+                                    </option>
+                                </select>
                                 <input type="text"
                                     name="uraian_manual[]"
                                     class="form-control mt-2 manual-rab d-none"

@@ -48,16 +48,21 @@
         if ($menu['type'] === 'route') {
             $isActive = request()->routeIs($menu['url']);
         } elseif ($menu['type'] === 'url') {
-            $isActive = request()->is(ltrim($menu['url'], '/').'*');
+            $url = trim($menu['url'], '/');
+            $isActive = trim(request()->path(), '/') === $url;
         }
 
         if (!$isActive && $hasChildren) {
             foreach ($filteredChildren as $child) {
+                $url = ltrim($child['url'], '/');
                 if ($child['type'] === 'route' && request()->routeIs($child['url'])) {
                     $isActive = true;
                     break;
                 }
-                if ($child['type'] === 'url' && request()->is(ltrim($child['url'], '/').'*')) {
+                if (
+                    $child['type'] === 'url' &&
+                    (request()->is($url) || request()->is($url . '/*'))
+                ) {
                     $isActive = true;
                     break;
                 }
@@ -96,9 +101,11 @@
                     <ul class="nav nav-sm flex-column ms-4">
                         @foreach($filteredChildren as $child)
                             @php
-                                $childActive = $child['type'] === 'route'
-                                    ? request()->routeIs($child['url'])
-                                    : request()->is(ltrim($child['url'], '/').'*');
+                            $url = trim($child['url'], '/');
+
+                            $childActive = $child['type'] === 'route'
+                                ? request()->routeIs($child['url'])
+                                : trim(request()->path(), '/') === $url;
                             @endphp
 
                             <li class="nav-item">

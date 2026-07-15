@@ -1,117 +1,146 @@
 @extends('tablar::page')
 
 @section('content')
-<div class="container">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2 style="text-align:center;">Laporan Laba Rugi</h2>
-        <div class="mb-3">
-            <a href="{{ route('reports.income_statement.pdf', request()->all()) }}" class="btn btn-danger btn-sm" target="_blank">
-                Export PDF
-            </a>
-            <a href="{{ route('reports.income_statement.excel', request()->all()) }}" class="btn btn-success btn-sm">
-                Export Excel
-            </a>
-        </div>    
-    </div>
+    <div class="page-header d-print-none">
+        <div class="container-xl">
 
-    <div class="card shadow-sm border-0 mb-3">
-        <div class="card-body">
-            <form method="GET" action="{{ route('reports.income_statement') }}" class="row g-3 mb-4">
-                <div class="col-md-3">
-                    <label for="start_date" class="form-label">Dari Tanggal</label>
-                    <input type="date" name="start_date" id="start_date" 
-                        class="form-control" value="{{ $startDate }}">
-                </div>
-                <div class="col-md-3">
-                    <label for="end_date" class="form-label">Sampai Tanggal</label>
-                    <input type="date" name="end_date" id="end_date" 
-                        class="form-control" value="{{ $endDate }}">
+            <div class="row g-2 align-items-center">
+
+                {{-- LEFT --}}
+                <div class="col">
+                    <h2>
+                        Laporan Laba Rugi
+                    </h2>
                 </div>
 
-                <div class="col-md-3 align-self-end">
-                    <button type="submit" class="btn btn-dark text-white">Filter</button>
+                {{-- RIGHT --}}
+                <div class="col-auto ms-auto d-print-none">
+                    <div class="btn-list">
+
+                        <a href="{{ route('reports.income_statement.excel', request()->all()) }}"
+                           class="btn btn-dark"
+                           target="_blank">
+
+                            <i class="ti ti-file-export"></i>
+                            Ekspor
+                        </a>
+
+                        <a href="{{ route('reports.income_statement.pdf', request()->all()) }}"
+                           class="btn btn-outline-dark"
+                           target="_blank">
+
+                            <i class="ti ti-printer"></i>
+                            Cetak
+                        </a>
+
+                    </div>
                 </div>
-            </form>
+
+            </div>
+
         </div>
     </div>
+    <div class="page-body">
+        <div class="container-xl">
+            <div class="card shadow-sm border-0 mb-3">
+                <div class="card-body">
+                    <form method="GET" action="{{ route('reports.income_statement') }}" class="row g-3 mb-4">
+                        <div class="col-md-3">
+                            <label for="start_date" class="form-label">Dari Tanggal</label>
+                            <input type="date" name="start_date" id="start_date" 
+                                class="form-control" value="{{ $startDate }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="end_date" class="form-label">Sampai Tanggal</label>
+                            <input type="date" name="end_date" id="end_date" 
+                                class="form-control" value="{{ $endDate }}">
+                        </div>
 
-    <div class="card">
-        <div class="card-body">
-            <table class="table table-bordered table-sm">
-                <thead class="table-light">
-                    <tr>
-                        <th>Kode Akun</th>
-                        <th>Nama Akun</th>
-                        <th class="text-end">Saldo</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {{-- 🔹 Pendapatan --}}
-                    <tr class="table-secondary">
-                        <td colspan="3"><strong>Pendapatan</strong></td>
-                    </tr>
-                    @if(isset($grouped['PENDAPATAN']))
-                        @foreach($grouped['PENDAPATAN'] as $subCat => $data)
+                        <div class="col-md-3 align-self-end">
+                            <button type="submit" class="btn btn-dark text-white">Filter</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <table class="table table-bordered table-sm">
+                        <thead class="table-light">
                             <tr>
-                                <td colspan="3"><em>{{ $subCat }}</em></td>
+                                <th>Kode Akun</th>
+                                <th>Nama Akun</th>
+                                <th class="text-end">Saldo</th>
                             </tr>
-                            @foreach($data['accounts'] as $acc)
-                                <tr>
-                                    <td>{{ $acc->account_code }}</td>
-                                    <td>{{ $acc->account_name }}</td>
-                                    <td class="text-end">{{ number_format($acc->balance, 0, ',', '.') }}</td>
-                                </tr>
-                            @endforeach
-                            <tr class="fw-bold">
-                                <td colspan="2">Subtotal {{ $subCat }}</td>
-                                <td class="text-end">{{ number_format($data['subtotal'], 0, ',', '.') }}</td>
+                        </thead>
+                        <tbody>
+                            {{-- 🔹 Pendapatan --}}
+                            <tr class="table-secondary">
+                                <td colspan="3"><strong>Pendapatan</strong></td>
                             </tr>
-                        @endforeach
-                    @endif
+                            @if(isset($grouped['PENDAPATAN']))
+                                @foreach($grouped['PENDAPATAN'] as $subCat => $data)
+                                    <tr>
+                                        <td colspan="3"><em>{{ $subCat }}</em></td>
+                                    </tr>
+                                    @foreach($data['accounts'] as $acc)
+                                        <tr>
+                                            <td>{{ $acc->account_code }}</td>
+                                            <td>{{ $acc->account_name }}</td>
+                                            <td class="text-end">{{ number_format($acc->balance, 0, ',', '.') }}</td>
+                                        </tr>
+                                    @endforeach
+                                    <tr class="fw-bold">
+                                        <td colspan="2">Subtotal {{ $subCat }}</td>
+                                        <td class="text-end">{{ number_format($data['subtotal'], 0, ',', '.') }}</td>
+                                    </tr>
+                                @endforeach
+                            @endif
 
-                    <tr class="fw-bold bg-light">
-                        <td colspan="2">Total Pendapatan</td>
-                        <td class="text-end">{{ number_format($totalIncome, 0, ',', '.') }}</td>
-                    </tr>
-
-                    {{-- 🔹 Beban --}}
-                    <tr class="table-secondary">
-                        <td colspan="3"><strong>Beban</strong></td>
-                    </tr>
-                    @if(isset($grouped['BEBAN']))
-                        @foreach($grouped['BEBAN'] as $subCat => $data)
-                            <tr>
-                                <td colspan="3"><em>{{ $subCat }}</em></td>
+                            <tr class="fw-bold bg-light">
+                                <td colspan="2">Total Pendapatan</td>
+                                <td class="text-end">{{ number_format($totalIncome, 0, ',', '.') }}</td>
                             </tr>
-                            @foreach($data['accounts'] as $acc)
-                                <tr>
-                                    <td>{{ $acc->account_code }}</td>
-                                    <td>{{ $acc->account_name }}</td>
-                                    <td class="text-end">{{ number_format($acc->balance, 0, ',', '.') }}</td>
-                                </tr>
-                            @endforeach
-                            <tr class="fw-bold">
-                                <td colspan="2">Subtotal {{ $subCat }}</td>
-                                <td class="text-end">{{ number_format($data['subtotal'], 0, ',', '.') }}</td>
+
+                            {{-- 🔹 Beban --}}
+                            <tr class="table-secondary">
+                                <td colspan="3"><strong>Beban</strong></td>
                             </tr>
-                        @endforeach
-                    @endif
+                            @if(isset($grouped['BEBAN']))
+                                @foreach($grouped['BEBAN'] as $subCat => $data)
+                                    <tr>
+                                        <td colspan="3"><em>{{ $subCat }}</em></td>
+                                    </tr>
+                                    @foreach($data['accounts'] as $acc)
+                                        <tr>
+                                            <td>{{ $acc->account_code }}</td>
+                                            <td>{{ $acc->account_name }}</td>
+                                            <td class="text-end">{{ number_format($acc->balance, 0, ',', '.') }}</td>
+                                        </tr>
+                                    @endforeach
+                                    <tr class="fw-bold">
+                                        <td colspan="2">Subtotal {{ $subCat }}</td>
+                                        <td class="text-end">{{ number_format($data['subtotal'], 0, ',', '.') }}</td>
+                                    </tr>
+                                @endforeach
+                            @endif
 
-                    <tr class="fw-bold bg-light">
-                        <td colspan="2">Total Beban</td>
-                        <td class="text-end">{{ number_format($totalExpense, 0, ',', '.') }}</td>
-                    </tr>
+                            <tr class="fw-bold bg-light">
+                                <td colspan="2">Total Beban</td>
+                                <td class="text-end">{{ number_format($totalExpense, 0, ',', '.') }}</td>
+                            </tr>
 
-                    {{-- 🔹 Net Income --}}
-                    <tr class="table-dark text-white">
-                        <td colspan="2"><strong>Laba/Rugi Bersih</strong></td>
-                        <td class="text-end"><strong>{{ number_format($netIncome, 0, ',', '.') }}</strong></td>
-                    </tr>
-                </tbody>
-            </table>
+                            {{-- 🔹 Net Income --}}
+                            <tr class="table-dark text-white">
+                                <td colspan="2"><strong>Laba/Rugi Bersih</strong></td>
+                                <td class="text-end"><strong>{{ number_format($netIncome, 0, ',', '.') }}</strong></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
-</div>
 @endsection
 
 @push('js')

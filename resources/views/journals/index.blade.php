@@ -43,8 +43,6 @@
                                 <thead>
                                     <tr>
                                         <th>No</th>
-                                        {{-- <th>Tipe Lisensi</th>
-                                        <th>Nama Lisensi</th> --}}
                                         <th>No. Transaksi</th>
                                         <th>Tanggal Dibuat</th>
                                         <th>PIC</th>
@@ -74,7 +72,7 @@ $(function () {
             // { data: 'license_name', name: 'licenses.name' },
             { data: 'journal_code', name: 'accounting_journals.journal_code' },
             { data: 'transaction_date', name: 'accounting_journals.transaction_date' },
-            { data: 'creator', name: 'users.fullname' },
+            { data: 'creator_name', name: 'users.fullname' },
             { data: 'action', name: 'action', orderable: false, searchable: false },
         ],
                     language: {

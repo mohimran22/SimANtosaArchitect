@@ -1,8 +1,51 @@
 @extends('tablar::page')
 
 @section('content')
+    <div class="page-header d-print-none">
+        <div class="container-xl">
+
+            <div class="row g-2 align-items-center">
+
+                {{-- LEFT --}}
+                <div class="col">
+                    <h2>
+                        Neraca Saldo
+                    </h2>
+
+                    <div class="text-muted mt-1">
+                        Laporan per akun dengan saldo berjalan
+                    </div>
+                </div>
+
+                {{-- RIGHT --}}
+                <div class="col-auto ms-auto d-print-none">
+                    <div class="btn-list">
+
+                        <a href="{{ route('trial.export', request()->all()) }}"
+                           class="btn btn-dark"
+                           target="_blank">
+
+                            <i class="ti ti-file-export"></i>
+                            Ekspor Excel
+                        </a>
+
+                        <a href="{{ route('journals.trial.pdf', request()->all()) }}"
+                           class="btn btn-outline-dark"
+                           target="_blank">
+
+                            <i class="ti ti-printer"></i>
+                            Cetak
+                        </a>
+
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
 <div class="container-fluid mt-3">
-    <div class="d-flex justify-content-between align-items-center mb-4 mt-3">
+    {{-- <div class="d-flex justify-content-between align-items-center mb-4 mt-3">
         <div>
             <h2 class="fw-bold mb-0">Neraca Saldo</h2>
             <div class="text-muted small">Laporan per akun dengan saldo berjalan</div>
@@ -23,7 +66,7 @@
                 <i class="ti ti-printer"></i>Cetak
             </a>
         </div>
-    </div>
+    </div> --}}
 
     {{-- 🔹 Filter --}}
     <div class="card shadow-sm border-0 mb-3">
