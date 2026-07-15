@@ -645,10 +645,16 @@
                                 <tr>
                                     <td class="row-number">${i+1}</td>
                                     <td>
-                                        ${w.worker 
-                                            ? w.worker.user.fullname
-                                            : (w.keahlian ?? '-')}
                                         <input type="hidden" name="workers[${i}][id]" value="${w.id}">
+
+                                        <input type="text"
+                                            class="form-control"
+                                            name="workers[${i}][keahlian]"
+                                            value="${
+                                                w.worker
+                                                    ? w.worker.user.fullname
+                                                    : (w.keahlian ?? '')
+                                            }">
                                     </td>
                                     <td>
                                         <input type="number"
@@ -782,8 +788,12 @@
                             <tr>
                                 <td class="row-number">${i+1}</td>
                                 <td>
-                                    ${m.nama_bahan}
                                     <input type="hidden" name="materials[${i}][id]" value="${m.id}">
+
+                                    <input type="text"
+                                        class="form-control"
+                                        name="materials[${i}][nama_bahan]"
+                                        value="${m.nama_bahan ?? ''}">
                                 </td>
                                 <td>
                                     <input type="number"

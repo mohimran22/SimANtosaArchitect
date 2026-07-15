@@ -41,35 +41,23 @@ class AttendanceController extends Controller
 
         })
         ->addColumn('h', fn($e) => $summaries[$e->id]['H'] ?? 0)
-
         ->addColumn('tla', fn($e) => $summaries[$e->id]['TL A'] ?? 0)
-
         ->addColumn('tlb', fn($e) => $summaries[$e->id]['TL B'] ?? 0)
-
         ->addColumn('tlc', fn($e) => $summaries[$e->id]['TL C'] ?? 0)
-
         ->addColumn('dl', fn($e) => $summaries[$e->id]['DL'] ?? 0)
-
         ->addColumn('izin', fn($e) => $summaries[$e->id]['I'] ?? 0)
-
         ->addColumn('sakit', fn($e) => $summaries[$e->id]['S'] ?? 0)
-
         ->addColumn('cuti', fn($e) => $summaries[$e->id]['C'] ?? 0)
-
         ->addColumn('alpha', fn($e) => $summaries[$e->id]['A'] ?? 0)
-
         ->addColumn('total_hari_kerja', fn($e) => $summaries[$e->id]['total_hari_kerja'] ?? 0)
-
         ->addColumn('total_hari_kehadiran', fn($e) => $summaries[$e->id]['total_hari_kehadiran'] ?? 0)
-
         ->addColumn('kehadiran', fn($e) => ($summaries[$e->id]['kehadiran'] ?? 0).' %')
-
         ->addColumn('ketepatan_waktu', fn($e) => ($summaries[$e->id]['ketepatan_waktu'] ?? 0).' %')
-
         ->addColumn('lembur', fn($e) => round(($summaries[$e->id]['total_jam_lembur'] ?? 0)/60,2))
-
         ->addColumn('keterangan', fn($e) => $summaries[$e->id]['keterangan'] ?? '')
-
+        ->addColumn('roles', function ($row) {
+            return $row->user?->roles?->pluck('name')->implode(', ') ?: '-';
+        })
         ->toJson();
 }
     public function checkIn(Request $request)
