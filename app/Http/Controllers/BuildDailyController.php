@@ -325,10 +325,18 @@ public function detail($id)
     })
     ->orderBy('order_no')
     ->get();
+    $usedDates = BuildDailyReport::where('project_id', $daily->project_id)
+        ->where('id', '!=', $daily->id) // jangan disable tanggal laporan yang sedang diedit
+        ->pluck('tanggal')
+        ->map(fn ($date) => Carbon::parse($date)->format('Y-m-d'))
+        ->values();
     return response()->json([
         'daily' => $daily,
         'worker_options' => $workerOptions,
         'categories'     => $categories,
+        'used_dates'     => $usedDates,
+        'start_date' => Carbon::parse($project->start_date)->format('Y-m-d'),
+        'end_date'   => Carbon::parse($project->end_date)->format('Y-m-d'),
     ]);
 }
 public function deleteWork($id)
@@ -363,6 +371,7 @@ public function updateAll(Request $request, $id)
         ])->findOrFail($id);
 
         $daily->update([
+            'tanggal'      => $request->tanggal,
             'catatan'      => $request->catatan,
         ]);
 

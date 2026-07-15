@@ -113,17 +113,10 @@
 
                                 <div class="d-flex gap-2 mt-2 w-100">
                                     <span class="badge bg-dark" id="badgeWeek"></span>
-                                    <span class="badge bg-secondary" id="badgeTanggal"></span>
-                                        <input
-                                            type="text"
-                                            id="editTanggal"
-                                            name="tanggal"
-                                            class="form-control form-control-sm d-none"
-                                            style="width:180px;">
+                                        <span class="badge bg-secondary" id="badgeTanggal"></span>
+                                        <input type="text" id="editTanggal" class="d-none" name="tanggal" form="editDailyForm">
                                 </div>
-
                             </div>
-
                             <div class="modal-body" id="dailyModalBody">
                                 <div class="text-center py-5">
                                     Loading...
@@ -550,6 +543,12 @@
 
                     document.getElementById('badgeTanggal').textContent =
                         data.tanggal_formatted;
+                    document.getElementById('editTanggal').value = data.tanggal;
+                    $('#badgeWeek').text(`Minggu ${data.minggu}`);
+                    $('#badgeTanggal').text(data.tanggal_formatted);
+
+                    // isi input hidden/edit
+                    $('#editTanggal').val(data.tanggal);
                     let workTimeRows = '';
 
                     (data.work_times || []).forEach((t, i) => {
@@ -1125,6 +1124,23 @@
                         </form>
                     </div>
                     `;
+                    $('#btnEditDaily').off('click').on('click', function () {
+                        $('#badgeTanggal').addClass('d-none');
+                        $('#editTanggal').removeClass('d-none');
+                        if ($('#editTanggal')[0]._flatpickr) {
+                            $('#editTanggal')[0]._flatpickr.destroy();
+                        }
+                        flatpickr('#editTanggal', {
+                            locale: "id",
+                            dateFormat: "Y-m-d",
+                            altInput: true,
+                            altFormat: "d F Y",
+                            defaultDate: data.tanggal,
+                            minDate: response.start_date,
+                            maxDate: response.end_date,
+                            disable: response.used_dates
+                        });
+                    });
                     $('#workersTable .worker-select').each(function () {
                         $(this).select2({
                             width: '100%',
@@ -1165,7 +1181,7 @@
 
                         satuan.val(option.data('satuan') || '');
                         volume.val(option.data('volume') || '');
-                    });
+                    }); 
 
                     // const switchLibur = document.getElementById('switchLibur');
                     // const statusHari = document.getElementById('statusHari');
@@ -1558,7 +1574,9 @@
                 console.log('Button Save diklik');
 
                 const form = document.getElementById('editDailyForm');
+                
                 const formData = new FormData(form);
+
                 const id = formData.get('id');
 
                 fetch(`/daily/${id}/update-all`, {
@@ -1600,27 +1618,6 @@
                 });
             }
         });
-        function updateHeaderView(data){
-
-            document.querySelector('#viewMode .col-md-3:nth-child(1)').innerHTML =
-                `<strong>Tanggal:</strong><br>
-                ${new Date(data.tanggal).toLocaleDateString('id-ID')}`;
-
-            document.querySelector('#viewMode .col-md-3:nth-child(2)').innerHTML =
-                `<strong>Jam Kerja:</strong><br>
-                ${(data.jam_mulai)} s/d ${(data.jam_selesai)}`;
-
-            document.querySelector('#viewMode .col-md-3:nth-child(3)').innerHTML =
-                `<strong>Total Jam:</strong><br>
-                ${parseFloat(data.total_jam).toFixed(2)}`;
-
-            document.querySelector('#viewMode .col-md-3:nth-child(4)').innerHTML =
-                `<strong>Cuaca:</strong><br>
-                ${data.cuaca ?? '-'}`;
-
-            document.querySelector('#viewMode textarea').value =
-                data.catatan ?? '';
-        }
     });
 </script>
 <script>
