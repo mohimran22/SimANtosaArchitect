@@ -63,7 +63,7 @@
 
                 <div class="col-md-2">
                     <label for="view" class="form-label">Tampilan</label>
-                    <select name="view" id="view" class="form-select">
+                    <select name="view" id="view" class="form-select select2">
                         <option value="default" {{ $viewType == 'default' ? 'selected' : '' }}>Default</option>
                         <option value="skontro" {{ $viewType == 'skontro' ? 'selected' : '' }}>Skontro</option>
                     </select>
@@ -121,10 +121,7 @@
                                         <td>Akumulasi Penyusutan</td>
                                         <td class="text-end text-danger">Rp ({{ number_format($penyusutan, 2, ',', '.') }})</td>
                                     </tr>
-                                    <tr>
-                                        <td>Beban</td>
-                                        <td class="text-end">Rp {{ number_format($beban, 2, ',', '.') }}</td>
-                                    </tr>
+                                    
                                     <tr class="fw-bold table-secondary">
                                         <td>Total Aktiva</td>
                                         <td class="text-end">Rp {{ number_format($totalAktiva, 2, ',', '.') }}</td>
@@ -152,13 +149,15 @@
                                         <td class="text-end">Rp {{ number_format($ekuitas, 2, ',', '.') }}</td>
                                     </tr>
                                     <tr>
-                                        <td>Pendapatan</td>
-                                        <td class="text-end">Rp {{ number_format($pendapatan, 2, ',', '.') }}</td>
+                                    <td>Laba (Rugi) Berjalan</td>
+                                        <td class="text-end">
+                                            Rp {{ number_format($labaBerjalan,2,',','.') }}
+                                        </td>
                                     </tr>
                                     
                                     <tr class="fw-bold table-secondary">
                                         <td>Total Passiva</td>
-                                        <td class="text-end">Rp {{ number_format($totalPassiva, 0, ',', '.') }}</td>
+                                        <td class="text-end">Rp {{ number_format($totalPassiva, 2, ',', '.') }}</td>
                                     </tr>
                                 </tbody>
                             </table>

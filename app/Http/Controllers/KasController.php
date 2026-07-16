@@ -37,7 +37,7 @@ class KasController extends Controller
 
     // Header kolom
     $headers = [
-        'NO', 'TANGGAL', 'RINCIAN', 'KODE AKUN', 'AKUN',
+        'NO', 'TANGGAL', 'DESKRIPSI', 'KODE AKUN', 'AKUN',
         'USER', 'PIC', 'DEBIT (pemasukan)', 'KREDIT (pengeluaran)',
         'SALDO', 'KETERANGAN'
     ];
@@ -64,7 +64,7 @@ class KasController extends Controller
 
             $sheet->setCellValue('A' . $row, $no++);
             $sheet->setCellValue('B' . $row, Carbon::parse($journal->transaction_date)->format('d/m/Y'));
-            $sheet->setCellValue('C' . $row, $journal->description);
+            $sheet->setCellValue('C' . $row, $detail->description ?? '-');
             $sheet->setCellValue('D' . $row, $detail->account->account_code);
             $sheet->setCellValue('E' . $row, $detail->account->account_name);
             $sheet->setCellValue('F' . $row, $detail->person_name);
@@ -72,8 +72,7 @@ class KasController extends Controller
             $sheet->setCellValue('H' . $row, $debit);
             $sheet->setCellValue('I' . $row, $kredit);
             $sheet->setCellValue('J' . $row, $saldo);
-            $sheet->setCellValue('K' . $row, $detail->description ?? '-');
-
+            $sheet->setCellValue('K' . $row, $journal->description);
             $row++;
         }
     }

@@ -715,44 +715,56 @@ public function trialBalance(Request $request)
     ));
 }
 
-/**
- * Ambil akun + group berdasarkan kategori dan sub-kategori
- */
 private function getGroupedAccounts($startDate, $endDate)
 {
     $accounts = AccountingAccount::where('is_parent', false)
+        ->with(['details' => function ($q) use ($endDate) {
 
-        ->with(['details' => function ($q) use ($startDate, $endDate) {
+            // Saldo sampai tanggal akhir
+            $q->whereHas('journal', function ($j) use ($endDate) {
 
-            $q->whereHas('journal', function ($j) use ($startDate, $endDate) {
-
-                $j->whereDate('transaction_date', '>=', $startDate)
-                  ->whereDate('transaction_date', '<=', $endDate);
+                $j->whereDate('transaction_date', '<=', $endDate);
 
             });
 
         }])
-
         ->get()
-
         ->map(function ($account) {
 
             $debit  = $account->details->sum('debit');
             $credit = $account->details->sum('credit');
 
-            $balance = $debit - $credit;
+            switch ($account->category) {
+
+                case 'AKTIVA':
+                case 'BEBAN':
+                    $balance = $debit - $credit;
+                    break;
+
+                case 'KEWAJIBAN':
+                case 'EKUITAS':
+                case 'PENDAPATAN':
+                    $balance = $credit - $debit;
+                    break;
+
+                default:
+                    $balance = $debit - $credit;
+            }
 
             return [
+
                 'account_code' => $account->account_code,
                 'account_name' => $account->account_name,
                 'category'     => $account->category,
                 'sub_category' => $account->sub_category,
-                'parent_id'    => $account->parent_id,
-                'is_parent'    => $account->is_parent,
-                'debit'        => $debit,
-                'credit'       => $credit,
+
+                'debit'   => $debit,
+                'credit'  => $credit,
+                'balance' => $balance,
+
             ];
         });
+
     return $accounts
         ->groupBy('category')
         ->map(function ($catGroup) {
@@ -760,9 +772,18 @@ private function getGroupedAccounts($startDate, $endDate)
             return $catGroup->groupBy('sub_category')->map(function ($subGroup) {
 
                 return [
-                    'accounts'       => $subGroup,
-                    'subtotalDebit'  => $subGroup->sum('debit'),
-                    'subtotalCredit' => $subGroup->sum('credit'),
+
+                    'accounts' => $subGroup,
+
+                    'subtotalDebit' =>
+                        $subGroup->sum('debit'),
+
+                    'subtotalCredit' =>
+                        $subGroup->sum('credit'),
+
+                    'subtotalBalance' =>
+                        $subGroup->sum('balance'),
+
                 ];
 
             });
@@ -790,7 +811,7 @@ public function exportTrial(Request $request)
 
     // 🔹 Ambil data yang sama seperti di view trial balance
     $groupedAccounts = $this->getGroupedAccounts($startDate, $endDate, $activeLicenseId);
-
+  
     $totalDebit  = collect($groupedAccounts)->sum(fn($cat) => collect($cat)->sum(fn($sub) => $sub['subtotalDebit']));
     $totalCredit = collect($groupedAccounts)->sum(fn($cat) => collect($cat)->sum(fn($sub) => $sub['subtotalCredit']));
 
@@ -814,7 +835,7 @@ public function print(AccountingJournal $journal)
     $pdf = Pdf::loadView('journals.print', compact('journal'))
         ->setPaper('a4', 'landscape'); // bisa juga landscape
 
-    return $pdf->stream('Jurnal-Harian'.$journal->journal_code.'.pdf');
+    return $pdf->stream('Jurnal-Harian'.-$journal->journal_code.'.pdf');
 }
 
 public function balanceSheet(Request $request)
@@ -837,7 +858,6 @@ public function balanceSheet(Request $request)
     $viewType = $request->get('view', 'default'); // 🔹 default | skontro
 
     $groupedAccounts = $this->getGroupedAccounts($startDate, $endDate);
-
     $totals = ReportService::calculateBalanceSheet($groupedAccounts);
 
     $totalDebit  = collect($groupedAccounts)->sum(fn($cat) => collect($cat)->sum(fn($sub) => $sub['subtotalDebit']));

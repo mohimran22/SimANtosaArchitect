@@ -85,7 +85,7 @@
 
                 <div class="col-md-2">
                     <label for="view" class="form-label">Tampilan</label>
-                    <select name="view" id="view" class="form-select">
+                    <select name="view" id="view" class="form-select select2">
                         <option value="default" {{ $viewType == 'default' ? 'selected' : '' }}>Default</option>
                         <option value="skontro" {{ $viewType == 'skontro' ? 'selected' : '' }}>Skontro</option>
                     </select>
@@ -165,3 +165,11 @@
     </div>
 </div>
 @endsection
+@push('js')
+<script>
+ $('.select2').select2({
+            placeholder: "-- Pilih --",
+            width: '100%'
+        });
+</script>
+@endpush
