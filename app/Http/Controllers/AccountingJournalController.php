@@ -677,7 +677,6 @@ public function exportLedgerPdf(Request $request)
     return $pdf->stream('ledger_'.$startDate.'_to_'.$endDate.'.pdf');
 }
 
-
 public function trialBalance(Request $request)
 {
     $user = auth()->user();
@@ -687,19 +686,19 @@ public function trialBalance(Request $request)
     $endDate   = $request->end_date ?? now()->endOfMonth()->toDateString();
 
     // 🔹 Filter lisensi sesuai role
-    if ($user->hasRole('Super-Admin')) {
-        $licenses = License::all();
-    } elseif ($user->hasRole('Pemilik Lisensi')) {
-        $licenses = $user->licenses;
-    } else {
-        $licenses = $user->employee?->licenses ?? collect();
-    }
+    // if ($user->hasRole('Super-Admin')) {
+    //     $licenses = License::all();
+    // } elseif ($user->hasRole('Pemilik Lisensi')) {
+    //     $licenses = $user->licenses;
+    // } else {
+    //     $licenses = $user->employee?->licenses ?? collect();
+    // }
 
     // 🔹 Lisensi aktif → default ambil yang pertama
     // $activeLicenseId = $request->get('license_id') ?? session('active_license_id');
 
     // 🔹 Ambil akun yang sudah dikelompokkan
-    $groupedAccounts = $this->getGroupedAccounts($startDate, $endDate);
+    $groupedAccounts = $this->getTrialBalanceAccounts($startDate, $endDate);
 
     // 🔹 Hitung total debit & kredit
     $totalDebit  = collect($groupedAccounts)->sum(fn($cat) => collect($cat)->sum(fn($sub) => $sub['subtotalDebit']));
@@ -715,25 +714,21 @@ public function trialBalance(Request $request)
     ));
 }
 
-private function getGroupedAccounts($startDate, $endDate)
+private function buildGroupedAccounts(\Closure $journalFilter)
 {
     $accounts = AccountingAccount::where('is_parent', false)
         ->get()
-        ->map(function ($account) use ($endDate) {
+        ->map(function ($account) use ($journalFilter) {
 
-        $debit = AccountingJournalDetail::query()
-            ->where('account_id', $account->id)
-            ->whereHas('journal', function ($q) use ($endDate) {
-                $q->whereDate('transaction_date', '<=', $endDate);
-            })
-            ->sum('debit');
+            $debit = AccountingJournalDetail::query()
+                ->where('account_id', $account->id)
+                ->whereHas('journal', $journalFilter)
+                ->sum('debit');
 
-        $credit = AccountingJournalDetail::query()
-            ->where('account_id', $account->id)
-            ->whereHas('journal', function ($q) use ($endDate) {
-                $q->whereDate('transaction_date', '<=', $endDate);
-            })
-            ->sum('credit');
+            $credit = AccountingJournalDetail::query()
+                ->where('account_id', $account->id)
+                ->whereHas('journal', $journalFilter)
+                ->sum('credit');
 
             switch ($account->category) {
 
@@ -753,18 +748,16 @@ private function getGroupedAccounts($startDate, $endDate)
             }
 
             return [
-
                 'account_code' => $account->account_code,
                 'account_name' => $account->account_name,
                 'category'     => $account->category,
                 'sub_category' => $account->sub_category,
-
-                'debit'   => $debit,
-                'credit'  => $credit,
-                'balance' => $balance,
-
+                'debit'        => $debit,
+                'credit'       => $credit,
+                'balance'      => $balance,
             ];
         });
+
     return $accounts
         ->groupBy('category')
         ->map(function ($catGroup) {
@@ -772,25 +765,32 @@ private function getGroupedAccounts($startDate, $endDate)
             return $catGroup->groupBy('sub_category')->map(function ($subGroup) {
 
                 return [
-
-                    'accounts' => $subGroup,
-
-                    'subtotalDebit' =>
-                        $subGroup->sum('debit'),
-
-                    'subtotalCredit' =>
-                        $subGroup->sum('credit'),
-
-                    'subtotalBalance' =>
-                        $subGroup->sum('balance'),
-
+                    'accounts'         => $subGroup,
+                    'subtotalDebit'    => $subGroup->sum('debit'),
+                    'subtotalCredit'   => $subGroup->sum('credit'),
+                    'subtotalBalance'  => $subGroup->sum('balance'),
                 ];
 
             });
 
         });
 }
+private function getBalanceSheetAccounts($startDate, $endDate)
+{
+    return $this->buildGroupedAccounts(function ($query) use ($startDate, $endDate) {
 
+        $query->whereBetween('transaction_date', [$startDate, $endDate]);
+
+    });
+}
+private function getTrialBalanceAccounts($startDate, $endDate)
+{
+    return $this->buildGroupedAccounts(function ($query) use ($startDate, $endDate) {
+
+        $query->whereBetween('transaction_date', [$startDate, $endDate]);
+
+    });
+}
 public function exportTrial(Request $request)
 {
     $user = auth()->user();
@@ -857,7 +857,7 @@ public function balanceSheet(Request $request)
 
     $viewType = $request->get('view', 'default'); // 🔹 default | skontro
 
-    $groupedAccounts = $this->getGroupedAccounts($startDate, $endDate);
+    $groupedAccounts = $this->getBalanceSheetAccounts($startDate, $endDate);
     $totals = BalanceSheetService::calculate($groupedAccounts);
 
     $totalDebit  = collect($groupedAccounts)->sum(fn($cat) => collect($cat)->sum(fn($sub) => $sub['subtotalDebit']));

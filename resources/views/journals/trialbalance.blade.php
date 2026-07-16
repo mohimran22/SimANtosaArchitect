@@ -45,30 +45,7 @@
         </div>
     </div>
 <div class="container-fluid mt-3">
-    {{-- <div class="d-flex justify-content-between align-items-center mb-4 mt-3">
-        <div>
-            <h2 class="fw-bold mb-0">Neraca Saldo</h2>
-            <div class="text-muted small">Laporan per akun dengan saldo berjalan</div>
-        </div>
-        <div class="d-flex gap-2">
-            <a href="{{ route('trial.export', [
-                    'start_date' => request('start_date'),
-                    'end_date' => request('end_date'),
-                ]) }}" 
-                class="btn btn-dark text white" target="_blank">
-                <i class="ti ti-file-export"></i>Ekspor Excel
-            </a> 
-            <a href="{{ route('journals.trial.pdf', [
-                    'start_date' => request('start_date'),
-                    'end_date' => request('end_date'),
-                ]) }}" 
-                class="btn btn-outline-dark" target="_blank">
-                <i class="ti ti-printer"></i>Cetak
-            </a>
-        </div>
-    </div> --}}
 
-    {{-- 🔹 Filter --}}
     <div class="card shadow-sm border-0 mb-3">
         <div class="card-body">
             <form method="GET" class="row g-2 align-items-end">
