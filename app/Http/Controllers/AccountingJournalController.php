@@ -16,7 +16,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
-use App\Services\ReportService;
+use App\Services\BalanceSheetService;
 use Illuminate\Support\Facades\Storage;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Yajra\DataTables\Facades\DataTables;
@@ -764,7 +764,6 @@ private function getGroupedAccounts($startDate, $endDate)
 
             ];
         });
-
     return $accounts
         ->groupBy('category')
         ->map(function ($catGroup) {
@@ -858,8 +857,8 @@ public function balanceSheet(Request $request)
     $viewType = $request->get('view', 'default'); // 🔹 default | skontro
 
     $groupedAccounts = $this->getGroupedAccounts($startDate, $endDate);
-    $totals = ReportService::calculateBalanceSheet($groupedAccounts);
-
+    $totals = BalanceSheetService::calculate($groupedAccounts);
+    dd(array_keys($groupedAccounts['AKTIVA']->toArray()));
     $totalDebit  = collect($groupedAccounts)->sum(fn($cat) => collect($cat)->sum(fn($sub) => $sub['subtotalDebit']));
     $totalCredit = collect($groupedAccounts)->sum(fn($cat) => collect($cat)->sum(fn($sub) => $sub['subtotalCredit']));
     
