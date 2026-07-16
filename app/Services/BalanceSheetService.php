@@ -35,7 +35,7 @@ class BalanceSheetService
             + $danaBelumDisetor
             + $pajakDimuka
             + $asetTetap
-            - $akumulasiPenyusutan;
+            + $akumulasiPenyusutan;
 
         $kewajiban = collect($groupedAccounts['KEWAJIBAN'] ?? [])
             ->sum('subtotalBalance');

@@ -775,11 +775,11 @@ private function buildGroupedAccounts(\Closure $journalFilter)
 
         });
 }
-private function getBalanceSheetAccounts($endDate)
+private function getBalanceSheetAccounts($startDate, $endDate)
 {
-    return $this->buildGroupedAccounts(function ($query) use ($endDate) {
+    return $this->buildGroupedAccounts(function ($query) use ($startDate, $endDate) {
 
-        $query->whereDate('transaction_date', '<=', $endDate);
+        $query->whereBetween('transaction_date', [$startDate, $endDate]);
 
     });
 }
@@ -857,7 +857,7 @@ public function balanceSheet(Request $request)
 
     $viewType = $request->get('view', 'default'); // 🔹 default | skontro
 
-    $groupedAccounts = $this->getBalanceSheetAccounts($endDate);
+    $groupedAccounts = $this->getBalanceSheetAccounts($startDate, $endDate);
 
     $totals = BalanceSheetService::calculate($groupedAccounts);
     $totalDebit  = collect($groupedAccounts)->sum(fn($cat) => collect($cat)->sum(fn($sub) => $sub['subtotalDebit']));
