@@ -12,12 +12,6 @@ class BalanceSheetService
             $groupedAccounts = $groupedAccounts->toArray();
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | AKTIVA
-        |--------------------------------------------------------------------------
-        */
-
         $aktiva = $groupedAccounts['AKTIVA'] ?? [];
 
         $asetLancar = $aktiva['Aset Lancar - Kas & Bank']['subtotalBalance'] ?? 0;
@@ -43,23 +37,11 @@ class BalanceSheetService
             + $asetTetap
             - $akumulasiPenyusutan;
 
-        /*
-        |--------------------------------------------------------------------------
-        | PASSIVA
-        |--------------------------------------------------------------------------
-        */
-
         $kewajiban = collect($groupedAccounts['KEWAJIBAN'] ?? [])
             ->sum('subtotalBalance');
 
         $ekuitas = collect($groupedAccounts['EKUITAS'] ?? [])
             ->sum('subtotalBalance');
-
-        /*
-        |--------------------------------------------------------------------------
-        | LABA BERJALAN
-        |--------------------------------------------------------------------------
-        */
 
         $pendapatan = collect($groupedAccounts['PENDAPATAN'] ?? [])
             ->sum('subtotalBalance');
