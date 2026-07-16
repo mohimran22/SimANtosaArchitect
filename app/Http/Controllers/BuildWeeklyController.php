@@ -151,32 +151,23 @@ public function exportPdf(Request $request, Project $project) {
     $allWeeks = collect($project->week_labels);
     $filteredWeeks = collect($project->week_labels);
 
-    if ($week) {
-        $filteredWeeks = $filteredWeeks
-            ->where('week_no', $week);
-    }
-
     if ($date) {
 
-        $filteredWeeks = $filteredWeeks
-            ->filter(function ($w) use ($date) {
+        $filteredWeeks = $filteredWeeks->filter(function ($w) use ($date) {
 
-                $start = Carbon::createFromFormat(
-                    'd/m/Y',
-                    $w['start']
-                );
+            $start = Carbon::createFromFormat('d/m/Y', $w['start']);
+            $end   = Carbon::createFromFormat('d/m/Y', $w['end']);
 
-                $end = Carbon::createFromFormat(
-                    'd/m/Y',
-                    $w['end']
-                );
+            return Carbon::parse($date)->between($start, $end);
 
-                return Carbon::parse($date)
-                    ->between($start, $end);
+        });
 
-            });
+    } elseif ($week) {
+
+        $filteredWeeks = $filteredWeeks->where('week_no', $week);
 
     }
+
     $totalColsSchedule = 5 + ($allWeeks->count() * 9);
     $totalCols = 5 + ($filteredWeeks->count() * 9);
     $weekNo = $filteredWeeks->first()['week_no'] ?? null;
