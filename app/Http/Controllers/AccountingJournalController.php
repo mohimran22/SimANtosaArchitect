@@ -718,36 +718,23 @@ public function trialBalance(Request $request)
 private function getGroupedAccounts($startDate, $endDate)
 {
     $accounts = AccountingAccount::where('is_parent', false)
-        ->with(['details' => function ($q) use ($endDate) {
-
-            // Saldo sampai tanggal akhir
-            $q->whereHas('journal', function ($j) use ($endDate) {
-
-                $j->whereDate('transaction_date', '<=', $endDate);
-
-            });
-
-        }])
         ->get()
-        ->map(function ($account) {
+        ->map(function ($account) use ($endDate) {
 
-            $debit  = $account->details->sum('debit');
-            $credit = $account->details->sum('credit');
-            if ($account->account_code == '1-106-001') {
-                dd([
-                    'account' => $account->account_name,
-                    'jumlah_detail' => $account->details->count(),
-                    'debit' => $debit,
-                    'credit' => $credit,
-                    'details' => $account->details->map(function ($d) {
-                        return [
-                            'tanggal' => $d->journal->transaction_date,
-                            'debit' => $d->debit,
-                            'credit' => $d->credit,
-                        ];
-                    }),
-                ]);
-            }
+        $debit = AccountingJournalDetail::query()
+            ->where('account_id', $account->id)
+            ->whereHas('journal', function ($q) use ($endDate) {
+                $q->whereDate('transaction_date', '<=', $endDate);
+            })
+            ->sum('debit');
+
+        $credit = AccountingJournalDetail::query()
+            ->where('account_id', $account->id)
+            ->whereHas('journal', function ($q) use ($endDate) {
+                $q->whereDate('transaction_date', '<=', $endDate);
+            })
+            ->sum('credit');
+
             switch ($account->category) {
 
                 case 'AKTIVA':
@@ -872,6 +859,7 @@ public function balanceSheet(Request $request)
 
     $groupedAccounts = $this->getGroupedAccounts($startDate, $endDate);
     $totals = BalanceSheetService::calculate($groupedAccounts);
+
     $totalDebit  = collect($groupedAccounts)->sum(fn($cat) => collect($cat)->sum(fn($sub) => $sub['subtotalDebit']));
     $totalCredit = collect($groupedAccounts)->sum(fn($cat) => collect($cat)->sum(fn($sub) => $sub['subtotalCredit']));
     

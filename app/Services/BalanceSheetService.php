@@ -6,23 +6,6 @@ use Illuminate\Support\Collection;
 
 class BalanceSheetService
 {
-    private static function val($data, string $key): float
-    {
-        if ($data instanceof Collection) {
-            return $data->sum(fn ($item) => self::val($item, $key));
-        }
-
-        if (is_array($data)) {
-            return (float)($data[$key] ?? 0);
-        }
-
-        if (is_object($data)) {
-            return (float)($data->$key ?? 0);
-        }
-
-        return 0;
-    }
-
     public static function calculate(Collection|array $groupedAccounts): array
     {
         if ($groupedAccounts instanceof Collection) {
@@ -35,26 +18,21 @@ class BalanceSheetService
         |--------------------------------------------------------------------------
         */
 
-        $asetLancar = collect($groupedAccounts['AKTIVA']['Aset Lancar - Kas & Bank'] ?? [])
-            ->sum(fn ($item) => self::val($item, 'subtotalBalance'));
+        $aktiva = $groupedAccounts['AKTIVA'] ?? [];
 
-        $persediaan = collect($groupedAccounts['AKTIVA']['Aset Lancar - Persediaan Barang'] ?? [])
-            ->sum(fn ($item) => self::val($item, 'subtotalBalance'));
+        $asetLancar = $aktiva['Aset Lancar - Kas & Bank']['subtotalBalance'] ?? 0;
 
-        $piutang = collect($groupedAccounts['AKTIVA']['Aset Lancar - Piutang'] ?? [])
-            ->sum(fn ($item) => self::val($item, 'subtotalBalance'));
+        $persediaan = $aktiva['Aset Lancar - Persediaan Barang']['subtotalBalance'] ?? 0;
 
-        $danaBelumDisetor = collect($groupedAccounts['AKTIVA']['Aset Lancar - Dana Belum Disetor'] ?? [])
-            ->sum(fn ($item) => self::val($item, 'subtotalBalance'));
+        $piutang = $aktiva['Aset Lancar - Piutang']['subtotalBalance'] ?? 0;
 
-        $pajakDimuka = collect($groupedAccounts['AKTIVA']['Aset Lancar - Pajak Bayar Dimuka'] ?? [])
-            ->sum(fn ($item) => self::val($item, 'subtotalBalance'));
+        $danaBelumDisetor = $aktiva['Aset Lancar - Dana Belum Disetor']['subtotalBalance'] ?? 0;
 
-        $asetTetap = collect($groupedAccounts['AKTIVA']['Aset Tetap'] ?? [])
-            ->sum(fn ($item) => self::val($item, 'subtotalBalance'));
+        $pajakDimuka = $aktiva['Aset Lancar - Pajak Bayar Dimuka']['subtotalBalance'] ?? 0;
 
-        $akumulasiPenyusutan = collect($groupedAccounts['AKTIVA']['Penyusutan'] ?? [])
-            ->sum(fn ($item) => self::val($item, 'subtotalBalance'));
+        $asetTetap = $aktiva['Aset Tetap']['subtotalBalance'] ?? 0;
+
+        $akumulasiPenyusutan = $aktiva['Penyusutan']['subtotalBalance'] ?? 0;
 
         $totalAktiva =
             $asetLancar
@@ -72,10 +50,10 @@ class BalanceSheetService
         */
 
         $kewajiban = collect($groupedAccounts['KEWAJIBAN'] ?? [])
-            ->sum(fn ($item) => self::val($item, 'subtotalBalance'));
+            ->sum('subtotalBalance');
 
         $ekuitas = collect($groupedAccounts['EKUITAS'] ?? [])
-            ->sum(fn ($item) => self::val($item, 'subtotalBalance'));
+            ->sum('subtotalBalance');
 
         /*
         |--------------------------------------------------------------------------
@@ -84,10 +62,10 @@ class BalanceSheetService
         */
 
         $pendapatan = collect($groupedAccounts['PENDAPATAN'] ?? [])
-            ->sum(fn ($item) => self::val($item, 'subtotalBalance'));
+            ->sum('subtotalBalance');
 
         $beban = collect($groupedAccounts['BEBAN'] ?? [])
-            ->sum(fn ($item) => self::val($item, 'subtotalBalance'));
+            ->sum('subtotalBalance');
 
         $labaBerjalan = $pendapatan - $beban;
 
@@ -98,6 +76,7 @@ class BalanceSheetService
 
         return [
 
+            // Aktiva
             'asetLancar' => $asetLancar,
             'persediaan' => $persediaan,
             'piutang' => $piutang,
@@ -106,13 +85,16 @@ class BalanceSheetService
             'asetTetap' => $asetTetap,
             'penyusutan' => $akumulasiPenyusutan,
 
+            // Passiva
             'kewajiban' => $kewajiban,
             'ekuitas' => $ekuitas,
 
+            // Laba Rugi
             'pendapatan' => $pendapatan,
             'beban' => $beban,
             'labaBerjalan' => $labaBerjalan,
 
+            // Total
             'totalAktiva' => $totalAktiva,
             'totalPassiva' => $totalPassiva,
         ];
