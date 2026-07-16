@@ -733,7 +733,21 @@ private function getGroupedAccounts($startDate, $endDate)
 
             $debit  = $account->details->sum('debit');
             $credit = $account->details->sum('credit');
-
+            if ($account->account_code == '1-106-001') {
+                dd([
+                    'account' => $account->account_name,
+                    'jumlah_detail' => $account->details->count(),
+                    'debit' => $debit,
+                    'credit' => $credit,
+                    'details' => $account->details->map(function ($d) {
+                        return [
+                            'tanggal' => $d->journal->transaction_date,
+                            'debit' => $d->debit,
+                            'credit' => $d->credit,
+                        ];
+                    }),
+                ]);
+            }
             switch ($account->category) {
 
                 case 'AKTIVA':
@@ -858,7 +872,6 @@ public function balanceSheet(Request $request)
 
     $groupedAccounts = $this->getGroupedAccounts($startDate, $endDate);
     $totals = BalanceSheetService::calculate($groupedAccounts);
-    dd(array_keys($groupedAccounts['AKTIVA']->toArray()));
     $totalDebit  = collect($groupedAccounts)->sum(fn($cat) => collect($cat)->sum(fn($sub) => $sub['subtotalDebit']));
     $totalCredit = collect($groupedAccounts)->sum(fn($cat) => collect($cat)->sum(fn($sub) => $sub['subtotalCredit']));
     
