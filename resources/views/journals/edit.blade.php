@@ -72,7 +72,7 @@
 
                             <h4>Detail Akun</h4>
                             <div class="table-responsive mb-4">
-                                <table class="table table-bordered">
+                                <table class="table table-bordered jurnal-table">
                                     <thead>
                                         <tr>
                                             <th style="width:20%">Akun</th>

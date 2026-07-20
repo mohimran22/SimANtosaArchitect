@@ -946,6 +946,15 @@ tr.row-uraian td.sticky-col{
         width:100% !important;
         box-sizing:border-box;
     }
+    .jurnal-table th:nth-child(2),
+    .jurnal-table td:nth-child(2) {
+        width: 350px;
+    }
+
+    .jurnal-table th:nth-child(3),
+    .jurnal-table td:nth-child(3) {
+        width: 250px;
+    }
 
 }
 .uraian-row{
