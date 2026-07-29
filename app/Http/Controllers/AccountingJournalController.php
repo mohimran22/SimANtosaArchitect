@@ -807,10 +807,10 @@ public function exportTrial(Request $request)
         $licenses = $user->employee?->licenses ?? collect();
     }
 
-   $activeLicenseId = $request->get('license_id') ?? session('active_license_id');
+//    $activeLicenseId = $request->get('license_id') ?? session('active_license_id');
 
     // 🔹 Ambil data yang sama seperti di view trial balance
-    $groupedAccounts = $this->getGroupedAccounts($startDate, $endDate, $activeLicenseId);
+    $groupedAccounts = $this->getTrialBalanceAccounts($startDate, $endDate);
   
     $totalDebit  = collect($groupedAccounts)->sum(fn($cat) => collect($cat)->sum(fn($sub) => $sub['subtotalDebit']));
     $totalCredit = collect($groupedAccounts)->sum(fn($cat) => collect($cat)->sum(fn($sub) => $sub['subtotalCredit']));
