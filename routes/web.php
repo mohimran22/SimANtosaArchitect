@@ -166,7 +166,7 @@ Route::get('/accounting/generate-code', [AccountingAccountController::class, 'ge
 
 Route::middleware(['auth', 'permission:lihat akun-akuntansi'])
         ->resource('accounting', AccountingAccountController::class)
-         ->parameters(['accounting' => 'account']);
+        ->parameters(['accounting' => 'account']);
 
 
 Route::get('/journals/{journal}/print', [AccountingJournalController::class, 'print'])

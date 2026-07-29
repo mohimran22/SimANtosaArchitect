@@ -19,41 +19,22 @@ public function index(Request $request)
     $query = AccountingAccount::with(['parent'])
         ->orderBy('account_code', 'asc');
 
-    if ($user->hasRole('Super-Admin')) {
-        // semua data
-    } elseif ($user->hasRole('Pemilik Lisensi')) {
+    if ($user->can('lihat akun-akuntansi')) {
 
-        $licenses = optional($user->licenses);
+    } elseif ($user->can('lihat akun-akuntansi lisensi')) {
 
-        if ($licenses?->isNotEmpty()) {
-            $query->whereIn('license_id', $licenses->pluck('id'));
-        } else {
-            abort(403, 'Lisensi tidak ditemukan untuk pemilik lisensi.');
-        }
-
-    } elseif ($user->hasRole('Akuntan')) {
-
-        $licenses = optional($user->employee)->licenses;
-
-        if ($licenses && $licenses->count() > 0) {
-            $query->whereIn('license_id', $licenses->pluck('id'));
-        } else {
-            abort(403, 'Lisensi tidak ditemukan.');
-        }
-
-    } else {
-        abort(403, 'Role Tidak diizinkan');
-    }
-
-    if (!$user->hasRole('Super-Admin')) {
-
-        $activeLicenseId = session('active_license_id'); // ⬅️ biasanya ini
+        $activeLicenseId = session('active_license_id');
 
         if (!$activeLicenseId) {
-            abort(403, 'Silakan pilih lisensi aktif terlebih dahulu.');
+            abort(403, 'Silakan pilih lisensi aktif.');
         }
 
         $query->where('license_id', $activeLicenseId);
+
+    } else {
+
+        abort(403, 'Tidak memiliki akses.');
+
     }
 
     if ($request->ajax()) {
