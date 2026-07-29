@@ -15,18 +15,29 @@
         <x-collapse-card title="Tahap Pelaksanaan Proyek" target="proyek-build-body">
             <div class="card-body">
                 
-                    <table width="100%" style="margin-bottom:20px; margin-left:20px;">
-                    <tr>
-                        <td width="20%">PEKERJAAN</td>
-                        <td>: {{ $project->project_name ?? '-' }}</td>
-                    </tr>
-                    <tr>
-                        <td>LOKASI</td>
-                        <td>: {{ $project->city->name ?? '-' }}</td>
-                    </tr>
-                    </table>
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <div class="row mb-2">
+                            <div class="col-4 col-md-2 fw-semibold">
+                                PEKERJAAN
+                            </div>
+                            <div class="col-8 col-md-10">
+                                : {{ $project->project_name ?? '-' }}
+                            </div>
+                        </div>
 
-                <div class="row mb-3 ps-3 align-items-end">
+                        <div class="row">
+                            <div class="col-4 col-md-2 fw-semibold">
+                                LOKASI
+                            </div>
+                            <div class="col-8 col-md-10">
+                                : {{ $project->city->name ?? '-' }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3 align-items-end">
 
                     <div class="col-md-3">
                         <label class="form-label">Filter Minggu</label>
@@ -49,8 +60,9 @@
                             id="filter-date"
                             class="form-control">
                     </div>
-
-                    <div class="col-md-3 d-flex gap-2">
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="d-grid d-md-flex gap-2">
                         <button type="button" id="btn-reset-filter" class="btn btn-secondary">
                             <i class="ti ti-filter-off"></i>
                             Reset
@@ -63,7 +75,7 @@
 
                                 @csrf
 
-                                <button type="submit" class="btn outline-secondary">
+                                <button type="submit" class="btn outline-secondary w-100">
                                     <i class="ti ti-refresh"></i>
                                     Update Form
                                 </button>
