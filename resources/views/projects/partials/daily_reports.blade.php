@@ -20,8 +20,10 @@
                 <button type="submit"
                     name="is_libur"
                     value="1"
+                    data-bs-toggle="tooltip"
+                    title="Simpan Sebagai Hari Libur"
                     class="btn btn-dark btn-sm">
-                    Simpan Sebagai Hari Libur
+                    <i class="ti ti-device-floppy me-1"></i>
                 </button>
             </div>
             <div class="card-body">
@@ -624,7 +626,9 @@
             </div>
         </div>
         <div class="text-end mt-4">
-            <button class="btn btn-dark">Simpan Laporan Harian</button>
+            <button type="submit" class="btn btn-dark">
+                <i class="ti ti-device-floppy me-1"></i> Simpan Laporan Harian
+            </button>
         </div>
     </form>
 </x-collapse-card>

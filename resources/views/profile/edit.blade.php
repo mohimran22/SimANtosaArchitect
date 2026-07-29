@@ -47,7 +47,7 @@
 }
 
 .btn-save{
-    background:#DCCBA8;
+    background:#000;
     color:#111;
     border:none;
     border-radius:12px;
@@ -57,7 +57,7 @@
 }
 
 .btn-save:hover{
-    background:#ccb88d;
+    background:#c4c4c4;
 }
 </style>
 <div class="container-fluid" style="padding-top:90px;">
@@ -65,7 +65,7 @@
         <!-- Form Update Profil -->
         <div class="col-xl-7 col-lg-8">
             <div class="card shadow-sm border-0">
-                <div class="card-header bg-primary text-white">
+                <div class="card-header bg-dark text-white">
                     <h3>
                         <i class="ti ti-user-circle me-2"></i>
                         Informasi Profil
@@ -195,7 +195,7 @@
                             @enderror
                         </div>
 
-                        <button class="btn btn-save">
+                        <button class="btn btn-save text-white">
                             <i class="ti ti-device-floppy me-1"></i>
                             Simpan Perubahan
                         </button>

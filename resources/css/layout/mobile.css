@@ -255,23 +255,20 @@
     .modal-backdrop {
         z-index: 1999 !important;
     }
-}
-@media (min-width: 576px){
+
 
     .mobile-fab{
         display:none !important;
     }
 
-}
-@media (max-width: 576px) {
+
     .sticky-col,
     .sticky-last {
         position: static !important;
         left: auto !important;
         z-index: auto !important;
     }
-}
-@media (max-width:576px){
+
     .chart-wrapper{
         overflow-x:auto;
         height:280px;
@@ -281,8 +278,7 @@
         min-width:900px !important;
     }
 
-}
-@media (max-width: 576px){
+
 
     #dailyModal .modal-header{
         flex-direction: column;
