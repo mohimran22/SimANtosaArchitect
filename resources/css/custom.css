@@ -707,8 +707,6 @@ col.just-hidden {
     border-spacing: 0;
     margin: 0 !important;
     table-layout: fixed;
-    width: 100%;
-    min-width: max-content;
 }
 .progress-table col[style*="display: none"] {
     width: 0 !important;
@@ -837,14 +835,12 @@ tr.row-uraian td.sticky-col{
     background: #fff;
 }
 .table-real {
-    max-height: 75vh; /* atau nilai lain sesuai kebutuhan */
-    overflow-y: auto;
-    overflow-x: auto;
+    max-height: 75vh;
+    overflow: auto;
 }
 .table-plan {
-    max-height: 75vh; /* atau nilai lain sesuai kebutuhan */
-    overflow-y: auto;
-    overflow-x: auto;
+    max-height: 75vh;
+    overflow: auto;
     max-width: 100%;
     width: 100%;
     background: transparent;
@@ -955,12 +951,23 @@ tr.row-uraian td.sticky-col{
     .jurnal-table td:nth-child(3) {
         width: 250px;
     }
+    .progress-table .sticky-col,
+    .progress-table .sticky-last{
 
+        position: static !important;
+        left: auto !important;
+        width: auto !important;
+        z-index: auto !important;
+        box-shadow:none !important;
+
+    }
 }
 .uraian-row{
 position:relative;
 }
-
+.uraian-pekerjaan .flex-grow-1{
+    min-width:0;
+}
 #uraianGallery img{
 cursor:pointer;
 transition:0.2s;
@@ -1137,7 +1144,8 @@ input[type=number]::-webkit-outer-spin-button {
 }
 .chart-wrapper{
     position: relative;
-    height: 450px;
+    width: 100%;
+    height: 350px;
 }
 .btn-add-icon{
     width:32px;

@@ -16,16 +16,27 @@
 
     <x-collapse-card title="Tahap Perencanaan Proyek" target="proyek-build-plan-body">
             <div class="card-body">
-                <table width="100%" style="margin-bottom:20px; margin-left:20px;">
-                    <tr>
-                        <td width="20%">PEKERJAAN</td>
-                        <td>: {{ $project->project_name ?? '-' }}</td>
-                    </tr>
-                    <tr>
-                        <td>LOKASI</td>
-                        <td>: {{ $project->city->name ?? '-' }}</td>
-                    </tr>
-                </table>
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <div class="row mb-2">
+                            <div class="col-4 col-md-2 fw-semibold">
+                                PEKERJAAN
+                            </div>
+                            <div class="col-8 col-md-10">
+                                : {{ $project->project_name ?? '-' }}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-4 col-md-2 fw-semibold">
+                                LOKASI
+                            </div>
+                            <div class="col-8 col-md-10">
+                                : {{ $project->city->name ?? '-' }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
                     <div class="col-md-3 d-flex gap-2">
                         @if(!$isReadOnly)
@@ -184,75 +195,73 @@
                 cell.style.width = "";
             });
 
-            if (window.innerWidth < 576) {
-                return;
+        const isMobile = window.innerWidth < 576;
+        if (!isMobile) {
+            const offsets = [];
+            let left = 0;
+            for (let i = 0; i < freezeCounts; i++) {
+                offsets.push(left);
+                left += Math.round(parseFloat(getComputedStyle(cols[i]).width));
             }
 
-        const offsets = [];
-        let left = 0;
-        for (let i = 0; i < freezeCounts; i++) {
-            offsets.push(left);
-            left += Math.round(parseFloat(getComputedStyle(cols[i]).width));
+            const rowspanMap = [];
+            buildPlanTable.querySelectorAll("tr").forEach(row => {
+                let colIndex = 0;
+                Array.from(row.children).forEach(cell => {
+                    while (rowspanMap[colIndex] && rowspanMap[colIndex] > 0) {
+                        rowspanMap[colIndex]--;
+                        colIndex++;
+                    }
+
+                    const colspan = parseInt(cell.getAttribute("colspan")) || 1;
+                    const rowspan = parseInt(cell.getAttribute("rowspan")) || 1;
+
+                    if (colIndex < freezeCounts || cell.classList.contains('freeze-col')) {
+                        cell.classList.add("sticky-col");
+                        cell.style.left = Math.round(offsets[colIndex]) + "px";
+
+                        let width = 0;
+                        for (let i = 0; i < colspan && (colIndex + i) < freezeCounts; i++) {
+                            width += Math.round(parseFloat(getComputedStyle(cols[colIndex + i]).width));
+                        }
+                        cell.style.width = width + "px";
+                    }
+
+                    if (rowspan > 1) {
+                        for (let i = 0; i < colspan; i++) {
+                            rowspanMap[colIndex + i] = rowspan - 1;
+                        }
+                    }
+                    colIndex += colspan;
+                });
+            });
+
+            // row-category & row-uraian
+            buildPlanTable.querySelectorAll("tr.row-category, tr.row-uraian").forEach(row => {
+                const cells = row.querySelectorAll("td");
+
+                cells.forEach(cell => {
+                    cell.classList.remove("sticky-col");
+                    cell.style.left = "";
+                    cell.style.width = "";
+                    cell.style.zIndex = "";
+                    cell.style.background = "";
+                });
+
+                const firstCell = cells[0];
+                if (!firstCell) return;
+
+                const width = Array.from(cols).slice(0, freezeCounts).reduce((sum, c) => {
+                    return sum + (parseFloat(c.style.width) || 0); // pakai style.width bukan getComputedStyle
+                }, 0);
+
+                firstCell.classList.add("sticky-col");
+                firstCell.style.left = "0px";
+                firstCell.style.width = width + "px";
+                firstCell.style.zIndex = "20";
+                firstCell.style.background = "#fff";
+            });
         }
-
-        const rowspanMap = [];
-        buildPlanTable.querySelectorAll("tr").forEach(row => {
-            let colIndex = 0;
-            Array.from(row.children).forEach(cell => {
-                while (rowspanMap[colIndex] && rowspanMap[colIndex] > 0) {
-                    rowspanMap[colIndex]--;
-                    colIndex++;
-                }
-
-                const colspan = parseInt(cell.getAttribute("colspan")) || 1;
-                const rowspan = parseInt(cell.getAttribute("rowspan")) || 1;
-
-                if (colIndex < freezeCounts || cell.classList.contains('freeze-col')) {
-                    cell.classList.add("sticky-col");
-                    cell.style.left = Math.round(offsets[colIndex]) + "px";
-
-                    let width = 0;
-                    for (let i = 0; i < colspan && (colIndex + i) < freezeCounts; i++) {
-                        width += Math.round(parseFloat(getComputedStyle(cols[colIndex + i]).width));
-                    }
-                    cell.style.width = width + "px";
-                }
-
-                if (rowspan > 1) {
-                    for (let i = 0; i < colspan; i++) {
-                        rowspanMap[colIndex + i] = rowspan - 1;
-                    }
-                }
-                colIndex += colspan;
-            });
-        });
-
-        // row-category & row-uraian
-        buildPlanTable.querySelectorAll("tr.row-category, tr.row-uraian").forEach(row => {
-            const cells = row.querySelectorAll("td");
-
-            cells.forEach(cell => {
-                cell.classList.remove("sticky-col");
-                cell.style.left = "";
-                cell.style.width = "";
-                cell.style.zIndex = "";
-                cell.style.background = "";
-            });
-
-            const firstCell = cells[0];
-            if (!firstCell) return;
-
-            const width = Array.from(cols).slice(0, freezeCounts).reduce((sum, c) => {
-                return sum + (parseFloat(c.style.width) || 0); // pakai style.width bukan getComputedStyle
-            }, 0);
-
-            firstCell.classList.add("sticky-col");
-            firstCell.style.left = "0px";
-            firstCell.style.width = width + "px";
-            firstCell.style.zIndex = "20";
-            firstCell.style.background = "#fff";
-        });
-
         const HEADER_ROW_HEIGHT = 45;
 
         const headerRows = buildPlanTable.querySelectorAll("thead tr");
@@ -306,7 +315,7 @@
 
     function initKurvaChart(){
         const ctx = document.getElementById('kurvaSChart');
-        ctx.width = Math.max({{ $weekCount }} * 50, 900);
+
         if(!ctx || typeof Chart === 'undefined') {
 
             console.error('Chart.js belum load');
@@ -360,7 +369,12 @@
                         beginAtZero:true,
                         max:100
                     }
-                }
+                },
+                plugins:{
+                    legend:{
+                        position: window.innerWidth < 576 ? 'bottom' : 'top'
+                    }
+                },
             }
 
         });
@@ -442,70 +456,39 @@
             getPlanKumulatif();
 
         window.kurvaChart.update();
-
     }
-
     function rebuildKurvaFromTable(){
-
         let weekCount = {{ $weekCount }};
         let kumulatif = [];
         let jalan = 0;
-
         for(let w = 1; w <= weekCount; w++){
-
             let sumBobot = 0;
-
             document.querySelectorAll(
                 `.week-bobot[data-week="${w}"]`
             ).forEach(el => {
-
                 sumBobot += parseFloat(el.innerText) || 0;
-
             });
-
             jalan += sumBobot;
-
             kumulatif.push(jalan);
-
         }
-
         return kumulatif;
-
     }
-
     function updateKurvaChartRealtime(){
-
         if(!window.kurvaChart) return;
-
-        window.kurvaChart.data.datasets[0].data =
-            rebuildKurvaFromTable();
-
+        window.kurvaChart.data.datasets[0].data = rebuildKurvaFromTable();
         window.kurvaChart.update();
-
     }
-
     function validatePlanTotal(){
-
         let total = 0;
-
         let weekCount = {{ $weekCount }};
-
         for(let w = 1; w <= weekCount; w++){
-
             total += getWeeklyPlanTotal(w);
-
         }
-
         console.log('Total Plan:', total);
-
         if(Math.abs(total - 100) > 0.01){
-
             console.warn("Total rencana ≠ 100%");
-
         }
-
     }
-
     function autosavePlan(itemId, week, val){
         console.log({
             item: itemId,

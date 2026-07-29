@@ -39,64 +39,55 @@
 
                 <div class="row g-3 mb-3 align-items-end">
 
-                    <div class="col-md-3">
+                    <div class="col-12 col-md-3">
                         <label class="form-label">Filter Minggu</label>
+                            <select id="filter-week" class="form-select select2">
+                                <option value="">-- Semua --</option>
 
-                        <select id="filter-week" class="form-select select2">
-                            <option value="">-- Semua --</option>
-
-                            @foreach($project->week_labels as $w)
-                                <option value="{{ $w['week_no'] }}">
-                                    M{{ $w['week_no'] }} ({{ $w['label'] }})
-                                </option>
-                            @endforeach
-                        </select>
+                                @foreach($project->week_labels as $w)
+                                    <option value="{{ $w['week_no'] }}">
+                                        M{{ $w['week_no'] }} ({{ $w['label'] }})
+                                    </option>
+                                @endforeach
+                            </select>
                     </div>
 
-                    <div class="col-md-3">
+                    <div class="col-12 col-md-3">
                         <label class="form-label">Filter Tanggal</label>
-
                         <input type="date"
                             id="filter-date"
                             class="form-control">
                     </div>
-                </div>
-                <div class="col-12 col-md-6">
-                    <div class="d-grid d-md-flex gap-2">
-                        <button type="button" id="btn-reset-filter" class="btn btn-secondary">
-                            <i class="ti ti-filter-off"></i>
-                            Reset
-                        </button>
-                        @if(!$isReadOnly)
+
+                    <div class="col-12 col-md-auto">
+                        <div class="d-flex flex-wrap justify-content-md-end gap-2">
+
+                            <button type="button"
+                                    id="btn-reset-filter"
+                                    class="btn btn-secondary">
+                                Reset
+                            </button>
+
+                            @if(!$isReadOnly)
                             <form action="{{ route('projects.sync-build', $project->id) }}"
                                 method="POST"
-                                class="d-inline"
-                                onsubmit="return confirm('Update form kemajuan pekerjaan dengan RAB terbaru?')">
-
+                                class="d-inline">
                                 @csrf
-
-                                <button type="submit" class="btn outline-secondary w-100">
-                                    <i class="ti ti-refresh"></i>
+                                <button type="submit" class="btn outline-secondary">
                                     Update Form
                                 </button>
                             </form>
-                        @endif
+                            @endif
 
-                        <button type="button" id="btn-export-pdf" class="btn btn-dark">
-                            <i class="ti ti-file-export"></i>
-                            Ekspor PDF
-                        </button>
+                            <button type="button"
+                                    id="btn-export-pdf"
+                                    class="btn btn-dark">
+                                Export PDF
+                            </button>
 
-                        <form id="exportPdfForm"
-                            method="POST"
-                            action="{{ route('projects.export-pdf', $project->id) }}"
-                            target="_blank">
-                            @csrf
-                            <input type="hidden" name="week" id="pdf_week">
-                            <input type="hidden" name="date" id="pdf_date">
-                            <input type="hidden" name="chart_image" id="chart_image">
-                        </form>
+                        </div>
                     </div>
+
                 </div>
                 <div class="table-scroll-tops">
                     <div></div>
@@ -226,16 +217,19 @@
                                                         {{ $uraianNo }}.{{ $itemNo }}
                                                     </td>
                                                     <td class="uraian-pekerjaan">
-                                                        <div class="d-flex justify-content-between align-items-start">
-                                                            <div>
+                                                        <div class="d-flex align-items-start">
+
+                                                            <div class="flex-grow-1 me-2 text-break">
                                                                 {{ $item->uraian }}
                                                             </div>
 
-                                                            <button type="button"
-                                                                    class="btn btn-sm btn-light btn-add-tambah"
-                                                                    data-item="{{ $item->id }}">
+                                                            <button
+                                                                type="button"
+                                                                class="btn btn-sm btn-light btn-add-tambah flex-shrink-0"
+                                                                data-item="{{ $item->id }}">
                                                                 +
                                                             </button>
+
                                                         </div>
                                                     </td>
                                                     <td>{{ $item->satuan }}</td>
@@ -477,6 +471,7 @@
             const colgroup = table?.querySelectorAll("colgroup col") || [];
             const freezeCount = 6;
             function applyAutoFreeze() {
+
                 if (!table) return;
 
                 table.querySelectorAll(".sticky-col, .sticky-last").forEach(cell => {
@@ -485,117 +480,137 @@
                     cell.style.width = "";
                 });
 
-                if (window.innerWidth < 576) {
-                    return;
-                }
-                const offsets = [];
-                let left = 0;
-                for (let i = 0; i < freezeCount; i++) {
-                    offsets.push(left);
-                    left += Math.round(
-                        parseFloat(getComputedStyle(colgroup[i]).width)
-                    );
-                }
+                const isMobile = window.innerWidth < 576;
 
-                const rowspanMap = [];
-                table.querySelectorAll("tr").forEach(row => {
-                    let colIndex = 0;
-                    Array.from(row.children).forEach(cell => {
-                        while (rowspanMap[colIndex] && rowspanMap[colIndex] > 0) {
-                            rowspanMap[colIndex]--;
-                            colIndex++;
-                        }
+                if (!isMobile) {
 
-                        const colspan = parseInt(cell.getAttribute("colspan")) || 1;
-                        const rowspan = parseInt(cell.getAttribute("rowspan")) || 1;
-
-                        if (
-                                colIndex < freezeCount ||
-                                cell.classList.contains('freeze-col')
-                            ) {
-                            cell.classList.add("sticky-col");
-                            if (colIndex === freezeCount - 1) {
-                                cell.classList.add("sticky-last");
-                            }
-                            cell.style.left = Math.round(offsets[colIndex]) + "px";
-                            // batasi width jika colspan > 1
-                            let width = 0;
-                            for (let i = 0; i < colspan && (colIndex + i) < freezeCount; i++) {
-                                width += Math.round(parseFloat(
-                                    getComputedStyle(colgroup[colIndex + i]).width)
-                                );
-                            }
-                            cell.style.width = width + "px";
-                        }
-
-                        if (rowspan > 1) {
-                            for (let i = 0; i < colspan; i++) {
-                                rowspanMap[colIndex + i] = rowspan - 1;
-                            }
-                        }
-                        colIndex += colspan;
-                    });
-                });
-
-                // row-category: freeze td pertama
-                table.querySelectorAll("tr.row-category, tr.row-uraian").forEach(row => {
-                    const cell = row.querySelector("td");
-                    if (!cell) return;
-                    const width = Array.from(colgroup).slice(0, freezeCount).reduce((sum, c) => {
-                        return sum + (parseFloat(getComputedStyle(c).width) || 0);
-                    }, 0);
-                    cell.classList.add("sticky-col");
-                    cell.classList.add("sticky-last");
-
-                    cell.style.left = "0px";
-                    cell.style.width = Math.round(width) + "px";
-                });
-                // row tambahan (kuning)
-                table.querySelectorAll("tr.row-tambahan-item").forEach(row => {
-
+                    const offsets = [];
                     let left = 0;
 
-                    Array.from(row.children).forEach((cell, index) => {
+                    for (let i = 0; i < freezeCount; i++) {
+                        offsets.push(left);
+                        left += Math.round(
+                            parseFloat(getComputedStyle(colgroup[i]).width)
+                        );
+                    }
 
-                        if (index < freezeCount) {
+                    const rowspanMap = [];
 
-                            cell.classList.add("sticky-col");
+                    table.querySelectorAll("tr").forEach(row => {
 
-                            if (index === freezeCount - 1) {
-                                cell.classList.add("sticky-last");
+                        let colIndex = 0;
+
+                        Array.from(row.children).forEach(cell => {
+
+                            while (rowspanMap[colIndex] && rowspanMap[colIndex] > 0) {
+                                rowspanMap[colIndex]--;
+                                colIndex++;
                             }
 
-                            cell.style.left = Math.round(left) + "px";
+                            const colspan = parseInt(cell.getAttribute("colspan")) || 1;
+                            const rowspan = parseInt(cell.getAttribute("rowspan")) || 1;
 
-                            cell.style.zIndex = 55;
+                            if (
+                                colIndex < freezeCount ||
+                                cell.classList.contains("freeze-col")
+                            ) {
 
-                            cell.style.background = "#fff3cd";
+                                cell.classList.add("sticky-col");
 
-                            left += Math.round(parseFloat(
-                                getComputedStyle(colgroup[index]).width)
-                            );
-                        }
+                                if (colIndex === freezeCount - 1) {
+                                    cell.classList.add("sticky-last");
+                                }
+
+                                cell.style.left = offsets[colIndex] + "px";
+
+                                let width = 0;
+
+                                for (let i = 0; i < colspan && colIndex + i < freezeCount; i++) {
+                                    width += parseFloat(getComputedStyle(colgroup[colIndex + i]).width);
+                                }
+
+                                cell.style.width = width + "px";
+                            }
+
+                            if (rowspan > 1) {
+                                for (let i = 0; i < colspan; i++) {
+                                    rowspanMap[colIndex + i] = rowspan - 1;
+                                }
+                            }
+
+                            colIndex += colspan;
+                        });
+
                     });
-                });
+
+                    table.querySelectorAll("tr.row-category, tr.row-uraian").forEach(row => {
+                        const cell = row.querySelector("td");
+                        if (!cell) return;
+                        const width = Array.from(colgroup).slice(0, freezeCount).reduce((sum, c) => {
+                            return sum + (parseFloat(getComputedStyle(c).width) || 0);
+                        }, 0);
+                        cell.classList.add("sticky-col");
+                        cell.classList.add("sticky-last");
+
+                        cell.style.left = "0px";
+                        cell.style.width = Math.round(width) + "px";
+                    });
+                    // row tambahan (kuning)
+                    table.querySelectorAll("tr.row-tambahan-item").forEach(row => {
+
+                        let left = 0;
+
+                        Array.from(row.children).forEach((cell, index) => {
+
+                            if (index < freezeCount) {
+
+                                cell.classList.add("sticky-col");
+
+                                if (index === freezeCount - 1) {
+                                    cell.classList.add("sticky-last");
+                                }
+
+                                cell.style.left = Math.round(left) + "px";
+
+                                cell.style.zIndex = 55;
+
+                                cell.style.background = "#fff3cd";
+
+                                left += Math.round(parseFloat(
+                                    getComputedStyle(colgroup[index]).width)
+                                );
+                            }
+                        });
+                    });
+
+                }
+
                 const HEADER_ROW_HEIGHT = 60;
 
                 const headerRows = table.querySelectorAll("thead tr");
-                const firstRow = headerRows[0];
-                const secondRow = headerRows[1];
 
-                Array.from(firstRow.children).forEach(th => {
-                    th.style.position = "sticky";
-                    th.style.top = "0px";
-                    th.style.zIndex = th.classList.contains("sticky-col") ? "155" : "102";
-                    th.style.background = "#f8f9fa";
-                });
+                if (headerRows.length >= 2) {
 
-                Array.from(secondRow.children).forEach(th => {
-                    th.style.position = "sticky";
-                    th.style.top = HEADER_ROW_HEIGHT + "px";
-                    th.style.zIndex = th.classList.contains("sticky-col") ? "155" : "101";
-                    th.style.background = "#f8f9fa";
-                });
+                    headerRows[0].querySelectorAll("th").forEach(th => {
+
+                        th.style.position = "sticky";
+                        th.style.top = "0";
+                        th.style.zIndex = th.classList.contains("sticky-col") ? "155" : "102";
+                        th.style.background = "#f8f9fa";
+
+                    });
+
+                    headerRows[1].querySelectorAll("th").forEach(th => {
+
+                        th.style.position = "sticky";
+                        th.style.top = HEADER_ROW_HEIGHT + "px";
+                        th.style.zIndex = th.classList.contains("sticky-col") ? "155" : "101";
+                        th.style.background = "#f8f9fa";
+
+                    });
+
+                }
+
             }
         document.addEventListener('DOMContentLoaded', function() {
 
