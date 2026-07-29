@@ -33,7 +33,6 @@ public function handle($request, Closure $next, $roleNames)
 
     $user = auth()->user();
 
-    // SUPER ROLES selalu boleh
     if ($user->hasAnyRole([
         'Super-Admin',
         'Direktur',
