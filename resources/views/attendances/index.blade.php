@@ -302,11 +302,9 @@
                     });
                 }
             });
-            });
-
-
-           
+            });        
         });
+
         $(document).on('click', '.btn-history', function () {
 
             let employeeId = $(this).data('id');
@@ -397,7 +395,68 @@
 
             url=url.replace(':id',id);
 
-            $('#history-content').load(url);
+            $('#history-content').html(`
+                <div class="text-center p-5">
+                    <div class="spinner-border"></div>
+                </div>
+            `);
+
+            $.get(url,function(html){
+
+                $('#history-content').html(html);
+
+            });
+
+        });
+        $(document).on('submit','#attendanceEditForm',function(e){
+
+            e.preventDefault();
+
+            let id=$("#attendance_id").val();
+
+            let url="{{ route('attendances.update',':id') }}";
+
+            url=url.replace(':id',id);
+
+            $.ajax({
+
+                url:url,
+
+                type:"POST",
+
+                data:$(this).serialize(),
+
+                success:function(){
+
+                    Swal.fire({
+
+                        icon:"success",
+
+                        title:"Berhasil",
+
+                        text:"Data berhasil diperbarui."
+
+                    });
+
+                    $(".btn-back-history").click();
+
+                },
+
+                error:function(){
+
+                    Swal.fire({
+
+                        icon:"error",
+
+                        title:"Gagal",
+
+                        text:"Terjadi kesalahan."
+
+                    });
+
+                }
+
+            });
 
         });
     </script>

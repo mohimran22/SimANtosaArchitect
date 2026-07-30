@@ -37,4 +37,9 @@ class Attendance extends Model
     {
         return $this->belongsTo(Employee::class);
     }
+    public function revisions()
+{
+    return $this->hasMany(AttendanceRevision::class)
+                ->latest('edited_at');
+}
 }

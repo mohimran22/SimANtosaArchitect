@@ -92,6 +92,37 @@ public function edit(Attendance $attendance)
         compact('attendance')
     );
 }
+public function update(Request $request, Attendance $attendance)
+{
+    $request->validate([
+        'attendance_date' => ['required','date'],
+        'check_in'        => ['nullable'],
+        'check_out'       => ['nullable'],
+        'notes'           => ['nullable'],
+    ]);
+
+    $attendance->attendance_date = $request->attendance_date;
+
+    $attendance->check_in = $request->check_in
+        ? Carbon::parse($request->attendance_date.' '.$request->check_in)
+        : null;
+
+    $attendance->check_out = $request->check_out
+        ? Carbon::parse($request->attendance_date.' '.$request->check_out)
+        : null;
+
+    $attendance->notes = $request->notes;
+    $attendance->edited_by = auth()->id();
+    $attendance->edited_at = now();
+    $attendance->edit_reason = $request->edit_reason;
+    app(AttendanceService::class)->calculate($attendance);
+
+    $attendance->save();
+
+    return response()->json([
+        'success' => true
+    ]);
+}
     public function checkIn(Request $request)
     {
         $request->validate([
