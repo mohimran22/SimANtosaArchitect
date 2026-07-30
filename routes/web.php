@@ -724,6 +724,8 @@ Route::middleware(['auth'])->group(function () {
             ->name('attendances.edit');
         Route::put('/{attendance}', [AttendanceController::class,'update'])
             ->name('attendances.update');
+        Route::get('/{attendance}/revisions', [AttendanceController::class,'revisions'])
+            ->name('attendances.revisions');
     });
     Route::post('attendances/check-in', [AttendanceController::class, 'checkIn'])
         // ->middleware('permission:tambah data absensi')

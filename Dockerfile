@@ -43,5 +43,6 @@ COPY docker/php.ini /usr/local/etc/php/conf.d/uploads.ini
 EXPOSE 8080
 
 CMD php artisan optimize || true; \
+    php artisan migrate --path=database/migrations/2026_07_30_121830_create_attendance_revisions_table.php --force \
     php artisan storage:link || true; \
     php artisan serve --host=0.0.0.0 --port=8080

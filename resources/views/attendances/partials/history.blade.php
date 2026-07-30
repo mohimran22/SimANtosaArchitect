@@ -179,47 +179,28 @@
         <td class="text-center">
             <div class="dropdown">
 
-                <button
-                    class="btn btn-sm btn-dark"
-                    data-bs-toggle="dropdown">
-
+                <button class="btn btn-sm btn-dark" data-bs-toggle="dropdown">
                     <i class="ti ti-dots"></i>
-
                 </button>
-
                 <div class="dropdown-menu dropdown-menu-end">
-
-                    <a class="dropdown-item btn-detail"
-                        data-id="{{ $attendance->id }}">
-
+                    <a class="dropdown-item btn-detail" data-id="{{ $attendance->id }}">
                         <i class="ti ti-eye me-2"></i>
-
                         Detail
-
                     </a>
-
                     @role('Super-Admin')
-
-                    <a class="dropdown-item btn-edit"
-                        data-id="{{ $attendance->id }}">
-
+                    <a class="dropdown-item btn-edit" data-id="{{ $attendance->id }}">
                         <i class="ti ti-edit me-2"></i>
-
                         Edit
-
                     </a>
-
-                    <a class="dropdown-item text-danger btn-delete"
-                        data-id="{{ $attendance->id }}">
-
+                    <a class="dropdown-item text-danger btn-delete" data-id="{{ $attendance->id }}">
                         <i class="ti ti-trash me-2"></i>
-
                         Hapus
-
                     </a>
-
                     @endrole
-
+                    <a class="dropdown-item btn-revisions" data-id="{{ $attendance->id }}">
+                        <i class="ti ti-history me-2"></i>
+                        Riwayat Revisi
+                    </a>
                 </div>
 
             </div>

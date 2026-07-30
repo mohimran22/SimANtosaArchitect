@@ -96,7 +96,7 @@
         </div>
     </div>
 </div>
-<div class="modal fade" id="attendanceModal"tabindex="-1">
+{{-- <div class="modal fade" id="attendanceModal"tabindex="-1">
     <div class="modal-dialog modal-lg modal-dialog-scrollable">
          <div class="modal-content">
             <div class="modal-header">
@@ -113,7 +113,7 @@
             </div>
         </div>
     </div>
-</div>
+</div> --}}
 @endsection
 @push('js')
     <script>
@@ -459,6 +459,93 @@
             });
 
         });
+        $(document).on('click','.btn-revisions',function(){
+
+            let id=$(this).data('id');
+
+            let url="{{ route('attendances.revisions',':id') }}";
+
+            url=url.replace(':id',id);
+
+            $('#history-content').html(`
+                <div class="text-center p-5">
+                    <div class="spinner-border"></div>
+                </div>
+            `);
+
+            $.get(url,function(html){
+
+                $('#history-content').html(html);
+
+            });
+
+        });
+        $(document).on('click','.btn-delete',function(){
+
+    let id=$(this).data('id');
+
+    Swal.fire({
+
+        title:'Hapus Absensi?',
+
+        input:'textarea',
+
+        inputLabel:'Alasan penghapusan',
+
+        inputPlaceholder:'Masukkan alasan...',
+
+        inputValidator:(value)=>{
+
+            if(!value){
+
+                return 'Alasan wajib diisi';
+
+            }
+
+        },
+
+        showCancelButton:true,
+
+        confirmButtonText:'Hapus'
+
+    }).then((result)=>{
+
+        if(!result.isConfirmed) return;
+
+        let url="{{ route('attendances.destroy',':id') }}";
+
+        url=url.replace(':id',id);
+
+        $.ajax({
+
+            url:url,
+
+            type:'DELETE',
+
+            data:{
+                _token:'{{ csrf_token() }}',
+                reason:result.value
+            },
+
+            success:function(){
+
+                Swal.fire(
+                    'Berhasil',
+                    'Data berhasil dihapus.',
+                    'success'
+                );
+
+                $('.btn-back-history').click();
+
+                $('#absenTable').DataTable().ajax.reload(null,false);
+
+            }
+
+        });
+
+    });
+
+});
     </script>
 
     @if (session('success'))

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Employee;
 use App\Models\Attendance;
+use App\Models\AttendanceRevision;
 use App\Services\AttendanceService;
 use App\Services\AttendanceSummaryService;
 use Illuminate\Http\Request;
@@ -11,6 +12,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Yajra\DataTables\Facades\DataTables;
+use Illuminate\Support\Facades\DB;
 
 class AttendanceController extends Controller
 {
@@ -92,35 +94,130 @@ public function edit(Attendance $attendance)
         compact('attendance')
     );
 }
-public function update(Request $request, Attendance $attendance)
+    public function update(Request $request, Attendance $attendance, AttendanceService $attendanceService)
 {
     $request->validate([
-        'attendance_date' => ['required','date'],
+        'attendance_date' => ['required', 'date'],
         'check_in'        => ['nullable'],
         'check_out'       => ['nullable'],
-        'notes'           => ['nullable'],
+        'notes'           => ['nullable', 'string'],
+        'edit_reason'     => ['required', 'string', 'max:500'],
     ]);
 
-    $attendance->attendance_date = $request->attendance_date;
+    DB::transaction(function () use ($request, $attendance, $attendanceService) {
 
-    $attendance->check_in = $request->check_in
-        ? Carbon::parse($request->attendance_date.' '.$request->check_in)
-        : null;
+        // $oldData = [
+        //     'attendance_date'   => $attendance->attendance_date,
+        //     'check_in'          => optional($attendance->check_in)->toDateTimeString(),
+        //     'check_out'         => optional($attendance->check_out)->toDateTimeString(),
+        //     'attendance_code'   => $attendance->attendance_code,
+        //     'work_minutes'      => $attendance->work_minutes,
+        //     'overtime_minutes'  => $attendance->overtime_minutes,
+        //     'notes'             => $attendance->notes,
+        // ];
+        $oldData = $attendance->getAttributes();
+        unset($oldData['created_at'], $oldData['updated_at']);
+        $attendance->attendance_date = $request->attendance_date;
 
-    $attendance->check_out = $request->check_out
-        ? Carbon::parse($request->attendance_date.' '.$request->check_out)
-        : null;
+        $attendance->check_in = $request->filled('check_in')
+            ? Carbon::parse($request->attendance_date.' '.$request->check_in)
+            : null;
 
-    $attendance->notes = $request->notes;
-    $attendance->edited_by = auth()->id();
-    $attendance->edited_at = now();
-    $attendance->edit_reason = $request->edit_reason;
-    app(AttendanceService::class)->calculate($attendance);
+        $attendance->check_out = $request->filled('check_out')
+            ? Carbon::parse($request->attendance_date.' '.$request->check_out)
+            : null;
 
-    $attendance->save();
+        $attendance->notes = $request->notes;
+
+        $attendanceService->calculate($attendance);
+
+        $attendance->save();
+
+        // $newData = [
+        //     'attendance_date'   => $attendance->attendance_date,
+        //     'check_in'          => optional($attendance->check_in)->toDateTimeString(),
+        //     'check_out'         => optional($attendance->check_out)->toDateTimeString(),
+        //     'attendance_code'   => $attendance->attendance_code,
+        //     'work_minutes'      => $attendance->work_minutes,
+        //     'overtime_minutes'  => $attendance->overtime_minutes,
+        //     'notes'             => $attendance->notes,
+        // ];
+        $newData = $attendance->fresh()->getAttributes();
+        unset($newData['created_at'], $newData['updated_at']);
+        AttendanceRevision::create([
+            'attendance_id' => $attendance->id,
+            'edited_by'     => auth()->id(),
+            'edited_at'     => now(),
+            'edit_reason'   => $request->edit_reason,
+            'old_data'      => $oldData,
+            'new_data'      => $newData,
+        ]);
+    });
 
     return response()->json([
-        'success' => true
+        'success' => true,
+        'message' => 'Absensi berhasil diperbarui.'
+    ]);
+}
+public function revisions(Attendance $attendance)
+{
+    $attendance->load('employee.user');
+
+    $revisions = AttendanceRevision::with('editor')
+                    ->where('attendance_id',$attendance->id)
+                    ->latest('edited_at')
+                    ->get();
+
+    return view(
+        'attendances.partials.revisions',
+        compact('attendance','revisions')
+    );
+}
+
+public function destroy(Request $request, Attendance $attendance)
+{
+    $request->validate([
+        'reason' => ['required', 'string', 'max:500'],
+    ]);
+
+    DB::transaction(function () use ($attendance, $request) {
+
+        AttendanceRevision::create([
+            'attendance_id' => $attendance->id,
+            'edited_by'     => auth()->id(),
+            'edited_at'     => now(),
+            'action'        => 'delete',
+            'edit_reason'   => $request->reason,
+            'old_data'      => $attendance->getAttributes(),
+            'new_data'      => null,
+        ]);
+
+        $attendance->delete();
+    });
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Absensi berhasil dihapus.'
+    ]);
+}
+public function restore($id)
+{
+    $attendance = Attendance::onlyTrashed()->findOrFail($id);
+
+    AttendanceRevision::create([
+        'attendance_id' => $attendance->id,
+        'edited_by'     => auth()->id(),
+        'edited_at'     => now(),
+        'action'        => 'restore',
+        'edit_reason'   => 'Restore data absensi',
+        'old_data'      => null,
+        'new_data'      => $attendance->getAttributes(),
+    ]);
+
+    $attendance->restore();
+
+    return response()->json([
+        'success' => true,
     ]);
 }
     public function checkIn(Request $request)
