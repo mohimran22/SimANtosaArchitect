@@ -86,7 +86,6 @@ public function getTanggalFormattedAttribute()
 {
     return $this->tanggal
         ? \Carbon\Carbon::parse($this->tanggal)
-            ->locale('id')
             ->translatedFormat('l, d F Y')
         : null;
 }

@@ -73,6 +73,13 @@
         flex-wrap: nowrap !important;
         gap: 10px;
     }
+    .report-header{
+        padding:14px 16px;
+        font-size:18px;
+    }
+    .report-header .btn{
+        white-space:nowrap;
+    }
     .card-body {
         overflow-x: auto;
         padding: 0.5rem 0.5rem !important;
@@ -299,5 +306,11 @@
     #dailyModal #badgeWeek{
         font-size:.8rem;
     }
+    .approval-signature{
+        height:20px;
+    }
 
+    .approval-title{
+        font-size:15px;
+    }
 }

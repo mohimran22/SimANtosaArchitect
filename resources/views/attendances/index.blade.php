@@ -48,7 +48,6 @@
                                         <th>No</th>
                                         <th>Nama</th>
                                         <th>Jabatan</th>
-                                        <th>Divisi</th>
                                         <th>H</th>
                                         <th>TL A</th>
                                         <th>TL B</th>
@@ -58,11 +57,11 @@
                                         <th>S</th>
                                         <th>C</th>
                                         <th>A</th>
-                                        <th>Hari Kerja</th>
+                                        <th>Total Hari Kerja</th>
+                                        <th>Total Hari Kehadiran</th>
                                         <th>Kehadiran</th>
-                                        <th>% Hadir</th>
-                                        <th>% Tepat Waktu</th>
-                                        <th>Lembur</th>
+                                        <th>Ketepatan Waktu</th>
+                                        <th>Total Jam Lembur</th>
                                         <th>Keterangan</th>
                                     </tr>
                                 </thead>
@@ -73,28 +72,48 @@
         </div>
     </div>
 </div>
-{{-- @can('tambah data absensi')
-<a href="{{ route('attendances.create') }}"
-   class="mobile-fab d-md-none">
+<div class="modal fade" id="historyModal" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
 
-    <svg xmlns="http://www.w3.org/2000/svg"
-         width="26"
-         height="26"
-         viewBox="0 0 24 24"
-         stroke-width="2"
-         stroke="currentColor"
-         fill="none"
-         stroke-linecap="round"
-         stroke-linejoin="round">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    History Absensi
+                </h5>
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                </button>
+            </div>
 
-        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-        <line x1="12" y1="5" x2="12" y2="19"/>
-        <line x1="5" y1="12" x2="19" y2="12"/>
+            <div class="modal-body">
 
-    </svg>
+                <div id="history-content">
+                </div>
 
-</a>
-@endcan --}}
+            </div>
+
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="attendanceModal"tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+         <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    Detail Absensi
+                </h5>
+                <button class="btn-close" data-bs-dismiss="modal">
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="attendanceModalContent">
+                    Loading...
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
 @push('js')
     <script>
@@ -105,7 +124,7 @@
                 scrollX: true,
                 scrollCollapse: true,
                 fixedColumns: !isMobile ? {
-                    leftColumns: 4
+                    leftColumns: 3
                 } : false,
                 serverSide: true,
                 processing: true,
@@ -147,15 +166,7 @@
                         name:'fullname'
                     },
 
-                    {
-                        data:'position.name',
-                        defaultContent:'-'
-                    },
-
-                    {
-                        data:'division.name',
-                        defaultContent:'-'
-                    },
+                    { data: 'roles', name: 'roles', defaultContent:'-' },  
 
                     {
                         data:'h'
@@ -296,6 +307,99 @@
 
            
         });
+        $(document).on('click', '.btn-history', function () {
+
+            let employeeId = $(this).data('id');
+
+            let url = "{{ route('attendances.history', ':id') }}";
+            url = url.replace(':id', employeeId);
+
+            $('#historyModal').modal('show');
+
+            $('#history-content').html(`
+                <div class="text-center p-4">
+                    Loading...
+                </div>
+            `);
+
+            $.get(url, function (html) {
+                $('#history-content').html(html);
+            });
+
+        });
+        // $(document).on('click','.btn-detail',function(){
+
+        //     let id=$(this).data('id');
+
+        //     $('#attendanceModal').modal('show');
+
+        //     $('#attendanceModalContent').html(`
+        //         <div class="text-center p-5">
+
+        //             <div class="spinner-border"></div>
+
+        //         </div>
+        //     `);
+        //     let url = "{{ route('attendances.detail', ':id') }}";
+        //     url = url.replace(':id', id);
+        //     $.ajax({
+        //         url: url,
+        //         success:function(html){
+
+        //             $('#attendanceModalContent').html(html);
+
+        //         }
+
+        //     });
+
+        // });
+        $(document).on('click', '.btn-detail', function () {
+
+            let id = $(this).data('id');
+
+            let url = "{{ route('attendances.detail', ':id') }}";
+            url = url.replace(':id', id);
+
+            $('#history-content').html(`
+                <div class="text-center p-5">
+                    <div class="spinner-border"></div>
+                </div>
+            `);
+
+            $.get(url, function (html) {
+                $('#history-content').html(html);
+            });
+
+        });
+        $(document).on('click', '.btn-back-history', function () {
+
+            let employeeId = $(this).data('employee');
+
+            let url = "{{ route('attendances.history', ':id') }}";
+            url = url.replace(':id', employeeId);
+
+            $('#history-content').html(`
+                <div class="text-center p-5">
+                    <div class="spinner-border"></div>
+                </div>
+            `);
+
+            $.get(url, function (html) {
+                $('#history-content').html(html);
+            });
+
+        });
+        $(document).on('click','.btn-edit',function(){
+
+            let id=$(this).data('id');
+
+            let url="{{ route('attendances.edit',':id') }}";
+
+            url=url.replace(':id',id);
+
+            $('#history-content').load(url);
+
+        });
     </script>
 
     @if (session('success'))
@@ -310,48 +414,3 @@
     </script>
     @endif
 @endpush
-{{-- @push('js')
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-
-$('#menuTable').DataTable({
-    processing: true,
-    serverSide: true,
-    ajax: "{{ route('menus.index') }}",
-
-    columns: [
-        { data: 'DT_RowIndex', orderable:false, searchable:false },
-        { data: 'text' },
-        { data: 'url' },
-        { data: 'parent_name' },
-        { data: 'order' },
-        { data: 'active_badge', orderable:false, searchable:false },
-        { data: 'permission_name' },
-        { data: 'actions', orderable:false, searchable:false },
-    ],
-                language: {
-                    search: "",
-                    searchPlaceholder: "Cari menu...",
-                    lengthMenu: "Tampilkan _MENU_ data",
-                    info: "Menampilkan _START_ - _END_ dari _TOTAL_ data",
-                    infoEmpty: "Tidak ada data",
-                    infoFiltered: "(difilter dari _MAX_ total data)",
-                    zeroRecords: "Data tidak ditemukan",
-                    paginate: {
-                        first: "Awal",
-                        last: "Akhir",
-                        next: "›",
-                        previous: "‹"
-                    }
-                },
-
-                initComplete: function () {
-                    const input = $('.dt-search input');
-                    input.removeClass('form-control-sm')
-                        .addClass('form-control');
-                }
-});
-
-});
-</script>
-@endpush --}}

@@ -6,39 +6,34 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\URL;
 use App\Helpers\ActiveRole;
+use Carbon\Carbon;
 use TakiElias\Tablar\Tablar;
 
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
     public function register(): void
     {
         //
     }
 
-    /**
-     * Bootstrap any application services.
-     */
     public function boot(): void
     {
         if (app()->environment('production')) {
-            URL::forceScheme('https');
-        }
-        view()->composer('*', function ($view) {
-        $tablar = app(Tablar::class);
-        $view->with('tablar', $tablar);
-    });
+                URL::forceScheme('https');
+            }
+            view()->composer('*', function ($view) {
+                $tablar = app(Tablar::class);
+                $view->with('tablar', $tablar);
+            });
 
-    Blade::if('activerole', function ($roleName) {
-        return strtolower(ActiveRole::name()) === strtolower($roleName);
-    });
+        Blade::if('activerole', function ($roleName) {
+            return strtolower(ActiveRole::name()) === strtolower($roleName);
+        });
 
-    Blade::if('activeperm', function ($permission) {
-        return ActiveRole::hasPermission($permission);
-    });
-
+        Blade::if('activeperm', function ($permission) {
+            return ActiveRole::hasPermission($permission);
+        });
+        Carbon::setLocale('id');
     }
 }

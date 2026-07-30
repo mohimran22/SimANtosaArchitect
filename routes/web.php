@@ -707,11 +707,22 @@ Route::middleware(['auth'])->group(function () {
 
     // Route::resource('attendances', AttendanceController::class)
     //     ->middleware('permission:lihat daftar absensi');
-    Route::get('/attendances', [AttendanceController::class, 'index'])
-    ->name('attendances.index');
+    Route::prefix('attendances')->group(function () {
 
-    Route::get('/attendances/datatable', [AttendanceController::class, 'datatable'])
-        ->name('attendances.datatable');
+        Route::get('/', [AttendanceController::class, 'index'])
+            ->name('attendances.index');
+
+        Route::get('/datatable', [AttendanceController::class, 'datatable'])
+            ->name('attendances.datatable');
+
+        Route::get('/history/{employee}', [AttendanceController::class, 'history'])
+            ->name('attendances.history');
+
+        Route::get('/{attendance}/detail', [AttendanceController::class, 'detail'])
+            ->name('attendances.detail');
+        Route::get('/{attendance}/edit', [AttendanceController::class, 'edit'])
+            ->name('attendances.edit');
+    });
     Route::post('attendances/check-in', [AttendanceController::class, 'checkIn'])
         // ->middleware('permission:tambah data absensi')
         ->name('attendances.check-in');

@@ -75,10 +75,16 @@ class AttendanceSummaryService
                         break;
                 }
 
-                if ($attendance->attendance_code) {
+                // if ($attendance->attendance_code) {
 
+                //     $summary['total_hari_kehadiran']++;
+
+                // }
+                if (in_array($attendance->status, [
+                    'present',
+                    'business_trip',
+                ])) {
                     $summary['total_hari_kehadiran']++;
-
                 }
 
                 if ($attendance->work_minutes > 480) {

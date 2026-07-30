@@ -228,7 +228,7 @@
                                 🔄 Ambil Ulang
                             </button>
                             <button type="submit" id="confirmCheckout" class="btn btn-success d-none">
-                                ✅ Konfirmasi Hadir
+                                ✅ Konfirmasi Pulang
                             </button>
                         </div>
                     </form>

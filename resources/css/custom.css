@@ -1226,3 +1226,19 @@ input[type=number]::-webkit-outer-spin-button {
     display:inline-block;
     margin:0;
 }
+.approval-box{
+    text-align:center;
+}
+
+.approval-title{
+    font-weight:600;
+    margin-bottom:10px;
+}
+
+.approval-signature{
+    height:20px;
+    display:flex;
+    align-items:flex-end;
+    justify-content:center;
+    margin-bottom:12px;
+}

@@ -14,14 +14,10 @@ use Yajra\DataTables\Facades\DataTables;
 
 class AttendanceController extends Controller
 {
-    public function index()
-    {
-        $attendances = Attendance::where('employee_id', auth()->user()->id)
-            ->latest('attendance_date')
-            ->paginate(20);
-
-        return view('attendances.index', compact('attendances'));
-    }
+public function index()
+{
+    return view('attendances.index');
+}
 
     public function datatable(Request $request, AttendanceSummaryService $summaryService) 
 {
@@ -30,15 +26,21 @@ class AttendanceController extends Controller
 
     $summaries = $summaryService->summaries($month, $year);
 
-    $employees = Employee::with('user');
+    $employees = Employee::with('user.roles');
 
     return DataTables::eloquent($employees)
 
         ->addIndexColumn()
         ->addColumn('fullname', function ($employee) {
+            $name = Str::title($employee->user?->fullname ?? '-');
 
-            return $employee->user?->fullname;
-
+            return '
+                <a href="javascript:void(0)"
+                class="btn-history"
+                data-id="'.$employee->id.'">
+                    '.e($name).'
+                </a>
+            ';
         })
         ->addColumn('h', fn($e) => $summaries[$e->id]['H'] ?? 0)
         ->addColumn('tla', fn($e) => $summaries[$e->id]['TL A'] ?? 0)
@@ -58,7 +60,37 @@ class AttendanceController extends Controller
         ->addColumn('roles', function ($row) {
             return $row->user?->roles?->pluck('name')->implode(', ') ?: '-';
         })
+        ->rawColumns(['fullname'])
         ->toJson();
+}
+public function history(Employee $employee)
+{
+    $attendances = Attendance::where('employee_id', $employee->id)
+        ->latest('attendance_date')
+        ->get();
+
+    return view(
+        'attendances.partials.history',
+        compact('employee', 'attendances')
+    );
+}
+public function detail(Attendance $attendance)
+{
+    $attendance->load([
+        'employee.user'
+    ]);
+
+    return view(
+        'attendances.partials.detail',
+        compact('attendance')
+    );
+}
+public function edit(Attendance $attendance)
+{
+    return view(
+        'attendances.partials.edit',
+        compact('attendance')
+    );
 }
     public function checkIn(Request $request)
     {

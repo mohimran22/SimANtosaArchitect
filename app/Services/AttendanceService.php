@@ -16,11 +16,10 @@ class AttendanceService
             $workMinutes
         );
 
-        $attendance->update([
-            'work_minutes' => $workMinutes,
-            'attendance_code' => $attendanceCode,
-            'is_full_work' => $workMinutes >= 480,
-        ]);
+        $attendance->work_minutes = $workMinutes;
+        $attendance->attendance_code = $attendanceCode;
+        $attendance->is_full_work = $workMinutes >= 480;
+        $attendance->save();
     }
 
     private function calculateWorkMinutes(Attendance $attendance): int

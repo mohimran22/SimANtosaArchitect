@@ -12,43 +12,67 @@
         @endif
 
         <input type="hidden" name="project_id" value="{{ $project->id }}">
-
         <div class="card shadow-sm border-0 mb-3">
-            <div class="card-header fw-bold d-flex justify-content-between align-items-center">
-                Informasi Laporan Harian
 
-                <button type="submit"
-                    name="is_libur"
-                    value="1"
-                    class="btn btn-dark btn-sm">
-                    Simpan Sebagai Hari Libur
-                </button>
+            <div class="card-header report-header">
+                <div class="d-flex flex-column flex-md-row align-items-md-center w-100">
+
+                    <h5 class="mb-0 fw-bold">
+                        Informasi Laporan Harian
+                    </h5>
+
+                    <button
+                        type="submit"
+                        name="is_libur"
+                        value="1"
+                        class="btn btn-dark btn-sm ms-md-auto mt-2 mt-md-0">
+                        <i class="ti ti-calendar-off me-1"></i>
+                        Simpan Sebagai Hari Libur
+                    </button>
+
+                </div>
             </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-3">
-                        <label class="form-label">Proyek</label>
-                            <input class="form-control" value="{{ $project->project_name }}" readonly>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Lokasi</label>
-                            <input class="form-control" value="{{ $project->city?->name }}" readonly>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label required">Tanggal</label>
 
-                        <input type="text"
+            <div class="card-body">
+
+                <div class="row g-3">
+
+                    <div class="col-12 col-md-3">
+                        <label class="form-label">Proyek</label>
+                        <input class="form-control"
+                            value="{{ $project->project_name }}"
+                            readonly>
+                    </div>
+
+                    <div class="col-12 col-md-3">
+                        <label class="form-label">Lokasi</label>
+                        <input class="form-control"
+                            value="{{ $project->city?->name }}"
+                            readonly>
+                    </div>
+
+                    <div class="col-12 col-md-3">
+                        <label class="form-label required">Tanggal</label>
+                        <input
+                            type="text"
                             id="nextDate"
                             name="tanggal"
                             class="form-control"
                             value="{{ old('tanggal', $nextDate->format('Y-m-d')) }}">
                     </div>
-                    <div class="col-md-3">
-                        <label>Kontraktor</label>
-                            <input name="kontraktor" class="form-control" value="{{ old('kontraktor', 'Antosa Architect') }}">
+
+                    <div class="col-12 col-md-3">
+                        <label class="form-label">Kontraktor</label>
+                        <input
+                            name="kontraktor"
+                            class="form-control"
+                            value="{{ old('kontraktor', 'Antosa Architect') }}">
                     </div>
+
                 </div>
+
             </div>
+
         </div>
 
         <div class="card shadow-sm border-0 mb-3">
@@ -585,7 +609,7 @@
                     <textarea name="catatan" class="form-control" rows="5">{{ old('catatan') }}</textarea>
                 </div>
             </div>
-        <div class="card shadow-sm border-0 mb-4">
+        {{-- <div class="card shadow-sm border-0 mb-4">
             <div class="card-header fw-bold">
                 Pengesahan
             </div>
@@ -619,6 +643,53 @@
                                 </option>
                             @endforeach
                         </select>
+                    </div>
+                </div>
+            </div>
+        </div> --}}
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header fw-bold">
+                Pengesahan
+            </div>
+            <div class="card-body">
+                <div class="row g-4">
+                    <div class="col-12 col-md-6">
+                        <div class="approval-box">
+                            <div class="approval-title">
+                                Site Manager
+                            </div>
+                            <div class="approval-signature">
+                                {{-- Area tanda tangan --}}
+                            </div>
+                            <select name="mk_id" class="form-select select2">
+                                <option value="">-- Pilih Site Manager --</option>
+                                @foreach($employees as $emp)
+                                    <option value="{{ $emp->id }}"
+                                        {{ old('mk_id') == $emp->id ? 'selected' : '' }}>
+                                        {{ $emp->user->fullname }}
+                                    </option>
+                                @endforeach
+                        </select>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="approval-box">
+                            <div class="approval-title">
+                                Project Manager
+                            </div>
+                            <div class="approval-signature">
+                                {{-- Area tanda tangan --}}
+                            </div>
+                            <select name="kontraktor_ttd_id" class="form-select select2">
+                                <option value="">-- Pilih Project Manager --</option>
+                                @foreach($employees as $emp)
+                                    <option value="{{ $emp->id }}"
+                                        {{ old('kontraktor_ttd_id') == $emp->id ? 'selected' : '' }}>
+                                        {{ $emp->user->fullname }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
                     </div>
                 </div>
             </div>
