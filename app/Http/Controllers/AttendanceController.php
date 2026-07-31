@@ -173,7 +173,15 @@ public function revisions(Attendance $attendance)
         compact('attendance','revisions')
     );
 }
+public function delete(Attendance $attendance)
+{
+    $attendance->load('employee.user');
 
+    return view(
+        'attendances.partials.delete',
+        compact('attendance')
+    );
+}
 public function destroy(Request $request, Attendance $attendance)
 {
     $request->validate([
@@ -189,7 +197,7 @@ public function destroy(Request $request, Attendance $attendance)
             'action'        => 'delete',
             'edit_reason'   => $request->reason,
             'old_data'      => $attendance->getAttributes(),
-            'new_data'      => null,
+            'new_data' => [],
         ]);
 
         $attendance->delete();

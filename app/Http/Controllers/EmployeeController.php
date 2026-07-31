@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Attendance;
 use App\Models\Religion;
 use App\Models\Employee;
 use App\Models\Province;
@@ -301,14 +302,21 @@ public static function generateNikAjax()
     ]);
 }
 
-     public function show(Employee $employee)
-    {
-        $employee->load('user');
-        return view('sdm.employees.show', [
-            'user' => $employee->user,
-            'employee' => $employee
-        ]);
-    }
+public function show(Employee $employee)
+{
+    $employee->load([
+        'user.roles',
+    ]);
+
+    $attendances = Attendance::where('employee_id', $employee->id)
+        ->latest('attendance_date')
+        ->paginate(10);
+
+    return view('sdm.employees.show', compact(
+        'employee',
+        'attendances'
+    ));
+}
 
     public function edit($id)
     {

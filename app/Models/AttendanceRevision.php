@@ -16,6 +16,7 @@ class AttendanceRevision extends Model
         'edit_reason',
         'old_data',
         'new_data',
+        'action',
     ];
 
     protected $casts = [

@@ -250,59 +250,7 @@
                     input.removeClass('form-control-sm')
                         .addClass('form-control');
                 }
-            });
-
-            // Delete user functionally
-            $('#absenTable').on('click', '.delete-menu', function () {
-            const menuId = $(this).data('id');
-
-            Swal.fire({
-            title: 'Yakin ingin menghapus?',
-            text: "Data akan hilang secara permanen.",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Ya, hapus!',
-            cancelButtonText: 'Batal'
-
-            }).then((result) => {
-
-                if (result.isConfirmed) {
-                    $.ajax({
-
-                        url: `/menus/${menuId}`,
-                        method: 'DELETE',
-                        data: {
-                            _token: '{{ csrf_token() }}',
-                        },
-
-                        success: function (response) {
-                            if (response.status === 'success') {
-                                Swal.fire({
-                                    icon: 'success',
-                                    title: 'Berhasil!',
-                                    text: 'User telah dihapus.',
-                                    timer: 2000,
-                                    showConfirmButton: false
-                            });
-
-                        table.ajax.reload(null, false); // refresh datatable
-                        } else {
-
-                            Swal.fire('Gagal', response.message || 'Tidak bisa menghapus data.', 'error');
-                        }
-                        },
-
-                    error: function () {
-
-                    Swal.fire('Error', 'Terjadi kesalahan saat menghapus.', 'error');
-                    }
-
-                    });
-                }
-            });
-            });        
+            });       
         });
 
         $(document).on('click', '.btn-history', function () {
@@ -482,81 +430,69 @@
         });
         $(document).on('click','.btn-delete',function(){
 
-    let id=$(this).data('id');
+            let id=$(this).data('id');
 
-    Swal.fire({
+            let url="{{ route('attendances.delete',':id') }}";
 
-        title:'Hapus Absensi?',
+            url=url.replace(':id',id);
 
-        input:'textarea',
+            $('#history-content').html(`
+                <div class="text-center p-5">
+                    <div class="spinner-border"></div>
+                </div>
+            `);
 
-        inputLabel:'Alasan penghapusan',
+            $.get(url,function(html){
 
-        inputPlaceholder:'Masukkan alasan...',
+                $('#history-content').html(html);
 
-        inputValidator:(value)=>{
-
-            if(!value){
-
-                return 'Alasan wajib diisi';
-
-            }
-
-        },
-
-        showCancelButton:true,
-
-        confirmButtonText:'Hapus'
-
-    }).then((result)=>{
-
-        if(!result.isConfirmed) return;
-
-        let url="{{ route('attendances.destroy',':id') }}";
-
-        url=url.replace(':id',id);
-
-        $.ajax({
-
-            url:url,
-
-            type:'DELETE',
-
-            data:{
-                _token:'{{ csrf_token() }}',
-                reason:result.value
-            },
-
-            success:function(){
-
-                Swal.fire(
-                    'Berhasil',
-                    'Data berhasil dihapus.',
-                    'success'
-                );
-
-                $('.btn-back-history').click();
-
-                $('#absenTable').DataTable().ajax.reload(null,false);
-
-            }
+            });
 
         });
+        $(document).on('submit','#attendanceDeleteForm',function(e){
 
-    });
+            e.preventDefault();
 
-});
-    </script>
+            let id=$("#delete_attendance_id").val();
 
-    @if (session('success'))
-    <script>
-        Swal.fire({
-            icon: 'success',
-            title: 'Sukses!',
-            text: '{{ session('success') }}',
-            timer: 2000,
-            showConfirmButton: false
+            let url="{{ route('attendances.destroy',':id') }}";
+
+            url=url.replace(':id',id);
+
+            $.ajax({
+
+                url:url,
+
+                type:'DELETE',
+
+                data:{
+
+                    _token:"{{ csrf_token() }}",
+
+                    reason:$('[name=reason]').val()
+
+                },
+
+                success:function(){
+
+                    Swal.fire({
+
+                        icon:'success',
+
+                        title:'Berhasil',
+
+                        text:'Absensi berhasil dihapus.'
+
+                    });
+
+                    $('.btn-back-history').click();
+
+                    $('#absenTable').DataTable().ajax.reload(null,false);
+
+                }
+
+            });
+
         });
     </script>
-    @endif
 @endpush

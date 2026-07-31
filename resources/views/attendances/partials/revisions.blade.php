@@ -53,104 +53,132 @@ function auditValue($field,$value){
 }
 
 @endphp
-<button class="btn btn-secondary mb-4 btn-back-history" data-employee="{{ $attendance->employee_id }}">
+<button class="btn btn-secondary mb-4 btn-back-history"
+        data-employee="{{ $attendance->employee_id }}">
     <i class="ti ti-arrow-left"></i>
     Kembali
 </button>
 
-<h3>
-
+<h3 class="mb-4">
     Riwayat Perubahan
-
 </h3>
-
-<hr>
 
 @if($revisions->isEmpty())
 
 <div class="empty">
-
     Belum ada revisi.
-
 </div>
 
 @else
+
 @foreach($revisions as $revision)
-<div class="card mb-4 shadow-sm">
-<div class="card-body">
-<div class="d-flex justify-content-between align-items-start">
-<div>
-<h3 class="mb-1">
-{{ $revision->editor->fullname }}
-</h3>
-<div class="text-secondary">
-<i class="ti ti-clock"></i>
-{{ $revision->edited_at->locale('id')->translatedFormat('d F Y H:i') }}
+
+<div class="card mb-4">
+
+    <div class="card-body">
+
+        <div class="d-flex">
+
+            <div class="me-3">
+
+                <div class="avatar avatar-md bg-primary-lt">
+
+                    {{ substr($revision->editor->fullname,0,1) }}
+
+                </div>
+
+            </div>
+
+            <div class="flex-fill">
+
+                <div class="d-flex justify-content-between">
+
+                    <div>
+
+                        <strong>
+                            {{ $revision->editor->fullname }}
+                        </strong>
+
+                        <div class="text-secondary small">
+
+                            {{ $revision->edited_at->locale('id')->translatedFormat('d F Y H:i') }}
+
+                        </div>
+
+                    </div>
+
+                    {{-- <span class="badge bg-primary">
+                        {{ ucfirst($revision->action) }}
+                    </span> --}}
+                    <span class="badge bg-primary">
+                        Revisi
+                    </span>
+
+                </div>
+
+                <div class="mt-3">
+
+                    <strong>Alasan</strong>
+
+                    <div class="text-secondary">
+
+                        {{ $revision->edit_reason }}
+
+                    </div>
+
+                </div>
+
+                <hr>
+
+                @foreach($labels as $field => $label)
+
+                    @php
+                        $old = $revision->old_data[$field] ?? null;
+                        $new = $revision->new_data[$field] ?? null;
+                    @endphp
+
+                    @continue($old == $new)
+
+                    <div class="row py-2 border-bottom">
+
+                        <div class="col-md-3 fw-semibold">
+
+                            {{ $label }}
+
+                        </div>
+
+                        <div class="col-md-4 text-danger">
+
+                            {{ auditValue($field,$old) }}
+
+                        </div>
+
+                        <div class="col-md-1 text-center">
+
+                            <i class="ti ti-arrow-right"></i>
+
+                        </div>
+
+                        <div class="col-md-4 text-success fw-bold">
+
+                            {{ auditValue($field,$new) }}
+
+                        </div>
+
+                    </div>
+
+                @endforeach
+
+            </div>
+
+        </div>
+
+    </div>
+
 </div>
-</div>
-<span class="badge bg-primary">
-Revisi
-</span>
-</div>
-<hr>
-<div>
-<strong>
-Alasan Perubahan
-</strong>
-<div class="text-secondary">
-{{ $revision->edit_reason }}
-</div>
-</div>
-<hr>
-
-@foreach($labels as $field=>$label)
-
-@php
-    $old=$revision->old_data[$field] ?? null;
-    $new=$revision->new_data[$field] ?? null;
-@endphp
-
-@if($old!=$new)
-
-<div class="mb-4">
-
-<div class="fw-bold mb-2">
-    {{ $label }}
-</div>
-
-<div class="ps-3 border-start border-4 border-primary">
-
-<div class="text-danger">
-
-{{ auditValue($field,$old) }}
-
-</div>
-
-<div class="my-1">
-
-<i class="ti ti-arrow-down fs-3 text-primary"></i>
-
-</div>
-
-<div class="text-success fw-bold">
-
-{{ auditValue($field,$new) }}
-
-</div>
-
-</div>
-
-</div>
-
-@endif
 
 @endforeach
 
-</div>
-
-</div>
-
-@endforeach
 @endif
 {{-- @foreach($revisions as $revision)
 

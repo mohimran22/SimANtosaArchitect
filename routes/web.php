@@ -707,26 +707,24 @@ Route::middleware(['auth'])->group(function () {
 
     // Route::resource('attendances', AttendanceController::class)
     //     ->middleware('permission:lihat daftar absensi');
-    Route::prefix('attendances')->group(function () {
+    Route::get('/attendances/datatable', [AttendanceController::class, 'datatable'])
+        ->name('attendances.datatable');
 
-        Route::get('/', [AttendanceController::class, 'index'])
-            ->name('attendances.index');
+    Route::get('/attendances/history/{employee}', [AttendanceController::class, 'history'])
+        ->name('attendances.history');
 
-        Route::get('/datatable', [AttendanceController::class, 'datatable'])
-            ->name('attendances.datatable');
+    Route::get('/attendances/{attendance}/detail', [AttendanceController::class, 'detail'])
+        ->name('attendances.detail');
 
-        Route::get('/history/{employee}', [AttendanceController::class, 'history'])
-            ->name('attendances.history');
+    Route::get('/attendances/{attendance}/revisions', [AttendanceController::class, 'revisions'])
+        ->name('attendances.revisions');
 
-        Route::get('/{attendance}/detail', [AttendanceController::class, 'detail'])
-            ->name('attendances.detail');
-        Route::get('/{attendance}/edit', [AttendanceController::class, 'edit'])
-            ->name('attendances.edit');
-        Route::put('/{attendance}', [AttendanceController::class,'update'])
-            ->name('attendances.update');
-        Route::get('/{attendance}/revisions', [AttendanceController::class,'revisions'])
-            ->name('attendances.revisions');
-    });
+    Route::get('/attendances/{attendance}/delete', [AttendanceController::class, 'delete'])
+        ->name('attendances.delete');
+
+    Route::resource('attendances', AttendanceController::class)
+        ->except(['create', 'store', 'show']);
+
     Route::post('attendances/check-in', [AttendanceController::class, 'checkIn'])
         // ->middleware('permission:tambah data absensi')
         ->name('attendances.check-in');

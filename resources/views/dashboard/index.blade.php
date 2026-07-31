@@ -68,59 +68,53 @@
                         <hr>
 
                         @if(!$attendanceToday)
-
-                            {{-- BELUM HADIR --}}
-                            <div class="text-center py-2">
-
-                                <div class="mb-2 text-secondary">
-                                    Status Absensi Hari Ini
-                                </div>
-
-                                <h2 class="text-warning mb-3">
-                                    ⭕ Belum Hadir
-                                </h2>
-
-                                <button
-                                    class="btn btn-dark btn-lg px-5 rounded-pill"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#checkInModal">
-
-                                    <i class="ti ti-login me-2"></i>
-                                    Silahkan absen
-
-                                </button>
-
-                            </div>
+                            @include('attendances.partials.check-in')
                         @elseif(is_null($attendanceToday->check_out))
-
-                            {{-- SUDAH HADIR --}}
+                            @include('attendances.partials.check-out')
+                        @elseif(!$attendanceToday->overtime)
+                            @include('attendances.partials.after-checkout')
+                        @elseif(is_null($attendanceToday->overtime->end_time))
                             <div class="text-center">
 
-                                <h2 class="text-success mb-3">
-                                    ✅ Sudah Hadir
+                                <h2 class="text-warning mb-3">
+                                    🟠 Sedang Lembur
                                 </h2>
 
-                                <div class="row mt-4">
+                                <div class="row">
 
                                     <div class="col">
-                                        <small class="text-secondary">Jam Masuk</small>
+                                        <small>Jam Masuk</small>
                                         <h4>{{ $attendanceToday->check_in->format('H:i') }}</h4>
                                     </div>
 
                                     <div class="col">
-                                        <small class="text-secondary">Jam Pulang</small>
-                                        <h4>--:--</h4>
+                                        <small>Jam Pulang</small>
+                                        <h4>{{ $attendanceToday->check_out->format('H:i') }}</h4>
                                     </div>
+
+                                </div>
+
+                                <hr>
+
+                                <div class="mb-3">
+
+                                    <small class="text-secondary">
+                                        Mulai Lembur
+                                    </small>
+
+                                    <h3 class="text-primary">
+                                        {{ $attendanceToday->overtime->start_time->format('H:i') }}
+                                    </h3>
 
                                 </div>
 
                                 <button
                                     class="btn btn-danger btn-lg rounded-pill"
                                     data-bs-toggle="modal"
-                                    data-bs-target="#checkOutModal">
+                                    data-bs-target="#finishOvertimeModal">
 
-                                    <i class="ti ti-logout me-2"></i>
-                                    Pulang
+                                    <i class="ti ti-clock-stop me-2"></i>
+                                    Selesai Lembur
 
                                 </button>
 
@@ -128,24 +122,61 @@
 
                         @else
 
-                            {{-- SUDAH PULANG --}}
                             <div class="text-center">
 
                                 <h2 class="text-success mb-4">
-                                    ✅ Absensi Selesai
+                                    🎉 Lembur Selesai
                                 </h2>
 
-                                <div class="row">
+                                <div class="row mb-3">
 
                                     <div class="col">
-                                        <small class="text-secondary">Jam Masuk</small>
+                                        <small>Jam Masuk</small>
                                         <h4>{{ $attendanceToday->check_in->format('H:i') }}</h4>
                                     </div>
 
                                     <div class="col">
-                                        <small class="text-secondary">Jam Pulang</small>
+                                        <small>Jam Pulang</small>
                                         <h4>{{ $attendanceToday->check_out->format('H:i') }}</h4>
                                     </div>
+
+                                </div>
+
+                                <div class="row">
+
+                                    <div class="col">
+                                        <small>Mulai Lembur</small>
+                                        <h4>{{ $attendanceToday->overtime->start_time->format('H:i') }}</h4>
+                                    </div>
+
+                                    <div class="col">
+                                        <small>Selesai Lembur</small>
+                                        <h4>{{ $attendanceToday->overtime->end_time->format('H:i') }}</h4>
+                                    </div>
+
+                                </div>
+
+                                <hr>
+
+                                <div class="alert alert-warning">
+
+                                    <strong>Status :</strong>
+
+                                    @switch($attendanceToday->overtime->status)
+
+                                        @case('pending')
+                                            Menunggu Persetujuan Atasan
+                                            @break
+
+                                        @case('approved')
+                                            Disetujui
+                                            @break
+
+                                        @case('rejected')
+                                            Ditolak
+                                            @break
+
+                                    @endswitch
 
                                 </div>
 
