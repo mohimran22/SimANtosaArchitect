@@ -126,6 +126,7 @@
                 fixedColumns: !isMobile ? {
                     leftColumns: 3
                 } : false,
+
                 serverSide: true,
                 processing: true,
                 responsive: false,
@@ -151,7 +152,6 @@
                     }
 
                 },
-
                 columns:[
 
                     {

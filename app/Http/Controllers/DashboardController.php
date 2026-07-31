@@ -54,7 +54,8 @@ class DashboardController extends Controller
         $attendanceToday = null;
 
         if (auth()->user()->isInternal() && auth()->user()->employee) {
-            $attendanceToday = Attendance::where('employee_id', auth()->user()->employee->id)
+            $attendanceToday = Attendance::with('overtime')
+                ->where('employee_id', auth()->user()->employee->id)
                 ->whereDate('attendance_date', today())
                 ->first();
         }

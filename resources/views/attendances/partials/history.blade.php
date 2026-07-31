@@ -101,29 +101,17 @@
 <table class="table table-hover table-vcenter">
 
     <thead>
-
         <tr>
-
-            <th width="140">Tanggal</th>
-
+            <th width="80">Tanggal</th>
             <th width="80">Masuk</th>
-
             <th width="80">Pulang</th>
-
-            <th width="90">Status</th>
-
-            <th width="120">Jam Kerja</th>
-
-            <th width="90">Lembur</th>
-
-            {{-- <th width="80" class="text-center">
-                Detail Absen
-            </th> --}}
+            <th width="60">Status</th>
+            <th width="80">Jam Kerja</th>
+            <th width="80">Lembur</th>
             <th width="110" class="text-center">
                 Aksi
             </th>
         </tr>
-
     </thead>
 
     <tbody>
@@ -153,128 +141,59 @@
             default => 'bg-dark'
 
         };
-
-        $workMinutes = $attendance->work_minutes ?? 0;
-
-        $workHour = floor($workMinutes / 60);
-
-        $workMinute = $workMinutes % 60;
-
-        $overtimeMinutes = $attendance->overtime_minutes ?? 0;
-
-        $overtimeHour = floor($overtimeMinutes / 60);
-
-        $overtimeMinute = $overtimeMinutes % 60;
-
     @endphp
 
     <tr>
-
         <td>
-
             {{ \Carbon\Carbon::parse($attendance->attendance_date)->translatedFormat('d F Y') }}
-
         </td>
-
         <td>
-
             {{ optional($attendance->check_in)->format('H:i') ?? '-' }}
-
         </td>
-
         <td>
-
             {{ optional($attendance->check_out)->format('H:i') ?? '-' }}
-
         </td>
-
         <td>
-
             <span class="badge {{ $badge }}">
-
                 {{ $attendance->attendance_code ?? '-' }}
-
             </span>
-
         </td>
-
         <td>
-
-            {{ $workHour }}j {{ $workMinute }}m
-
+            {{ $attendance->work_duration }}
         </td>
-
-        <td>
-
-            @if($overtimeMinutes)
-
-                {{ $overtimeHour }}j {{ $overtimeMinute }}m
-
-            @else
-
-                -
-
-            @endif
-
-        </td>
-
-        {{-- <td class="text-center">
-
-            <button
-                class="btn btn-sm btn-outline-dark btn-detail"
-                data-id="{{ $attendance->id }}"
-                title="Detail Absen">
-
-                <i class="ti ti-eye"></i>
-
-            </button>
-
-        </td> --}}
+        <td>{{ $attendance->overtime?->duration ?? '-' }}</td>
         <td class="text-center">
-            <div class="dropdown">
-
-                <button class="btn btn-sm btn-dark" data-bs-toggle="dropdown">
-                    <i class="ti ti-dots"></i>
+            <div class="d-flex justify-content-center align-items-center gap-2 flex-wrap">
+                <button
+                    class="btn btn-sm btn-dark btn-detail"
+                    data-id="{{ $attendance->id }}"
+                    title="Detail">
+                    <i class="ti ti-eye"></i>
                 </button>
-                <div class="dropdown-menu dropdown-menu-end">
-                    <a class="dropdown-item btn-detail" data-id="{{ $attendance->id }}">
-                        <i class="ti ti-eye me-2"></i>
-                        Detail
-                    </a>
-                    @role('Super-Admin')
-                    <a class="dropdown-item btn-edit" data-id="{{ $attendance->id }}">
-                        <i class="ti ti-edit me-2"></i>
-                        Edit
-                    </a>
-                    <a class="dropdown-item text-danger btn-delete" data-id="{{ $attendance->id }}">
-                        <i class="ti ti-trash me-2"></i>
-                        Hapus
-                    </a>
-                    @endrole
-                    <a class="dropdown-item btn-revisions" data-id="{{ $attendance->id }}">
-                        <i class="ti ti-history me-2"></i>
-                        Riwayat Revisi
-                    </a>
-                </div>
 
+                @role('Super-Admin')
+                    <button
+                        class="btn btn-sm btn-dark btn-edit"
+                        data-id="{{ $attendance->id }}"
+                        title="Edit">
+                        <i class="ti ti-edit"></i>
+                    </button>
+
+                    <button
+                        class="btn btn-sm btn-dark btn-delete"
+                        data-id="{{ $attendance->id }}"
+                        title="Hapus">
+                        <i class="ti ti-trash"></i>
+                    </button>
+
+                    {{-- <button
+                        class="btn btn-sm btn-dark btn-revisions"
+                        data-id="{{ $attendance->id }}"
+                        title="Riwayat Revisi">
+                        <i class="ti ti-history"></i>
+                    </button> --}}
+                @endrole
             </div>
-            {{-- <button
-                class="btn btn-sm btn-dark btn-edit"
-                data-id="{{ $attendance->id }}"
-                title="Edit">
-
-                <i class="ti ti-edit"></i>
-
-            </button>
-
-            <button
-                class="btn btn-sm btn-dark btn-delete"
-                data-id="{{ $attendance->id }}"
-                title="Hapus">
-
-                <i class="ti ti-trash"></i>
-
-            </button> --}}
         </td>
     </tr>
 

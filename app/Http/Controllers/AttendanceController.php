@@ -67,18 +67,28 @@ public function index()
 }
 public function history(Request $request, Employee $employee)
 {
-    $attendances = Attendance::where('employee_id', $employee->id)
-        ->when($request->start_date, function ($q) use ($request) {
-            $q->whereDate('attendance_date', '>=', $request->start_date);
-        })
-        ->when($request->end_date, function ($q) use ($request) {
-            $q->whereDate('attendance_date', '<=', $request->end_date);
-        })
-        ->when($request->attendance_code, function ($q) use ($request) {
-            $q->where('attendance_code', $request->attendance_code);
-        })
-        ->latest('attendance_date')
-        ->get();
+$attendances = Attendance::query()
+    ->select([
+        'id',
+        'employee_id',
+        'attendance_date',
+        'check_in',
+        'check_out',
+        'attendance_code',
+        'work_minutes',
+    ])
+    ->with([
+        'overtime:id,attendance_id,work_minutes,status'
+    ])
+    ->where('employee_id', $employee->id)
+    ->when($request->start_date, fn ($q) =>
+        $q->whereDate('attendance_date', '>=', $request->start_date))
+    ->when($request->end_date, fn ($q) =>
+        $q->whereDate('attendance_date', '<=', $request->end_date))
+    ->when($request->attendance_code, fn ($q) =>
+        $q->where('attendance_code', $request->attendance_code))
+    ->latest('attendance_date')
+    ->get();
 
     return view(
         'attendances.partials.history',
@@ -88,7 +98,9 @@ public function history(Request $request, Employee $employee)
 public function detail(Attendance $attendance)
 {
     $attendance->load([
-        'employee.user'
+        'employee.user',
+        'overtime',
+        'revisions.editor',
     ]);
 
     return view(
@@ -167,20 +179,6 @@ public function edit(Attendance $attendance)
         'success' => true,
         'message' => 'Absensi berhasil diperbarui.'
     ]);
-}
-public function revisions(Attendance $attendance)
-{
-    $attendance->load('employee.user');
-
-    $revisions = AttendanceRevision::with('editor')
-                    ->where('attendance_id',$attendance->id)
-                    ->latest('edited_at')
-                    ->get();
-
-    return view(
-        'attendances.partials.revisions',
-        compact('attendance','revisions')
-    );
 }
 public function delete(Attendance $attendance)
 {

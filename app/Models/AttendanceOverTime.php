@@ -39,4 +39,11 @@ class AttendanceOvertime extends Model
     {
         return $this->belongsTo(Attendance::class);
     }
+    public function getDurationAttribute(): string
+{
+    $hour = intdiv($this->work_minutes ?? 0, 60);
+    $minute = ($this->work_minutes ?? 0) % 60;
+
+    return "{$hour}j {$minute}m";
+}
 }

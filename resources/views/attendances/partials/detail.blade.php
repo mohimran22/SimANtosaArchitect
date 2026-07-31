@@ -1,87 +1,106 @@
-<div class="row">
+<ul class="nav nav-tabs mb-3" id="attendanceTabs" role="tablist">
 
-    <div class="col-md-6">
+    <li class="nav-item">
+        <button
+            class="nav-link active"
+            data-bs-toggle="tab"
+            data-bs-target="#tab-information">
 
-        <strong>Tanggal</strong>
+            <i class="ti ti-file-description me-1"></i>
+            Informasi
 
-        <div>
+        </button>
+    </li>
 
-            {{ \Carbon\Carbon::parse($attendance->attendance_date)->translatedFormat('d F Y') }}
+    <li class="nav-item">
+        <button
+            class="nav-link"
+            data-bs-toggle="tab"
+            data-bs-target="#tab-location">
 
-        </div>
+            <i class="ti ti-map-pin me-1"></i>
+            Lokasi
 
-    </div>
+        </button>
+    </li>
 
-    <div class="col-md-6">
+    <li class="nav-item">
+        <button
+            class="nav-link"
+            data-bs-toggle="tab"
+            data-bs-target="#tab-photo">
 
-        <strong>Status</strong>
+            <i class="ti ti-camera me-1"></i>
+            Dokumentasi
 
-        <div>
+        </button>
+    </li>
 
-            {{ $attendance->attendance_code }}
+    <li class="nav-item">
+        <button
+            class="nav-link"
+            data-bs-toggle="tab"
+            data-bs-target="#tab-revision">
 
-        </div>
+            <i class="ti ti-history me-1"></i>
+            Riwayat
 
-    </div>
+        </button>
+    </li>
 
-    <div class="col-md-6 mt-3">
+</ul>
+<div class="tab-content">
 
-        <strong>Jam Masuk</strong>
+    <div
+        class="tab-pane fade show active"
+        id="tab-information">
 
-        <div>
-
-            {{ optional($attendance->check_in)->format('H:i') }}
-
-        </div>
-
-    </div>
-
-    <div class="col-md-6 mt-3">
-
-        <strong>Jam Pulang</strong>
-
-        <div>
-
-            {{ optional($attendance->check_out)->format('H:i') }}
-
-        </div>
-
-    </div>
-
-    <div class="col-md-6 mt-3">
-
-        <strong>Foto Masuk</strong>
-
-        @if($attendance->check_in_photo)
-
-            <img
-                src="{{ asset('storage/'.$attendance->check_in_photo) }}"
-                class="img-fluid rounded">
-
-        @endif
+        @include('attendances.partials.tabs.information')
 
     </div>
 
-    <div class="col-md-6 mt-3">
+    <div
+        class="tab-pane fade"
+        id="tab-location">
 
-        <strong>Foto Pulang</strong>
-
-        @if($attendance->check_out_photo)
-
-            <img
-                src="{{ asset('storage/'.$attendance->check_out_photo) }}"
-                class="img-fluid rounded">
-
-        @endif
+        @include('attendances.partials.tabs.location')
 
     </div>
-    <button
-        class="btn btn-secondary mb-3 btn-back-history"
-        data-employee="{{ $attendance->employee_id }}">
 
-        <i class="ti ti-arrow-left"></i>
+    <div
+        class="tab-pane fade"
+        id="tab-photo">
 
-        Kembali
+        @include('attendances.partials.tabs.photo')
 
-    </button>
+    </div>
+
+    <div
+        class="tab-pane fade"
+        id="tab-revision">
+
+        @include('attendances.partials.tabs.revisions')
+
+    </div>
+
 </div>
+{{-- <div class="container-fluid">
+
+
+
+
+    @include('attendances.partials.revisions')
+    <div class="text-center mt-4">
+
+        <button
+            class="btn btn-secondary btn-back-history"
+            data-employee="{{ $attendance->employee_id }}">
+
+            <i class="ti ti-arrow-left me-2"></i>
+            Kembali
+
+        </button>
+
+    </div>
+
+</div> --}}

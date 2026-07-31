@@ -161,10 +161,6 @@
                 </div>
             </div>
         </div> --}}
-        {{-- ===================== --}}
-{{-- MODAL CAMERA --}}
-{{-- ===================== --}}
-
 <x-camera-modal
     modal-id="checkInModal"
     title="Absensi Masuk"
