@@ -45,7 +45,7 @@ class Attendance extends Model
 }
 public function overtime()
 {
-    return $this->hasOne(AttendanceOvertime::class, 'attendance_id');
+    return $this->hasOne(AttendanceOverTime::class, 'attendance_id');
 }
 public function getWorkDurationAttribute(): string
 {

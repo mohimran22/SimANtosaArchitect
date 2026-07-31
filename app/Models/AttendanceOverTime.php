@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
-class AttendanceOvertime extends Model
+class AttendanceOverTime extends Model
 {
     use HasUuids;
 
