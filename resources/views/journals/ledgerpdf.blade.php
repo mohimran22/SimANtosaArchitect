@@ -2,12 +2,34 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Buku Besar</title>
+    <title>Antosa Architect</title>
     <style>
-        body {
-            font-family: Poppins, sans-serif;
-            font-size: 11px;
+        @page {
+            margin: 140px 30px 110px 30px;
         }
+        body {
+            font-family: DejaVu Sans, sans-serif;
+            font-size: 12px;
+            line-height: 1.5;
+            margin: 0;
+            padding: 0;
+        }
+        .header {
+            position: fixed;
+            top: -110px;
+            left: 0;
+            right: 0;
+            width: 100%;
+        }
+
+        .footer {
+            position: fixed;
+            bottom: -70px;
+            left: 0;
+            right: 0;
+            width: 100%;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
@@ -22,9 +44,9 @@
         table th {
             background-color: #f5f5f5;
         }
-        h3, p {
+        h2 {
             text-align: center;
-            margin-bottom: 10px;
+            margin-top: 30px;
         }
 
         table th:nth-child(1),
@@ -49,9 +71,15 @@
 
 <body>
     <div class="header">
-        <h2 style="text-align:center;">Antosa Architect</h2>
-        <p>Periode: {{ \Carbon\Carbon::parse($startDate)->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($endDate)->format('d/m/Y') }}</p>
+        <img src="{{ public_path('images/header-penawaran.jpg') }}" style="width:100%;">
     </div>
+
+    <div class="footer">
+        <img src="{{ public_path('images/footer-penawaran.jpg') }}" style="width:100%;">
+    </div>
+
+        <h2>Buku Besar</h2>
+        <p style="text-align:center;">Periode: {{ \Carbon\Carbon::parse($startDate)->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($endDate)->format('d/m/Y') }}</p>
 
     @foreach($ledger as $accountId => $data)
         <h4>{{ $data['account']->account_code }} - {{ $data['account']->account_name }}</h4>

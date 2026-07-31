@@ -2,11 +2,32 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Neraca</title>
+    <title>Antosa Architect</title>
     <style>
+        @page {
+            margin: 140px 30px 110px 30px;
+        }
         body {
-            font-family: Poppins, sans-serif;
-            font-size: 11px;
+            font-family: DejaVu Sans, sans-serif;
+            font-size: 12px;
+            line-height: 1.5;
+            margin: 0;
+            padding: 0;
+        }
+        .header {
+            position: fixed;
+            top: -110px;
+            left: 0;
+            right: 0;
+            width: 100%;
+        }
+
+        .footer {
+            position: fixed;
+            bottom: -70px;
+            left: 0;
+            right: 0;
+            width: 100%;
         }
         table {
             width: 100%;
@@ -33,13 +54,19 @@
 </head>
 <body>
     <div class="header">
+        <img src="{{ public_path('images/header-penawaran.jpg') }}" style="width:100%;">
+    </div>
+
+    <div class="footer">
+        <img src="{{ public_path('images/footer-penawaran.jpg') }}" style="width:100%;">
+    </div>
         <h1 style="text-align:center;">Laporan Neraca </h1>
         <h2 style="text-align:center;">Antosa Architect </h2>
         <h3>Periode: {{ \Carbon\Carbon::parse($startDate)->format('d/M/Y') }} - {{ \Carbon\Carbon::parse($endDate)->format('d/M/Y') }}</h3>
         @if($licenses->where('id', $request->license_id)->first())
             <h4>Lisensi: {{ $licenses->where('id', $request->license_id)->first()->name }}</h4>
         @endif
-    </div>
+
 
     <table>
         <thead>
@@ -60,14 +87,12 @@
                         <td colspan="4" class="fw-semibold fst-italic"><em>{{ $subCat }}</em></td>
                     </tr>
                     @foreach($data['accounts'] as $acc)
-                        @if(!$acc['is_parent'])
                             <tr>
                                 <td>{{ $acc['account_code'] }}</td>
                                 <td class="text-left">{{ $acc['account_name'] }}</td>
                                 <td>Rp {{ number_format($acc['debit'], 2, ',', '.') }}</td>
                                 <td>Rp {{ number_format($acc['credit'], 2, ',', '.') }}</td>
                             </tr>
-                        @endif
                     @endforeach
                     <tr>
                         <td colspan="2" class="text-right"><strong>Subtotal {{ $subCat }}</strong></td>

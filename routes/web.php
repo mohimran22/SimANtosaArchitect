@@ -5,6 +5,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AccountingAccountController;
 use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\AttendanceOvertimeController;
 use App\Http\Controllers\AccountingJournalController;
 use App\Http\Controllers\AccountingReportController;
 use App\Http\Controllers\AccountingPeriodController;
@@ -732,6 +733,11 @@ Route::middleware(['auth'])->group(function () {
     Route::post('attendances/check-out', [AttendanceController::class, 'checkOut'])
         // ->middleware('permission:tambah data absensi')
         ->name('attendances.check-out');
+    Route::post('/attendance-overtimes/start', [AttendanceOvertimeController::class, 'start'])
+        ->name('attendance-overtimes.start');
+
+    Route::post('/attendance-overtimes/finish', [AttendanceOvertimeController::class, 'finish'])
+        ->name('attendance-overtimes.finish');
 });
 Route::middleware(['auth'])->group(function () {
     // sinkronisasi lisensi aktif dari navbar (POST dari form/navbar)

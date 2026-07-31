@@ -822,7 +822,6 @@ public function exportTrial(Request $request)
         'startDate'       => $startDate,
         'endDate'         => $endDate,
         'licenses'        => $licenses,
-        'activeLicenseId' => $activeLicenseId,
         'totalDebit'      => $totalDebit,
         'totalCredit'     => $totalCredit,
         'request'         => $request,
@@ -836,7 +835,7 @@ public function print(AccountingJournal $journal)
     $pdf = Pdf::loadView('journals.print', compact('journal'))
         ->setPaper('a4', 'landscape'); // bisa juga landscape
 
-    return $pdf->stream('Jurnal-Harian'.-$journal->journal_code.'.pdf');
+    return $pdf->stream('Jurnal-Harian-' . $journal->journal_code . '.pdf');
 }
 
 public function balanceSheet(Request $request)

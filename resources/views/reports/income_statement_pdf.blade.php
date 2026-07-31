@@ -2,11 +2,36 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Laporan Laba Rugi</title>
+    <title>Antosa Architect</title>
     <style>
+        @page {
+            margin: 140px 30px 110px 30px;
+        }
+
+        /* ================= BODY ================= */
         body {
             font-family: DejaVu Sans, sans-serif;
             font-size: 12px;
+            line-height: 1.5;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* ================= HEADER & FOOTER ================= */
+        .header {
+            position: fixed;
+            top: -110px;
+            left: 0;
+            right: 0;
+            width: 100%;
+        }
+
+        .footer {
+            position: fixed;
+            bottom: -70px;
+            left: 0;
+            right: 0;
+            width: 100%;
         }
         h2, h4 {
             text-align: center;
@@ -32,8 +57,16 @@
     </style>
 </head>
 <body>
+    <div class="header">
+        <img src="{{ public_path('images/header-penawaran.jpg') }}" style="width:100%;">
+    </div>
+
+    <!-- ================= FOOTER ================= -->
+    <div class="footer">
+        <img src="{{ public_path('images/footer-penawaran.jpg') }}" style="width:100%;">
+    </div>
     <h2>Laporan Laba Rugi</h2>
-    <h4>Periode: {{ $startDate }} s/d {{ $endDate }}</h4>
+    <h4>Periode: {{ \Carbon\Carbon::parse($startDate)->format('d/m/Y') }} s/d {{ \Carbon\Carbon::parse($endDate)->format('d/m/Y') }}</h4>
 
     <table>
         <thead>
@@ -46,10 +79,6 @@
             </tr>
         </thead>
         <tbody>
-            @php
-                $totalIncome = 0;
-                $totalExpense = 0;
-            @endphp
             @foreach($accounts as $acc)
                 <tr>
                     <td>{{ $acc->account_code }}</td>
@@ -58,11 +87,6 @@
                     <td>{{ $acc->sub_category }}</td>
                     <td style="text-align: right;">{{ number_format($acc->balance, 2, ',', '.') }}</td>
                 </tr>
-                @if($acc->category === 'Pendapatan')
-                    @php $totalIncome += $acc->balance; @endphp
-                @else
-                    @php $totalExpense += $acc->balance; @endphp
-                @endif
             @endforeach
         </tbody>
         <tfoot>
@@ -76,7 +100,7 @@
             </tr>
             <tr>
                 <td colspan="4" align="right">Laba Bersih</td>
-                <td style="text-align: right;">{{ number_format($totalIncome - $totalExpense, 2, ',', '.') }}</td>
+                <td style="text-align: right;">{{ number_format($netIncome, 2, ',', '.') }}</td>
             </tr>
         </tfoot>
     </table>

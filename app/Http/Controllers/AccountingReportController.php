@@ -107,11 +107,22 @@ public function exportPdf(Request $request)
         )
         ->orderBy('accounting_accounts.account_code', 'asc')
         ->get();
+    $totalIncome = $accounts
+        ->where('category', 'PENDAPATAN')
+        ->sum('balance');
 
+    $totalExpense = $accounts
+        ->where('category', 'BEBAN')
+        ->sum('balance');
+
+    $netIncome = $totalIncome - $totalExpense;
     $pdf = Pdf::loadView('reports.income_statement_pdf', [
         'accounts' => $accounts,
         'startDate' => $startDate,
         'endDate' => $endDate,
+        'totalIncome'   => $totalIncome,
+        'totalExpense'  => $totalExpense,
+        'netIncome'     => $netIncome,
     ])->setPaper('a4', 'portrait');
 
     return $pdf->stream("Laporan_Laba_Rugi_{$startDate}_sd_{$endDate}.pdf");

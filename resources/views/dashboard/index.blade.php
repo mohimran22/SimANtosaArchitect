@@ -74,114 +74,9 @@
                         @elseif(!$attendanceToday->overtime)
                             @include('attendances.partials.after-checkout')
                         @elseif(is_null($attendanceToday->overtime->end_time))
-                            <div class="text-center">
-
-                                <h2 class="text-warning mb-3">
-                                    🟠 Sedang Lembur
-                                </h2>
-
-                                <div class="row">
-
-                                    <div class="col">
-                                        <small>Jam Masuk</small>
-                                        <h4>{{ $attendanceToday->check_in->format('H:i') }}</h4>
-                                    </div>
-
-                                    <div class="col">
-                                        <small>Jam Pulang</small>
-                                        <h4>{{ $attendanceToday->check_out->format('H:i') }}</h4>
-                                    </div>
-
-                                </div>
-
-                                <hr>
-
-                                <div class="mb-3">
-
-                                    <small class="text-secondary">
-                                        Mulai Lembur
-                                    </small>
-
-                                    <h3 class="text-primary">
-                                        {{ $attendanceToday->overtime->start_time->format('H:i') }}
-                                    </h3>
-
-                                </div>
-
-                                <button
-                                    class="btn btn-danger btn-lg rounded-pill"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#finishOvertimeModal">
-
-                                    <i class="ti ti-clock-stop me-2"></i>
-                                    Selesai Lembur
-
-                                </button>
-
-                            </div>
-
+                            @include('attendances.partials.overtime-running')
                         @else
-
-                            <div class="text-center">
-
-                                <h2 class="text-success mb-4">
-                                    🎉 Lembur Selesai
-                                </h2>
-
-                                <div class="row mb-3">
-
-                                    <div class="col">
-                                        <small>Jam Masuk</small>
-                                        <h4>{{ $attendanceToday->check_in->format('H:i') }}</h4>
-                                    </div>
-
-                                    <div class="col">
-                                        <small>Jam Pulang</small>
-                                        <h4>{{ $attendanceToday->check_out->format('H:i') }}</h4>
-                                    </div>
-
-                                </div>
-
-                                <div class="row">
-
-                                    <div class="col">
-                                        <small>Mulai Lembur</small>
-                                        <h4>{{ $attendanceToday->overtime->start_time->format('H:i') }}</h4>
-                                    </div>
-
-                                    <div class="col">
-                                        <small>Selesai Lembur</small>
-                                        <h4>{{ $attendanceToday->overtime->end_time->format('H:i') }}</h4>
-                                    </div>
-
-                                </div>
-
-                                <hr>
-
-                                <div class="alert alert-warning">
-
-                                    <strong>Status :</strong>
-
-                                    @switch($attendanceToday->overtime->status)
-
-                                        @case('pending')
-                                            Menunggu Persetujuan Atasan
-                                            @break
-
-                                        @case('approved')
-                                            Disetujui
-                                            @break
-
-                                        @case('rejected')
-                                            Ditolak
-                                            @break
-
-                                    @endswitch
-
-                                </div>
-
-                            </div>
-
+                            @include('attendances.partials.overtime-finished')
                         @endif
                     </div>
                 </div>
@@ -190,7 +85,7 @@
         </div>
 
         @endif
-        <div class="modal fade" id="checkInModal">
+        {{-- <div class="modal fade" id="checkInModal">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
 
@@ -265,7 +160,50 @@
                     </form>
                 </div>
             </div>
-        </div>
+        </div> --}}
+        {{-- ===================== --}}
+{{-- MODAL CAMERA --}}
+{{-- ===================== --}}
+
+<x-camera-modal
+    modal-id="checkInModal"
+    title="Absensi Masuk"
+    :action="route('attendances.check-in')"
+    prefix="checkIn"
+    lat-name="check_in_lat"
+    lng-name="check_in_lng"
+    confirm-text="✅ Konfirmasi Hadir"
+/>
+
+<x-camera-modal
+    modal-id="checkOutModal"
+    title="Absensi Pulang"
+    :action="route('attendances.check-out')"
+    prefix="checkOut"
+    lat-name="check_out_lat"
+    lng-name="check_out_lng"
+    confirm-text="✅ Konfirmasi Pulang"
+/>
+
+<x-camera-modal
+    modal-id="startOvertimeModal"
+    title="Mulai Lembur"
+    :action="route('attendance-overtimes.start')"
+    prefix="startOvertime"
+    lat-name="start_lat"
+    lng-name="start_lng"
+    confirm-text="✅ Mulai Lembur"
+/>
+
+<x-camera-modal
+    modal-id="finishOvertimeModal"
+    title="Selesai Lembur"
+    :action="route('attendance-overtimes.finish')"
+    prefix="finishOvertime"
+    lat-name="end_lat"
+    lng-name="end_lng"
+    confirm-text="✅ Selesai Lembur"
+/>
     </div>
 </div>
 @endsection
@@ -314,164 +252,355 @@ function updateClock() {
 
 updateClock();
 setInterval(updateClock, 1000);
+// let stream;
+// const modal = document.getElementById('checkInModal');
+// const modalOut = document.getElementById('checkOutModal');
+
+// const camera = document.getElementById('camera');
+// const canvas = document.getElementById('canvas');
+// const preview = document.getElementById('preview');
+// const capture = document.getElementById('capture');
+// const retake = document.getElementById('retake');
+// const confirm = document.getElementById('confirm');
+// const photo = document.getElementById('photo');
+// const latInput = document.getElementById('check_in_lat');
+// const lngInput = document.getElementById('check_in_lng');
+
+// const cameraOut = document.getElementById('cameraCheckout');
+// const canvasOut = document.getElementById('canvasCheckout');
+// const previewOut = document.getElementById('previewCheckout');
+// const captureOut = document.getElementById('captureCheckout');
+// const retakeOut = document.getElementById('retakeCheckout');
+// const confirmOut = document.getElementById('confirmCheckout');
+// const photoOut = document.getElementById('photoCheckOut');
+// const latOutInput = document.getElementById('check_out_lat');
+// const lngOutInput = document.getElementById('check_out_lng');
+
+// if(modal){
+//     modal.addEventListener('shown.bs.modal', async () => {
+//         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+
+//             alert("Browser tidak mendukung Camera API.");
+
+//             return;
+//         }
+//         stream = await navigator.mediaDevices.getUserMedia({
+//             video:{
+//                 facingMode:"user"
+//             }
+//         });
+//         camera.srcObject = stream;
+//         if ('geolocation' in navigator) {
+
+//             navigator.geolocation.getCurrentPosition(
+//                 (position) => {
+//                     latInput.value = position.coords.latitude;
+//                     lngInput.value = position.coords.longitude;
+//                 },
+//                 (err) => {
+//                     console.error(err);
+//                     alert("Tidak bisa mendapatkan lokasi.");
+//                 },
+//                 {
+//                     enableHighAccuracy: true,
+//                     timeout: 10000,
+//                     maximumAge: 0
+//                 }
+//             );
+
+//         } else {
+//             alert("Browser tidak mendukung Geolocation.");
+//         }
+//     });
+// }
+// capture.addEventListener('click',()=>{
+
+//     canvas.width = camera.videoWidth;
+//     canvas.height = camera.videoHeight;
+
+//     canvas.getContext('2d')
+//         .drawImage(camera,0,0);
+
+//     const image = canvas.toDataURL('image/jpeg');
+
+//     photo.value = image;
+//     preview.src = image;
+//     preview.classList.remove('d-none');
+//     camera.classList.add('d-none');
+//     capture.classList.add('d-none');
+//     retake.classList.remove('d-none');
+//     confirm.classList.remove('d-none');
+// });
+// retake.addEventListener('click',()=>{
+//     photo.value = '';
+//     preview.classList.add('d-none');
+
+//     camera.classList.remove('d-none');
+
+//     capture.classList.remove('d-none');
+
+//     retake.classList.add('d-none');
+
+//     confirm.classList.add('d-none');
+
+// });
+// if(modalOut){
+//     modalOut.addEventListener('shown.bs.modal', async () => {
+//         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+
+//             alert("Browser tidak mendukung Camera API.");
+
+//             return;
+//         }
+//         stream = await navigator.mediaDevices.getUserMedia({
+//             video:{
+//                 facingMode:"user"
+//             }
+//         });
+//         cameraOut.srcObject = stream;
+//         if ('geolocation' in navigator) {
+
+//             navigator.geolocation.getCurrentPosition(
+//                 (position) => {
+//                     latOutInput.value = position.coords.latitude;
+//                     lngOutInput.value = position.coords.longitude;
+//                 },
+//                 (err) => {
+//                     console.error(err);
+//                     alert("Tidak bisa mendapatkan lokasi.");
+//                 },
+//                 {
+//                     enableHighAccuracy: true,
+//                     timeout: 10000,
+//                     maximumAge: 0
+//                 }
+//             );
+
+//         } else {
+//             alert("Browser tidak mendukung Geolocation.");
+//         }
+//     });
+// }
+// captureOut.addEventListener('click',()=>{
+
+//     canvasOut.width = cameraOut.videoWidth;
+//     canvasOut.height = cameraOut.videoHeight;
+
+//     canvasOut.getContext('2d')
+//         .drawImage(cameraOut,0,0);
+
+//     const image = canvasOut.toDataURL('image/jpeg');
+
+//     photoOut.value = image;
+//     previewOut.src = image;
+//     previewOut.classList.remove('d-none');
+//     cameraOut.classList.add('d-none');
+//     captureOut.classList.add('d-none');
+//     retakeOut.classList.remove('d-none');
+//     confirmOut.classList.remove('d-none');
+// });
+// retake.addEventListener('click',()=>{
+//     photoOut.value = '';
+//     previewOut.classList.add('d-none');
+
+//     cameraOut.classList.remove('d-none');
+
+//     captureOut.classList.remove('d-none');
+
+//     retakeOut.classList.add('d-none');
+
+//     confirmOut.classList.add('d-none');
+
+// });
 let stream;
-const modal = document.getElementById('checkInModal');
-const modalOut = document.getElementById('checkOutModal');
 
-const camera = document.getElementById('camera');
-const canvas = document.getElementById('canvas');
-const preview = document.getElementById('preview');
-const capture = document.getElementById('capture');
-const retake = document.getElementById('retake');
-const confirm = document.getElementById('confirm');
-const photo = document.getElementById('photo');
-const latInput = document.getElementById('check_in_lat');
-const lngInput = document.getElementById('check_in_lng');
+function initCamera(config) {
 
-const cameraOut = document.getElementById('cameraCheckout');
-const canvasOut = document.getElementById('canvasCheckout');
-const previewOut = document.getElementById('previewCheckout');
-const captureOut = document.getElementById('captureCheckout');
-const retakeOut = document.getElementById('retakeCheckout');
-const confirmOut = document.getElementById('confirmCheckout');
-const photoOut = document.getElementById('photoCheckOut');
-const latOutInput = document.getElementById('check_out_lat');
-const lngOutInput = document.getElementById('check_out_lng');
+    const modal = document.getElementById(config.modal);
+    if (!modal) return;
 
-if(modal){
+    const camera = document.getElementById(config.camera);
+    const canvas = document.getElementById(config.canvas);
+    const preview = document.getElementById(config.preview);
+
+    const capture = document.getElementById(config.capture);
+    const retake = document.getElementById(config.retake);
+    const confirm = document.getElementById(config.confirm);
+
+    const photo = document.getElementById(config.photo);
+
+    const lat = document.getElementById(config.lat);
+    const lng = document.getElementById(config.lng);
+
     modal.addEventListener('shown.bs.modal', async () => {
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
 
+        if (!navigator.mediaDevices?.getUserMedia) {
             alert("Browser tidak mendukung Camera API.");
-
             return;
         }
+
         stream = await navigator.mediaDevices.getUserMedia({
-            video:{
-                facingMode:"user"
+            video: {
+                facingMode: "user"
             }
         });
+
         camera.srcObject = stream;
-        if ('geolocation' in navigator) {
+
+        if (navigator.geolocation) {
 
             navigator.geolocation.getCurrentPosition(
+
                 (position) => {
-                    latInput.value = position.coords.latitude;
-                    lngInput.value = position.coords.longitude;
+
+                    lat.value = position.coords.latitude;
+                    lng.value = position.coords.longitude;
+
                 },
-                (err) => {
-                    console.error(err);
+
+                () => {
+
                     alert("Tidak bisa mendapatkan lokasi.");
+
                 },
+
                 {
                     enableHighAccuracy: true,
                     timeout: 10000,
                     maximumAge: 0
                 }
+
             );
 
-        } else {
-            alert("Browser tidak mendukung Geolocation.");
         }
+
     });
-}
-capture.addEventListener('click',()=>{
 
-    canvas.width = camera.videoWidth;
-    canvas.height = camera.videoHeight;
+    modal.addEventListener('hidden.bs.modal', () => {
 
-    canvas.getContext('2d')
-        .drawImage(camera,0,0);
+        if (stream) {
 
-    const image = canvas.toDataURL('image/jpeg');
+            stream.getTracks().forEach(track => track.stop());
 
-    photo.value = image;
-    preview.src = image;
-    preview.classList.remove('d-none');
-    camera.classList.add('d-none');
-    capture.classList.add('d-none');
-    retake.classList.remove('d-none');
-    confirm.classList.remove('d-none');
-});
-retake.addEventListener('click',()=>{
-    photo.value = '';
-    preview.classList.add('d-none');
-
-    camera.classList.remove('d-none');
-
-    capture.classList.remove('d-none');
-
-    retake.classList.add('d-none');
-
-    confirm.classList.add('d-none');
-
-});
-if(modalOut){
-    modalOut.addEventListener('shown.bs.modal', async () => {
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-
-            alert("Browser tidak mendukung Camera API.");
-
-            return;
         }
-        stream = await navigator.mediaDevices.getUserMedia({
-            video:{
-                facingMode:"user"
-            }
-        });
-        cameraOut.srcObject = stream;
-        if ('geolocation' in navigator) {
 
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    latOutInput.value = position.coords.latitude;
-                    lngOutInput.value = position.coords.longitude;
-                },
-                (err) => {
-                    console.error(err);
-                    alert("Tidak bisa mendapatkan lokasi.");
-                },
-                {
-                    enableHighAccuracy: true,
-                    timeout: 10000,
-                    maximumAge: 0
-                }
-            );
+        camera.classList.remove('d-none');
+        preview.classList.add('d-none');
 
-        } else {
-            alert("Browser tidak mendukung Geolocation.");
-        }
+        capture.classList.remove('d-none');
+        retake.classList.add('d-none');
+        confirm.classList.add('d-none');
+
+        photo.value = '';
+
     });
+
+    capture.addEventListener('click', () => {
+
+        canvas.width = camera.videoWidth;
+        canvas.height = camera.videoHeight;
+
+        canvas.getContext('2d').drawImage(camera, 0, 0);
+
+        const image = canvas.toDataURL('image/jpeg');
+
+        photo.value = image;
+
+        preview.src = image;
+
+        preview.classList.remove('d-none');
+        camera.classList.add('d-none');
+
+        capture.classList.add('d-none');
+        retake.classList.remove('d-none');
+        confirm.classList.remove('d-none');
+
+    });
+
+    retake.addEventListener('click', () => {
+
+        photo.value = '';
+
+        preview.classList.add('d-none');
+        camera.classList.remove('d-none');
+
+        capture.classList.remove('d-none');
+        retake.classList.add('d-none');
+        confirm.classList.add('d-none');
+
+    });
+
 }
-captureOut.addEventListener('click',()=>{
+initCamera({
 
-    canvasOut.width = cameraOut.videoWidth;
-    canvasOut.height = cameraOut.videoHeight;
+    modal: 'checkInModal',
 
-    canvasOut.getContext('2d')
-        .drawImage(cameraOut,0,0);
+    camera: 'checkInCamera',
+    canvas: 'checkInCanvas',
+    preview: 'checkInPreview',
 
-    const image = canvasOut.toDataURL('image/jpeg');
+    capture: 'checkInCapture',
+    retake: 'checkInRetake',
+    confirm: 'checkInConfirm',
 
-    photoOut.value = image;
-    previewOut.src = image;
-    previewOut.classList.remove('d-none');
-    cameraOut.classList.add('d-none');
-    captureOut.classList.add('d-none');
-    retakeOut.classList.remove('d-none');
-    confirmOut.classList.remove('d-none');
+    photo: 'checkInPhoto',
+
+    lat: 'checkInLat',
+    lng: 'checkInLng'
+
 });
-retake.addEventListener('click',()=>{
-    photoOut.value = '';
-    previewOut.classList.add('d-none');
+initCamera({
 
-    cameraOut.classList.remove('d-none');
+    modal: 'checkOutModal',
 
-    captureOut.classList.remove('d-none');
+    camera: 'checkOutCamera',
+    canvas: 'checkOutCanvas',
+    preview: 'checkOutPreview',
 
-    retakeOut.classList.add('d-none');
+    capture: 'checkOutCapture',
+    retake: 'checkOutRetake',
+    confirm: 'checkOutConfirm',
 
-    confirmOut.classList.add('d-none');
+    photo: 'checkOutPhoto',
+
+    lat: 'checkOutLat',
+    lng: 'checkOutLng'
+
+});
+initCamera({
+
+    modal: 'startOvertimeModal',
+
+    camera: 'startOvertimeCamera',
+    canvas: 'startOvertimeCanvas',
+    preview: 'startOvertimePreview',
+
+    capture: 'startOvertimeCapture',
+    retake: 'startOvertimeRetake',
+    confirm: 'startOvertimeConfirm',
+
+    photo: 'startOvertimePhoto',
+
+    lat: 'startOvertimeLat',
+    lng: 'startOvertimeLng'
+
+});
+initCamera({
+
+    modal: 'finishOvertimeModal',
+
+    camera: 'finishOvertimeCamera',
+    canvas: 'finishOvertimeCanvas',
+    preview: 'finishOvertimePreview',
+
+    capture: 'finishOvertimeCapture',
+    retake: 'finishOvertimeRetake',
+    confirm: 'finishOvertimeConfirm',
+
+    photo: 'finishOvertimePhoto',
+
+    lat: 'finishOvertimeLat',
+    lng: 'finishOvertimeLng'
 
 });
 </script>

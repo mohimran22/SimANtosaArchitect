@@ -81,7 +81,7 @@ class JournalExportController extends Controller
 
         // Download response
         $writer = new Xlsx($spreadsheet);
-        $fileName = 'journal-'.$journal->journal_code.'.xlsx';
+        $fileName = 'Jurnal Transaksi '.$journal->journal_code.'.xlsx';
         $temp_file = tempnam(sys_get_temp_dir(), $fileName);
         $writer->save($temp_file);
 
@@ -157,7 +157,7 @@ class JournalExportController extends Controller
 
     // Download
     $writer = new Xlsx($spreadsheet);
-    $fileName = 'journal-general-' . now()->format('YmdHis') . '.xlsx';
+    $fileName = 'Jurnal Umum ' . now()->format('YmdHis') . '.xlsx';
     $temp_file = tempnam(sys_get_temp_dir(), $fileName);
     $writer->save($temp_file);
 
@@ -243,7 +243,7 @@ public function exportLedger(Request $request)
 
     // Generate file
     $writer = new Xlsx($spreadsheet);
-    $fileName = 'ledger-' . now()->format('YmdHis') . '.xlsx';
+    $fileName = 'Buku Besar ' . now()->format('YmdHis') . '.xlsx';
     $temp_file = tempnam(sys_get_temp_dir(), $fileName);
     $writer->save($temp_file);
 
@@ -375,7 +375,7 @@ public function exportTrialBalance(Request $request)
     }
 
     // Output
-    $fileName = 'trial_balance_' . now()->format('Ymd_His') . '.xlsx';
+    $fileName = 'Neraca Saldo ' . now()->format('Ymd_His') . '.xlsx';
     $writer = new Xlsx($spreadsheet);
 
     return new StreamedResponse(function () use ($writer) {

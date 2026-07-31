@@ -4,14 +4,39 @@
     <meta charset="utf-8">
     <title>Antosa Architect</title>
     <style>
+        @page {
+            margin: 140px 30px 110px 30px;
+        }
+
+        /* ================= BODY ================= */
         body {
             font-family: DejaVu Sans, sans-serif;
-            font-size: 10px;
+            font-size: 12px;
+            line-height: 1.5;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* ================= HEADER & FOOTER ================= */
+        .header {
+            position: fixed;
+            top: -110px;
+            left: 0;
+            right: 0;
+            width: 100%;
+        }
+
+        .footer {
+            position: fixed;
+            bottom: -70px;
+            left: 0;
+            right: 0;
+            width: 100%;
         }
 
         h2 {
             text-align: center;
-            margin-bottom: 15px;
+            margin-top: 30px;
         }
 
         table {
@@ -52,9 +77,18 @@
     </style>
 </head>
 <body>
+    <div class="header">
+        <img src="{{ public_path('images/header-penawaran.jpg') }}" style="width:100%;">
+    </div>
+
+    <!-- ================= FOOTER ================= -->
+    <div class="footer">
+        <img src="{{ public_path('images/footer-penawaran.jpg') }}" style="width:100%;">
+    </div>
     <h2>Laporan Jurnal umum</h2>
 
-    <p><strong>Periode:</strong> {{ \Carbon\Carbon::parse($startDate)->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($endDate)->format('d/m/Y') }}</p>
+    <p>
+        <strong>Periode:</strong> {{ \Carbon\Carbon::parse($startDate)->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($endDate)->format('d/m/Y') }}</p>
     {{-- <p><strong>Lisensi:</strong> {{ auth()->user()->license->name ?? '-' }}</p> --}}
 
     <table>
