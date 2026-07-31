@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Traits\HasUuid;
+use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Model;
 
 class AccountingJournalDetail extends Model
@@ -45,14 +46,25 @@ class AccountingJournalDetail extends Model
     }
 
     // Kalau ada data person di DB, langsung proses sesuai type
-     return match ($this->account->person_type) {
-        'customer'       => \App\Models\Customer::find($this->person)?->user?->fullname ?? '-',
-        'employee'      => \App\Models\Employee::find($this->person)?->user?->fullname ?? '-',
-        'worker' => \App\Models\Worker::find($this->person)?->user?->fullname ?? '-',
-        'license'       => Str::isUuid($this->person)
-                                ? \App\Models\License::find($this->person)?->name
-                                : $this->person,
-         default         => $this->person ?? '-', // ⬅️ fallback ke kolom langsung
+    return match ($this->account->person_type) {
+
+        'customer' => Str::isUuid($this->person)
+            ? Customer::find($this->person)?->fullname
+            : $this->person,
+
+        'employee' => Str::isUuid($this->person)
+            ? Employee::find($this->person)?->fullname
+            : $this->person,
+
+        'worker' => Str::isUuid($this->person)
+            ? Worker::find($this->person)?->fullname
+            : $this->person,
+
+        'license' => Str::isUuid($this->person)
+            ? License::find($this->person)?->name
+            : $this->person,
+
+        default => $this->person ?? '-',
     };
 }
 

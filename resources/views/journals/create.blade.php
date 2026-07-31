@@ -130,8 +130,13 @@
                                             </tr>
                                         </tfoot>
                                     </table>
-
-                                    <div id="balance-status" class="mt-2 fw-bold text-danger">✅ Seimbang</div>
+                                    @php
+                                        $isBalanced = $journal->details->sum('debit') == $journal->details->sum('credit');
+                                    @endphp
+                                    <div id="balance-status" 
+                                        class="mt-2 fw-bold {{ $isBalanced ? 'text-success' : 'text-danger' }}">
+                                        {{ $isBalanced ? '✅ Seimbang' : '❌ Tidak Seimbang' }}
+                                    </div>
 
                                 <div class="col-md-4 mb-3">
                                     <label for="description">Keterangan</label>
