@@ -65,9 +65,18 @@ public function index()
         ->rawColumns(['fullname'])
         ->toJson();
 }
-public function history(Employee $employee)
+public function history(Request $request, Employee $employee)
 {
     $attendances = Attendance::where('employee_id', $employee->id)
+        ->when($request->start_date, function ($q) use ($request) {
+            $q->whereDate('attendance_date', '>=', $request->start_date);
+        })
+        ->when($request->end_date, function ($q) use ($request) {
+            $q->whereDate('attendance_date', '<=', $request->end_date);
+        })
+        ->when($request->attendance_code, function ($q) use ($request) {
+            $q->where('attendance_code', $request->attendance_code);
+        })
         ->latest('attendance_date')
         ->get();
 

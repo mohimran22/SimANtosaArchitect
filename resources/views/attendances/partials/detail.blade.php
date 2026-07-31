@@ -6,7 +6,7 @@
 
         <div>
 
-            {{ $attendance->attendance_date }}
+            {{ \Carbon\Carbon::parse($attendance->attendance_date)->translatedFormat('d F Y') }}
 
         </div>
 

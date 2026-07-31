@@ -252,53 +252,77 @@
                 }
             });       
         });
-
-        $(document).on('click', '.btn-history', function () {
-
-            let employeeId = $(this).data('id');
+        function loadHistory(employeeId, startDate = '', endDate = '', status='') {
 
             let url = "{{ route('attendances.history', ':id') }}";
             url = url.replace(':id', employeeId);
 
-            $('#historyModal').modal('show');
-
             $('#history-content').html(`
-                <div class="text-center p-4">
-                    Loading...
+                <div class="text-center p-5">
+                    <div class="spinner-border"></div>
                 </div>
             `);
 
-            $.get(url, function (html) {
+            $.get(url, {
+                start_date: startDate,
+                end_date: endDate,
+                attendance_code: status
+            }, function (html) {
+
                 $('#history-content').html(html);
+                initHistoryFilter();
+
             });
 
+        }
+        function initHistoryFilter() {
+
+            if ($('#history_status').hasClass('select2-hidden-accessible')) {
+                $('#history_status').select2('destroy');
+            }
+
+            $('#history_status').select2({
+                placeholder: 'Semua Status',
+                allowClear: true,
+                width: '100%',
+                dropdownParent: $('#historyModal')
+            });
+
+        }
+        $(document).on('click', '.btn-history', function () {
+
+            let employeeId = $(this).data('id');
+
+            $('#historyModal').data('employee', employeeId);
+
+            loadHistory(employeeId);
+
+            $('#historyModal').modal('show');
+
         });
-        // $(document).on('click','.btn-detail',function(){
+        $(document).on('click','.btn-filter-history',function(){
 
-        //     let id=$(this).data('id');
+            let employeeId=$(this).data('employee');
 
-        //     $('#attendanceModal').modal('show');
+            loadHistory(
+                employeeId,
+                $('#history_start_date').val(),
+                $('#history_end_date').val(),
+                $('#history_status').val()
+            );
 
-        //     $('#attendanceModalContent').html(`
-        //         <div class="text-center p-5">
+        });
+        $(document).on('click','.btn-reset-history',function(){
 
-        //             <div class="spinner-border"></div>
+            $('#history_start_date').val('');
+            $('#history_end_date').val('');
+            $('#history_status').val('').trigger('change');
 
-        //         </div>
-        //     `);
-        //     let url = "{{ route('attendances.detail', ':id') }}";
-        //     url = url.replace(':id', id);
-        //     $.ajax({
-        //         url: url,
-        //         success:function(html){
+            let employeeId=$(this).data('employee');
 
-        //             $('#attendanceModalContent').html(html);
+            loadHistory(employeeId);
 
-        //         }
-
-        //     });
-
-        // });
+        });
         $(document).on('click', '.btn-detail', function () {
 
             let id = $(this).data('id');
@@ -321,18 +345,7 @@
 
             let employeeId = $(this).data('employee');
 
-            let url = "{{ route('attendances.history', ':id') }}";
-            url = url.replace(':id', employeeId);
-
-            $('#history-content').html(`
-                <div class="text-center p-5">
-                    <div class="spinner-border"></div>
-                </div>
-            `);
-
-            $.get(url, function (html) {
-                $('#history-content').html(html);
-            });
+            loadHistory(employeeId);
 
         });
         $(document).on('click','.btn-edit',function(){

@@ -29,7 +29,6 @@ function auditValue($field,$value){
 
         case 'attendance_date':
             return Carbon::parse($value)
-                ->locale('id')
                 ->translatedFormat('d F Y');
 
         case 'check_in':

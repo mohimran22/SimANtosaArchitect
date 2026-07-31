@@ -25,7 +25,61 @@
     </div>
 
 </div>
+<div class="row mb-3 align-items-end" id="historyFilter">
 
+    <div class="col-md-3">
+        <label class="form-label">Dari Tanggal</label>
+        <input
+            type="date"
+            class="form-control"
+            id="history_start_date"
+            value="{{ request('start_date') }}">
+    </div>
+
+    <div class="col-md-3">
+        <label class="form-label">Sampai Tanggal</label>
+        <input
+            type="date"
+            class="form-control"
+            id="history_end_date"
+            value="{{ request('end_date') }}">
+    </div>
+
+    <div class="col-md-2">
+        <label class="form-label">Status</label>
+
+        <select class="form-select" id="history_status">
+            <option value="">Semua Status</option>
+            <option value="H">Hadir</option>
+            <option value="TL A">TL A</option>
+            <option value="TL B">TL B</option>
+            <option value="TL C">TL C</option>
+            <option value="DL">Dinas Luar</option>
+            <option value="I">Izin</option>
+            <option value="S">Sakit</option>
+            <option value="C">Cuti</option>
+        </select>
+    </div>
+
+    <div class="col-md-2 d-grid">
+        <button
+            class="btn btn-dark btn-filter-history"
+            data-employee="{{ $employee->id }}">
+            Filter
+        </button>
+    </div>
+
+    <div class="col-md-2 d-grid">
+        <button
+            class="btn btn-outline-dark btn-reset-history"
+            data-employee="{{ $employee->id }}">
+            Reset
+        </button>
+    </div>
+
+</div>
+
+<hr>
 @if($attendances->isEmpty())
 
 <div class="empty">
@@ -118,7 +172,7 @@
 
         <td>
 
-            {{ \Carbon\Carbon::parse($attendance->attendance_date)->locale('id')->translatedFormat('d/M/Y') }}
+            {{ \Carbon\Carbon::parse($attendance->attendance_date)->translatedFormat('d F Y') }}
 
         </td>
 
