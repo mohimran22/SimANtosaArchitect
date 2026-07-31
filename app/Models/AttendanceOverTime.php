@@ -8,7 +8,9 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 class AttendanceOverTime extends Model
 {
     use HasUuids;
-
+    protected $table = 'attendance_overtimes';
+    protected $keyType = 'string';
+    public $incrementing = false;
     protected $fillable = [
         'attendance_id',
         'start_time',
