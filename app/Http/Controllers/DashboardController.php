@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AccountingAccount;
+use App\Models\AccountingJournalDetail;
 use App\Models\Attendance;
 use App\Models\Employee;
 use App\Models\Religion;
@@ -88,11 +90,22 @@ class DashboardController extends Controller
         $totalKaryawan = Employee::count();
 
         $belumHadir = $totalKaryawan - $hadir;
+        $groupedAccounts = $this->buildGroupedAccounts(function ($q) {
+            $q->whereDate('transaction_date', '<=', today());
+        });
+        $cashAccounts = collect(
+            data_get(
+                $groupedAccounts,
+                'AKTIVA.Aset Lancar - Kas & Bank.accounts',
+                []
+            )
+        );
         return view('dashboard.index', compact('user', 'incompleteProfile', 'incompleteAffiliator', 'attendanceToday', 'greeting', 'attendances',
         'hadir',
         'terlambat',
         'totalKaryawan',
-        'belumHadir'));
+        'belumHadir',
+        'cashAccounts'));
 
     }
 
@@ -162,4 +175,65 @@ class DashboardController extends Controller
         return redirect()->route('dashboard')
             ->with('success', 'Profil Anda berhasil diperbarui.');
     }
+    private function buildGroupedAccounts(\Closure $journalFilter)
+{
+    $accounts = AccountingAccount::where('is_parent', false)
+        ->get()
+        ->map(function ($account) use ($journalFilter) {
+
+            $debit = AccountingJournalDetail::query()
+                ->where('account_id', $account->id)
+                ->whereHas('journal', $journalFilter)
+                ->sum('debit');
+
+            $credit = AccountingJournalDetail::query()
+                ->where('account_id', $account->id)
+                ->whereHas('journal', $journalFilter)
+                ->sum('credit');
+
+            switch ($account->category) {
+
+                case 'AKTIVA':
+                case 'BEBAN':
+                    $balance = $debit - $credit;
+                    break;
+
+                case 'KEWAJIBAN':
+                case 'EKUITAS':
+                case 'PENDAPATAN':
+                    $balance = $credit - $debit;
+                    break;
+
+                default:
+                    $balance = $debit - $credit;
+            }
+
+            return [
+                'account_code' => $account->account_code,
+                'account_name' => $account->account_name,
+                'category'     => $account->category,
+                'sub_category' => $account->sub_category,
+                'debit'        => $debit,
+                'credit'       => $credit,
+                'balance'      => $balance,
+            ];
+        });
+
+    return $accounts
+        ->groupBy('category')
+        ->map(function ($catGroup) {
+
+            return $catGroup->groupBy('sub_category')->map(function ($subGroup) {
+
+                return [
+                    'accounts'         => $subGroup,
+                    'subtotalDebit'    => $subGroup->sum('debit'),
+                    'subtotalCredit'   => $subGroup->sum('credit'),
+                    'subtotalBalance'  => $subGroup->sum('balance'),
+                ];
+
+            });
+
+        });
+}
 }

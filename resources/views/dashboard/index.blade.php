@@ -4,47 +4,12 @@
 
 <div class="page-body">
     <div class="container-xl dashboard-container">
-        {{-- <div id="alertCarousel" class="position-relative">
-            <div class="overflow-hidden rounded-4 shadow-sm bg-white position-relative">
-                <div class="alert-wrapper d-flex">
-                    @if($incompleteProfile)
-                        <div class="alert alert-warning alert-dismissible fade show alert-item mb-0 flex-shrink-0 border-0 rounded-0" role="alert">
-                            <div class="d-flex align-items-center">
-                                <i class="ti ti-user-exclamation me-2 fs-3"></i>
-                                <div>
-                                    <strong>Profil Belum Lengkap</strong>
-                                    Lengkapi profilmu untuk unlock fitur penuh dan pelayanan yang lebih personal dari 
-                                    <b>Antosa Architect</b>.
-                                    <a href="{{ route('customer.profile') }}" class="alert-link text-warning fw-semibold">Lengkapi sekarang.</a>
-                                </div>
-                            </div>                  
-                        </div>
-                    @endif
-
-                    <div class="alert alert-warning alert-dismissible fade show alert-item mb-0 flex-shrink-0 border-0 rounded-0" role="alert">
-                        <div class="d-flex align-items-center">
-                            <i class="ti ti-exclamation-circle me-2 fs-3"></i>
-                            <div>
-                                <strong>Lengkapi Profil Affiliator!</strong>
-                                Beberapa data penting untuk peran <b>Affiliator</b> belum diisi.
-                                <a href="{{ route('affiliators.profile') }}" class="alert-link text-warning fw-semibold">Klik di sini untuk melengkapi.</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <button class="btn btn-sm btn-light border position-absolute top-50 end-0 translate-middle-y me-2 shadow-sm" 
-                    id="nextAlert" title="Berikutnya" style="border-radius: 50%;">
-                    <i class="ti ti-chevron-right fs-5"></i>
-                </button>
-            </div>
-        </div> --}}
         <div class="pt-2 pb-7 text-center">
             <h2 class="fw-bold g-4">
                 Selamat Datang {{ auth()->user()->fullname ?? 'Admin Utama' }} di Sistem Antosa Architect
             </h2>
         </div>
-        <div class="row g-4">
+        <div class="row g-4 mt-1">
             <div class="col-xl-4">
                 <div class="card shadow-sm border-0 rounded-4 mb-4">
                     <div class="card-body p-4">
@@ -78,60 +43,6 @@
 
                     </div>
                 </div>
-                {{-- <div class="card shadow-sm border-0 rounded-4">
-
-                    <div class="card-header bg-white">
-                        <h5 class="mb-0">
-                            Ringkasan Hari Ini
-                        </h5>
-                    </div>
-
-                    <div class="card-body">
-
-                        <div class="row g-3">
-
-                            <div class="col-6">
-                                <div class="border rounded-3 p-3 text-center">
-                                    <div class="fs-3 fw-bold text-success">
-                                        {{ $hadir }}
-                                    </div>
-                                    <small>Hadir</small>
-                                </div>
-                            </div>
-
-                            <div class="col-6">
-                                <div class="border rounded-3 p-3 text-center">
-                                    <div class="fs-3 fw-bold text-warning">
-                                        {{ $terlambat }}
-                                    </div>
-                                    <small>Terlambat</small>
-                                </div>
-                            </div>
-
-                            <div class="col-6">
-                                <div class="border rounded-3 p-3 text-center">
-                                    <div class="fs-3 fw-bold text-danger">
-                                        {{ $belumHadir }}
-                                    </div>
-                                    <small>Belum Hadir</small>
-                                </div>
-                            </div>
-
-                            {{-- <div class="col-6">
-                                <div class="border rounded-3 p-3 text-center">
-                                    <div class="fs-3 fw-bold text-info">
-                                        {{ $lembur }}
-                                    </div>
-                                    <small>Lembur</small>
-                                </div>
-                            </div> 
-
-                        </div>
-
-                    </div>
-
-                </div> --}}
-
             </div>
             <div class="col-xl-8">
                 <div class="card shadow-sm border-0 rounded-4">
@@ -230,37 +141,58 @@
                 </div>
             </div>
         </div>
-            <div class="row g-4 mt-1">
-                <div class="col-xl-6">
-                    <div class="card shadow-sm border-0 rounded-4 mb-4">
-                        <div class="card-header">
-                            <h5 class="mb-0">
-                                💰 Finance
-                            </h5>
-                        </div>
-
-                        <div class="card-body">
-                            {{-- Akun kas berjalan --}}
-                        </div>
+        <div class="row g-4">
+            <div class="col-xl-6">
+                <div class="card shadow-sm border-0 rounded-4 mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            💰 Finance
+                        </h5>
                     </div>
-                </div>
 
-                <div class="col-xl-6">
-                    <div class="card shadow-sm border-0 rounded-4">
-                        <div class="card-header">
-                            <h5 class="mb-0">
-                                📁 Project
-                            </h5>
-                        </div>
+                    <div class="card-body p-4">
 
-                        <div class="card-body">
-                            {{-- Project berjalan --}}
+                        @foreach($cashAccounts as $account)
+
+                            <div class="d-flex justify-content-between py-2 border-bottom">
+
+                                <div>
+                                    <strong>{{ $account['account_name'] }}</strong>
+                                </div>
+
+                                <div class="fw-bold">
+                                    Rp {{ number_format($account['balance'],0,',','.') }}
+                                </div>
+
+                            </div>
+
+                        @endforeach
+                        <div class="border-top pt-3 mt-3 d-flex justify-content-between">
+                            <strong>Total Kas & Bank</strong>
+
+                            <strong class="text-success">
+                                {{ number_format($cashAccounts->sum('balance'),2,',','.') }}
+                            </strong>
                         </div>
                     </div>
                 </div>
             </div>
-        
 
+            <div class="col-xl-6">
+                <div class="card shadow-sm border-0 rounded-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            📁 Project
+                        </h5>
+                    </div>
+
+                    <div class="card-body">
+                        {{-- Project berjalan --}}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
         <x-camera-modal
             modal-id="checkInModal"
             title="Absensi Masuk"
