@@ -34,7 +34,7 @@
     flex-shrink: 0;
 }
 .attendance-scroll{
-    max-height: 220px;   /* sekitar 3-4 baris */
+    max-height: 240px;   /* sekitar 3-4 baris */
     overflow-y: auto;
 }
 

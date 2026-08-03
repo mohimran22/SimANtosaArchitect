@@ -1,18 +1,11 @@
 @extends('tablar::page')
 
 @section('content')
-<div class="page-header d-print-none">
-    <div class="container-xl">
-        <div class="row align-items-center">
-            <div class="col-12 col-md-auto ms-auto d-print-none">
-            </div>
-        </div>
-    </div>
-</div>
+
 <div class="page-body">
     <div class="container-xl dashboard-container">
         <div class="pt-2 pb-7 text-center">
-            <h2 class="fw-bold g-4">
+            <h2 class="fw-bold">
                 Selamat Datang {{ auth()->user()->fullname ?? 'Admin Utama' }} di Sistem Antosa Architect
             </h2>
         </div>
@@ -187,15 +180,63 @@
 
             <div class="col-xl-6">
                 <div class="card shadow-sm border-0 rounded-4">
+
                     <div class="card-header">
-                        <h5 class="mb-0">
-                            📁 Project
-                        </h5>
+                        <h5 class="mb-0">📁 Project</h5>
                     </div>
 
                     <div class="card-body">
-                        {{-- Project berjalan --}}
+
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Total Project</span>
+                            <strong>{{ $totalProject }}</strong>
+                        </div>
+
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Sedang Dikerjakan</span>
+                            <strong class="text-primary">{{ $runningProject }}</strong>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <span>Sudah Selesai</span>
+                            <strong class="text-success">{{ $completedProject }}</strong>
+                        </div>
+
+                        <hr>
+
+                        <h6 class="mb-3">
+                            🏗 Progress Tertinggi
+                        </h6>
+
+                        @foreach($topProjects as $project)
+
+                            <div class="mb-3">
+
+                                <div class="d-flex justify-content-between">
+
+                                    <span class="fw-semibold">
+                                        {{ $project->project_name }}
+                                    </span>
+
+                                    <span>
+                                        {{ number_format($project->progress,0) }}%
+                                    </span>
+
+                                </div>
+
+                                <div class="progress mt-1" style="height:8px;">
+                                    <div
+                                        class="progress-bar"
+                                        style="width: {{ $project->progress }}%">
+                                    </div>
+                                </div>
+
+                            </div>
+
+                        @endforeach
+
                     </div>
+
                 </div>
             </div>
         </div>

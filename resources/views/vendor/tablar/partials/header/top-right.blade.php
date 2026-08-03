@@ -41,7 +41,7 @@
 
             
             <a href="{{ $profile_url }}" class="dropdown-item">
-                <i class="ti ti-users"></i> Edit Profil
+                <i class="ti ti-users"></i> Ubah Kata Kunci
             </a>
             <a class="dropdown-item"
                href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">

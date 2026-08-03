@@ -7,6 +7,7 @@ use App\Models\AccountingJournalDetail;
 use App\Models\Attendance;
 use App\Models\Employee;
 use App\Models\Religion;
+use App\Models\Project;
 use App\Models\Province;
 use App\Models\City;
 use App\Models\District;
@@ -102,12 +103,92 @@ class DashboardController extends Controller
         )->reject(function ($account) {
             return str_starts_with($account['account_code'], '1-106');
         });
+        // $cashAccounts = collect(
+        //     data_get(
+        //         $groupedAccounts,
+        //         'AKTIVA.Aset Lancar - Kas & Bank.accounts',
+        //         []
+        //     )
+        // );
+        // $totalProject = Project::count();
+
+        // $completedProject = Project::whereHas('buildItems.weeklyProgresses')
+        //     ->get()
+        //     ->filter(function ($project) {
+
+        //         $progress = $project->buildItems
+        //             ->flatMap->weeklyProgresses
+        //             ->max('progress_percent') ?? 0;
+
+        //         return $progress >= 100;
+        //     })
+        //     ->count();
+
+        // $runningProject = $totalProject - $completedProject;
+        // $topProjects = Project::with([
+        //     'buildItems.weeklyProgresses'
+        // ])->get()->map(function ($project) {
+
+        //     $targetBobot = $project->buildItems
+        //         ->sum('bobot_percent');
+
+        //     $realisasiBobot = $project->buildItems
+        //         ->flatMap->weeklyProgresses
+        //         ->sum('bobot_percent');
+
+        //     $project->progress = $targetBobot > 0
+        //         ? round(($realisasiBobot / $targetBobot) * 100, 1)
+        //         : 0;
+
+        //     return $project;
+        // })
+        // ->sortByDesc('progress')
+        // ->take(5)
+        // ->values();
+        $totalProject = Project::count();
+
+        $projects = Project::with([
+            'buildItems.weeklyProgresses'
+        ])->get();
+
+        $projects = $projects->map(function ($project) {
+
+            $target = $project->buildItems->sum('bobot_percent');
+
+            $realisasi = $project->buildItems
+                ->flatMap->weeklyProgresses
+                ->sum('bobot_percent');
+
+            $project->progress = $target > 0
+                ? round(($realisasi / $target) * 100, 1)
+                : 0;
+
+            return $project;
+        });
+
+        $completedProject = $projects
+            ->where('progress', '>=', 100)
+            ->count();
+
+        $runningProject = $projects
+            ->where('progress', '>', 0)
+            ->where('progress', '<', 100)
+            ->count();
+
+        $topProjects = $projects
+            ->sortByDesc('progress')
+            ->take(5)
+            ->values();
         return view('dashboard.index', compact('user', 'incompleteProfile', 'incompleteAffiliator', 'attendanceToday', 'greeting', 'attendances',
         'hadir',
         'terlambat',
         'totalKaryawan',
         'belumHadir',
-        'cashAccounts'));
+        'cashAccounts', 'totalProject',
+        'runningProject',
+        'completedProject',
+        'topProjects'
+        ));
 
     }
 
