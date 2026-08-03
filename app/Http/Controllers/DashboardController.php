@@ -99,7 +99,9 @@ class DashboardController extends Controller
                 'AKTIVA.Aset Lancar - Kas & Bank.accounts',
                 []
             )
-        );
+        )->reject(function ($account) {
+            return str_starts_with($account['account_code'], '1-106');
+        });
         return view('dashboard.index', compact('user', 'incompleteProfile', 'incompleteAffiliator', 'attendanceToday', 'greeting', 'attendances',
         'hadir',
         'terlambat',

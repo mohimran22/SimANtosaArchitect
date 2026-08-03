@@ -1,7 +1,14 @@
 @extends('tablar::page')
 
 @section('content')
-
+<div class="page-header d-print-none">
+    <div class="container-xl">
+        <div class="row align-items-center">
+            <div class="col-12 col-md-auto ms-auto d-print-none">
+            </div>
+        </div>
+    </div>
+</div>
 <div class="page-body">
     <div class="container-xl dashboard-container">
         <div class="pt-2 pb-7 text-center">
