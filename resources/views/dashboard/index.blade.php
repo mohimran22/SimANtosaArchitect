@@ -198,7 +198,8 @@
                                         </td>
 
                                         <td>
-                                            {{ $attendance->user->roles->name ?? '-' }}
+                                            {{-- {{ $attendance->employee->user->getRoleNames()->first() ?? '-' }} --}}
+                                            {{ $attendance->employee->user->getRoleNames()->join(', ') }}
                                         </td>
 
                                         <td>
@@ -208,21 +209,9 @@
                                         </td>
 
                                         <td>
-
-                                            @if($attendance->is_late)
-
-                                                <span class="badge bg-warning">
-                                                    Terlambat
-                                                </span>
-
-                                            @else
-
-                                                <span class="badge bg-success">
-                                                    Tepat Waktu
-                                                </span>
-
-                                            @endif
-
+                                            <span class="badge bg-primary">
+                                                {{ $attendance->attendance_code ?? '-' }}
+                                            </span>
                                         </td>
 
                                     </tr>

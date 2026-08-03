@@ -70,6 +70,7 @@ class DashboardController extends Controller
         };
         $attendances = Attendance::with([
                 'employee.user',
+                'overtime'
             ])
             ->whereDate('attendance_date', today())
             ->orderBy('check_in')

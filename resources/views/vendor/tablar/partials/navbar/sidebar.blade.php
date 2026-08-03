@@ -255,7 +255,7 @@ document.addEventListener('click', function(e){
 
 }
 
-@media (max-width: 576px) {
+@media (max-width: 991.98px) {
 
     .navbar.navbar-vertical.navbar-expand-lg {
 
