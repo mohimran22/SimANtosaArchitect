@@ -55,9 +55,13 @@ public function index(Request $request)
                 return $row->is_active ? 'Aktif' : 'Nonaktif';
             })
             ->editColumn('account_name', function ($row) {
-                    $url = route('accounting.edit', $row->id);
-                    $name = Str::title($row->account_name ?? '-');
-                    return '<a href="'.$url.'">'.e($name).'</a>';
+                $url = route('accounting.edit', $row->id);
+
+                $full = Str::title($row->account_name ?? '-');
+
+                return '<a href="'.$url.'" title="'.e($full).'">'
+                        .e(Str::limit($full, 35)).
+                    '</a>';
             })
 
             ->addColumn('aksi', function ($row) {

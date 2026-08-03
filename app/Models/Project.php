@@ -37,6 +37,10 @@ class Project extends Model
         'description'
     ];
 
+    public const TYPE_DESIGN = 1;
+    public const TYPE_RAB = 2;
+    public const TYPE_BUILD = 3;
+
     public function province()
     {
         return $this->belongsTo(Province::class);

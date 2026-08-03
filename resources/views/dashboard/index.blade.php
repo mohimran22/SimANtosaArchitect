@@ -11,7 +11,7 @@
         </div>
         <div class="row g-4 mt-1">
             <div class="col-xl-4">
-                <div class="card shadow-sm border-0 rounded-4 mb-4">
+                <div class="card shadow-sm border-0 rounded-4">
                     <div class="card-body p-4">
 
                         <div class="text-center mb-4">
@@ -142,42 +142,43 @@
             </div>
         </div>
         <div class="row g-4">
-            <div class="col-xl-6">
-                <div class="card shadow-sm border-0 rounded-4 mb-4">
-                    <div class="card-header">
-                        <h5 class="mb-0">
-                            💰 Finance
-                        </h5>
-                    </div>
+            @can('lihat akun-akuntansi')
+                <div class="col-xl-6">
+                    <div class="card shadow-sm border-0 rounded-4 mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                💰 Finance
+                            </h5>
+                        </div>
 
-                    <div class="card-body p-4">
+                        <div class="card-body p-4">
 
-                        @foreach($cashAccounts as $account)
+                            @foreach($cashAccounts as $account)
 
-                            <div class="d-flex justify-content-between py-2 border-bottom">
+                                <div class="d-flex justify-content-between py-2 border-bottom">
 
-                                <div>
-                                    <strong>{{ $account['account_name'] }}</strong>
+                                    <div>
+                                        <strong>{{ $account['account_name'] }}</strong>
+                                    </div>
+
+                                    <div class="fw-bold">
+                                        Rp {{ number_format($account['balance'],0,',','.') }}
+                                    </div>
+
                                 </div>
 
-                                <div class="fw-bold">
-                                    Rp {{ number_format($account['balance'],0,',','.') }}
-                                </div>
+                            @endforeach
+                            <div class="border-top pt-3 mt-3 d-flex justify-content-between">
+                                <strong>Total Kas & Bank</strong>
 
+                                <strong class="text-success">
+                                    {{ number_format($cashAccounts->sum('balance'),2,',','.') }}
+                                </strong>
                             </div>
-
-                        @endforeach
-                        <div class="border-top pt-3 mt-3 d-flex justify-content-between">
-                            <strong>Total Kas & Bank</strong>
-
-                            <strong class="text-success">
-                                {{ number_format($cashAccounts->sum('balance'),2,',','.') }}
-                            </strong>
                         </div>
                     </div>
                 </div>
-            </div>
-
+            @endcan
             <div class="col-xl-6">
                 <div class="card shadow-sm border-0 rounded-4">
 
@@ -187,28 +188,70 @@
 
                     <div class="card-body">
 
-                        <div class="d-flex justify-content-between mb-2">
-                            <span>Total Project</span>
-                            <strong>{{ $totalProject }}</strong>
-                        </div>
+                        <div class="row g-3 mb-4">
 
-                        <div class="d-flex justify-content-between mb-2">
-                            <span>Sedang Dikerjakan</span>
-                            <strong class="text-primary">{{ $runningProject }}</strong>
-                        </div>
+                            <div class="col-4">
+                                <div class="border rounded-3 p-3 text-center bg-light">
+                                    <div class="text-secondary small">Total Project</div>
+                                    <div class="fs-2 fw-bold">
+                                        {{ $totalProject }}
+                                    </div>
+                                </div>
+                            </div>
 
-                        <div class="d-flex justify-content-between">
-                            <span>Sudah Selesai</span>
-                            <strong class="text-success">{{ $completedProject }}</strong>
-                        </div>
+                            <div class="col-4">
+                                <div class="border rounded-3 p-3 text-center bg-light">
+                                    <div class="text-secondary small">Sedang Dikerjakan</div>
+                                    <div class="fs-2 fw-bold text-primary">
+                                        {{ $runningBuild }}
+                                    </div>
+                                </div>
+                            </div>
 
+                            <div class="col-4">
+                                <div class="border rounded-3 p-3 text-center bg-light">
+                                    <div class="text-secondary small">Sudah Selesai</div>
+                                    <div class="fs-2 fw-bold text-primary">
+                                        {{ $completedBuild }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-4">
+                                <div class="border rounded-3 p-3 text-center">
+                                    <div class="text-secondary small">Desain</div>
+                                    <div class="fs-3 fw-bold text-info">
+                                        {{ $totalDesign }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-4">
+                                <div class="border rounded-3 p-3 text-center">
+                                    <div class="text-secondary small">RAB</div>
+                                    <div class="fs-3 fw-bold text-warning">
+                                        {{ $totalRab }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-4">
+                                <div class="border rounded-3 p-3 text-center">
+                                    <div class="text-secondary small">Build</div>
+                                    <div class="fs-3 fw-bold text-success">
+                                        {{ $totalBuild }}
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
                         <hr>
 
                         <h6 class="mb-3">
                             🏗 Progress Tertinggi
                         </h6>
 
-                        @foreach($topProjects as $project)
+                        @foreach($topBuildProjects as $project)
 
                             <div class="mb-3">
 

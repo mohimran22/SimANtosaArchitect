@@ -94,64 +94,30 @@ class DashboardController extends Controller
         $groupedAccounts = $this->buildGroupedAccounts(function ($q) {
             $q->whereDate('transaction_date', '<=', today());
         });
+
         $cashAccounts = collect(
             data_get(
                 $groupedAccounts,
                 'AKTIVA.Aset Lancar - Kas & Bank.accounts',
                 []
             )
-        )->reject(function ($account) {
-            return str_starts_with($account['account_code'], '1-106');
-        });
-        // $cashAccounts = collect(
-        //     data_get(
-        //         $groupedAccounts,
-        //         'AKTIVA.Aset Lancar - Kas & Bank.accounts',
-        //         []
-        //     )
-        // );
-        // $totalProject = Project::count();
-
-        // $completedProject = Project::whereHas('buildItems.weeklyProgresses')
-        //     ->get()
-        //     ->filter(function ($project) {
-
-        //         $progress = $project->buildItems
-        //             ->flatMap->weeklyProgresses
-        //             ->max('progress_percent') ?? 0;
-
-        //         return $progress >= 100;
-        //     })
-        //     ->count();
-
-        // $runningProject = $totalProject - $completedProject;
-        // $topProjects = Project::with([
-        //     'buildItems.weeklyProgresses'
-        // ])->get()->map(function ($project) {
-
-        //     $targetBobot = $project->buildItems
-        //         ->sum('bobot_percent');
-
-        //     $realisasiBobot = $project->buildItems
-        //         ->flatMap->weeklyProgresses
-        //         ->sum('bobot_percent');
-
-        //     $project->progress = $targetBobot > 0
-        //         ? round(($realisasiBobot / $targetBobot) * 100, 1)
-        //         : 0;
-
-        //     return $project;
-        // })
-        // ->sortByDesc('progress')
-        // ->take(5)
-        // ->values();
+        );
+        
         $totalProject = Project::count();
 
-        $projects = Project::with([
-            'buildItems.weeklyProgresses'
-        ])->get();
+        $totalDesign = Project::where('project_type', Project::TYPE_DESIGN)->count();
 
-        $projects = $projects->map(function ($project) {
+        $totalRab = Project::where('project_type', Project::TYPE_RAB)->count();
+
+        $totalBuild = Project::where('project_type', Project::TYPE_BUILD)->count();
+
+        $buildProjects = Project::with([
+            'buildItems.weeklyProgresses'
+        ])
+        ->where('project_type', Project::TYPE_BUILD)
+        ->get();
+
+        $buildProjects = $buildProjects->map(function ($project) {
 
             $target = $project->buildItems->sum('bobot_percent');
 
@@ -166,16 +132,16 @@ class DashboardController extends Controller
             return $project;
         });
 
-        $completedProject = $projects
+        $completedBuild = $buildProjects
             ->where('progress', '>=', 100)
             ->count();
 
-        $runningProject = $projects
+        $runningBuild = $buildProjects
             ->where('progress', '>', 0)
             ->where('progress', '<', 100)
             ->count();
 
-        $topProjects = $projects
+        $topBuildProjects = $buildProjects
             ->sortByDesc('progress')
             ->take(5)
             ->values();
@@ -184,10 +150,10 @@ class DashboardController extends Controller
         'terlambat',
         'totalKaryawan',
         'belumHadir',
-        'cashAccounts', 'totalProject',
-        'runningProject',
-        'completedProject',
-        'topProjects'
+        'cashAccounts', 'totalProject', 'totalDesign', 'totalRab', 'totalBuild',
+        'runningBuild',
+        'completedBuild',
+        'topBuildProjects'
         ));
 
     }

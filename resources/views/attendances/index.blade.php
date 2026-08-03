@@ -166,7 +166,22 @@
                         name:'fullname'
                     },
 
-                    { data: 'roles', name: 'roles', defaultContent:'-' },  
+                    { data: 'roles', name: 'roles', defaultContent:'-',
+                        render: function(data) {
+
+                            if (!data) return '';
+
+                            if (data.length > 35) {
+                                return `
+                                    <span title="${data}">
+                                        ${data.substring(0,35)}...
+                                    </span>
+                                `;
+                            }
+
+                            return data;
+                        }
+                    },  
 
                     {
                         data:'h'
