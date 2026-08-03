@@ -44,17 +44,14 @@
                 Selamat Datang {{ auth()->user()->fullname ?? 'Admin Utama' }} di Sistem Antosa Architect
             </h2>
         </div>
-        @if(auth()->user()->isInternal())
-
-        <div class="row mb-4">
-            <div class="col-lg-6 col-xl-5 mx-auto">
-
-                <div class="card shadow-sm border-0 rounded-4">
+        <div class="row g-4">
+            <div class="col-xl-4">
+                <div class="card shadow-sm border-0 rounded-4 mb-4">
                     <div class="card-body p-4">
 
                         <div class="text-center mb-4">
                             <h3 class="mb-1">
-                                Selamat Pagi,
+                                {{ $greeting }},
                                 <strong>{{ auth()->user()->fullname }}</strong>
                             </h3>
 
@@ -78,128 +75,242 @@
                         @else
                             @include('attendances.partials.overtime-finished')
                         @endif
+
                     </div>
                 </div>
+                {{-- <div class="card shadow-sm border-0 rounded-4">
 
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">
+                            Ringkasan Hari Ini
+                        </h5>
+                    </div>
+
+                    <div class="card-body">
+
+                        <div class="row g-3">
+
+                            <div class="col-6">
+                                <div class="border rounded-3 p-3 text-center">
+                                    <div class="fs-3 fw-bold text-success">
+                                        {{ $hadir }}
+                                    </div>
+                                    <small>Hadir</small>
+                                </div>
+                            </div>
+
+                            <div class="col-6">
+                                <div class="border rounded-3 p-3 text-center">
+                                    <div class="fs-3 fw-bold text-warning">
+                                        {{ $terlambat }}
+                                    </div>
+                                    <small>Terlambat</small>
+                                </div>
+                            </div>
+
+                            <div class="col-6">
+                                <div class="border rounded-3 p-3 text-center">
+                                    <div class="fs-3 fw-bold text-danger">
+                                        {{ $belumHadir }}
+                                    </div>
+                                    <small>Belum Hadir</small>
+                                </div>
+                            </div>
+
+                            {{-- <div class="col-6">
+                                <div class="border rounded-3 p-3 text-center">
+                                    <div class="fs-3 fw-bold text-info">
+                                        {{ $lembur }}
+                                    </div>
+                                    <small>Lembur</small>
+                                </div>
+                            </div> 
+
+                        </div>
+
+                    </div>
+
+                </div> --}}
+
+            </div>
+            <div class="col-xl-8">
+                <div class="card shadow-sm border-0 rounded-4">
+                    <div class="card-header bg-white d-flex justify-content-between">
+
+                            <div>
+                                <h4 class="mb-0">
+                                    Daftar Karyawan yang Hadir Hari Ini   
+                                </h4>
+
+                                <small class="text-secondary">
+                                    {{ now()->translatedFormat('d F Y') }}
+                                </small>
+                            </div>
+
+                            <span class="badge bg-success">
+                                {{ $attendances->count() }} Orang
+                            </span>
+
+                        </div>
+
+                        <div class="card-body p-0">
+
+                            <div class="attendance-scroll">
+
+                                <table class="table table-hover align-middle mb-0">
+
+                                    <thead>
+
+                                    <tr>
+                                        <th>Foto</th>
+                                        <th>Nama</th>
+                                        <th>Jabatan</th>
+                                        <th>Jam Masuk</th>
+                                        <th>Status</th>
+                                    </tr>
+
+                                    </thead>
+
+                                    <tbody>
+
+                                    @foreach($attendances as $attendance)
+
+                                    <tr>
+
+                                        <td width="70">
+
+                                            <img
+                                                src="{{ $attendance->employee->user->photo_url }}"
+                                                class="avatar-img">
+
+                                        </td>
+
+                                        <td>
+
+                                            <div class="fw-semibold">
+                                                {{ $attendance->employee->user->fullname ?? '-' }}
+                                            </div>
+
+                                            <small class="text-secondary">
+                                                {{ $attendance->employee->employee_code }}
+                                            </small>
+
+                                        </td>
+
+                                        <td>
+                                            {{ $attendance->user->roles->name ?? '-' }}
+                                        </td>
+
+                                        <td>
+
+                                            {{ \Carbon\Carbon::parse($attendance->check_in)->format('H:i') }}
+
+                                        </td>
+
+                                        <td>
+
+                                            @if($attendance->is_late)
+
+                                                <span class="badge bg-warning">
+                                                    Terlambat
+                                                </span>
+
+                                            @else
+
+                                                <span class="badge bg-success">
+                                                    Tepat Waktu
+                                                </span>
+
+                                            @endif
+
+                                        </td>
+
+                                    </tr>
+
+                                    @endforeach
+
+                                    </tbody>
+
+                                </table>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
             </div>
         </div>
+            <div class="row g-4 mt-1">
+                <div class="col-xl-6">
+                    <div class="card shadow-sm border-0 rounded-4 mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                💰 Finance
+                            </h5>
+                        </div>
 
-        @endif
-        {{-- <div class="modal fade" id="checkInModal">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-
-                    <div class="modal-header">
-                        <h5>Absensi Masuk</h5>
+                        <div class="card-body">
+                            {{-- Akun kas berjalan --}}
+                        </div>
                     </div>
+                </div>
 
-                    <form action="{{ route('attendances.check-in') }}" method="POST">
-                        @csrf
-                        <div class="modal-body text-center">
-                            <video id="camera" autoplay playsinline class="img-fluid rounded border"></video>
-                            <canvas
-                                id="canvas"
-                                class="d-none">
-                            </canvas>
-
-                            <img id="preview" class="img-fluid rounded border d-none">
-                            <input type="hidden" id="photo" name="photo">
-                            <input type="hidden" name="check_in_lat" id="check_in_lat">
-                            <input type="hidden" name="check_in_lng" id="check_in_lng">
+                <div class="col-xl-6">
+                    <div class="card shadow-sm border-0 rounded-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                📁 Project
+                            </h5>
                         </div>
 
-                        <div class="modal-footer justify-content-center">
-                            <button type="button" id="capture" class="btn btn-dark">
-                                📸 Ambil Foto
-                            </button>
-                            <button type="button" id="retake" class="btn btn-secondary d-none">
-                                🔄 Ambil Ulang
-                            </button>
-                            <button type="submit" id="confirm" class="btn btn-success d-none">
-                                ✅ Konfirmasi Hadir
-                            </button>
+                        <div class="card-body">
+                            {{-- Project berjalan --}}
                         </div>
-                    </form>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="modal fade" id="checkOutModal">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
+        
 
-                    <div class="modal-header">
-                        <h5>Absensi Pulang</h5>
-                    </div>
+        <x-camera-modal
+            modal-id="checkInModal"
+            title="Absensi Masuk"
+            :action="route('attendances.check-in')"
+            prefix="checkIn"
+            lat-name="check_in_lat"
+            lng-name="check_in_lng"
+            confirm-text="✅ Konfirmasi Hadir"
+        />
 
-                    <form action="{{ route('attendances.check-out') }}" method="POST">
-                        @csrf
-                        <div class="modal-body text-center">
-                            <video id="cameraCheckout" autoplay playsinline class="img-fluid rounded border"></video>
-                            <canvas
-                                id="canvasCheckout"
-                                class="d-none">
-                            </canvas>
+        <x-camera-modal
+            modal-id="checkOutModal"
+            title="Absensi Pulang"
+            :action="route('attendances.check-out')"
+            prefix="checkOut"
+            lat-name="check_out_lat"
+            lng-name="check_out_lng"
+            confirm-text="✅ Konfirmasi Pulang"
+        />
 
-                            <img id="previewCheckout" class="img-fluid rounded border d-none">
-                            <input type="hidden" id="photoCheckOut" name="photo">
-                            <input type="hidden" name="check_out_lat" id="check_out_lat">
-                            <input type="hidden" name="check_out_lng" id="check_out_lng">
-                        </div>
+        <x-camera-modal
+            modal-id="startOvertimeModal"
+            title="Mulai Lembur"
+            :action="route('attendance-overtimes.start')"
+            prefix="startOvertime"
+            lat-name="start_lat"
+            lng-name="start_lng"
+            confirm-text="✅ Mulai Lembur"
+        />
 
-                        <div class="modal-footer justify-content-center">
-                            <button type="button" id="captureCheckout" class="btn btn-dark">
-                                📸 Ambil Foto
-                            </button>
-                            <button type="button" id="retakeCheckout" class="btn btn-secondary d-none">
-                                🔄 Ambil Ulang
-                            </button>
-                            <button type="submit" id="confirmCheckout" class="btn btn-success d-none">
-                                ✅ Konfirmasi Pulang
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div> --}}
-<x-camera-modal
-    modal-id="checkInModal"
-    title="Absensi Masuk"
-    :action="route('attendances.check-in')"
-    prefix="checkIn"
-    lat-name="check_in_lat"
-    lng-name="check_in_lng"
-    confirm-text="✅ Konfirmasi Hadir"
-/>
-
-<x-camera-modal
-    modal-id="checkOutModal"
-    title="Absensi Pulang"
-    :action="route('attendances.check-out')"
-    prefix="checkOut"
-    lat-name="check_out_lat"
-    lng-name="check_out_lng"
-    confirm-text="✅ Konfirmasi Pulang"
-/>
-
-<x-camera-modal
-    modal-id="startOvertimeModal"
-    title="Mulai Lembur"
-    :action="route('attendance-overtimes.start')"
-    prefix="startOvertime"
-    lat-name="start_lat"
-    lng-name="start_lng"
-    confirm-text="✅ Mulai Lembur"
-/>
-
-<x-camera-modal
-    modal-id="finishOvertimeModal"
-    title="Selesai Lembur"
-    :action="route('attendance-overtimes.finish')"
-    prefix="finishOvertime"
-    lat-name="end_lat"
-    lng-name="end_lng"
-    confirm-text="✅ Selesai Lembur"
-/>
+        <x-camera-modal
+            modal-id="finishOvertimeModal"
+            title="Selesai Lembur"
+            :action="route('attendance-overtimes.finish')"
+            prefix="finishOvertime"
+            lat-name="end_lat"
+            lng-name="end_lng"
+            confirm-text="✅ Selesai Lembur"
+        />
     </div>
 </div>
 @endsection
@@ -248,166 +359,7 @@ function updateClock() {
 
 updateClock();
 setInterval(updateClock, 1000);
-// let stream;
-// const modal = document.getElementById('checkInModal');
-// const modalOut = document.getElementById('checkOutModal');
 
-// const camera = document.getElementById('camera');
-// const canvas = document.getElementById('canvas');
-// const preview = document.getElementById('preview');
-// const capture = document.getElementById('capture');
-// const retake = document.getElementById('retake');
-// const confirm = document.getElementById('confirm');
-// const photo = document.getElementById('photo');
-// const latInput = document.getElementById('check_in_lat');
-// const lngInput = document.getElementById('check_in_lng');
-
-// const cameraOut = document.getElementById('cameraCheckout');
-// const canvasOut = document.getElementById('canvasCheckout');
-// const previewOut = document.getElementById('previewCheckout');
-// const captureOut = document.getElementById('captureCheckout');
-// const retakeOut = document.getElementById('retakeCheckout');
-// const confirmOut = document.getElementById('confirmCheckout');
-// const photoOut = document.getElementById('photoCheckOut');
-// const latOutInput = document.getElementById('check_out_lat');
-// const lngOutInput = document.getElementById('check_out_lng');
-
-// if(modal){
-//     modal.addEventListener('shown.bs.modal', async () => {
-//         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-
-//             alert("Browser tidak mendukung Camera API.");
-
-//             return;
-//         }
-//         stream = await navigator.mediaDevices.getUserMedia({
-//             video:{
-//                 facingMode:"user"
-//             }
-//         });
-//         camera.srcObject = stream;
-//         if ('geolocation' in navigator) {
-
-//             navigator.geolocation.getCurrentPosition(
-//                 (position) => {
-//                     latInput.value = position.coords.latitude;
-//                     lngInput.value = position.coords.longitude;
-//                 },
-//                 (err) => {
-//                     console.error(err);
-//                     alert("Tidak bisa mendapatkan lokasi.");
-//                 },
-//                 {
-//                     enableHighAccuracy: true,
-//                     timeout: 10000,
-//                     maximumAge: 0
-//                 }
-//             );
-
-//         } else {
-//             alert("Browser tidak mendukung Geolocation.");
-//         }
-//     });
-// }
-// capture.addEventListener('click',()=>{
-
-//     canvas.width = camera.videoWidth;
-//     canvas.height = camera.videoHeight;
-
-//     canvas.getContext('2d')
-//         .drawImage(camera,0,0);
-
-//     const image = canvas.toDataURL('image/jpeg');
-
-//     photo.value = image;
-//     preview.src = image;
-//     preview.classList.remove('d-none');
-//     camera.classList.add('d-none');
-//     capture.classList.add('d-none');
-//     retake.classList.remove('d-none');
-//     confirm.classList.remove('d-none');
-// });
-// retake.addEventListener('click',()=>{
-//     photo.value = '';
-//     preview.classList.add('d-none');
-
-//     camera.classList.remove('d-none');
-
-//     capture.classList.remove('d-none');
-
-//     retake.classList.add('d-none');
-
-//     confirm.classList.add('d-none');
-
-// });
-// if(modalOut){
-//     modalOut.addEventListener('shown.bs.modal', async () => {
-//         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-
-//             alert("Browser tidak mendukung Camera API.");
-
-//             return;
-//         }
-//         stream = await navigator.mediaDevices.getUserMedia({
-//             video:{
-//                 facingMode:"user"
-//             }
-//         });
-//         cameraOut.srcObject = stream;
-//         if ('geolocation' in navigator) {
-
-//             navigator.geolocation.getCurrentPosition(
-//                 (position) => {
-//                     latOutInput.value = position.coords.latitude;
-//                     lngOutInput.value = position.coords.longitude;
-//                 },
-//                 (err) => {
-//                     console.error(err);
-//                     alert("Tidak bisa mendapatkan lokasi.");
-//                 },
-//                 {
-//                     enableHighAccuracy: true,
-//                     timeout: 10000,
-//                     maximumAge: 0
-//                 }
-//             );
-
-//         } else {
-//             alert("Browser tidak mendukung Geolocation.");
-//         }
-//     });
-// }
-// captureOut.addEventListener('click',()=>{
-
-//     canvasOut.width = cameraOut.videoWidth;
-//     canvasOut.height = cameraOut.videoHeight;
-
-//     canvasOut.getContext('2d')
-//         .drawImage(cameraOut,0,0);
-
-//     const image = canvasOut.toDataURL('image/jpeg');
-
-//     photoOut.value = image;
-//     previewOut.src = image;
-//     previewOut.classList.remove('d-none');
-//     cameraOut.classList.add('d-none');
-//     captureOut.classList.add('d-none');
-//     retakeOut.classList.remove('d-none');
-//     confirmOut.classList.remove('d-none');
-// });
-// retake.addEventListener('click',()=>{
-//     photoOut.value = '';
-//     previewOut.classList.add('d-none');
-
-//     cameraOut.classList.remove('d-none');
-
-//     captureOut.classList.remove('d-none');
-
-//     retakeOut.classList.add('d-none');
-
-//     confirmOut.classList.add('d-none');
-
-// });
 let stream;
 
 function initCamera(config) {

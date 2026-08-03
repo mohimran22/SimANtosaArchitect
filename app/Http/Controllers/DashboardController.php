@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Attendance;
+use App\Models\Employee;
 use App\Models\Religion;
 use App\Models\Province;
 use App\Models\City;
@@ -22,33 +23,33 @@ class DashboardController extends Controller
     {
         $user = auth()->user();
 
-    $requiredCustomerFields = [
-        'fullname',
-        'gender',
-        'birth_place',
-        'birth_date',
-        'religion_id',
-        'identity_number',
-        'phone',
-        'address',
-        'province_id',
-        'city_id',
-        'district_id',
-        'sub_district_id',
-        'postal_code_id',
-        'photo',
-    ];
+        $requiredCustomerFields = [
+            'fullname',
+            'gender',
+            'birth_place',
+            'birth_date',
+            'religion_id',
+            'identity_number',
+            'phone',
+            'address',
+            'province_id',
+            'city_id',
+            'district_id',
+            'sub_district_id',
+            'postal_code_id',
+            'photo',
+        ];
 
-    // 🔍 Daftar field penting untuk affiliator (kalau user juga punya role affiliator)
-    $requiredAffiliatorFields = [
-        'bank_id',
-        'account_number',
-        'account_holder',
-    ];
+        // 🔍 Daftar field penting untuk affiliator (kalau user juga punya role affiliator)
+        $requiredAffiliatorFields = [
+            'bank_id',
+            'account_number',
+            'account_holder',
+        ];
 
-    // Cek apakah ada field yang kosong di data user
-    $incompleteProfile = collect($requiredCustomerFields)->contains(fn($field) => empty($user->$field));
-    $incompleteAffiliator = collect($requiredAffiliatorFields)->contains(fn($field) => empty($user->$field));
+
+        $incompleteProfile = collect($requiredCustomerFields)->contains(fn($field) => empty($user->$field));
+        $incompleteAffiliator = collect($requiredAffiliatorFields)->contains(fn($field) => empty($user->$field));
 
         $profileComplete = !$incompleteProfile && !$incompleteAffiliator;
         $attendanceToday = null;
@@ -59,7 +60,38 @@ class DashboardController extends Controller
                 ->whereDate('attendance_date', today())
                 ->first();
         }
-        return view('dashboard.index', compact('user', 'incompleteProfile', 'incompleteAffiliator', 'attendanceToday'));
+        $hour = now()->hour;
+
+        $greeting = match (true) {
+            $hour >= 4 && $hour < 10  => 'Selamat Pagi',
+            $hour >= 10 && $hour < 15 => 'Selamat Siang',
+            $hour >= 15 && $hour < 18 => 'Selamat Sore',
+            default                   => 'Selamat Malam',
+        };
+        $attendances = Attendance::with([
+                'employee.user',
+            ])
+            ->whereDate('attendance_date', today())
+            ->orderBy('check_in')
+            ->get();
+
+        // Statistik sederhana
+        $hadir = $attendances->count();
+
+        // Misalnya status terlambat disimpan di attendance_code
+        $terlambat = $attendances->filter(function ($item) {
+            return in_array($item->attendance_code, ['TL A', 'TL B', 'TL C']);
+        })->count();
+
+        // Total seluruh karyawan aktif
+        $totalKaryawan = Employee::count();
+
+        $belumHadir = $totalKaryawan - $hadir;
+        return view('dashboard.index', compact('user', 'incompleteProfile', 'incompleteAffiliator', 'attendanceToday', 'greeting', 'attendances',
+        'hadir',
+        'terlambat',
+        'totalKaryawan',
+        'belumHadir'));
 
     }
 

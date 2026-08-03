@@ -4,7 +4,7 @@ namespace App\Services;
 
 use App\Models\Attendance;
 use App\Models\Employee;
-use App\Models\AttendanceOvertime;
+use App\Models\AttendanceOverTime;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -28,7 +28,7 @@ class AttendanceOvertimeService
 
         DB::transaction(function () use ($attendance, $request) {
 
-            AttendanceOvertime::create([
+            AttendanceOverTime::create([
 
                 'id' => Str::uuid(),
 
@@ -117,7 +117,7 @@ class AttendanceOvertimeService
     }
         public function totalMinutes(Employee $employee, int $month, int $year): int
     {
-        return AttendanceOvertime::query()
+        return AttendanceOverTime::query()
 
             ->whereHas('attendance', function ($q) use ($employee, $month, $year) {
 
