@@ -7,6 +7,9 @@ use Carbon\Carbon;
 
 class AttendanceSummaryService
 {
+    public function __construct(
+        protected AttendanceOvertimeService $overtimeService
+    ) {}
     public function summaries(int $month, int $year): array
     {
         $employees = Employee::with([
@@ -35,7 +38,7 @@ class AttendanceSummaryService
                 'C' => 0,
                 'A' => 0,
 
-                'total_hari_kerja' => $workingDays,
+                'total_hari_kerja' => 0,
                 'total_hari_kehadiran' => 0,
 
                 'kehadiran' => 0,
@@ -75,27 +78,41 @@ class AttendanceSummaryService
                         break;
                 }
 
-                if ($attendance->attendance_code) {
-
-                    $summary['total_hari_kehadiran']++;
-
-                }
-
-                if ($attendance->work_minutes > 480) {
-
-                    $summary['total_jam_lembur'] +=
-                        ($attendance->work_minutes - 480);
-
-                }
             }
 
-            if ($workingDays > 0) {
+            $summary['total_hari_kerja'] =
+                collect([
+                    'H',
+                    'TL A',
+                    'TL B',
+                    'TL C',
+                    'DL',
+                    'I',
+                    'S',
+                    'C',
+                    'A',
+                ])->sum(fn ($code) => $summary[$code]);
 
-                $summary['kehadiran'] = round(
-                    ($summary['total_hari_kehadiran'] / $workingDays) * 100,
-                    1
+            $summary['total_hari_kehadiran'] =
+                $summary['H']
+                + $summary['TL A']
+                + $summary['TL B']
+                + $summary['TL C']
+                + $summary['DL'];
+
+            $summary['total_jam_lembur'] =
+                $this->overtimeService->totalMinutes(
+                    $employee,
+                    $month,
+                    $year
                 );
 
+            if ($summary['total_hari_kerja'] > 0) {
+                $summary['kehadiran'] = round(
+                    ($summary['total_hari_kehadiran']
+                        / $summary['total_hari_kerja']) * 100,
+                    1
+                );
             }
 
             if ($summary['total_hari_kehadiran'] > 0) {

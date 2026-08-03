@@ -586,9 +586,9 @@ public function exportPDF(Request $request)
         'totalDebit',
         'totalCredit'
     ))
-    ->setPaper('a4', 'landscape');
+    ->setPaper('a4', 'portrait');
 
-    return $pdf->stream('Jurnal-Umum.pdf');
+    return $pdf->stream('Jurnal Umum '.$startDate.'_to_'.$endDate.'.pdf');
 }
 
 public function ledger(Request $request)
@@ -673,9 +673,9 @@ public function exportLedgerPdf(Request $request)
     // 🔹 Load view PDF
     $pdf = Pdf::loadView('journals.ledgerpdf', compact(
         'ledger', 'startDate', 'endDate'
-    ))->setPaper('a4', 'landscape');
+    ))->setPaper('a4', 'portrait');
 
-    return $pdf->stream('ledger_'.$startDate.'_to_'.$endDate.'.pdf');
+    return $pdf->stream('Buku Besar '.$startDate.'_to_'.$endDate.'.pdf');
 }
 
 public function trialBalance(Request $request)
@@ -835,7 +835,7 @@ public function print(AccountingJournal $journal)
     $pdf = Pdf::loadView('journals.print', compact('journal'))
         ->setPaper('a4', 'landscape'); // bisa juga landscape
 
-    return $pdf->stream('Jurnal-Harian-' . $journal->journal_code . '.pdf');
+    return $pdf->stream('Jurnal Harian ' . $journal->journal_code . '.pdf');
 }
 
 public function balanceSheet(Request $request)

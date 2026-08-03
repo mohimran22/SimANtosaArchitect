@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Attendance;
+use App\Models\Employee;
 use App\Models\AttendanceOvertime;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -113,5 +114,21 @@ class AttendanceOvertimeService
         );
 
         return $filename;
+    }
+        public function totalMinutes(Employee $employee, int $month, int $year): int
+    {
+        return AttendanceOvertime::query()
+
+            ->whereHas('attendance', function ($q) use ($employee, $month, $year) {
+
+                $q->where('employee_id', $employee->id)
+                  ->whereMonth('attendance_date', $month)
+                  ->whereYear('attendance_date', $year);
+
+            })
+
+            ->where('status', 'approved')
+
+            ->sum('work_minutes');
     }
 }

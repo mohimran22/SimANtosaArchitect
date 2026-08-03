@@ -7,8 +7,6 @@
         @page {
             margin: 140px 30px 110px 30px;
         }
-
-        /* ================= BODY ================= */
         body {
             font-family: DejaVu Sans, sans-serif;
             font-size: 12px;
@@ -28,7 +26,7 @@
 
         .footer {
             position: fixed;
-            bottom: -70px;
+            bottom: -90px;
             left: 0;
             right: 0;
             width: 100%;
@@ -36,7 +34,6 @@
 
         h2 {
             text-align: center;
-            margin-top: 30px;
         }
 
         table {
