@@ -44,6 +44,7 @@
                     </div>
                 </div>
             </div>
+            @can('lihat daftar absensi')
             <div class="col-xl-8">
                 <div class="card shadow-sm border-0 rounded-4">
                     <div class="card-header bg-white d-flex justify-content-between">
@@ -140,6 +141,7 @@
                     </div>
                 </div>
             </div>
+            @endcan
         </div>
         <div class="row g-4">
             @can('lihat akun-akuntansi')

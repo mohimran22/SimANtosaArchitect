@@ -264,11 +264,6 @@
     }
 
 
-    .mobile-fab{
-        display:none !important;
-    }
-
-
     .sticky-col,
     .sticky-last {
         position: static !important;
