@@ -173,6 +173,7 @@
     font-weight:700;
     margin-top:8px;
 }
+@media (min-width: 992px){
 .footer.footer-transparent {
     display: flex;
     margin-left: 260px;
@@ -186,4 +187,5 @@
     padding-right: 18px;
     margin-left: 0 !important;
     margin-right: 0 !important;
+}
 }

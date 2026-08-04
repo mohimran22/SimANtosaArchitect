@@ -329,4 +329,7 @@
     .history-action .btn{
         width:100%;
     }
+    .footer.footer-transparent{
+        padding: 20px 0px !important;
+    }
 }
