@@ -1249,23 +1249,3 @@ input[type=number]::-webkit-outer-spin-button {
     text-align: center;
     vertical-align: middle;
 }
-.finance-list{
-    max-height: 340px;
-    overflow-y: auto;
-    overflow-x: hidden;
-    -webkit-overflow-scrolling: touch;
-    padding-right: 6px;
-}
-
-.finance-list::-webkit-scrollbar{
-    width:6px;
-}
-
-.finance-list::-webkit-scrollbar-thumb{
-    background:#d0d7de;
-    border-radius:10px;
-}
-
-.finance-list::-webkit-scrollbar-track{
-    background:transparent;
-}

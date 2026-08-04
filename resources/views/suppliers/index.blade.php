@@ -62,7 +62,7 @@
     </div>
 @can('tambah data supplier')
 <a href="{{ route('suppliers.create') }}"
-   class="mobile-fab">
+   class="mobile-fab d-md-none">
 
     <svg xmlns="http://www.w3.org/2000/svg"
          width="26"

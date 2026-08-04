@@ -58,6 +58,63 @@
     z-index: 2;
     border-bottom: 1px solid #dee2e6;
 }
+.finance-scroll{
+    display:flex;
+    gap:16px;
+    overflow-x:auto;
+    padding-bottom:10px;
+
+    scroll-snap-type:x mandatory;
+    -webkit-overflow-scrolling:touch;
+}
+
+.finance-scroll::-webkit-scrollbar{
+    height:8px;
+}
+
+.finance-scroll::-webkit-scrollbar-thumb{
+    background:#d0d7de;
+    border-radius:20px;
+}
+
+.finance-card{
+    min-width:230px;
+    flex:0 0 auto;
+
+    padding:18px;
+    border-radius:18px;
+
+    background:#fff;
+    border:1px solid #e9ecef;
+
+    box-shadow:0 8px 20px rgba(0,0,0,.05);
+
+    scroll-snap-align:start;
+
+    transition:.25s;
+}
+
+.finance-card:hover{
+    transform:translateY(-4px);
+    box-shadow:0 12px 28px rgba(0,0,0,.12);
+}
+
+.finance-icon{
+    font-size:32px;
+    margin-bottom:10px;
+}
+
+.finance-name{
+    font-weight:600;
+    color:#6c757d;
+    margin-bottom:12px;
+}
+
+.finance-balance{
+    font-size:22px;
+    font-weight:700;
+    color:#0d6efd;
+}
 .hover-card{
     transition: all .2s ease;
     cursor: pointer;
@@ -67,4 +124,65 @@
     transform: translateY(-3px);
     box-shadow: 0 .5rem 1rem rgba(0,0,0,.15);
     background: #f8f9fa;
+}
+.project-scroll{
+    display:flex;
+    gap:16px;
+    overflow-x:auto;
+    padding-bottom:8px;
+
+    scroll-snap-type:x mandatory;
+    -webkit-overflow-scrolling:touch;
+}
+
+.project-scroll::-webkit-scrollbar{
+    height:8px;
+}
+
+.project-scroll::-webkit-scrollbar-thumb{
+    background:#d6d6d6;
+    border-radius:30px;
+}
+
+.project-card{
+
+    min-width:170px;
+    flex:0 0 auto;
+
+    padding:18px;
+
+    border:1px solid #ececec;
+    border-radius:18px;
+
+    background:#fff;
+
+    box-shadow:0 6px 20px rgba(0,0,0,.05);
+
+    transition:.25s;
+
+    scroll-snap-align:start;
+}
+
+.project-card:hover{
+
+    transform:translateY(-5px);
+
+    box-shadow:0 10px 28px rgba(0,0,0,.12);
+
+}
+
+.project-icon{
+    font-size:28px;
+    margin-bottom:10px;
+}
+
+.project-title{
+    color:#6c757d;
+    font-size:.9rem;
+}
+
+.project-number{
+    font-size:2rem;
+    font-weight:700;
+    margin-top:8px;
 }

@@ -91,6 +91,8 @@ class DashboardController extends Controller
         $totalKaryawan = Employee::count();
 
         $belumHadir = $totalKaryawan - $hadir;
+        $awalBulan = now()->startOfMonth();
+        $akhirBulan = now()->endOfMonth();
         $groupedAccounts = $this->buildGroupedAccounts(function ($q) {
             $q->whereDate('transaction_date', '<=', today());
         });
@@ -120,6 +122,13 @@ class DashboardController extends Controller
             ->whereHas('journal', function ($q) {
                 $q->whereMonth('transaction_date', now()->month)
                 ->whereYear('transaction_date', now()->year);
+            })
+            ->sum('credit');
+        $monthlyRevenue = AccountingJournalDetail::whereHas('account', function($q) {
+                $q->where('account_code', 'like', '4%');
+            })
+            ->whereHas('journal', function($q) use ($awalBulan, $akhirBulan) {
+                $q->whereBetween('transaction_date', [$awalBulan, $akhirBulan]);
             })
             ->sum('credit');
         $totalProject = Project::count();
@@ -174,7 +183,7 @@ class DashboardController extends Controller
         'completedBuild',
         'topBuildProjects', 'totalCashBank',
         'cashInThisMonth',
-        'cashOutThisMonth'
+        'cashOutThisMonth','monthlyRevenue'
         ));
 
     }

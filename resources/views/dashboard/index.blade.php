@@ -154,8 +154,6 @@
                     </div>
 
                     <div class="card-body p-5">
-
-                        {{-- Ringkasan --}}
                         <div class="card bg-primary-lt border-0 mb-3">
                             <div class="card-body">
 
@@ -171,8 +169,21 @@
                         </div>
 
                         <div class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <a href="{{ route('journals.general') }}"
+                                    class="text-decoration-none text-dark">
+                                    <div class="border rounded-3 p-3 h-100">
+                                        <div class="small text-secondary">
+                                            📈 Pendapatan
+                                        </div>
 
-                            <div class="col-6">
+                                        <div class="fs-4 fw-bold text-success mt-2">
+                                            Rp {{ number_format($monthlyRevenue,0,',','.') }}
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                            <div class="col-md-4">
                                 <div class="border rounded-3 p-3 h-100">
 
                                     <div class="small text-secondary">
@@ -186,7 +197,7 @@
                                 </div>
                             </div>
 
-                            <div class="col-6">
+                            <div class="col-md-4">
                                 <div class="border rounded-3 p-3 h-100">
 
                                     <div class="small text-secondary">
@@ -202,43 +213,34 @@
 
                         </div>
 
-                        {{-- Detail --}}
-                        <div class="finance-list">
+                        <div class="finance-scroll">
 
                             @foreach($cashAccounts as $account)
+                                
+                                <div class="finance-card">
 
-                            <div class="d-flex justify-content-between align-items-center py-3 border-bottom">
-
-                                <div>
-
-                                    <div class="fw-semibold">
-
+                                    <div class="finance-icon">
                                         @if(str_contains(strtolower($account['account_name']), 'bank'))
                                             🏦
                                         @else
                                             💵
                                         @endif
+                                    </div>
 
+                                    <div class="finance-name">
                                         {{ $account['account_name'] }}
+                                    </div>
 
+                                    <div class="finance-balance">
+                                        Rp {{ number_format($account['balance'],0,',','.') }}
                                     </div>
 
                                 </div>
 
-                                <div class="fw-bold">
-
-                                    Rp {{ number_format($account['balance'],0,',','.') }}
-
-                                </div>
-
-                            </div>
-
                             @endforeach
 
                         </div>
-
                     </div>
-
                 </div>
             </div>
             @endcan
@@ -251,7 +253,7 @@
 
                     <div class="card-body p-4">
 
-                        <div class="row g-3 mb-4">
+                        {{-- <div class="row g-3 mb-4">
 
                             <div class="col-4">
                                 <a href="{{ route('projects.index') }}"
@@ -321,6 +323,77 @@
                                 </a>
                             </div>
 
+                        </div> --}}
+                        <div class="project-scroll mb-4">
+
+                            {{-- Total Project --}}
+                            <a href="{{ route('projects.index') }}"
+                            class="project-card text-decoration-none text-dark">
+
+                                <div class="project-icon">📁</div>
+                                <div class="project-title">Total</div>
+                                <div class="project-number">{{ $totalProject }}</div>
+
+                            </a>
+
+                            {{-- Sedang Dikerjakan --}}
+                            <div class="project-card">
+
+                                <div class="project-icon">🚧</div>
+                                <div class="project-title">Sedang Dikerjakan</div>
+                                <div class="project-number text-primary">
+                                    {{ $runningBuild }}
+                                </div>
+
+                            </div>
+
+                            {{-- Selesai --}}
+                            <div class="project-card">
+
+                                <div class="project-icon">✅</div>
+                                <div class="project-title">Sudah Selesai</div>
+                                <div class="project-number text-success">
+                                    {{ $completedBuild }}
+                                </div>
+
+                            </div>
+
+                            {{-- Desain --}}
+                            <a href="{{ route('projects.index',['type'=>1]) }}"
+                            class="project-card text-decoration-none text-dark">
+
+                                <div class="project-icon">🎨</div>
+                                <div class="project-title">Desain</div>
+                                <div class="project-number text-info">
+                                    {{ $totalDesign }}
+                                </div>
+
+                            </a>
+
+                            {{-- RAB --}}
+                            <a href="{{ route('projects.index',['type'=>2]) }}"
+                            class="project-card text-decoration-none text-dark">
+
+                                <div class="project-icon">📑</div>
+                                <div class="project-title">RAB</div>
+                                <div class="project-number text-warning">
+                                    {{ $totalRab }}
+                                </div>
+
+                            </a>
+
+                            {{-- Build --}}
+                            <a href="{{ route('projects.index',['type'=>3]) }}"
+                            class="project-card text-decoration-none text-dark">
+
+                                <div class="project-icon">🏗</div>
+                                <div class="project-title">Build</div>
+                                <div class="project-number text-success">
+                                    {{ $totalBuild }}
+                                </div>
+
+                            </a>
+
                         </div>
                         <hr>
 
@@ -334,7 +407,7 @@
 
                                 <div class="d-flex justify-content-between">
 
-                                    <span class="fw-semibold">
+                                    <span>
                                         {{ $project->project_name }}
                                     </span>
 
