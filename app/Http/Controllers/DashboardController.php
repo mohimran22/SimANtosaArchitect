@@ -102,7 +102,26 @@ class DashboardController extends Controller
                 []
             )
         );
-        
+        $totalCashBank = $cashAccounts->sum('balance');
+
+        $cashAccountIds = AccountingAccount::where('is_parent', false)
+            ->where('category', 'AKTIVA')
+            ->where('sub_category', 'Aset Lancar - Kas & Bank')
+            ->pluck('id');
+        $cashInThisMonth = AccountingJournalDetail::query()
+            ->whereIn('account_id', $cashAccountIds)
+            ->whereHas('journal', function ($q) {
+                $q->whereMonth('transaction_date', now()->month)
+                ->whereYear('transaction_date', now()->year);
+            })
+            ->sum('debit');
+        $cashOutThisMonth = AccountingJournalDetail::query()
+            ->whereIn('account_id', $cashAccountIds)
+            ->whereHas('journal', function ($q) {
+                $q->whereMonth('transaction_date', now()->month)
+                ->whereYear('transaction_date', now()->year);
+            })
+            ->sum('credit');
         $totalProject = Project::count();
 
         $totalDesign = Project::where('project_type', Project::TYPE_DESIGN)->count();
@@ -153,7 +172,9 @@ class DashboardController extends Controller
         'cashAccounts', 'totalProject', 'totalDesign', 'totalRab', 'totalBuild',
         'runningBuild',
         'completedBuild',
-        'topBuildProjects'
+        'topBuildProjects', 'totalCashBank',
+        'cashInThisMonth',
+        'cashOutThisMonth'
         ));
 
     }
@@ -260,6 +281,7 @@ class DashboardController extends Controller
             return [
                 'account_code' => $account->account_code,
                 'account_name' => $account->account_name,
+                'account_type' => $account->account_type,
                 'category'     => $account->category,
                 'sub_category' => $account->sub_category,
                 'debit'        => $debit,

@@ -143,52 +143,112 @@
             </div>
             @endcan
         </div>
-        <div class="row g-4">
+        <div class="row g-4 mt-1">
             @can('lihat akun-akuntansi')
-                <div class="col-xl-6">
-                    <div class="card shadow-sm border-0 rounded-4 mb-4">
-                        <div class="card-header">
-                            <h5 class="mb-0">
-                                💰 Finance
-                            </h5>
+            <div class="col-xl-6">
+                <div class="card shadow-sm border-0 rounded-4 h-100">
+
+                    <div class="card-header">
+                        <h5 class="mb-0">💰 Finance</h5>
+                    </div>
+
+                    <div class="card-body">
+
+                        {{-- Ringkasan --}}
+                        <div class="card bg-primary-lt border-0 mb-3">
+                            <div class="card-body">
+
+                                <div class="text-secondary">
+                                    Total Kas & Bank
+                                </div>
+
+                                <div class="fs-1 fw-bold text-primary">
+                                    Rp {{ number_format($totalCashBank,0,',','.') }}
+                                </div>
+
+                            </div>
                         </div>
 
-                        <div class="card-body p-4">
+                        <div class="row g-3 mb-4">
+
+                            <div class="col-6">
+                                <div class="border rounded-3 p-3 h-100">
+
+                                    <div class="small text-secondary">
+                                        📈 Kas Masuk
+                                    </div>
+
+                                    <div class="fs-3 fw-bold text-success mt-1">
+                                        Rp {{ number_format($cashInThisMonth,0,',','.') }}
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            <div class="col-6">
+                                <div class="border rounded-3 p-3 h-100">
+
+                                    <div class="small text-secondary">
+                                        📉 Kas Keluar
+                                    </div>
+
+                                    <div class="fs-3 fw-bold text-danger mt-1">
+                                        Rp {{ number_format($cashOutThisMonth,0,',','.') }}
+                                    </div>
+
+                                </div>
+                            </div>
+
+                        </div>
+
+                        {{-- Detail --}}
+                        <div class="finance-list">
 
                             @foreach($cashAccounts as $account)
 
-                                <div class="d-flex justify-content-between py-2 border-bottom">
+                            <div class="d-flex justify-content-between align-items-center py-3 border-bottom">
 
-                                    <div>
-                                        <strong>{{ $account['account_name'] }}</strong>
-                                    </div>
+                                <div>
 
-                                    <div class="fw-bold">
-                                        Rp {{ number_format($account['balance'],0,',','.') }}
+                                    <div class="fw-semibold">
+
+                                        @if(str_contains(strtolower($account['account_name']), 'bank'))
+                                            🏦
+                                        @else
+                                            💵
+                                        @endif
+
+                                        {{ $account['account_name'] }}
+
                                     </div>
 
                                 </div>
 
-                            @endforeach
-                            <div class="border-top pt-3 mt-3 d-flex justify-content-between">
-                                <strong>Total Kas & Bank</strong>
+                                <div class="fw-bold">
 
-                                <strong class="text-success">
-                                    {{ number_format($cashAccounts->sum('balance'),2,',','.') }}
-                                </strong>
+                                    Rp {{ number_format($account['balance'],0,',','.') }}
+
+                                </div>
+
                             </div>
+
+                            @endforeach
+
                         </div>
+
                     </div>
+
                 </div>
+            </div>
             @endcan
             <div class="col-xl-6">
-                <div class="card shadow-sm border-0 rounded-4">
+                <div class="card shadow-sm border-0 rounded-4 h-100">
 
                     <div class="card-header">
                         <h5 class="mb-0">📁 Project</h5>
                     </div>
 
-                    <div class="card-body">
+                    <div class="card-body p-4">
 
                         <div class="row g-3 mb-4">
 

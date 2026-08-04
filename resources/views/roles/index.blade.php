@@ -157,7 +157,7 @@
 </div>
 @can('tambah data role')
 <a href="{{ route('roles.create') }}"
-   class="mobile-fab d-md-none">
+   class="mobile-fab">
 
     <svg xmlns="http://www.w3.org/2000/svg"
          width="26"
