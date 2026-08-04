@@ -25,9 +25,9 @@
     </div>
 
 </div>
-<div class="row mb-3 align-items-end" id="historyFilter">
+<div class="row g-3 align-items-end mb-3" id="historyFilter">
 
-    <div class="col-md-3">
+    <div class="col-12 col-md-3">
         <label class="form-label">Dari Tanggal</label>
         <input
             type="date"
@@ -36,7 +36,7 @@
             value="{{ request('start_date') }}">
     </div>
 
-    <div class="col-md-3">
+    <div class="col-12 col-md-3">
         <label class="form-label">Sampai Tanggal</label>
         <input
             type="date"
@@ -45,9 +45,8 @@
             value="{{ request('end_date') }}">
     </div>
 
-    <div class="col-md-2">
+    <div class="col-12 col-md-2">
         <label class="form-label">Status</label>
-
         <select class="form-select" id="history_status">
             <option value="">Semua Status</option>
             <option value="H">Hadir</option>
@@ -61,20 +60,20 @@
         </select>
     </div>
 
-    <div class="col-md-2 d-grid">
-        <button
-            class="btn btn-dark btn-filter-history"
-            data-employee="{{ $employee->id }}">
-            Filter
-        </button>
-    </div>
+    <div class="col-12 col-md-4">
+        <div class="d-flex gap-2 history-action">
+            <button
+                class="btn btn-dark flex-fill btn-filter-history"
+                data-employee="{{ $employee->id }}">
+                <i class="ti ti-filter me-1"></i> Filter
+            </button>
 
-    <div class="col-md-2 d-grid">
-        <button
-            class="btn btn-outline-dark btn-reset-history"
-            data-employee="{{ $employee->id }}">
-            Reset
-        </button>
+            <button
+                class="btn btn-outline-dark flex-fill btn-reset-history"
+                data-employee="{{ $employee->id }}">
+                <i class="ti ti-refresh me-1"></i> Reset
+            </button>
+        </div>
     </div>
 
 </div>

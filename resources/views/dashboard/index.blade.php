@@ -156,22 +156,20 @@
                     <div class="card-body p-5">
                         <div class="card bg-primary-lt border-0 mb-3">
                             <div class="card-body">
-
                                 <div class="text-secondary">
                                     Total Kas & Bank
                                 </div>
-
                                 <div class="fs-1 fw-bold text-primary">
                                     Rp {{ number_format($totalCashBank,0,',','.') }}
                                 </div>
-
                             </div>
                         </div>
-
                         <div class="row g-3 mb-4">
+                            <h4 class="text-center">
+                                {{ \Carbon\Carbon::now()->translatedFormat('F Y') }}
+                            </h4>
                             <div class="col-md-4">
-                                <a href="{{ route('journals.general') }}"
-                                    class="text-decoration-none text-dark">
+                                <a href="{{ route('journals.general') }}" class="text-decoration-none text-dark">
                                     <div class="border rounded-3 p-3 h-100">
                                         <div class="small text-secondary">
                                             📈 Pendapatan
@@ -185,40 +183,28 @@
                             </div>
                             <div class="col-md-4">
                                 <div class="border rounded-3 p-3 h-100">
-
                                     <div class="small text-secondary">
                                         📈 Kas Masuk
                                     </div>
-
                                     <div class="fs-3 fw-bold text-success mt-1">
                                         Rp {{ number_format($cashInThisMonth,0,',','.') }}
                                     </div>
-
                                 </div>
                             </div>
-
                             <div class="col-md-4">
                                 <div class="border rounded-3 p-3 h-100">
-
                                     <div class="small text-secondary">
                                         📉 Kas Keluar
                                     </div>
-
                                     <div class="fs-3 fw-bold text-danger mt-1">
                                         Rp {{ number_format($cashOutThisMonth,0,',','.') }}
                                     </div>
-
                                 </div>
                             </div>
-
                         </div>
-
                         <div class="finance-scroll">
-
                             @foreach($cashAccounts as $account)
-                                
                                 <div class="finance-card">
-
                                     <div class="finance-icon">
                                         @if(str_contains(strtolower($account['account_name']), 'bank'))
                                             🏦
@@ -226,19 +212,14 @@
                                             💵
                                         @endif
                                     </div>
-
                                     <div class="finance-name">
                                         {{ $account['account_name'] }}
                                     </div>
-
                                     <div class="finance-balance">
                                         Rp {{ number_format($account['balance'],0,',','.') }}
                                     </div>
-
                                 </div>
-
                             @endforeach
-
                         </div>
                     </div>
                 </div>

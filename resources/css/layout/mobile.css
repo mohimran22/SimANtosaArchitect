@@ -308,4 +308,25 @@
     .approval-title{
         font-size:15px;
     }
+    
+    #historyFilter{
+        background:#fff;
+        padding:16px;
+        border-radius:12px;
+        box-shadow:0 2px 8px rgba(0,0,0,.05);
+    }
+
+    #historyFilter .form-label{
+        margin-bottom:.35rem;
+        font-size:.85rem;
+        font-weight:600;
+    }
+
+    .history-action{
+        margin-top:.25rem;
+    }
+
+    .history-action .btn{
+        width:100%;
+    }
 }

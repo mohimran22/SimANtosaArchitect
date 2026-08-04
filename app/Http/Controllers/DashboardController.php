@@ -79,15 +79,12 @@ class DashboardController extends Controller
             ->orderBy('check_in')
             ->get();
 
-        // Statistik sederhana
         $hadir = $attendances->count();
 
-        // Misalnya status terlambat disimpan di attendance_code
         $terlambat = $attendances->filter(function ($item) {
             return in_array($item->attendance_code, ['TL A', 'TL B', 'TL C']);
         })->count();
 
-        // Total seluruh karyawan aktif
         $totalKaryawan = Employee::count();
 
         $belumHadir = $totalKaryawan - $hadir;
