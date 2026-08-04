@@ -212,8 +212,19 @@
                                             💵
                                         @endif
                                     </div>
+                                    @php
+                                        $words = explode(' ', $account['account_name']);
+
+                                        $line1 = implode(' ', array_slice($words, 0, 2)); // dua kata pertama
+                                        $line2 = implode(' ', array_slice($words, 2));    // sisanya
+                                    @endphp
+
                                     <div class="finance-name">
-                                        {{ $account['account_name'] }}
+                                        <div>{{ $line1 }}</div>
+
+                                        @if($line2)
+                                            <div class="finance-sub">{{ $line2 }}</div>
+                                        @endif
                                     </div>
                                     <div class="finance-balance">
                                         Rp {{ number_format($account['balance'],0,',','.') }}
