@@ -9,7 +9,7 @@
                 Selamat Datang {{ auth()->user()->fullname ?? 'Admin Utama' }} di Sistem Antosa Architect
             </h2>
         </div>
-        <div class="row g-4 mt-1">
+        <div class="row g-4">
             <div class="col-xl-4">
                 <div class="card shadow-sm border-0 rounded-4">
                     <div class="card-body p-4">
@@ -143,7 +143,8 @@
             </div>
             @endcan
         </div>
-        <div class="row g-4 mt-1">
+
+        <div class="row g-4 mt-2">
             @can('lihat akun-akuntansi')
             <div class="col-xl-6">
                 <div class="card shadow-sm border-0 rounded-4 h-100">
@@ -152,7 +153,7 @@
                         <h5 class="mb-0">💰 Finance</h5>
                     </div>
 
-                    <div class="card-body">
+                    <div class="card-body p-5">
 
                         {{-- Ringkasan --}}
                         <div class="card bg-primary-lt border-0 mb-3">
@@ -253,12 +254,17 @@
                         <div class="row g-3 mb-4">
 
                             <div class="col-4">
-                                <div class="border rounded-3 p-3 text-center bg-light">
-                                    <div class="text-secondary small">Total Project</div>
-                                    <div class="fs-2 fw-bold">
-                                        {{ $totalProject }}
+                                <a href="{{ route('projects.index') }}"
+                                class="text-decoration-none text-dark">
+
+                                    <div class="border rounded-3 p-3 text-center bg-light h-100 hover-card">
+                                        <div class="text-secondary small">Total Project</div>
+                                        <div class="fs-2 fw-bold">
+                                            {{ $totalProject }}
+                                        </div>
                                     </div>
-                                </div>
+
+                                </a>
                             </div>
 
                             <div class="col-4">
@@ -280,30 +286,39 @@
                             </div>
 
                             <div class="col-4">
-                                <div class="border rounded-3 p-3 text-center">
-                                    <div class="text-secondary small">Desain</div>
-                                    <div class="fs-3 fw-bold text-info">
-                                        {{ $totalDesign }}
+                                <a href="{{ route('projects.index', ['type' => 1]) }}"
+                                    class="text-decoration-none text-dark">
+                                    <div class="border rounded-3 p-3 text-center">
+                                        <div class="text-secondary small">Total Desain</div>
+                                        <div class="fs-3 fw-bold text-info">
+                                            {{ $totalDesign }}
+                                        </div>
                                     </div>
-                                </div>
+                                </a>
                             </div>
 
                             <div class="col-4">
-                                <div class="border rounded-3 p-3 text-center">
-                                    <div class="text-secondary small">RAB</div>
-                                    <div class="fs-3 fw-bold text-warning">
-                                        {{ $totalRab }}
+                                <a href="{{ route('projects.index', ['type' => 2]) }}"
+                                    class="text-decoration-none text-dark">
+                                    <div class="border rounded-3 p-3 text-center">
+                                        <div class="text-secondary small">Total RAB</div>
+                                        <div class="fs-3 fw-bold text-warning">
+                                            {{ $totalRab }}
+                                        </div>
                                     </div>
-                                </div>
+                                </a>
                             </div>
 
                             <div class="col-4">
-                                <div class="border rounded-3 p-3 text-center">
-                                    <div class="text-secondary small">Build</div>
-                                    <div class="fs-3 fw-bold text-success">
-                                        {{ $totalBuild }}
+                                <a href="{{ route('projects.index', ['type' => 3]) }}"
+                                        class="text-decoration-none text-dark">
+                                    <div class="border rounded-3 p-3 text-center">
+                                        <div class="text-secondary small">Total Build</div>
+                                        <div class="fs-3 fw-bold text-success">
+                                            {{ $totalBuild }}
+                                        </div>
                                     </div>
-                                </div>
+                                </a>
                             </div>
 
                         </div>

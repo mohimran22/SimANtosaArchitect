@@ -11,9 +11,10 @@
     border-radius: 0.75rem;
 }
 
-.dashboard-container {
-    max-width: 100% !important;
-    padding: 50px 0px;
+.dashboard-container{
+    max-width: 1600px;
+    margin: auto;
+    padding: 40px 24px;
 }
 
 #alertCarousel button#nextAlert {
@@ -56,4 +57,14 @@
     background: #fff;
     z-index: 2;
     border-bottom: 1px solid #dee2e6;
+}
+.hover-card{
+    transition: all .2s ease;
+    cursor: pointer;
+}
+
+.hover-card:hover{
+    transform: translateY(-3px);
+    box-shadow: 0 .5rem 1rem rgba(0,0,0,.15);
+    background: #f8f9fa;
 }

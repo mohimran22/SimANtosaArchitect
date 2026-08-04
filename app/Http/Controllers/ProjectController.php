@@ -67,6 +67,10 @@ if (
     });
 }
 
+if ($request->filled('type')) {
+    $query->where('project_type', (int) $request->type);
+}
+
     if ($request->ajax()) {
         $projects = $query->get();
 

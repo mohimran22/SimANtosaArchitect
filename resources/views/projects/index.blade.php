@@ -73,7 +73,7 @@
     </div>
 @can('tambah data proyek')
 <a href="{{ route('projects.create') }}"
-   class="mobile-fab">
+   class="mobile-fab d-md-none">
 
     <svg xmlns="http://www.w3.org/2000/svg"
          width="26"
@@ -99,6 +99,7 @@
     <script>
         $(function() {
             const isMobile = window.innerWidth < 576;
+            const projectType = new URLSearchParams(window.location.search).get('type');
             const table = $('#tableProjects').DataTable({
                 scrollY: '500px',
                 scrollX: true,
@@ -109,7 +110,12 @@
                 serverSide: true,
                 processing: true,
                 responsive: false,
-                ajax: '{{ route("projects.index") }}',
+                ajax: {
+                    url: '{{ route("projects.index") }}',
+                    data: function (d) {
+                        d.type = projectType;
+                    }
+                },
                 columns: [
                     { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
                     // { data: 'project_code', name: 'project_code' },
@@ -149,6 +155,17 @@
                     const input = $('.dt-search input');
                     input.removeClass('form-control-sm')
                         .addClass('form-control');
+                    if (projectType) {
+
+                        const text = {
+                            1: 'Desain',
+                            2: 'RAB',
+                            3: 'Build'
+                        };
+
+                        input.val(text[projectType] ?? projectType);
+
+                    }
                 }
             });
 
