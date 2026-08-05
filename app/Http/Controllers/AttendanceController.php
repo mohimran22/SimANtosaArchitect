@@ -14,6 +14,14 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 
 class AttendanceController extends Controller
 {
@@ -24,8 +32,8 @@ public function index()
 
     public function datatable(Request $request, AttendanceSummaryService $summaryService) 
 {
-    $month = $request->month ?? now()->month;
-    $year  = $request->year ?? now()->year;
+    $month = $request->input('month', now()->month);
+    $year  = $request->input('year', now()->year);
 
     $summaries = $summaryService->summaries($month, $year);
 
@@ -384,25 +392,130 @@ public function restore($id)
             ->back()
             ->with('success', 'Data izin berhasil dikirim dan disimpan.');
     }
-
     public function exportPdf(Request $request, AttendanceSummaryService $summaryService)
+    {
+        $month = $request->input('month', now()->month);
+        $year  = $request->input('year', now()->year);
+
+        $summaries = $summaryService->summaries((int) $month, (int) $year);
+
+        $employees = Employee::with('user.roles')->get();
+
+        $pdf = Pdf::loadView('attendances.export-pdf', [
+            'employees' => $employees,
+            'summaries' => $summaries,
+            'month'     => $month,
+            'year'      => $year,
+        ])->setPaper('a4', 'landscape');
+
+        return $pdf->stream("Rekap Absensi {$month}-{$year}.pdf");
+    }
+
+public function historyPdf(Request $request, Employee $employee)
 {
-    $month = $request->month ?? now()->month;
-    $year  = $request->year ?? now()->year;
+    $query = Attendance::where('employee_id', $employee->id);
+
+    if ($request->filled('start_date')) {
+        $query->whereDate('attendance_date','>=',$request->start_date);
+    }
+
+    if ($request->filled('end_date')) {
+        $query->whereDate('attendance_date','<=',$request->end_date);
+    }
+
+    if ($request->filled('attendance_code')) {
+        $query->where('attendance_code',$request->attendance_code);
+    }
+
+    $attendances = $query
+        ->orderByDesc('attendance_date')
+        ->get();
+
+    $pdf = Pdf::loadView(
+        'attendances.history-pdf',
+        compact('employee','attendances')
+    )->setPaper('a4','portrait');
+
+    return $pdf->stream();
+}
+
+public function exportExcel(Request $request, AttendanceSummaryService $summaryService)
+{
+    $month = (int) $request->input('month', now()->month);
+    $year  = (int) $request->input('year', now()->year);
 
     $summaries = $summaryService->summaries($month, $year);
 
     $employees = Employee::with('user.roles')
-        ->orderBy('employee_no')
         ->get();
 
-    $pdf = Pdf::loadView('attendances.export-pdf', [
-        'employees' => $employees,
-        'summaries' => $summaries,
-        'month' => $month,
-        'year' => $year,
-    ])->setPaper('a4', 'landscape');
+    $spreadsheet = new Spreadsheet();
+    $sheet = $spreadsheet->getActiveSheet();
 
-    return $pdf->stream("Rekap Absensi {$month}-{$year}.pdf");
+    $headers = [
+        'No',
+        'Nama',
+        'Jabatan',
+        'H',
+        'TL A',
+        'TL B',
+        'TL C',
+        'DL',
+        'I',
+        'S',
+        'C',
+        'A',
+        'Total Hari Kerja',
+        'Total Kehadiran',
+        'Kehadiran',
+        'Ketepatan Waktu',
+        'Lembur',
+        'Keterangan'
+    ];
+
+    foreach ($headers as $index => $title) {
+        $column = Coordinate::stringFromColumnIndex($index + 1);
+        $sheet->setCellValue($column . '1', $title);
+    }
+
+    $row = 2;
+
+    foreach ($employees as $i => $employee) {
+
+        $summary = $summaries[$employee->id] ?? [];
+
+        $sheet->setCellValue("A{$row}", $i + 1);
+        $sheet->setCellValue("B{$row}", $employee->user?->fullname);
+        $sheet->setCellValue("C{$row}", $employee->user?->roles->pluck('name')->implode(', '));
+
+        $sheet->setCellValue("D{$row}", $summary['H'] ?? 0);
+        $sheet->setCellValue("E{$row}", $summary['TL A'] ?? 0);
+        $sheet->setCellValue("F{$row}", $summary['TL B'] ?? 0);
+        $sheet->setCellValue("G{$row}", $summary['TL C'] ?? 0);
+        $sheet->setCellValue("H{$row}", $summary['DL'] ?? 0);
+        $sheet->setCellValue("I{$row}", $summary['I'] ?? 0);
+        $sheet->setCellValue("J{$row}", $summary['S'] ?? 0);
+        $sheet->setCellValue("K{$row}", $summary['C'] ?? 0);
+        $sheet->setCellValue("L{$row}", $summary['A'] ?? 0);
+
+        $sheet->setCellValue("M{$row}", $summary['total_hari_kerja'] ?? 0);
+        $sheet->setCellValue("N{$row}", $summary['total_hari_kehadiran'] ?? 0);
+        $sheet->setCellValue("O{$row}", ($summary['kehadiran'] ?? 0) . '%');
+        $sheet->setCellValue("P{$row}", ($summary['ketepatan_waktu'] ?? 0) . '%');
+        $sheet->setCellValue("Q{$row}", round(($summary['total_jam_lembur'] ?? 0) / 60, 2));
+        $sheet->setCellValue("R{$row}", $summary['keterangan'] ?? '');
+
+        $row++;
+    }
+
+    $writer = new Xlsx($spreadsheet);
+
+    return new StreamedResponse(function () use ($writer) {
+        $writer->save('php://output');
+    }, 200, [
+        'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'Content-Disposition' => 'attachment;filename="Rekap Absensi.xlsx"',
+        'Cache-Control' => 'max-age=0',
+    ]);
 }
 }

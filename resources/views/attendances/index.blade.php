@@ -6,25 +6,23 @@
     <div class="container-xl">
         <div class="row align-items-center">
             <div class="col-12 col-md-auto ms-auto d-print-none">
-                    <div class="btn-list">
+                <div class="btn-list">
 
-                        <a href="{{ route('attendance.export', request()->all()) }}"
-                           class="btn btn-dark"
-                           target="_blank">
+                    <a href="{{ route('attendance.export') }}"
+                    class="btn btn-dark btn-export-excel"
+                    target="_blank">
+                        <i class="ti ti-file-export"></i>
+                        Ekspor Excel
+                    </a>
 
-                            <i class="ti ti-file-export"></i>
-                            Ekspor Excel
-                        </a>
+                    <a href="{{ route('attendance.export.pdf') }}"
+                    class="btn btn-outline-dark btn-export-pdf"
+                    target="_blank">
+                        <i class="ti ti-printer"></i>
+                        Cetak
+                    </a>
 
-                        <a href="{{ route('attendance.export.pdf', request()->all()) }}"
-                           class="btn btn-outline-dark"
-                           target="_blank">
-
-                            <i class="ti ti-printer"></i>
-                            Cetak
-                        </a>
-
-                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -43,6 +41,29 @@
                         @if(session('success'))
                             <div class="alert alert-success">{{ session('success') }}</div>
                         @endif
+                        <form id="filterForm" class="row mb-3">
+
+                            <div class="col-md-3">
+                                <select name="month" id="month" class="form-select">
+                                    @foreach(range(1,12) as $m)
+                                        <option value="{{ $m }}" {{ now()->month == $m ? 'selected' : '' }}>
+                                            {{ \Carbon\Carbon::create()->month($m)->translatedFormat('F') }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="col-md-2">
+                                <select name="year" id="year" class="form-select">
+                                    @foreach(range(now()->year-5, now()->year+1) as $y)
+                                        <option value="{{ $y }}" {{ now()->year == $y ? 'selected' : '' }}>
+                                            {{ $y }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                        </form>
                         <div class="table-responsive">
                             <table id="absenTable" class="table table-bordered table-striped align-middle w-100">
                                 <thead>
@@ -134,25 +155,11 @@
                 responsive: false,
                 
                 ajax: {
-
                     url: "{{ route('attendances.datatable') }}",
-
-                    data: function(d){
-
-                        const month = $('#month').val();
-
-                        if(month){
-
-                            const split = month.split('-');
-
-                            d.year = split[0];
-
-                            d.month = split[1];
-
-                        }
-
+                    data: function (d) {
+                        d.month = $('#month').val();
+                        d.year  = $('#year').val();
                     }
-
                 },
                 columns:[
 
@@ -164,8 +171,9 @@
                     },
 
                     {
-                        data:'fullname',
-                        name:'fullname'
+                        data: 'fullname',
+                        searchable: false,
+                        orderable: false
                     },
 
                     { data: 'roles', name: 'roles', defaultContent:'-',
@@ -246,6 +254,7 @@
                     }
 
                 ],
+
                 language: {
                     search: "",
                     searchPlaceholder: "Cari dafta absen...",
@@ -267,7 +276,37 @@
                     input.removeClass('form-control-sm')
                         .addClass('form-control');
                 }
-            });       
+            }); 
+            function updateExportLinks() {
+
+                const month = $('#month').val();
+                const year  = $('#year').val();
+
+                $('.btn-export-excel').attr(
+                    'href',
+                    "{{ route('attendance.export') }}" +
+                    "?month=" + month +
+                    "&year=" + year
+                );
+
+                $('.btn-export-pdf').attr(
+                    'href',
+                    "{{ route('attendance.export.pdf') }}" +
+                    "?month=" + month +
+                    "&year=" + year
+                );
+            }
+
+            // Set saat halaman pertama dibuka
+            updateExportLinks();
+
+            // Update saat filter berubah
+            $('#month, #year').on('change', function () {
+
+                table.ajax.reload();
+                updateExportLinks();
+
+            }); 
         });
         function loadHistory(employeeId, startDate = '', endDate = '', status='') {
 
@@ -288,7 +327,7 @@
 
                 $('#history-content').html(html);
                 initHistoryFilter();
-
+                updateHistoryExportLink();
             });
 
         }
@@ -306,6 +345,25 @@
             });
 
         }
+        function updateHistoryExportLink(){
+
+            let employee = $('#historyModal').data('employee');
+
+            let start = $('#history_start_date').val();
+
+            let end = $('#history_end_date').val();
+
+            let status = $('#history_status').val();
+
+            let pdf =
+                "{{ route('attendances.history.pdf', ':id') }}"
+                .replace(':id', employee)
+                + '?start_date=' + encodeURIComponent(start)
+                + '&end_date=' + encodeURIComponent(end)
+                + '&attendance_code=' + encodeURIComponent(status);
+
+            $('.btn-history-pdf').attr('href', pdf);
+        }
         $(document).on('click', '.btn-history', function () {
 
             let employeeId = $(this).data('id');
@@ -313,7 +371,6 @@
             $('#historyModal').data('employee', employeeId);
 
             loadHistory(employeeId);
-
             $('#historyModal').modal('show');
 
         });
@@ -327,7 +384,6 @@
                 $('#history_end_date').val(),
                 $('#history_status').val()
             );
-
         });
         $(document).on('click','.btn-reset-history',function(){
 
@@ -338,7 +394,6 @@
             let employeeId=$(this).data('employee');
 
             loadHistory(employeeId);
-
         });
         $(document).on('click', '.btn-detail', function () {
 
@@ -497,6 +552,12 @@
                     $('#absenTable').DataTable().ajax.reload(null,false);
                 }
             });
+        });
+        $(document).on('change', '#history_status', function () {
+            updateHistoryExportLink();
+        });
+        $(document).on('change', '#history_start_date,#history_end_date', function () {
+        updateHistoryExportLink();
         });
     </script>
 @endpush

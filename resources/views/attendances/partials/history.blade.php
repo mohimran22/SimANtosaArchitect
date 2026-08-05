@@ -73,6 +73,14 @@
                 data-employee="{{ $employee->id }}">
                 <i class="ti ti-refresh me-1"></i> Reset
             </button>
+
+            <a href="#"
+            class="btn btn-danger btn-history-pdf"
+            target="_blank">
+
+                <i class="ti ti-file-type-pdf"></i>
+                PDF
+            </a>
         </div>
     </div>
 

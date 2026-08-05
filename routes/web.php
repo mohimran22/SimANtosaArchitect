@@ -746,6 +746,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/attendance/export', [AttendanceController::class, 'exportExcel'])
     ->name('attendance.export');
     Route::get('/attendance/exportpdf', [AttendanceController::class, 'exportPdf'])->name('attendance.export.pdf');
+    Route::get(
+        '/attendances/{employee}/history/export-pdf',
+        [AttendanceController::class,'historyPdf']
+    )->name('attendances.history.pdf');
 });
 Route::middleware(['auth'])->group(function () {
     // sinkronisasi lisensi aktif dari navbar (POST dari form/navbar)
