@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AccountingAccount;
 use App\Models\AccountingJournalDetail;
 use App\Models\Attendance;
+use App\Models\AttendanceRequest;
 use App\Models\Employee;
 use App\Models\Religion;
 use App\Models\Project;
@@ -170,13 +171,17 @@ class DashboardController extends Controller
             ->sortByDesc('progress')
             ->take(5)
             ->values();
+        $todayRequest = AttendanceRequest::where('employee_id', auth()->user()->employee->id)
+            ->whereDate('attendance_date', today())
+            ->latest()
+            ->first();
         return view('dashboard.index', compact('user', 'incompleteProfile', 'incompleteAffiliator', 'attendanceToday', 'greeting', 'attendances',
         'hadir',
         'terlambat',
         'totalKaryawan',
         'belumHadir',
         'cashAccounts', 'totalProject', 'totalDesign', 'totalRab', 'totalBuild',
-        'runningBuild',
+        'runningBuild', 'todayRequest',
         'completedBuild',
         'topBuildProjects', 'totalCashBank',
         'cashInThisMonth',

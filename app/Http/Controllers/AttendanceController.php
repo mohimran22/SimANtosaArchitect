@@ -9,6 +9,7 @@ use App\Services\AttendanceService;
 use App\Services\AttendanceSummaryService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Yajra\DataTables\Facades\DataTables;
@@ -346,5 +347,41 @@ public function restore($id)
 
         app(AttendanceService::class)->calculate($attendance);
         return back()->with('success', 'Berhasil melakukan absensi pulang.');
+    }
+        public function permission(Request $request)
+    {
+        $employee = auth()->user()->employee;
+
+        $validated = $request->validate([
+            'attendance_date' => [
+                'required',
+                'date',
+            ],
+            'request_type' => [
+                'required',
+                Rule::in([
+                    'permission',
+                    'sick',
+                    'leave',
+                    'business_trip',
+                ]),
+            ],
+            'reason' => [
+                'required',
+                'string',
+                'max:1000',
+            ],
+        ]);
+
+        Attendance::create([
+            'employee_id'     => $employee->id,
+            'attendance_date' => $validated['attendance_date'],
+            'status'    => $validated['request_type'],
+            'notes'          => $validated['reason'],
+        ]);
+
+        return redirect()
+            ->back()
+            ->with('success', 'Data izin berhasil dikirim dan disimpan.');
     }
 }

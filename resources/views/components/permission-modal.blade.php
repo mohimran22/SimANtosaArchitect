@@ -12,33 +12,41 @@
                 </div>
 
                 <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Tanggal</label>
 
+                        <input type="date"
+                            name="attendance_date"
+                            class="form-control"
+                            value="{{ now()->toDateString() }}"
+                            required>
+                    </div>
                     <div class="mb-3">
                         <label>Jenis</label>
 
-                        <select name="status" class="form-select">
+                        <select name="request_type" class="form-select">
                             <option value="permission">Izin</option>
                             <option value="sick">Sakit</option>
                             <option value="leave">Cuti</option>
-                            <option value="business_trip">Dinas Luar</option>
                         </select>
                     </div>
 
                     <div class="mb-3">
-                        <label>Alasan</label>
+                        <label class="form-label required">Alasan</label>
                         <textarea
                             name="reason"
                             class="form-control"
-                            rows="4"></textarea>
+                            rows="4" required></textarea>
                     </div>
 
-                    <div class="mb-3">
+                    {{-- <div class="mb-3">
                         <label>Lampiran (Opsional)</label>
                         <input
                             type="file"
                             name="attachment"
-                            class="form-control">
-                    </div>
+                            class="form-control"
+                            accept=".jpg,.jpeg,.png,.pdf">
+                    </div> --}}
 
                 </div>
 
@@ -49,8 +57,9 @@
                         Batal
                     </button>
 
-                    <button class="btn btn-warning">
-                        Ajukan Izin
+                    <button type="submit" class="btn btn-warning">
+                        <i class="ti ti-send me-1"></i>
+                        Kirim Pengajuan Izin
                     </button>
 
                 </div>

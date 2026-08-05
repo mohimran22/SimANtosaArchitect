@@ -466,13 +466,15 @@
             confirm-text="✅ Selesai Lembur"
         />
         <x-permission-modal
-            modal-id="izinmeModal"
+            modal-id="izinModal"
             title="Ajukan Izin"
-            :action="route('attendance-overtimes.finish')"
             prefix="Izin"
-            lat-name="end_lat"
-            lng-name="end_lng"
-            confirm-text="✅ Selesai Lembur"
+            :confirm-text="match(optional($todayRequest)->status) {
+                'pending'  => '⏳ Menunggu Persetujuan',
+                'approved' => '✅ Izin Disetujui',
+                'rejected' => '🔄 Ajukan Ulang',
+                default    => '📨 Kirim Pengajuan',
+            }"
         />
     </div>
 </div>

@@ -741,7 +741,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::post('/attendance-overtimes/finish', [AttendanceOvertimeController::class, 'finish'])
         ->name('attendance-overtimes.finish');
-    Route::post('/attendance/permission', [AttendanceRequestController::class, 'store'])
+    Route::post('/attendance/permission', [AttendanceController::class, 'permission'])
         ->name('attendances.permission.store');
 });
 Route::middleware(['auth'])->group(function () {
