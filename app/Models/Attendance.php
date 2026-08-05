@@ -28,7 +28,8 @@ class Attendance extends Model
         'check_out_lng',
         'work_minutes', 
         'attendance_code', 
-        'is_full_work' 
+        'is_full_work',
+        'notes' 
     ];
 
     protected $casts = [

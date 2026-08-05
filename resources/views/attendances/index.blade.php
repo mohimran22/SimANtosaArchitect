@@ -457,13 +457,9 @@
 
         });
         $(document).on('click','.btn-delete',function(){
-
             let id=$(this).data('id');
-
             let url="{{ route('attendances.delete',':id') }}";
-
             url=url.replace(':id',id);
-
             $('#history-content').html(`
                 <div class="text-center p-5">
                     <div class="spinner-border"></div>
@@ -478,49 +474,27 @@
 
         });
         $(document).on('submit','#attendanceDeleteForm',function(e){
-
             e.preventDefault();
-
             let id=$("#delete_attendance_id").val();
-
             let url="{{ route('attendances.destroy',':id') }}";
-
             url=url.replace(':id',id);
-
             $.ajax({
-
                 url:url,
-
                 type:'DELETE',
-
                 data:{
-
                     _token:"{{ csrf_token() }}",
-
                     reason:$('[name=reason]').val()
-
                 },
-
                 success:function(){
-
                     Swal.fire({
-
                         icon:'success',
-
                         title:'Berhasil',
-
                         text:'Absensi berhasil dihapus.'
-
                     });
-
                     $('.btn-back-history').click();
-
                     $('#absenTable').DataTable().ajax.reload(null,false);
-
                 }
-
             });
-
         });
     </script>
 @endpush

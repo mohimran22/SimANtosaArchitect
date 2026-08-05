@@ -1073,9 +1073,9 @@
 
                                                         <td>
                                                             <input type="hidden"
-                                                                name="jam_kerja[${i}][total_jam]"
+                                                                name="jam_kerja[0][total_jam]"
                                                                 class="total-jam-value"
-                                                                value="${j.total_jam ?? ''}">
+                                                                value="">
 
                                                             <input type="text"
                                                                 class="form-control total-jam-text"
