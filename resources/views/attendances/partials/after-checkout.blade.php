@@ -18,7 +18,7 @@
 
 </div>
 <button
-    class="btn btn-warning btn-lg rounded-pill"
+    class="btn btn-warning btn-md rounded-pill"
     data-bs-toggle="modal"
     data-bs-target="#startOvertimeModal">
 

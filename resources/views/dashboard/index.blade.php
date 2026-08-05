@@ -465,6 +465,15 @@
             lng-name="end_lng"
             confirm-text="✅ Selesai Lembur"
         />
+        <x-permission-modal
+            modal-id="izinmeModal"
+            title="Ajukan Izin"
+            :action="route('attendance-overtimes.finish')"
+            prefix="Izin"
+            lat-name="end_lat"
+            lng-name="end_lng"
+            confirm-text="✅ Selesai Lembur"
+        />
     </div>
 </div>
 @endsection

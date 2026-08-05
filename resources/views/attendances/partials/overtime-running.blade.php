@@ -33,7 +33,7 @@
 </div>
 
 <button
-    class="btn btn-danger btn-lg rounded-pill"
+    class="btn btn-danger btn-md rounded-pill"
     data-bs-toggle="modal"
     data-bs-target="#finishOvertimeModal">
 

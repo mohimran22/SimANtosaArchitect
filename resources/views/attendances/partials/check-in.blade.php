@@ -1,21 +1,35 @@
-                            <div class="text-center py-2">
+<div class="text-center py-2">
 
-                                <div class="mb-2 text-secondary">
-                                    Status Absensi Hari Ini
-                                </div>
+<div class="mb-2 text-secondary">
+    Status Absensi Hari Ini
+</div>
 
-                                <h2 class="text-warning mb-3">
-                                    ⭕ Belum Hadir
-                                </h2>
+<h2 class="text-warning mb-3">
+    ⭕ Belum Hadir
+</h2>
 
-                                <button
-                                    class="btn btn-dark btn-lg px-5 rounded-pill"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#checkInModal">
+    <div class="d-flex justify-content-center gap-2 flex-wrap">
 
-                                    <i class="ti ti-login me-2"></i>
-                                    Silahkan absen
+        <button
+            class="btn btn-dark btn-md rounded-pill px-4"
+            data-bs-toggle="modal"
+            data-bs-target="#checkInModal">
 
-                                </button>
+            <i class="ti ti-camera me-2"></i>
+            Absen Masuk
 
-                            </div>
+        </button>
+
+        <button
+            class="btn btn-outline-warning btn-md rounded-pill px-4"
+            data-bs-toggle="modal"
+            data-bs-target="#izinModal">
+
+            <i class="ti ti-file-text me-2"></i>
+            Ajukan Izin
+
+        </button>
+
+    </div>
+
+</div>

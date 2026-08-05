@@ -44,7 +44,6 @@ class Employee extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
-
     public function province()
 {
     return $this->belongsTo(Province::class);
@@ -79,7 +78,6 @@ public function bank()
 {
     return $this->belongsTo(Bank::class);
 }
-
 
     public function projects()
 {
@@ -119,6 +117,14 @@ public function bank()
     public function attendances()
 {
     return $this->hasMany(Attendance::class);
+}
+public function attendanceRequests()
+{
+    return $this->hasMany(AttendanceRequest::class);
+}
+    public function overtimes()
+{
+    return $this->hasMany(AttendanceOverTime::class);
 }
 
      public function getMarriedDateFormattedAttribute()
