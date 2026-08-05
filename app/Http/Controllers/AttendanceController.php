@@ -384,4 +384,25 @@ public function restore($id)
             ->back()
             ->with('success', 'Data izin berhasil dikirim dan disimpan.');
     }
+
+    public function exportPdf(Request $request, AttendanceSummaryService $summaryService)
+{
+    $month = $request->month ?? now()->month;
+    $year  = $request->year ?? now()->year;
+
+    $summaries = $summaryService->summaries($month, $year);
+
+    $employees = Employee::with('user.roles')
+        ->orderBy('employee_no')
+        ->get();
+
+    $pdf = Pdf::loadView('attendances.export-pdf', [
+        'employees' => $employees,
+        'summaries' => $summaries,
+        'month' => $month,
+        'year' => $year,
+    ])->setPaper('a4', 'landscape');
+
+    return $pdf->stream("Rekap Absensi {$month}-{$year}.pdf");
+}
 }
