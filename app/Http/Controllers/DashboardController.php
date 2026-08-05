@@ -171,10 +171,16 @@ class DashboardController extends Controller
             ->sortByDesc('progress')
             ->take(5)
             ->values();
-        $todayRequest = AttendanceRequest::where('employee_id', auth()->user()->employee->id)
-            ->whereDate('attendance_date', today())
-            ->latest()
-            ->first();
+        $employee = auth()->user()->employee;
+
+        $todayRequest = null;
+
+        if ($employee) {
+            $todayRequest = AttendanceRequest::where('employee_id', $employee->id)
+                ->whereDate('attendance_date', today())
+                ->latest()
+                ->first();
+        }
         return view('dashboard.index', compact('user', 'incompleteProfile', 'incompleteAffiliator', 'attendanceToday', 'greeting', 'attendances',
         'hadir',
         'terlambat',

@@ -743,6 +743,9 @@ Route::middleware(['auth'])->group(function () {
         ->name('attendance-overtimes.finish');
     Route::post('/attendance/permission', [AttendanceController::class, 'permission'])
         ->name('attendances.permission.store');
+    Route::get('/attendance/export', [AttendanceController::class, 'exportExcel'])
+    ->name('attendance.export');
+    Route::get('/attendance/exportpdf', [AttendanceController::class, 'exportPdf'])->name('attendance.export.pdf');
 });
 Route::middleware(['auth'])->group(function () {
     // sinkronisasi lisensi aktif dari navbar (POST dari form/navbar)
