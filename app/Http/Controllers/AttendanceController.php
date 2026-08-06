@@ -263,7 +263,7 @@ public function edit(Attendance $attendance)
         $attendanceService->calculate($attendance);
 
         $attendance->save();
-
+        dd(DB::getQueryLog());
         // $newData = [
         //     'attendance_date'   => $attendance->attendance_date,
         //     'check_in'          => optional($attendance->check_in)->toDateTimeString(),
