@@ -21,7 +21,6 @@ class AttendanceService
                 };
             $attendance->is_full_work = false;
             $attendance->notes = null;
-            $attendance->save();
 
             return;
         }

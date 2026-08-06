@@ -29,7 +29,10 @@ class GenerateAlphaAttendance extends Command
     public function handle(): int
     {
         $today = today();
-
+        if ($today->isWeekend()) {
+            $this->info('Weekend. Generate Alpha dibatalkan.');
+            return self::SUCCESS;
+        }
         Employee::query()
             ->chunkById(100, function ($employees) use ($today) {
 
