@@ -16,7 +16,7 @@
 
     </h3>
 
-    Data ini akan dihapus (Soft Delete).
+    Data ini akan dihapus.
 
 </div>
 

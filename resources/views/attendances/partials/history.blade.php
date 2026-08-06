@@ -33,7 +33,7 @@
             type="date"
             class="form-control"
             id="history_start_date"
-            value="{{ request('start_date') }}">
+            value="{{ $filters['start_date'] }}">
     </div>
 
     <div class="col-12 col-md-3">
@@ -42,22 +42,62 @@
             type="date"
             class="form-control"
             id="history_end_date"
-            value="{{ request('end_date') }}">
+            value="{{ $filters['end_date'] }}">
     </div>
 
     <div class="col-12 col-md-2">
         <label class="form-label">Status</label>
-        <select class="form-select" id="history_status">
-            <option value="">Semua Status</option>
-            <option value="H">Hadir</option>
-            <option value="TL A">TL A</option>
-            <option value="TL B">TL B</option>
-            <option value="TL C">TL C</option>
-            <option value="DL">Dinas Luar</option>
-            <option value="I">Izin</option>
-            <option value="S">Sakit</option>
-            <option value="C">Cuti</option>
-        </select>
+            <select class="form-select" id="history_status">
+                <option value=""
+                    {{ empty($filters['attendance_code']) ? 'selected' : '' }}>
+                    Semua Status
+                </option>
+
+                <option value="H"
+                    {{ $filters['attendance_code']=='H' ? 'selected' : '' }}>
+                    Hadir
+                </option>
+
+                <option value="TL A"
+                    {{ $filters['attendance_code']=='TL A' ? 'selected' : '' }}>
+                    TL A
+                </option>
+
+                <option value="TL B"
+                    {{ $filters['attendance_code']=='TL B' ? 'selected' : '' }}>
+                    TL B
+                </option>
+
+                <option value="TL C"
+                    {{ $filters['attendance_code']=='TL C' ? 'selected' : '' }}>
+                    TL C
+                </option>
+
+                <option value="DL"
+                    {{ $filters['attendance_code']=='DL' ? 'selected' : '' }}>
+                    Dinas Luar
+                </option>
+
+                <option value="I"
+                    {{ $filters['attendance_code']=='I' ? 'selected' : '' }}>
+                    Izin
+                </option>
+
+                <option value="S"
+                    {{ $filters['attendance_code']=='S' ? 'selected' : '' }}>
+                    Sakit
+                </option>
+
+                <option value="C"
+                    {{ $filters['attendance_code']=='C' ? 'selected' : '' }}>
+                    Cuti
+                </option>
+
+                <option value="A"
+                    {{ $filters['attendance_code']=='A' ? 'selected' : '' }}>
+                    Alpha
+                </option>
+            </select>
     </div>
 
     <div class="col-12 col-md-4">

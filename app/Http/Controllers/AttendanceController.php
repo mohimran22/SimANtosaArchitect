@@ -8,7 +8,8 @@ use App\Models\AttendanceRevision;
 use App\Services\AttendanceService;
 use App\Services\AttendanceSummaryService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
+use Carbon\Carbon;
+use Carbon\CarbonPeriod;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -74,6 +75,13 @@ public function index()
         ->rawColumns(['fullname'])
         ->toJson();
 }
+public function create(Attendance $attendance)
+{
+    return view(
+        'attendances.partials.create',
+        compact('attendance')
+    );
+}
 public function history(Request $request, Employee $employee)
 {
 $attendances = Attendance::query()
@@ -101,7 +109,15 @@ $attendances = Attendance::query()
 
     return view(
         'attendances.partials.history',
-        compact('employee', 'attendances')
+        [
+            'employee' => $employee,
+            'attendances' => $attendances,
+            'filters' => [
+                'start_date' => $request->start_date,
+                'end_date' => $request->end_date,
+                'attendance_code' => $request->attendance_code,
+            ],
+        ]
     );
 }
 public function detail(Attendance $attendance)
@@ -361,9 +377,15 @@ public function restore($id)
         $employee = auth()->user()->employee;
 
         $validated = $request->validate([
-            'attendance_date' => [
+            'start_date' => [
                 'required',
                 'date',
+                'after_or_equal:today',
+            ],
+            'end_date' => [
+                'required',
+                'date',
+                'after_or_equal:start_date',
             ],
             'request_type' => [
                 'required',
@@ -380,14 +402,31 @@ public function restore($id)
                 'max:1000',
             ],
         ]);
+        $period = CarbonPeriod::create(
+            $validated['start_date'],
+            $validated['end_date']
+        );
 
-        Attendance::create([
-            'employee_id'     => $employee->id,
-            'attendance_date' => $validated['attendance_date'],
-            'status'    => $validated['request_type'],
-            'notes'          => $validated['reason'],
-        ]);
+        foreach ($period as $date) {
 
+            $attendance = Attendance::where('employee_id', $employee->id)
+                ->whereDate('attendance_date', $date)
+                ->first();
+
+            if ($attendance) {
+                return back()->withErrors([
+                    'attendance_date' => 'Pada tanggal '.$date->format('d-m-Y').' sudah terdapat data absensi.'
+                ])
+                ->withInput();
+            }
+
+            Attendance::create([
+                'employee_id'     => $employee->id,
+                'attendance_date' => $date->toDateString(),
+                'status'          => $validated['request_type'],
+                'notes'           => $validated['reason'],
+            ]);
+        }
         return redirect()
             ->back()
             ->with('success', 'Data izin berhasil dikirim dan disimpan.');

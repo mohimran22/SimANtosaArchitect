@@ -4,12 +4,12 @@
 
 <div class="page-body">
     <div class="container-xl dashboard-container">
-        <div class="pt-2 pb-7 text-center">
+        {{-- <div class="pt-2 pb-7 text-center">
             <h2 class="fw-bold">
                 Selamat Datang {{ auth()->user()->fullname ?? 'Admin Utama' }} di Sistem Antosa Architect
             </h2>
-        </div>
-        <div class="row g-4">
+        </div> --}}
+        <div class="row g-4 mt-3">
             <div class="col-xl-4">
                 <div class="card shadow-sm border-0 rounded-4">
                     <div class="card-body p-4">
@@ -31,6 +31,8 @@
 
                         @if(!$attendanceToday)
                             @include('attendances.partials.check-in')
+                        @elseif($attendanceToday->status !== 'present')
+                            @include('attendances.partials.non-present')
                         @elseif(is_null($attendanceToday->check_out))
                             @include('attendances.partials.check-out')
                         @elseif(!$attendanceToday->overtime)

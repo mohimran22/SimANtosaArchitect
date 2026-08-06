@@ -181,13 +181,14 @@ class DashboardController extends Controller
                 ->latest()
                 ->first();
         }
+        $attendanceClosed = now()->gte(today()->setTime(10, 0));
         return view('dashboard.index', compact('user', 'incompleteProfile', 'incompleteAffiliator', 'attendanceToday', 'greeting', 'attendances',
         'hadir',
         'terlambat',
         'totalKaryawan',
         'belumHadir',
         'cashAccounts', 'totalProject', 'totalDesign', 'totalRab', 'totalBuild',
-        'runningBuild', 'todayRequest',
+        'runningBuild', 'attendanceClosed', 'todayRequest',
         'completedBuild',
         'topBuildProjects', 'totalCashBank',
         'cashInThisMonth',

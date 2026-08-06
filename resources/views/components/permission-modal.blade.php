@@ -12,14 +12,34 @@
                 </div>
 
                 <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">Tanggal</label>
+                    <div class="row">
 
-                        <input type="date"
-                            name="attendance_date"
-                            class="form-control"
-                            value="{{ now()->toDateString() }}"
-                            required>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label required">
+                                Tanggal Mulai
+                            </label>
+
+                            <input
+                                type="date"
+                                name="start_date"
+                                class="form-control"
+                                min="{{ today()->toDateString() }}"
+                                required>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label required">
+                                Tanggal Selesai
+                            </label>
+
+                            <input
+                                type="date"
+                                name="end_date"
+                                class="form-control"
+                                min="{{ today()->toDateString() }}"
+                                required>
+                        </div>
+
                     </div>
                     <div class="mb-3">
                         <label>Jenis</label>

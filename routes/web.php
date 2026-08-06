@@ -727,7 +727,7 @@ Route::middleware(['auth'])->group(function () {
         ->name('attendances.delete');
 
     Route::resource('attendances', AttendanceController::class)
-        ->except(['create', 'store', 'show']);
+        ->except(['show']);
 
     Route::post('attendances/check-in', [AttendanceController::class, 'checkIn'])
         // ->middleware('permission:tambah data absensi')
