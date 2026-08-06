@@ -11,7 +11,14 @@ class AttendanceService
     {
         if ($attendance->status !== 'present') {
             $attendance->work_minutes = 0;
-            $attendance->attendance_code = null;
+                $attendance->attendance_code = match ($attendance->status) {
+                    'permission'    => 'I',
+                    'sick'          => 'S',
+                    'leave'         => 'C',
+                    'business_trip' => 'DL',
+                    'alpha'         => 'A',
+                    default         => null,
+                };
             $attendance->is_full_work = false;
             $attendance->notes = null;
             $attendance->save();

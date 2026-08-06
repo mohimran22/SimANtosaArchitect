@@ -85,7 +85,7 @@ public function create()
     );
 }
 
-public function store(Request $request, AttendanceService $attendanceService)
+public function store(Request $request)
 {
     $validated = $request->validate([
         'employee_id' => [
@@ -149,10 +149,19 @@ public function store(Request $request, AttendanceService $attendanceService)
             ? $validated['attendance_date'].' '.$validated['check_out']
             : null,
         'notes' => $validated['notes'],
+        'attendance_code' => match ($request->status) {
+            'permission'    => 'I',
+            'sick'          => 'S',
+            'leave'         => 'C',
+            'business_trip' => 'DL',
+            'alpha'         => 'A',
+            default         => null,
+        },
     ]);
 
-    // Hitung hanya jika status hadir
-    $attendanceService->calculate($attendance);
+    if ($attendance->status === 'present') {
+        app(AttendanceService::class)->calculate($attendance);
+    }
 
     return redirect()
         ->route('attendances.index')
