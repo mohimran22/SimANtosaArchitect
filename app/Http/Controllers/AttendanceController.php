@@ -75,12 +75,88 @@ public function index()
         ->rawColumns(['fullname'])
         ->toJson();
 }
-public function create(Attendance $attendance)
+public function create()
 {
+    $employees = Employee::with('user')
+        ->get();
     return view(
         'attendances.partials.create',
-        compact('attendance')
+        compact('employees')
     );
+}
+
+public function store(Request $request, AttendanceService $attendanceService)
+{
+    $validated = $request->validate([
+        'employee_id' => [
+            'required',
+            'exists:employees,id',
+        ],
+        'attendance_date' => [
+            'required',
+            'date',
+        ],
+        'status' => [
+            'required',
+            Rule::in([
+                'present',
+                'permission',
+                'sick',
+                'leave',
+                'business_trip',
+                'alpha',
+            ]),
+        ],
+        'check_in' => [
+            Rule::requiredIf($request->status === 'present'),
+            'nullable',
+            'date_format:H:i',
+        ],
+        'check_out' => [
+            'nullable',
+            'date_format:H:i',
+            'after:check_in',
+        ],
+        'notes' => [
+            'nullable',
+            'string',
+            'max:1000',
+        ],
+    ]);
+
+    // Tidak boleh ada absensi ganda
+    $exists = Attendance::where('employee_id', $validated['employee_id'])
+        ->whereDate('attendance_date', $validated['attendance_date'])
+        ->exists();
+
+    if ($exists) {
+        return back()
+            ->withErrors([
+                'attendance_date' => 'Karyawan sudah memiliki data absensi pada tanggal tersebut.',
+            ])
+            ->withInput();
+    }
+
+    $attendance = Attendance::create([
+        'license_id'      => session('license_id'), // sesuaikan dengan projectmu
+        'employee_id'     => $validated['employee_id'],
+        'attendance_date' => $validated['attendance_date'],
+        'status'          => $validated['status'],
+        'check_in' => $validated['check_in']
+            ? $validated['attendance_date'].' '.$validated['check_in']
+            : null,
+        'check_out' => $validated['check_out']
+            ? $validated['attendance_date'].' '.$validated['check_out']
+            : null,
+        'notes' => $validated['notes'],
+    ]);
+
+    // Hitung hanya jika status hadir
+    $attendanceService->calculate($attendance);
+
+    return redirect()
+        ->route('attendances.index')
+        ->with('success', 'Data absensi berhasil ditambahkan.');
 }
 public function history(Request $request, Employee $employee)
 {
@@ -445,7 +521,7 @@ public function restore($id)
             'summaries' => $summaries,
             'month'     => $month,
             'year'      => $year,
-        ])->setPaper('a4', 'landscape');
+        ])->setPaper('f4', 'landscape');
 
         return $pdf->stream("Rekap Absensi {$month}-{$year}.pdf");
     }
@@ -475,7 +551,13 @@ public function historyPdf(Request $request, Employee $employee)
         compact('employee','attendances')
     )->setPaper('a4','portrait');
 
-    return $pdf->stream();
+    $filename = 'Riwayat Absensi';
+
+    if ($request->filled('start_date') && $request->filled('end_date')) {
+        $filename .= " {$request->start_date} s.d {$request->end_date}";
+    }
+
+    return $pdf->stream($filename.'.pdf');
 }
 
 public function exportExcel(Request $request, AttendanceSummaryService $summaryService)

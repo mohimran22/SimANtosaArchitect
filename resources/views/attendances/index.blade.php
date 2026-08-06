@@ -33,32 +33,33 @@
         <div class="row row-deck row-cards">
             <div class="col-12">
                 <div class="card">
-                    <div class="card-header">
-                            <h3 class="mb-0 fw-semibold">
-                                Daftar Absensi Karyawan
-                            </h3>
-                                            <div class="btn-list">
+                    <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
 
-                    <a href="{{ route('attendance.export') }}"
-                    class="btn btn-dark btn-export-excel"
-                    target="_blank">
-                        <i class="ti ti-file-export"></i>
-                        Ekspor Excel
-                    </a>
+                        <h3 class="card-title mb-0">
+                            Daftar Absensi Karyawan
+                        </h3>
 
-                    <a href="{{ route('attendance.export.pdf') }}"
-                    class="btn btn-outline-dark btn-export-pdf"
-                    target="_blank">
-                        <i class="ti ti-printer"></i>
-                        Cetak
-                    </a>
+                        <div class="btn-list">
+                            <a href="{{ route('attendance.export') }}"
+                            class="btn btn-dark"
+                            target="_blank">
+                                <i class="ti ti-file-export me-1"></i>
+                                Ekspor Excel
+                            </a>
 
-                </div>
+                            <a href="{{ route('attendance.export.pdf') }}"
+                            class="btn btn-outline-dark"
+                            target="_blank">
+                                <i class="ti ti-printer me-1"></i>
+                                Cetak
+                            </a>
+                        </div>
+
                     </div>
                         @if(session('success'))
                             <div class="alert alert-success">{{ session('success') }}</div>
                         @endif
-                        <form id="filterForm" class="row mb-3">
+                        <form id="filterForm" class="row g-2 align-items-center px-3 pt-3">
 
                             <div class="col-md-3">
                                 <select name="month" id="month" class="form-select">
@@ -136,24 +137,28 @@
         </div>
     </div>
 </div>
-{{-- <div class="modal fade" id="attendanceModal"tabindex="-1">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
-         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">
-                    Detail Absensi
-                </h5>
-                <button class="btn-close" data-bs-dismiss="modal">
-                </button>
-            </div>
-            <div class="modal-body">
-                <div id="attendanceModalContent">
-                    Loading...
-                </div>
-            </div>
-        </div>
-    </div>
-</div> --}}
+@can('tambah data absensi')
+<a href="{{ route('attendances.create') }}"
+   class="mobile-fab d-md-none">
+
+    <svg xmlns="http://www.w3.org/2000/svg"
+         width="26"
+         height="26"
+         viewBox="0 0 24 24"
+         stroke-width="2"
+         stroke="currentColor"
+         fill="none"
+         stroke-linecap="round"
+         stroke-linejoin="round">
+
+        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+        <line x1="12" y1="5" x2="12" y2="19"/>
+        <line x1="5" y1="12" x2="19" y2="12"/>
+
+    </svg>
+
+</a>
+@endcan
 @endsection
 @push('js')
     <script>

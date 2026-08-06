@@ -5,7 +5,7 @@
     <div class="container-xl">
         <div class="row align-items-center">
             <div class="col d-flex align-items-center">
-                <a href="{{ route('attendances.index') }}" class="btn btn-dark d-flex align-items-center" style="margin-left: 30px;">
+                <a href="{{ route('attendances.index') }}" class="btn btn-dark d-flex align-items-center">
                     <i class="ti ti-arrow-left"></i>
                 </a>
                 
@@ -31,45 +31,90 @@
                                         </div>
                                     @endif
 
-                    <input type="hidden" id="attendance_id" value="{{ $attendance->id }}">
-                    <div class="row">
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label required">
-                                Tanggal
-                            </label>
-                            <input
-                                type="date"
-                                class="form-control"
-                                name="attendance_date"
-                                value="">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label required">
+                                    Karyawan
+                                </label>
+
+                                <select
+                                    name="employee_id"
+                                    id="employee_id"
+                                    class="form-select select2"
+                                    required>
+
+                                    <option value="">Pilih Karyawan</option>
+
+                                    @foreach($employees as $employee)
+                                        <option 
+                                            value="{{ $employee->id }}"
+                                                @selected(old('employee_id') == $employee->id)>
+                                                {{ $employee->user->fullname }}
+                                        </option>
+                                    @endforeach
+
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label required">
+                                    Tanggal
+                                </label>
+                                <input
+                                    type="date"
+                                    class="form-control"
+                                    name="attendance_date"
+                                    value="{{ old('attendance_date') }}">
+                            </div>
                         </div>
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label">
-                                Jam Masuk
-                            </label>
+                        <div class="row">
 
-                            <input
-                                type="time"
-                                class="form-control"
-                                name="check_in"
-                                value="">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label required">
+                                    Status
+                                </label>
+
+                                <select
+                                    name="status"
+                                    id="status"
+                                    class="form-select select2"
+                                    required>
+
+                                    <option value="present">Hadir</option>
+                                    <option value="permission">Izin</option>
+                                    <option value="sick">Sakit</option>
+                                    <option value="leave">Cuti</option>
+                                    <option value="business_trip">Dinas Luar</option>
+                                    <option value="alpha">Alpha</option>
+
+                                </select>
+                            </div>
+
+                            <div class="col-md-4 mb-3 time-section">
+                                <label class="form-label">
+                                    Jam Masuk
+                                </label>
+
+                                <input
+                                    type="time"
+                                    class="form-control"
+                                    name="check_in"
+                                    value="{{ old('check_in') }}">
+                            </div>
+
+                            <div class="col-md-4 mb-3 time-section">
+                                <label class="form-label">
+                                    Jam Pulang
+                                </label>
+
+                                <input
+                                    type="time"
+                                    class="form-control"
+                                    name="check_out"
+                                    value="{{ old('check_out') }}">
+                            </div>
 
                         </div>
-
-                        <div class="col-md-4 mb-3">
-
-                            <label class="form-label">
-
-                                Jam Pulang
-
-                            </label>
-
-                            <input
-                                type="time"
-                                class="form-control"
-                                name="check_out"
-                                value="">
-                        </div>
+                         
                         <div class="col-12 mb-3">
                             <label class="form-label">
                                 Catatan
@@ -77,31 +122,13 @@
                             <textarea
                                 class="form-control"
                                 rows="3"
-                                name="notes">{{ $attendance->notes }}</textarea>
+                                name="notes">{{ old('notes')}}</textarea>
                         </div>
-                        <div class="mb-3">
 
-                            <label class="form-label required">
-                                Alasan Perubahan
-                            </label>
-
-                            <textarea
-                                name="edit_reason"
-                                rows="3"
-                                class="form-control"
-                                placeholder="Contoh: Karyawan lupa checkout karena aplikasi force close."
-                                required></textarea>
-
-                        </div>
-                    </div>
                     <div class="text-end">
-                        <button class="btn btn-secondary btn-back-history" data-employee="{{ $attendance->employee_id }}">
-                            <i class="ti ti-arrow-left"></i>
-                            Kembali
-                        </button>
                         <button type="submit" class="btn btn-dark">
                             <i class="ti ti-device-floppy"></i>
-                            Simpan Perubahan
+                            Simpan
                         </button>
                     </div>
                 </form>
@@ -110,3 +137,30 @@
     </div>
 </div>
 @endsection
+@push('js')
+<script>
+$('#employee_id').select2({
+    placeholder: 'Pilih Karyawan',
+    width: '100%'
+});
+
+$('#status').select2({
+    minimumResultsForSearch: Infinity,
+    width: '100%'
+});
+
+function toggleTimeSection() {
+
+    const isPresent = $('#status').val() === 'present';
+
+    $('.time-section').toggle(isPresent);
+
+    $('input[name="check_in"]').prop('required', isPresent);
+    $('input[name="check_out"]').prop('required', isPresent);
+}
+
+$('#status').on('change', toggleTimeSection);
+
+toggleTimeSection();
+</script>
+@endpush

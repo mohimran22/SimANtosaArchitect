@@ -720,3 +720,19 @@ initCamera({
 });
 </script>
 @endpush
+<style>
+.footer.footer-transparent {
+    display: flex;
+    margin-left: 0;
+    flex-direction: column;
+    padding: 20px 20px 20px 16px;
+    transition: all .3s ease;
+}
+
+.sidebar-collapsed .footer.footer-transparent {
+    padding-left: 20px;
+    padding-right: 18px;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+</style>

@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-
+    <title>Antosa Architect</title>
     <style>
         @page{
             margin:140px 25px 110px;
@@ -69,13 +69,13 @@
 
             background:#f3f4f6;
 
-            font-size:10px;
+            font-size:9px;
 
             font-weight:bold;
 
             text-align:center;
 
-            padding:7px 4px;
+            padding:6px 2px;
 
             border:.6px solid #666;
         }
@@ -83,9 +83,9 @@
 
             border:.5px solid #999;
 
-            padding:6px 2px;
+            padding:5px 2px;
 
-            font-size:10px;
+            font-size:9px;
 
             vertical-align:middle;
         }
@@ -97,7 +97,10 @@
         .text-left{
             text-align:left;
         }
-
+        .role{
+            font-size:8px;
+            line-height:1.2;
+        }
         .text-center{
             text-align:center;
         }
@@ -111,6 +114,10 @@
 
         tr{
             page-break-inside:avoid;
+        }
+        .status-col{
+            width:20px;
+            text-align:center;
         }
     </style>
 
@@ -139,53 +146,28 @@
 <table>
 
     <thead>
-
         <tr>
+            <th style="width:4%">No</th>
+            <th style="width:24%">Nama Karyawan</th>
+            <th style="width:16%">Jabatan</th>
 
-            <th style="width:5px">No</th>
+            <th class="status-col">H</th>
+            <th class="status-col">TL A</th>
+            <th class="status-col">TL B</th>
+            <th class="status-col">TL C</th>
+            <th class="status-col">DL</th>
 
-            <th style="width:210px">Nama Karyawan</th>
+            <th class="status-col">I</th>
+            <th class="status-col">S</th>
+            <th class="status-col">C</th>
+            <th class="status-col">A</th>
 
-            <th style="width:34px">H</th>
-
-            <th style="width:34px">TL A</th>
-
-            <th style="width:34px">TL B</th>
-
-            <th style="width:34px">TL C</th>
-
-            <th style="width:34px">DL</th>
-
-            <th style="width:28px">I</th>
-
-            <th style="width:28px">S</th>
-
-            <th style="width:28px">C</th>
-
-            <th style="width:28px">A</th>
-
-            <th style="width:55px">
-            Hari<br>Kerja
-            </th>
-
-            <th style="width:55px">
-            Hari<br>Hadir
-            </th>
-
-            <th style="width:60px">
-            Kehadiran
-            </th>
-
-            <th style="width:70px">
-            Ketepatan<br>Waktu
-            </th>
-
-            <th style="width:55px">
-            Lembur<br>(Jam)
-            </th>
-
+            <th style="width:5%">Hari<br>Kerja</th>
+            <th style="width:5%">Hari<br>Hadir</th>
+            <th style="width:6%">Kehadiran</th>
+            <th style="width:7%">Ketepatan<br>Waktu</th>
+            <th style="width:6%">Lembur<br>(Jam)</th>
         </tr>
-
     </thead>
 
     <tbody>
@@ -200,23 +182,23 @@
             <td class="text-left">
                 {{ Str::title($employee->user?->fullname) }}
             </td>
-            {{-- <td>{{ $employee->user?->roles?->pluck('name')->implode(', ') }}</td> --}}
+            <td class="text-left role">{{ $employee->user?->roles?->pluck('name')->implode(', ') }}</td>
 
-            <td class="text-center">{{ $summary['H'] ?? 0 }}</td>
-            <td class="text-center">{{ $summary['TL A'] ?? 0 }}</td>
-            <td class="text-center">{{ $summary['TL B'] ?? 0 }}</td>
-            <td class="text-center">{{ $summary['TL C'] ?? 0 }}</td>
-            <td class="text-center">{{ $summary['DL'] ?? 0 }}</td>
-            <td class="text-center">{{ $summary['I'] ?? 0 }}</td>
-            <td class="text-center">{{ $summary['S'] ?? 0 }}</td>
-            <td class="text-center">{{ $summary['C'] ?? 0 }}</td>
-            <td class="text-center">{{ $summary['A'] ?? 0 }}</td>
+            <td class="status-col">{{ $summary['H'] ?? 0 }}</td>
+            <td class="status-col">{{ $summary['TL A'] ?? 0 }}</td>
+            <td class="status-col">{{ $summary['TL B'] ?? 0 }}</td>
+            <td class="status-col">{{ $summary['TL C'] ?? 0 }}</td>
+            <td class="status-col">{{ $summary['DL'] ?? 0 }}</td>
+            <td class="status-col">{{ $summary['I'] ?? 0 }}</td>
+            <td class="status-col">{{ $summary['S'] ?? 0 }}</td>
+            <td class="status-col">{{ $summary['C'] ?? 0 }}</td>
+            <td class="status-col">{{ $summary['A'] ?? 0 }}</td>
 
-            <td class="text-center">{{ $summary['total_hari_kerja'] ?? 0 }}</td>
-            <td class="text-center">{{ $summary['total_hari_kehadiran'] ?? 0 }}</td>
-            <td class="text-center">{{ $summary['kehadiran'] ?? 0 }}%</td>
-            <td class="text-center">{{ $summary['ketepatan_waktu'] ?? 0 }}%</td>
-            <td class="text-center">{{ round(($summary['total_jam_lembur'] ?? 0)/60,2) }}</td>
+            <td class="status-col">{{ $summary['total_hari_kerja'] ?? 0 }}</td>
+            <td class="status-col">{{ $summary['total_hari_kehadiran'] ?? 0 }}</td>
+            <td class="status-col">{{ $summary['kehadiran'] ?? 0 }}%</td>
+            <td class="status-col">{{ $summary['ketepatan_waktu'] ?? 0 }}%</td>
+            <td class="status-col">{{ round(($summary['total_jam_lembur'] ?? 0)/60,2) }}</td>
             {{-- <td>{{ $summary['keterangan'] ?? '-' }}</td> --}}
         </tr>
         @endforeach
