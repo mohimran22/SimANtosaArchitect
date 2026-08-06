@@ -263,7 +263,6 @@ public function edit(Attendance $attendance)
         $attendanceService->calculate($attendance);
 
         $attendance->save();
-        dd(DB::getQueryLog());
         // $newData = [
         //     'attendance_date'   => $attendance->attendance_date,
         //     'check_in'          => optional($attendance->check_in)->toDateTimeString(),
@@ -447,7 +446,6 @@ public function restore($id)
         }
 
         $attendance->update([
-            'status'           => 'go_home',
             'check_out'        => now(),
             'check_out_photo'  => $photoPath,
             'check_out_lat'    => $request->check_out_lat,
