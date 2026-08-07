@@ -27,14 +27,14 @@ public function index(Request $request)
                 $buttons = '';
 
                 if (auth()->user()->can('ubah data menu')) {
-                    $buttons .= '<a href="' . route('permissions.edit', $permission->id) . '" class="btn btn-icon btn-sm btn-warning me-1" title="Ubah">
+                    $buttons .= '<a href="' . route('permissions.edit', $permission->id) . '" class="btn btn-icon btn-sm btn-dark me-1" title="Ubah">
                         <i class="ti ti-edit"></i>
                     </a>';
                 }
 
                 if (auth()->user()->can('hapus data menu')) {
                     $buttons .= '<button
-                        " class="btn btn-icon btn-sm btn-danger delete-permissions" title="Hapus"
+                        " class="btn btn-icon btn-sm btn-dark delete-permissions" title="Hapus"
                         data-id="'.$permission->id.'">
                         <i class="ti ti-trash"></i>
                     </button>';

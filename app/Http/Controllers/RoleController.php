@@ -97,44 +97,48 @@ class RoleController extends Controller
 
     public function create()
     {
-        $permissions = Permission::all();
-        $permissionGroups = $permissions->groupBy('modules');
-        $parents = Menu::with(['children' => function ($q) {
-            $q->orderBy('order');
-        }])
-        ->whereNull('parent_id')
-        ->orderBy('order')
-        ->get();
-        $groupedPermissions = collect();
+        // $permissions = Permission::all();
+        // $permissionGroups = $permissions->groupBy('modules');
+        // $parents = Menu::with(['children' => function ($q) {
+        //     $q->orderBy('order');
+        // }])
+        // ->whereNull('parent_id')
+        // ->orderBy('order')
+        // ->get();
+        // $groupedPermissions = collect();
 
-        foreach ($parents as $parent) {
+        // foreach ($parents as $parent) {
 
-            foreach ($parent->children as $child) {
+        //     foreach ($parent->children as $child) {
 
-                if (!$child->permission_name) {
-                    continue;
-                }
+        //         if (!$child->permission_name) {
+        //             continue;
+        //         }
 
-                $firstPermission = Permission::where('name', $child->permission_name)->first();
+        //         // $firstPermission = Permission::where('name', $child->permission_name)->first();
 
-                if (!$firstPermission) {
-                    continue;
-                }
+        //         // if (!$firstPermission) {
+        //         //     continue;
+        //         // }
+        //         $permissionMap = Permission::pluck('modules', 'name');
+        //         // $module = $firstPermission->modules;
+        //         $module = $permissionMap[$child->permission_name] ?? null;
+        //         if (!$module) {
+        //             continue;
+        //         }
+        //         if (!$groupedPermissions->has($module)) {
+        //             $groupedPermissions[$module] = $permissionGroups[$module] ?? collect();
+        //         }
+        //     }
+        // }
+        // foreach ($permissionGroups as $module => $items) {
 
-                $module = $firstPermission->modules;
+        //     if (!$groupedPermissions->has($module)) {
+        //         $groupedPermissions[$module] = $items;
+        //     }
 
-                if (!$groupedPermissions->has($module)) {
-                    $groupedPermissions[$module] = $permissionGroups[$module] ?? collect();
-                }
-            }
-        }
-        foreach ($permissionGroups as $module => $items) {
-
-            if (!$groupedPermissions->has($module)) {
-                $groupedPermissions[$module] = $items;
-            }
-
-        }
+        // }
+        $groupedPermissions = $this->getGroupedPermissions();
         return view('roles.create', compact('groupedPermissions'));
     }
 
@@ -164,9 +168,13 @@ class RoleController extends Controller
     public function edit($id)
     {
         $role = Role::findOrFail($id);
-        
-        $permissions = Permission::all();
-        return view('roles.edit', compact('role', 'permissions'));
+
+        $groupedPermissions = $this->getGroupedPermissions();
+
+        return view('roles.edit', compact(
+            'role',
+            'groupedPermissions'
+        ));
     }
 
     public function update(Request $request, Role $role)
@@ -224,4 +232,53 @@ class RoleController extends Controller
 
         }
     }
+    private function getGroupedPermissions()
+{
+    $permissions = Permission::all();
+
+    $permissionGroups = $permissions->groupBy('modules');
+
+    $parents = Menu::with([
+        'children' => function ($q) {
+            $q->orderBy('order');
+        }
+    ])
+    ->whereNull('parent_id')
+    ->orderBy('order')
+    ->get();
+
+    // Mapping permission -> module
+    $permissionMap = Permission::pluck('modules', 'name');
+
+    $groupedPermissions = collect();
+
+    foreach ($parents as $parent) {
+
+        foreach ($parent->children as $child) {
+
+            if (!$child->permission_name) {
+                continue;
+            }
+
+            $module = $permissionMap[$child->permission_name] ?? null;
+
+            if (!$module) {
+                continue;
+            }
+
+            if (!$groupedPermissions->has($module)) {
+                $groupedPermissions[$module] = $permissionGroups[$module] ?? collect();
+            }
+        }
+    }
+
+    // Tambahkan module yang belum ada di menu
+    foreach ($permissionGroups as $module => $items) {
+        if (!$groupedPermissions->has($module)) {
+            $groupedPermissions[$module] = $items;
+        }
+    }
+
+    return $groupedPermissions;
+}
 }
