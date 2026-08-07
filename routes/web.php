@@ -12,6 +12,7 @@ use App\Http\Controllers\AccountingReportController;
 use App\Http\Controllers\AccountingPeriodController;
 use App\Http\Controllers\UsersController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\CustomersController;
 use App\Http\Controllers\AffiliatorController;
