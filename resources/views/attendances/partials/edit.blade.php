@@ -23,7 +23,6 @@
                 class="form-control"
                 name="check_in"
                 value="{{ optional($attendance->check_in)->format('H:i') }}">
-
         </div>
 
         <div class="col-md-4 mb-3">

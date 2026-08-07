@@ -20,8 +20,7 @@ class AttendanceService
                     default         => null,
                 };
             $attendance->is_full_work = false;
-            $attendance->notes = null;
-
+            $attendance->system_notes = null;
             return;
         }
         $workMinutes = $this->calculateWorkMinutes($attendance);
@@ -34,10 +33,9 @@ class AttendanceService
         $attendance->work_minutes = $workMinutes;
         $attendance->attendance_code = $attendanceCode;
         $attendance->is_full_work = $workMinutes >= 480;
-        $attendance->notes = $workMinutes < 480
+        $attendance->system_notes = $workMinutes < 480
             ? 'Durasi kerja kurang dari 8 jam'
             : null;
-        $attendance->save();
     }
 
     private function calculateWorkMinutes(Attendance $attendance): int

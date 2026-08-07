@@ -8,17 +8,23 @@
 
             <div class="row g-3">
 
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <small class="text-secondary">Tanggal</small>
                     <div class="fw-bold">
                         {{ $attendance->attendance_date->translatedFormat('d F Y') }}
                     </div>
                 </div>
 
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <small class="text-secondary">Status</small>
                     <div class="fw-bold">
                         {{ $attendance->attendance_code }}
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <small class="text-secondary">Catatan</small>
+                    <div class="fw-bold">
+                        {{ $attendance->notes }}
                     </div>
                 </div>
             </div>

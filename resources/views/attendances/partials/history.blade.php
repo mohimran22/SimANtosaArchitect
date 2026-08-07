@@ -143,113 +143,113 @@
 
 @else
 
-<div class="table-responsive">
+    <div class="table-responsive">
 
-<table class="table table-hover table-vcenter">
+        <table class="table table-hover table-vcenter">
 
-    <thead>
-        <tr>
-            <th width="80">Tanggal</th>
-            <th width="80">Masuk</th>
-            <th width="80">Pulang</th>
-            <th width="60">Status</th>
-            <th width="80">Jam Kerja</th>
-            <th width="80">Lembur</th>
-            <th width="110" class="text-center">
-                Aksi
-            </th>
-        </tr>
-    </thead>
+            <thead>
+                <tr>
+                    <th width="80">Tanggal</th>
+                    <th width="80">Masuk</th>
+                    <th width="80">Pulang</th>
+                    <th width="60">Status</th>
+                    <th width="80">Jam Kerja</th>
+                    <th width="80">Lembur</th>
+                    <th width="110" class="text-center">
+                        Aksi
+                    </th>
+                </tr>
+            </thead>
 
-    <tbody>
+            <tbody>
 
-    @foreach($attendances as $attendance)
+            @foreach($attendances as $attendance)
 
-    @php
+            @php
 
-        $badge = match($attendance->attendance_code){
+                $badge = match($attendance->attendance_code){
 
-            'H' => 'bg-success',
+                    'H' => 'bg-success',
 
-            'TL A' => 'bg-warning',
+                    'TL A' => 'bg-warning',
 
-            'TL B' => 'bg-orange',
+                    'TL B' => 'bg-orange',
 
-            'TL C' => 'bg-danger',
+                    'TL C' => 'bg-danger',
 
-            'DL' => 'bg-info',
+                    'DL' => 'bg-info',
 
-            'I' => 'bg-secondary',
+                    'I' => 'bg-secondary',
 
-            'S' => 'bg-cyan',
+                    'S' => 'bg-cyan',
 
-            'C' => 'bg-purple',
+                    'C' => 'bg-purple',
 
-            default => 'bg-dark'
+                    default => 'bg-dark'
 
-        };
-    @endphp
+                };
+            @endphp
 
-    <tr>
-        <td>
-            {{ \Carbon\Carbon::parse($attendance->attendance_date)->translatedFormat('d F Y') }}
-        </td>
-        <td>
-            {{ optional($attendance->check_in)->format('H:i') ?? '-' }}
-        </td>
-        <td>
-            {{ optional($attendance->check_out)->format('H:i') ?? '-' }}
-        </td>
-        <td>
-            <span class="badge {{ $badge }}">
-                {{ $attendance->attendance_code ?? '-' }}
-            </span>
-        </td>
-        <td>
-            {{ $attendance->work_duration }}
-        </td>
-        <td>{{ $attendance->overtime?->duration ?? '-' }}</td>
-        <td class="text-center">
-            <div class="d-flex justify-content-center align-items-center gap-2 flex-wrap">
-                <button
-                    class="btn btn-sm btn-dark btn-detail"
-                    data-id="{{ $attendance->id }}"
-                    title="Detail">
-                    <i class="ti ti-eye"></i>
-                </button>
+            <tr>
+                <td>
+                    {{ \Carbon\Carbon::parse($attendance->attendance_date)->translatedFormat('d F Y') }}
+                </td>
+                <td>
+                    {{ optional($attendance->check_in)->format('H:i') ?? '-' }}
+                </td>
+                <td>
+                    {{ optional($attendance->check_out)->format('H:i') ?? '-' }}
+                </td>
+                <td>
+                    <span class="badge {{ $badge }}">
+                        {{ $attendance->attendance_code ?? '-' }}
+                    </span>
+                </td>
+                <td>
+                    {{ $attendance->work_duration }}
+                </td>
+                <td>{{ $attendance->overtime?->duration ?? '-' }}</td>
+                <td class="text-center">
+                    <div class="d-flex justify-content-center align-items-center gap-2 flex-wrap">
+                        <button
+                            class="btn btn-sm btn-dark btn-detail"
+                            data-id="{{ $attendance->id }}"
+                            title="Detail">
+                            <i class="ti ti-eye"></i>
+                        </button>
 
-                @role('Super-Admin')
-                    <button
-                        class="btn btn-sm btn-dark btn-edit"
-                        data-id="{{ $attendance->id }}"
-                        title="Edit">
-                        <i class="ti ti-edit"></i>
-                    </button>
+                        @role('Super-Admin')
+                            <button
+                                class="btn btn-sm btn-dark btn-edit"
+                                data-id="{{ $attendance->id }}"
+                                title="Edit">
+                                <i class="ti ti-edit"></i>
+                            </button>
 
-                    <button
-                        class="btn btn-sm btn-dark btn-delete"
-                        data-id="{{ $attendance->id }}"
-                        title="Hapus">
-                        <i class="ti ti-trash"></i>
-                    </button>
+                            <button
+                                class="btn btn-sm btn-dark btn-delete"
+                                data-id="{{ $attendance->id }}"
+                                title="Hapus">
+                                <i class="ti ti-trash"></i>
+                            </button>
 
-                    {{-- <button
-                        class="btn btn-sm btn-dark btn-revisions"
-                        data-id="{{ $attendance->id }}"
-                        title="Riwayat Revisi">
-                        <i class="ti ti-history"></i>
-                    </button> --}}
-                @endrole
-            </div>
-        </td>
-    </tr>
+                            {{-- <button
+                                class="btn btn-sm btn-dark btn-revisions"
+                                data-id="{{ $attendance->id }}"
+                                title="Riwayat Revisi">
+                                <i class="ti ti-history"></i>
+                            </button> --}}
+                        @endrole
+                    </div>
+                </td>
+            </tr>
 
-    @endforeach
+            @endforeach
 
-    </tbody>
+            </tbody>
 
-</table>
+        </table>
 
-</div>
+    </div>
 
 @endif

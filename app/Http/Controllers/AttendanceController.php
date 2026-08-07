@@ -149,19 +149,10 @@ public function store(Request $request)
             ? $validated['attendance_date'].' '.$validated['check_out']
             : null,
         'notes' => $validated['notes'],
-        'attendance_code' => match ($request->status) {
-            'permission'    => 'I',
-            'sick'          => 'S',
-            'leave'         => 'C',
-            'business_trip' => 'DL',
-            'alpha'         => 'A',
-            default         => null,
-        },
     ]);
 
-    if ($attendance->status === 'present') {
-        app(AttendanceService::class)->calculate($attendance);
-    }
+    app(AttendanceService::class)->calculate($attendance);
+    $attendance->save();
 
     return redirect()
         ->route('attendances.index')
@@ -453,6 +444,7 @@ public function restore($id)
         ]);
 
         app(AttendanceService::class)->calculate($attendance);
+        $attendance->save();
         return back()->with('success', 'Berhasil melakukan absensi pulang.');
     }
         public function permission(Request $request)
@@ -503,12 +495,14 @@ public function restore($id)
                 ->withInput();
             }
 
-            Attendance::create([
+            $attendance = Attendance::create([
                 'employee_id'     => $employee->id,
                 'attendance_date' => $date->toDateString(),
                 'status'          => $validated['request_type'],
                 'notes'           => $validated['reason'],
             ]);
+            app(AttendanceService::class)->calculate($attendance);
+            $attendance->save();
         }
         return redirect()
             ->back()
