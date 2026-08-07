@@ -28,6 +28,29 @@
                     </div>
                 </div>
             </div>
+            @if($attendance->system_notes)
+
+                <hr>
+
+                <div class="alert alert-warning mb-0">
+                    <div class="d-flex align-items-start">
+
+                        <i class="ti ti-info-circle me-2 fs-2"></i>
+
+                        <div>
+                            <div class="fw-bold mb-1">
+                                Catatan Sistem
+                            </div>
+
+                            <div>
+                                {{ $attendance->system_notes }}
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            @endif
             <hr>
             <div class="row g-3">
                 <div class="col-md-4">
