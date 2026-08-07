@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Role;
 use App\Models\Permission;
+use App\Models\Menu;
 use Yajra\DataTables\Facades\DataTables;
 
 class RoleController extends Controller
@@ -97,7 +98,44 @@ class RoleController extends Controller
     public function create()
     {
         $permissions = Permission::all();
-        return view('roles.create', compact('permissions'));
+        $permissionGroups = $permissions->groupBy('modules');
+        $parents = Menu::with(['children' => function ($q) {
+            $q->orderBy('order');
+        }])
+        ->whereNull('parent_id')
+        ->orderBy('order')
+        ->get();
+        $groupedPermissions = collect();
+
+        foreach ($parents as $parent) {
+
+            foreach ($parent->children as $child) {
+
+                if (!$child->permission_name) {
+                    continue;
+                }
+
+                $firstPermission = Permission::where('name', $child->permission_name)->first();
+
+                if (!$firstPermission) {
+                    continue;
+                }
+
+                $module = $firstPermission->modules;
+
+                if (!$groupedPermissions->has($module)) {
+                    $groupedPermissions[$module] = $permissionGroups[$module] ?? collect();
+                }
+            }
+        }
+        foreach ($permissionGroups as $module => $items) {
+
+            if (!$groupedPermissions->has($module)) {
+                $groupedPermissions[$module] = $items;
+            }
+
+        }
+        return view('roles.create', compact('groupedPermissions'));
     }
 
     public function store(Request $request)
