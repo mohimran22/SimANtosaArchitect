@@ -184,8 +184,8 @@
                     'S' => 'bg-cyan',
 
                     'C' => 'bg-purple',
-
-                    default => 'bg-dark'
+                    'A' => 'bg-dark',
+                    default => 'bg-primary'
 
                 };
             @endphp

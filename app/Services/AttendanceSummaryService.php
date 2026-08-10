@@ -50,36 +50,27 @@ class AttendanceSummaryService
                 'keterangan' => '',
             ];
 
-            foreach ($employee->attendances as $attendance) {
+        foreach ($employee->attendances as $attendance) {
 
-                if (isset($summary[$attendance->attendance_code])) {
-                    $summary[$attendance->attendance_code]++;
-                }
+            // Gunakan attendance_code sebagai sumber utama
+            $code = $attendance->attendance_code;
 
-                switch ($attendance->status) {
-
-                    case 'business_trip':
-                        $summary['DL']++;
-                        break;
-
-                    case 'permission':
-                        $summary['I']++;
-                        break;
-
-                    case 'sick':
-                        $summary['S']++;
-                        break;
-
-                    case 'leave':
-                        $summary['C']++;
-                        break;
-
-                    case 'alpha':
-                        $summary['A']++;
-                        break;
-                }
-
+            // Fallback untuk data lama yang attendance_code masih NULL
+            if (!$code) {
+                $code = match ($attendance->status) {
+                    'permission'    => 'I',
+                    'sick'          => 'S',
+                    'leave'         => 'C',
+                    'business_trip' => 'DL',
+                    'alpha'         => 'A',
+                    default         => null,
+                };
             }
+
+            if ($code && isset($summary[$code])) {
+                $summary[$code]++;
+            }
+        }
 
             $summary['total_hari_kerja'] =
                 collect([
@@ -118,17 +109,22 @@ class AttendanceSummaryService
 
             if ($summary['total_hari_kehadiran'] > 0) {
 
-                $tepatWaktu =
-                    $summary['H']
-                    + $summary['TL A']
+                $terlambat =
+                    $summary['TL A']
                     + $summary['TL B']
                     + $summary['TL C'];
 
+                $tepatWaktu =
+                    $summary['total_hari_kehadiran']
+                    - $terlambat;
+
                 $summary['ketepatan_waktu'] = round(
-                    ($tepatWaktu / $summary['total_hari_kehadiran']) * 100,
+                    (
+                        $tepatWaktu
+                        / $summary['total_hari_kehadiran']
+                    ) * 100,
                     1
                 );
-
             }
 
             $result[$employee->id] = $summary;
