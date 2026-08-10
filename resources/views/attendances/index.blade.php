@@ -147,7 +147,7 @@
         </div>
     </div>
 </div>
-@can('tambah data absensi')
+@role('Super-Admin')
 <a href="{{ route('attendances.create') }}"
    class="mobile-fab d-md-none">
 
@@ -168,7 +168,7 @@
     </svg>
 
 </a>
-@endcan
+@endrole
 @can('ajukan izin absensi')
 <button
                             type="button"
@@ -773,6 +773,33 @@
         });
         $(document).on('change', '#history_start_date,#history_end_date', function () {
         updateHistoryExportLink();
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+
+            const startDate = document.querySelector(
+                '#izinFutureModal input[name="start_date"]'
+            );
+
+            const endDate = document.querySelector(
+                '#izinFutureModal input[name="end_date"]'
+            );
+
+            if (!startDate || !endDate) {
+                return;
+            }
+
+            startDate.addEventListener('change', function () {
+
+                endDate.min = this.value;
+
+                if (endDate.value && endDate.value < this.value) {
+                    endDate.value = this.value;
+                }
+
+            });
+
         });
     </script>
 @endpush
