@@ -166,27 +166,17 @@
             @foreach($attendances as $attendance)
 
             @php
-
-                $badge = match($attendance->attendance_code){
-
-                    'H' => 'bg-success',
-
+                $badge = match($attendance->attendance_code) {
+                    'H'    => 'bg-success',
                     'TL A' => 'bg-warning',
-
                     'TL B' => 'bg-orange',
-
                     'TL C' => 'bg-danger',
-
-                    'DL' => 'bg-info',
-
-                    'I' => 'bg-secondary',
-
-                    'S' => 'bg-cyan',
-
-                    'C' => 'bg-purple',
-                    'A' => 'bg-dark',
-                    default => 'bg-primary'
-
+                    'DL'   => 'bg-info',
+                    'I'    => 'bg-secondary',
+                    'S'    => 'bg-cyan',
+                    'C'    => 'bg-purple',
+                    'A'    => 'bg-dark',
+                    default => 'bg-secondary',
                 };
             @endphp
 

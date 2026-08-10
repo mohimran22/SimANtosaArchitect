@@ -447,6 +447,7 @@ public function restore($id)
         $attendance->save();
         return back()->with('success', 'Berhasil melakukan absensi pulang.');
     }
+
         public function permission(Request $request)
     {
         $employee = auth()->user()->employee;

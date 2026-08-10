@@ -6,9 +6,19 @@
     <div class="container-xl">
         <div class="row align-items-center">
             <div class="col-12 col-md-auto ms-auto d-print-none">
-                <div class="btn-list">
+                <div class="d-flex align-items-center gap-2">
+                    @can('ajukan izin absensi')
+                        <button
+                            type="button"
+                            class="btn btn-warning"
+                            data-bs-toggle="modal"
+                            data-bs-target="#izinFutureModal">
 
-                    @can('tambah data absensi')
+                            <i class="ti ti-calendar-plus me-1"></i>
+                            Ajukan Izin / Cuti
+                        </button>
+                    @endcan
+                    @role('Super-Admin')
                             <a href="{{ route('attendances.create') }}" class="btn btn-dark">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24"
                                     viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
@@ -20,7 +30,7 @@
 
                                 Tambah Data Absensi
                             </a>
-                    @endcan
+                    @endrole
 
                 </div>
             </div>
@@ -159,6 +169,189 @@
 
 </a>
 @endcan
+@can('ajukan izin absensi')
+<button
+                            type="button"
+                            class="mobile-fab d-md-none"
+                            data-bs-toggle="modal"
+                            data-bs-target="#izinFutureModal">
+
+    <svg xmlns="http://www.w3.org/2000/svg"
+         width="26"
+         height="26"
+         viewBox="0 0 24 24"
+         stroke-width="2"
+         stroke="currentColor"
+         fill="none"
+         stroke-linecap="round"
+         stroke-linejoin="round">
+
+        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+        <line x1="12" y1="5" x2="12" y2="19"/>
+        <line x1="5" y1="12" x2="19" y2="12"/>
+
+    </svg>
+
+</button>
+@endcan
+<div
+    class="modal fade"
+    id="izinFutureModal"
+    tabindex="-1"
+    aria-labelledby="izinFutureModalLabel"
+    aria-hidden="true">
+
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+
+        <form
+            action="{{ route('attendances.permission.store') }}"
+            method="POST">
+
+            @csrf
+
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title" id="izinFutureModalLabel">
+                        <i class="ti ti-calendar-plus me-2"></i>
+                        Ajukan Izin / Cuti
+                    </h5>
+
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close">
+                    </button>
+                </div>
+
+                <div class="modal-body">
+
+                    <div class="alert alert-info">
+                        <i class="ti ti-info-circle me-1"></i>
+
+                        Pengajuan ini digunakan untuk izin, sakit, atau cuti
+                        pada tanggal yang akan datang.
+                    </div>
+
+                    <div class="row">
+
+                        {{-- Tanggal Mulai --}}
+                        <div class="col-md-6 mb-3">
+
+                            <label class="form-label required">
+                                Tanggal Mulai
+                            </label>
+
+                            <input
+                                type="date"
+                                name="start_date"
+                                class="form-control"
+                                min="{{ today()->addDay()->toDateString() }}"
+                                required>
+
+                            <div class="form-text">
+                                Minimal mulai besok.
+                            </div>
+
+                        </div>
+
+                        {{-- Tanggal Selesai --}}
+                        <div class="col-md-6 mb-3">
+
+                            <label class="form-label required">
+                                Tanggal Selesai
+                            </label>
+
+                            <input
+                                type="date"
+                                name="end_date"
+                                class="form-control"
+                                min="{{ today()->addDay()->toDateString() }}"
+                                required>
+
+                        </div>
+
+                    </div>
+
+                    {{-- Jenis --}}
+                    <div class="mb-3">
+
+                        <label class="form-label required">
+                            Jenis Pengajuan
+                        </label>
+
+                        <select
+                            name="request_type"
+                            class="form-select"
+                            required>
+
+                            <option value="">
+                                -- Pilih Jenis --
+                            </option>
+
+                            <option value="permission">
+                                Izin
+                            </option>
+
+                            <option value="sick">
+                                Sakit
+                            </option>
+
+                            <option value="leave">
+                                Cuti
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                    {{-- Alasan --}}
+                    <div class="mb-3">
+
+                        <label class="form-label required">
+                            Alasan
+                        </label>
+
+                        <textarea
+                            name="reason"
+                            class="form-control"
+                            rows="4"
+                            placeholder="Masukkan alasan pengajuan..."
+                            required></textarea>
+
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+
+                        Batal
+
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="btn btn-warning">
+
+                        <i class="ti ti-send me-1"></i>
+                        Kirim Pengajuan
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+</div>
 @endsection
 @push('js')
     <script>

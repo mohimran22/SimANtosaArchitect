@@ -10,6 +10,7 @@
             </h2>
         </div> --}}
         <div class="row g-4 mt-3">
+            @can('lihat data absensi')
             <div class="col-xl-4">
                 <div class="card shadow-sm border-0 rounded-4">
                     <div class="card-body p-4">
@@ -46,6 +47,7 @@
                     </div>
                 </div>
             </div>
+            @endcan
             @can('lihat daftar absensi')
             <div class="col-xl-8">
                 <div class="card shadow-sm border-0 rounded-4">
@@ -238,6 +240,7 @@
                 </div>
             </div>
             @endcan
+            @can('lihat daftar proyek')
             <div class="col-xl-6">
                 <div class="card shadow-sm border-0 rounded-4 h-100">
 
@@ -426,8 +429,9 @@
 
                 </div>
             </div>
+            @endcan
         </div>
-        
+        @can('lihat data absensi')
         <x-camera-modal
             modal-id="checkInModal"
             title="Absensi Masuk"
@@ -478,6 +482,7 @@
                 default    => '📨 Kirim Pengajuan',
             }"
         />
+        @endcan
     </div>
 </div>
 @endsection

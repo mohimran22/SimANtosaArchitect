@@ -142,9 +142,6 @@ Route::get('/catalog/supplier', [ProductCatalogController::class, 'supplierCatal
 Route::get('/catalog/customer', [ProductCatalogController::class, 'customerCatalog'])
     ->name('catalog.customer');
 
-
-
-
  Route::middleware(['auth', 'permission:lihat daftar investor|lihat data investor', 'activerole:Investor'])->group(function () {
        Route::get('/investors/generate-InvestorId', [InvestorController::class, 'generateInvestorIdAjax'])->name('investors.generateInvestorId');
      Route::resource('/investors', InvestorController::class);
@@ -708,7 +705,7 @@ Route::middleware(['auth', 'permission:lihat daftar dokumen'])->group(function (
     route::resource('/documents', DocumentController::class);
 });
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'permission:lihat data absensi'])->group(function () {
 
     // Route::resource('attendances', AttendanceController::class)
     //     ->middleware('permission:lihat daftar absensi');
