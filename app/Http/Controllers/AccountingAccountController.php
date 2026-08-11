@@ -190,16 +190,31 @@ public function store(Request $request)
     {
         $user = Auth::user();
 
-    if ($user->hasRole('Super-Admin')) {
-        // $licenses = License::all();
-    } elseif ($user->hasRole('Akuntan')) {
-        $licenses = $user->employee?->licenses;
+    if ($user->can('ubah akun-akuntansi')) {
 
-        if (!$licenses || $licenses->count() === 0) {
-            abort(403, 'Lisensi tidak ditemukan.');
+        // Boleh melihat semua parent account
+        $parentAccounts = AccountingAccount::where('is_parent', true)
+            ->orderBy('account_code')
+            ->get();
+
+    } elseif ($user->can('ubah akun-akuntansi lisensi')) {
+
+        $activeLicenseId = session('active_license_id');
+
+        if (!$activeLicenseId) {
+            abort(403, 'Silakan pilih lisensi aktif.');
         }
+
+        // Hanya parent account milik lisensi aktif
+        $parentAccounts = AccountingAccount::where('is_parent', true)
+            ->where('license_id', $activeLicenseId)
+            ->orderBy('account_code')
+            ->get();
+
     } else {
-        abort(403, 'Role tidak diizinkan.');
+
+        abort(403, 'Tidak memiliki akses.');
+
     }
 
     $categories = config('accounting.categories');
