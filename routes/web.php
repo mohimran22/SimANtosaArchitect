@@ -175,16 +175,16 @@ Route::get('/journals/{journal}/print', [AccountingJournalController::class, 'pr
 
 Route::get('/journals/report', [AccountingJournalController::class, 'report'])
     ->name('journals.report')
-    ->middleware(['permission:lihat jurnal']);
+    ->middleware(['auth', 'permission:lihat transaksi']);
 
 Route::get('/journals/general', [AccountingJournalController::class, 'generalJournal'])
     ->name('journals.general')
-    ->middleware(['permission:lihat jurnal']);
+    ->middleware(['auth', 'permission:lihat jurnal umum']);
 Route::get('/journals/export/pdf', [AccountingJournalController::class, 'exportPDF'])->name('journals.export.pdf');
 
 Route::get('/journals/ledger', [AccountingJournalController::class, 'ledger'])
     ->name('journals.ledger')
-    ->middleware(['permission:lihat jurnal']);
+    ->middleware(['auth', 'permission:lihat buku besar']);
 Route::get('/journals/ledgerpdf', [AccountingJournalController::class, 'exportLedgerPdf'])->name('ledgerpdf');
 
 Route::get('/journals/export/trial-pdf', [AccountingJournalController::class, 'exportTrial'])
@@ -200,11 +200,11 @@ Route::middleware(['permission:lihat jurnal'])->group(function () {
 
 Route::get('/reports/balance_sheet', [AccountingJournalController::class, 'balanceSheet'])
     ->name('reports.balance_sheet')
-    ->middleware(['permission:lihat jurnal']);
+    ->middleware(['auth', 'permission:lihat neraca']);
 
 Route::get('/reports/income-statement', [AccountingReportController::class, 'incomeStatement'])
     ->name('reports.income_statement')
-    ->middleware(['permission:lihat jurnal']);
+    ->middleware(['auth', 'permission:lihat laba rugi']);
 Route::get('/reports/income-statement/pdf', [AccountingReportController::class, 'exportPdf'])
     ->name('reports.income_statement.pdf');
 
@@ -226,7 +226,7 @@ Route::get('/trial/export', [JournalExportController::class, 'exportTrialBalance
 
     Route::get('/periods', [AccountingPeriodController::class, 'index'])
         ->name('periods.index')
-        ->middleware(['permission:lihat jurnal']);
+        ->middleware(['auth', 'permission:lihat tutup buku']);
     Route::post('/periods/close', [AccountingPeriodController::class, 'close'])->name('periods.close');
     Route::post('/periods/reopen', [AccountingPeriodController::class, 'reopen'])->name('periods.reopen');
     Route::delete('/periods/{period}', [AccountingPeriodController::class, 'destroy'])
