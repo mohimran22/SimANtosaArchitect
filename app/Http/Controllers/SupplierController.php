@@ -215,9 +215,6 @@ class SupplierController extends Controller
             }
         }
 
-        
-
-        // 🔹 Simpan supplier
         Supplier::create([
             'id' => Str::uuid(),
             'user_id' => $user->id,

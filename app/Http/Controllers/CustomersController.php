@@ -140,7 +140,7 @@ class CustomersController extends Controller
     $validated = $request->validate([
         'user_id' => 'nullable|exists:users,id',
         'fullname' => 'required|string|max:255',
-        'nickname' => 'nullable|string|max:100',
+        'nickname' => 'nullable|string|max:50',
         'gender' => 'nullable|in:1,2',
         'email' => 'required|email|unique:users,email',
         'birth_place' => 'nullable|string|max:100',
@@ -336,7 +336,7 @@ public function update(Request $request, Customer $customer)
     $validated = $request->validate([
         // --- data user ---
         'fullname' => 'required|string|max:255',
-        'nickname' => 'nullable|string|max:100',
+        'nickname' => 'nullable|string|max:50',
         'gender' => 'nullable|in:1,2',
         'email' => 'required|email|unique:users,email,' . $customer->user_id,
         'birth_place' => 'nullable|string|max:100',
@@ -421,7 +421,7 @@ public function update(Request $request, Customer $customer)
             'postal_code_id' => $validated['user_postal_code_id'],
             'email' => $validated['email'],
             'phone' => $validated['phone'],
-            'gender' => $validated['gender'],
+            'gender' => $validated['gender'] ?? null,
             'bank_id' => $validated['bank_id'] ?? null,
             'account_number' => $validated['account_number'] ?? null,
             'account_holder' => $validated['account_holder'] ?? null,

@@ -27,6 +27,13 @@
     z-index: 2;
     border-bottom: 1px solid #dee2e6;
 }
+.jabatan-column {
+    width: 150px;
+    max-width: 150px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
 .finance-scroll{
     display:flex;
     gap:16px;

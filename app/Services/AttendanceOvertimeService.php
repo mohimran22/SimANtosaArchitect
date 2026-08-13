@@ -127,7 +127,7 @@ class AttendanceOvertimeService
 
             })
 
-            ->where('status', 'approved')
+            // ->where('status', 'approved')
 
             ->sum('work_minutes');
     }

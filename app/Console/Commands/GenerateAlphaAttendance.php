@@ -47,7 +47,6 @@ class GenerateAlphaAttendance extends Command
                     }
 
                     Attendance::create([
-                        'license_id'      => $employee->license_id,
                         'employee_id'     => $employee->id,
                         'attendance_date' => $today,
                         'status'          => 'alpha',

@@ -262,9 +262,9 @@
 
             <button type="submit" class="btn btn-dark text-white w-100">Masuk</button>
 
-            <div class="text-center mt-3 small">
+            {{-- <div class="text-center mt-3 small">
                 Lupa Password? Tenang, <a href="{{ route('password.request') }}" class="fw-semibold text-dark">klik disini!</a>
-            </div>
+            </div> --}}
 
             <div class="text-center mt-3 small">
                 Atau belum punya akun? <a href="{{ route('register') }}" class="fw-semibold text-dark">Daftar sekarang!</a>

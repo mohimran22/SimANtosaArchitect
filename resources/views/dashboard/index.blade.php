@@ -113,11 +113,11 @@
 
                                         </td>
 
-                                        <td>
+                                        <td class="jabatan-column" title="{{ $attendance->employee->user->getRoleNames()->join(', ') }}">
                                             {{-- {{ $attendance->employee->user->getRoleNames()->first() ?? '-' }} --}}
                                             {{ $attendance->employee->user->getRoleNames()->join(', ') }}
-                                        </td>
 
+                                        </td>
                                         <td>
 
                                             {{ \Carbon\Carbon::parse($attendance->check_in)->format('H:i') }}
