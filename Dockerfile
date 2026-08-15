@@ -1,47 +1,59 @@
-FROM php:8.3-cli
+FROM php:8.4-cli
 
 RUN apt-get update && apt-get install -y \
-    git unzip zip curl \
-    libpng-dev libjpeg-dev libfreetype6-dev \
-    libzip-dev libpq-dev \
+    git \
+    unzip \
+    zip \
+    curl \
+    libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    libzip-dev \
+    libpq-dev \
  && docker-php-ext-configure gd --with-freetype --with-jpeg \
- && docker-php-ext-install pdo pdo_mysql pdo_pgsql gd zip opcache
+ && docker-php-ext-install \
+        pdo \
+        pdo_mysql \
+        pdo_pgsql \
+        gd \
+        zip \
+        opcache
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www
 
-# copy composer dulu
 COPY composer.json composer.lock ./
 
-# install vendor TANPA scripts dulu
 RUN composer install \
+    --prefer-dist \
     --no-dev \
     --optimize-autoloader \
     --no-interaction \
     --no-scripts
 
-# baru copy semua source
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+ && apt-get install -y nodejs
+
+COPY package*.json ./
+
+RUN npm install
+
 COPY . .
 
-# generate autoload setelah source ada
 RUN composer dump-autoload --optimize
 
-# build frontend
-RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
- && apt-get install -y nodejs \
- && npm install \
- && npm run build \
+RUN npm run build \
  && rm -rf node_modules
 
-# permission hanya yg perlu
 RUN chown -R www-data:www-data storage bootstrap/cache \
  && chmod -R 775 storage bootstrap/cache
 
-COPY docker/php.ini /usr/local/etc/php/conf.d/uploads.ini
+COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
 EXPOSE 8080
 
-CMD php artisan optimize || true; \
-    php artisan storage:link || true; \
-    php artisan serve --host=0.0.0.0 --port=8080
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8080"]

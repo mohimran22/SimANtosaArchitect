@@ -1,51 +1,83 @@
-*.log
-.DS_Store
+# =========================================================
+# Environment
+# =========================================================
 .env
-.env.backup
-.env.production
-.phpactor.json
-.phpunit.result.cache
-/.fleet
-/.idea
-/.nova
-/.phpunit.cache
-/.vscode
-/.zed
-/auth.json
+.env.*
+.env.example
+
+# =========================================================
+# Dependencies
+# =========================================================
+/vendor
 /node_modules
+/bower_components
+
+# =========================================================
+# Laravel
+# =========================================================
 /public/build
 /public/hot
 /public/storage
+
 /storage/*.key
 /storage/pail
-/vendor
-Homestead.json
-Homestead.yaml
-npm-debug.log
-Thumbs.db
-yarn-error.log
-*.sql
-# Environment
-.env
-
-# Dependencies
-/vendor
-/node_modules
-
-# Laravel logs & cache
-/storage/*.key
-/storage/debugbar
-/storage/logs
+/storage/logs/*
 /storage/framework/cache/*
 /storage/framework/sessions/*
 /storage/framework/views/*
 
-# IDE & OS
+# =========================================================
+# Laravel Debugbar
+# =========================================================
+/storage/debugbar/*
+
+# =========================================================
+# Logs & Cache
+# =========================================================
+*.log
+*.log.*
+.phpunit.result.cache
+
+# =========================================================
+# IDE
+# =========================================================
 /.idea
 /.vscode
+/.fleet
+/.nova
+/.zed
+.phpactor.json
+auth.json
+
+# =========================================================
+# OS
+# =========================================================
 .DS_Store
 Thumbs.db
 
-# Build
-/public/build
+# =========================================================
+# PHPUnit
+# =========================================================
+.phpunit.result.cache
 
+# =========================================================
+# Homestead
+# =========================================================
+Homestead.json
+Homestead.yaml
+
+# =========================================================
+# NPM / Yarn
+# =========================================================
+npm-debug.log*
+yarn-error.log*
+
+# =========================================================
+# Database dumps
+# =========================================================
+*.sql
+
+# =========================================================
+# Other
+# =========================================================
+/tabler-icons-main
