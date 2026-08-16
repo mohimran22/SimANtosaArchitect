@@ -71,8 +71,6 @@ Route::put('/customer/profile', [DashboardController::class, 'update'])->name('c
 Route::get('/affiliators/profile', [DashboardController::class, 'edit'])->name('affiliator.profile');
 Route::put('/affiliators/profile', [DashboardController::class, 'update'])->name('affiliator.update');
 
-
-
 Route::middleware(['auth', 'permission:lihat daftar karyawan|lihat data karyawan'])->group(function () {
     Route::resource('/employees', EmployeeController::class)->whereUuid('employee');
 });
