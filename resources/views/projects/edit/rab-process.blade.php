@@ -1806,6 +1806,7 @@
                 return
             }
             const formData = new FormData()
+            formData.append('_method', 'PUT');
             categories.forEach((cat, i) => {
 
                 if(cat.db_id){
@@ -1864,7 +1865,7 @@
                 })
 
             })
-            formData.append('_method', 'PUT');
+
             fetch(`/projects/{{ $project->id }}/rab/{{ $rab->id }}`,{
                 method:'POST',
                 headers:{

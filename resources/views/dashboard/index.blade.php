@@ -89,50 +89,80 @@
 
                                     <tbody>
 
-                                    @foreach($attendances as $attendance)
+                                        @forelse($attendances as $attendance)
 
-                                    <tr>
+                                            <tr>
 
-                                        <td width="70">
+                                                <td width="70">
 
-                                            <img
-                                                src="{{ $attendance->employee->user->photo_url }}"
-                                                class="avatar-img">
+                                                    <img
+                                                        src="{{ $attendance->employee->user->photo_url }}"
+                                                        class="avatar-img">
 
-                                        </td>
+                                                </td>
 
-                                        <td>
+                                                <td>
 
-                                            <div class="fw-semibold">
-                                                {{ $attendance->employee->user->fullname ?? '-' }}
-                                            </div>
+                                                    <div class="fw-semibold">
+                                                        {{ $attendance->employee->user->fullname ?? '-' }}
+                                                    </div>
 
-                                            <small class="text-secondary">
-                                                {{ $attendance->employee->employee_code }}
-                                            </small>
+                                                    <small class="text-secondary">
+                                                        {{ $attendance->employee->employee_code }}
+                                                    </small>
 
-                                        </td>
+                                                </td>
 
-                                        <td class="jabatan-column" title="{{ $attendance->employee->user->getRoleNames()->join(', ') }}">
-                                            {{-- {{ $attendance->employee->user->getRoleNames()->first() ?? '-' }} --}}
-                                            {{ $attendance->employee->user->getRoleNames()->join(', ') }}
+                                                <td class="jabatan-column"
+                                                    title="{{ $attendance->employee->user->getRoleNames()->join(', ') }}">
 
-                                        </td>
-                                        <td>
+                                                    {{ $attendance->employee->user->getRoleNames()->join(', ') }}
 
-                                            {{ \Carbon\Carbon::parse($attendance->check_in)->format('H:i') }}
+                                                </td>
 
-                                        </td>
+                                                <td>
 
-                                        <td>
-                                            <span class="badge bg-primary">
-                                                {{ $attendance->attendance_code ?? '-' }}
-                                            </span>
-                                        </td>
+                                                    {{ \Carbon\Carbon::parse($attendance->check_in)->format('H:i') }}
 
-                                    </tr>
+                                                </td>
 
-                                    @endforeach
+                                                <td>
+
+                                                    <span class="badge bg-primary">
+                                                        {{ $attendance->attendance_code ?? '-' }}
+                                                    </span>
+
+                                                </td>
+
+                                            </tr>
+
+                                        @empty
+
+                                            <tr>
+
+                                                <td colspan="5" class="text-center py-5">
+
+                                                    <div class="text-secondary">
+
+                                                        <div class="fs-4 mb-2">
+                                                            📋
+                                                        </div>
+
+                                                        <div class="fw-semibold">
+                                                            Belum ada karyawan yang hadir hari ini
+                                                        </div>
+
+                                                        <small>
+                                                            Data absensi akan muncul setelah karyawan melakukan check-in.
+                                                        </small>
+
+                                                    </div>
+
+                                                </td>
+
+                                            </tr>
+
+                                        @endforelse
 
                                     </tbody>
 
