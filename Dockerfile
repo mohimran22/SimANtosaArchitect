@@ -49,6 +49,8 @@ RUN npm run build \
 RUN chown -R www-data:www-data storage bootstrap/cache \
  && chmod -R 775 storage bootstrap/cache
 
+COPY docker/php.ini /usr/local/etc/php/conf.d/custom.ini
+
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 

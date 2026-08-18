@@ -153,7 +153,7 @@
                                                         </div>
 
                                                         <small>
-                                                            Data absensi akan muncul setelah karyawan melakukan check-in.
+                                                            Data absensi akan muncul setelah karyawan melakukan absen.
                                                         </small>
 
                                                     </div>
