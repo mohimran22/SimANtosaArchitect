@@ -81,8 +81,8 @@
                                     @enderror
                                 </div>
                                 <div class="col-md-2">
-                                    <label class="form-label required">Jenis Kelamin</label>
-                                    <select name="gender" class="form-select select2" required>
+                                    <label class="form-label">Jenis Kelamin</label>
+                                    <select name="gender" class="form-select select2">
                                         <option value="">-- Pilih --</option>
                                         <option value="1" {{ old('gender', $user->gender) == 1 ? 'selected' : '' }}>Laki-laki</option>
                                         <option value="2" {{ old('gender', $user->gender) == 2 ? 'selected' : '' }}>Perempuan</option>
@@ -96,16 +96,15 @@
                                     @enderror
                                 </div>
                                 <div class="col-md-4">
-                                    <label class="required">Tanggal Lahir</label>
-                                                <input type="date" name="birth_date" class="form-control" required
+                                    <label class="form-label">Tanggal Lahir</label>
+                                                <input type="date" name="birth_date" class="form-control"
                                                     value="{{ old('birth_date', $user->birth_date) }}"
                                                     pattern="\d{4}-\d{2}-\d{2}" placeholder="YYYY-MM-DD">
                                 </div>
                                 <div class="col-md-4">
-                                    <label class="form-label required">Agama</label>
+                                    <label class="form-label">Agama</label>
                                     <select name="religion_id"
-                                        class="form-select select2 @error('religion_id') is-invalid @enderror"
-                                        required>
+                                        class="form-select select2 @error('religion_id') is-invalid @enderror">
                                         <option value="">-- Pilih Agama --</option>
                                         @foreach($religions as $religion)
                                             <option value="{{ $religion->id }}" {{ old('religion_id', $user->religion_id) == $religion->id ? 'selected' : '' }}>
@@ -151,7 +150,7 @@
                             <h3 class="fw-semibold mb-3 border-bottom pb-2">📞 Kontak & Alamat</h3>
                             <div class="row g-4">
                                 <div class="col-md-6">
-                                    <label class="form-label">Nomor Telepon</label>
+                                    <label class="form-label required">Nomor Telepon</label>
                                     <input type="text" class="form-control @error('phone') is-invalid @enderror" name="phone" inputmode="numeric" pattern="[0-9]*" value="{{ old('phone', $user->phone) }}" required>
                                     @error('phone')
                                         <div class="invalid-feedback">{{ $message }}</div>
@@ -174,8 +173,8 @@
                             </div>
                             <div class="row g-4 mt-2">
                                 <div class="col-md-6">
-                                    <label class="required">Provinsi</label>
-                                        <select name="province_id" id="province" class="form-select select2" required>
+                                    <label class="form-label">Provinsi</label>
+                                        <select name="province_id" id="province" class="form-select select2">
                                             <option value="">-- Pilih Provinsi --</option>
                                             @foreach($provinces as $province)
                                                 <option value="{{ $province->id }}"
@@ -186,8 +185,8 @@
                                         </select>
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="required">Kabupaten/Kota</label>
-                                                <select name="city_id" id="city" class="form-select select2" required>
+                                    <label class="form-label">Kabupaten/Kota</label>
+                                                <select name="city_id" id="city" class="form-select select2">
                                                     <option value="">-- Pilih Kota --</option>
                                                     @foreach($cities as $city)
                                                         <option value="{{ $city->id }}"
@@ -198,8 +197,8 @@
                                                 </select>
                                 </div>
                                 <div class="col-md-5">
-                                    <label class="required">Kecamatan</label>
-                                                <select name="district_id" id="district" class="form-select select2" required>
+                                    <label class="form-label">Kecamatan</label>
+                                                <select name="district_id" id="district" class="form-select select2">
                                                     <option value="">-- Pilih Kecamatan --</option>
                                                     @foreach($districts as $district)
                                                         <option value="{{ $district->id }}"
@@ -210,8 +209,8 @@
                                                 </select>
                                 </div>
                                 <div class="col-md-5">
-                                    <label class="required">Kelurahan</label>
-                                                <select name="sub_district_id" id="sub_district" class="form-select select2" required>
+                                    <label class="form-label">Kelurahan</label>
+                                                <select name="sub_district_id" id="sub_district" class="form-select select2">
                                                     <option value="">-- Pilih kelurahan --</option>
                                                     @foreach($subDistricts as $sub_district)
                                                         <option value="{{ $sub_district->id }}"
@@ -222,8 +221,8 @@
                                                 </select>
                                 </div>
                                 <div class="col-md-2">
-                                    <label class="required">Kode Pos</label>
-                                                <select name="postal_code_id" id="postal_code" class="form-select select2" required>
+                                    <label class="form-label">Kode Pos</label>
+                                                <select name="postal_code_id" id="postal_code" class="form-select select2">
                                                     <option value="">-- Pilih Kode Pos --</option>
                                                     @foreach($postalCodes as $postal_code)
                                                         <option value="{{ $postal_code->id }}"
@@ -269,7 +268,7 @@
                         <h3 class="fw-semibold mb-3 border-bottom pb-2">💼 Data Kepegawaian</h3>
                         <div class="row g-4">
                             <div class="col-md-4">
-                                <label class="required">NIK</label>
+                                <label class="form-label">NIK</label>
                                 <input type="text" id="nik" name="nik" class="form-control" value="{{ old('nik', $employee->nik) }}" readonly>
                                 @error('nik')
                                     <div class="invalid-feedback">{{ $message }}</div>
@@ -277,13 +276,12 @@
                             </div>
 
                             <div class="col-md-4">
-                                <label class="required">Status Karyawan</label>
-                                <select name="employment_status" class="form-select" value="{{ old('employment_status', $employee->employment_status) }}" required>
+                                <label class="form-label">Status Karyawan</label>
+                                <select name="employment_status" class="form-select select2" value="{{ old('employment_status', $employee->employment_status) }}">
                                     <option value="">-- Pilih Status --</option>
                                     <option value="Tetap" {{ $employee->employment_status == "Tetap" ? 'selected' : '' }}>Tetap</option>
                                     <option value="Kontrak" {{ $employee->employment_status == "Kontrak" ? 'selected' : '' }}>Kontrak</option>
-                                    <option value="Harian" {{ $employee->employment_status == "Harian" ? 'selected' : '' }}>Harian</option>
-                                    <option value="Honorer" {{ $employee->employment_status == "Honorer" ? 'selected' : '' }}>Honorer</option>
+                                    <option value="Magang" {{ $employee->employment_status == "Magang" ? 'selected' : '' }}>Harian</option>
                                 </select>
                             </div>
                             <div class="col-md-4">
