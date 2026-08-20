@@ -34,9 +34,8 @@ RUN composer install \
     --no-scripts
 
 # Install Node.js + npm
-RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
-    && apt-get update \
-    && apt-get install -y nodejs \
+RUN apt-get update \
+    && apt-get install -y nodejs npm \
     && node --version \
     && npm --version \
     && rm -rf /var/lib/apt/lists/*
