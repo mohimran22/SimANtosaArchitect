@@ -749,3 +749,10 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     </script>
 @endpush
+"C:\Program Files\PostgreSQL\18\bin\pg_restore.exe" -h acela.proxy.rlwy.net -p 36474 -U postgres -d railway --verbose --exit-on-error "C:\backup\railway\Postgres-Q5rQ\Postgres-Q5rQ_2026-08-17_13-43-53.dump"
+
+"C:\Program Files\PostgreSQL\18\bin\psql.exe" -h acela.proxy.rlwy.net -p 36474 -U postgres -d railway -c "SELECT current_database(), current_user, version();"
+
+"C:\Program Files\PostgreSQL\18\bin\psql.exe" -h acela.proxy.rlwy.net -p 36474 -U postgres -d railway -c "SELECT count(*) AS tables FROM information_schema.tables WHERE table_schema NOT IN ('pg_catalog','information_schema') AND table_type='BASE TABLE';"
+
+"C:\Program Files\PostgreSQL\18\bin\pg_restore.exe" -h acela.proxy.rlwy.net -p 36474 -U postgres -d railway --verbose --clean --if-exists --exit-on-error "C:\backup\railway\Postgres-Q5rQ\Postgres-Q5rQ_2026-08-17_13-43-53.dump"

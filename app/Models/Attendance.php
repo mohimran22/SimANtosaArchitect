@@ -44,19 +44,19 @@ class Attendance extends Model
         return $this->belongsTo(Employee::class);
     }
     public function revisions()
-{
-    return $this->hasMany(AttendanceRevision::class)
-                ->latest('edited_at');
-}
-public function overtime()
-{
-    return $this->hasOne(AttendanceOverTime::class, 'attendance_id');
-}
-public function getWorkDurationAttribute(): string
-{
-    $hour = intdiv($this->work_minutes ?? 0, 60);
-    $minute = ($this->work_minutes ?? 0) % 60;
+    {
+        return $this->hasMany(AttendanceRevision::class)
+                    ->latest('edited_at');
+    }
+    public function overtime()
+    {
+        return $this->hasOne(AttendanceOverTime::class, 'attendance_id');
+    }
+    public function getWorkDurationAttribute(): string
+    {
+        $hour = intdiv($this->work_minutes ?? 0, 60);
+        $minute = ($this->work_minutes ?? 0) % 60;
 
-    return "{$hour}j {$minute}m";
-}
+        return "{$hour}j {$minute}m";
+    }
 }

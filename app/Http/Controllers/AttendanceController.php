@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Employee;
 use App\Models\Attendance;
+use App\Models\AttendanceOverTime;
 use App\Models\AttendanceRevision;
 use App\Services\AttendanceService;
 use App\Services\AttendanceSummaryService;
@@ -223,22 +224,36 @@ public function edit(Attendance $attendance)
         'check_in'        => ['nullable'],
         'check_out'       => ['nullable'],
         'notes'           => ['nullable', 'string'],
+        'overtime_start_time'  => ['nullable', 'date_format:H:i'],
+        'overtime_end_time'    => ['nullable', 'date_format:H:i'],
+        'overtime_type'        => ['nullable', 'in:weekday,holiday'],
+        'overtime_reason'      => ['nullable', 'string'],
         'edit_reason'     => ['required', 'string', 'max:500'],
     ]);
 
     DB::transaction(function () use ($request, $attendance, $attendanceService) {
 
-        // $oldData = [
-        //     'attendance_date'   => $attendance->attendance_date,
-        //     'check_in'          => optional($attendance->check_in)->toDateTimeString(),
-        //     'check_out'         => optional($attendance->check_out)->toDateTimeString(),
-        //     'attendance_code'   => $attendance->attendance_code,
-        //     'work_minutes'      => $attendance->work_minutes,
-        //     'overtime_minutes'  => $attendance->overtime_minutes,
-        //     'notes'             => $attendance->notes,
-        // ];
-        $oldData = $attendance->getAttributes();
-        unset($oldData['created_at'], $oldData['updated_at']);
+        // $oldData = $attendance->getAttributes();
+        // unset($oldData['created_at'], $oldData['updated_at']);
+        $oldOvertime = $attendance->overtime;
+
+        $oldData = [
+            'attendance' => [
+                'attendance_date' => optional($attendance->attendance_date)->format('Y-m-d'),
+                'check_in'        => optional($attendance->check_in)->toDateTimeString(),
+                'check_out'       => optional($attendance->check_out)->toDateTimeString(),
+                'work_minutes'    => $attendance->work_minutes,
+                'notes'           => $attendance->notes,
+            ],
+
+            'overtime' => $oldOvertime ? [
+                'start_time'   => optional($oldOvertime->start_time)->toDateTimeString(),
+                'end_time'     => optional($oldOvertime->end_time)->toDateTimeString(),
+                'work_minutes' => $oldOvertime->work_minutes,
+                'type'         => $oldOvertime->type,
+                'reason'       => $oldOvertime->reason,
+            ] : null,
+        ];
         $attendance->attendance_date = $request->attendance_date;
 
         $attendance->check_in = $request->filled('check_in')
@@ -254,17 +269,88 @@ public function edit(Attendance $attendance)
         $attendanceService->calculate($attendance);
 
         $attendance->save();
-        // $newData = [
-        //     'attendance_date'   => $attendance->attendance_date,
-        //     'check_in'          => optional($attendance->check_in)->toDateTimeString(),
-        //     'check_out'         => optional($attendance->check_out)->toDateTimeString(),
-        //     'attendance_code'   => $attendance->attendance_code,
-        //     'work_minutes'      => $attendance->work_minutes,
-        //     'overtime_minutes'  => $attendance->overtime_minutes,
-        //     'notes'             => $attendance->notes,
-        // ];
-        $newData = $attendance->fresh()->getAttributes();
-        unset($newData['created_at'], $newData['updated_at']);
+
+        $overtimeStart = $request->input('overtime_start_time');
+        $overtimeEnd   = $request->input('overtime_end_time');
+
+        $overtime = $attendance->overtime;
+
+        if (!$overtimeStart && !$overtimeEnd) {
+
+            if ($overtime) {
+                $overtime->delete();
+            }
+
+        }
+
+        else {
+
+            if (!$overtimeStart || !$overtimeEnd) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'overtime_start_time' => 'Jam mulai dan jam selesai overtime harus diisi.',
+                    'overtime_end_time'   => 'Jam mulai dan jam selesai overtime harus diisi.',
+                ]);
+            }
+
+            $startTime = Carbon::parse(
+                $request->attendance_date . ' ' . $overtimeStart
+            );
+
+            $endTime = Carbon::parse(
+                $request->attendance_date . ' ' . $overtimeEnd
+            );
+
+            if ($endTime->lessThanOrEqualTo($startTime)) {
+                $endTime->addDay();
+            }
+
+            $overtimeMinutes = $startTime->diffInMinutes($endTime);
+
+            if (!$overtime) {
+
+                $overtime = new AttendanceOverTime();
+
+                $overtime->attendance_id = $attendance->id;
+
+            }
+
+            $overtime->start_time = $startTime;
+            $overtime->end_time = $endTime;
+
+            $overtime->work_minutes = $overtimeMinutes;
+
+            $overtime->reason = $request->input('overtime_reason');
+
+            $overtime->type = $request->input(
+                'overtime_type',
+                'weekday'
+            );
+
+            $overtime->status = 'approved';
+
+            $overtime->save();
+        }
+        // $newData = $attendance->fresh()->getAttributes();
+        // unset($newData['created_at'], $newData['updated_at']);
+        $newOvertime = $attendance->fresh()->overtime;
+
+        $newData = [
+            'attendance' => [
+                'attendance_date' => optional($attendance->attendance_date)->format('Y-m-d'),
+                'check_in'        => optional($attendance->check_in)->toDateTimeString(),
+                'check_out'       => optional($attendance->check_out)->toDateTimeString(),
+                'work_minutes'    => $attendance->work_minutes,
+                'notes'           => $attendance->notes,
+            ],
+
+            'overtime' => $newOvertime ? [
+                'start_time'   => optional($newOvertime->start_time)->toDateTimeString(),
+                'end_time'     => optional($newOvertime->end_time)->toDateTimeString(),
+                'work_minutes' => $newOvertime->work_minutes,
+                'type'         => $newOvertime->type,
+                'reason'       => $newOvertime->reason,
+            ] : null,
+        ];
         AttendanceRevision::create([
             'attendance_id' => $attendance->id,
             'edited_by'     => auth()->id(),

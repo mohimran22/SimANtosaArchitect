@@ -1,55 +1,112 @@
+{{-- @php
+
+    use Carbon\Carbon;
+
+    $labels = [
+
+        'attendance_date' => 'Tanggal',
+
+        'check_in' => 'Jam Masuk',
+
+        'check_out' => 'Jam Pulang',
+
+        'attendance_code' => 'Status',
+
+        'work_minutes' => 'Jam Kerja',
+
+        'overtime_minutes' => 'Lembur',
+
+        'notes' => 'Catatan',
+
+    ];
+
+    function auditValue($field,$value){
+
+        if(blank($value))
+            return '-';
+
+        switch($field){
+
+            case 'attendance_date':
+                return Carbon::parse($value)
+                    ->translatedFormat('d F Y');
+
+            case 'check_in':
+
+            case 'check_out':
+                return Carbon::parse($value)->format('H:i');
+
+            case 'work_minutes':
+
+                return floor($value/60).' Jam '.($value%60).' Menit';
+
+            case 'overtime_minutes':
+
+                return floor($value/60).' Jam '.($value%60).' Menit';
+
+            default:
+
+                return $value;
+        }
+
+    }
+
+@endphp --}}
 @php
 
 use Carbon\Carbon;
 
-$labels = [
-
-    'attendance_date' => 'Tanggal',
-
-    'check_in' => 'Jam Masuk',
-
-    'check_out' => 'Jam Pulang',
-
-    'attendance_code' => 'Status',
-
-    'work_minutes' => 'Jam Kerja',
-
-    'overtime_minutes' => 'Lembur',
-
-    'notes' => 'Catatan',
-
-];
-
-function auditValue($field,$value){
-
-    if(blank($value))
+function auditValue($field, $value)
+{
+    if (blank($value)) {
         return '-';
+    }
 
-    switch($field){
+    switch ($field) {
 
         case 'attendance_date':
             return Carbon::parse($value)
+                ->locale('id')
                 ->translatedFormat('d F Y');
 
         case 'check_in':
-
         case 'check_out':
+        case 'start_time':
+        case 'end_time':
             return Carbon::parse($value)->format('H:i');
 
         case 'work_minutes':
+            return floor($value / 60) . ' Jam ' . ($value % 60) . ' Menit';
 
-            return floor($value/60).' Jam '.($value%60).' Menit';
-
-        case 'overtime_minutes':
-
-            return floor($value/60).' Jam '.($value%60).' Menit';
+        case 'type':
+            return $value === 'weekday'
+                ? 'Hari Kerja'
+                : 'Hari Libur';
 
         default:
-
             return $value;
     }
-
 }
+
+$attendanceLabels = [
+
+    'attendance_date' => 'Tanggal',
+    'check_in'       => 'Jam Masuk',
+    'check_out'      => 'Jam Pulang',
+    'work_minutes'   => 'Jam Kerja',
+    'notes'          => 'Catatan',
+
+];
+
+$overtimeLabels = [
+
+    'start_time'   => 'Mulai Overtime',
+    'end_time'     => 'Selesai Overtime',
+    'work_minutes' => 'Durasi Overtime',
+    'type'         => 'Tipe Overtime',
+    'reason'       => 'Alasan Overtime',
+
+];
 
 @endphp
 <div class="card mt-4 shadow-sm border-0">
@@ -127,7 +184,92 @@ function auditValue($field,$value){
 
                         <hr>
 
-                        @foreach($labels as $field => $label)
+                        @php
+                            $oldAttendance = $revision->old_data['attendance'] ?? [];
+                            $newAttendance = $revision->new_data['attendance'] ?? [];
+                        @endphp
+
+                        <h5 class="fw-bold mb-2">
+                            <i class="ti ti-calendar me-1"></i>
+                            Absensi
+                        </h5>
+
+                        @foreach($attendanceLabels as $field => $label)
+
+                            @php
+                                $old = $oldAttendance[$field] ?? null;
+                                $new = $newAttendance[$field] ?? null;
+                            @endphp
+
+                            @continue($old == $new)
+
+                            <div class="row py-2 border-bottom">
+
+                                <div class="col-md-3 fw-semibold">
+                                    {{ $label }}
+                                </div>
+
+                                <div class="col-md-4 text-danger">
+                                    {{ auditValue($field, $old) }}
+                                </div>
+
+                                <div class="col-md-1 text-center">
+                                    <i class="ti ti-arrow-right"></i>
+                                </div>
+
+                                <div class="col-md-4 text-success fw-bold">
+                                    {{ auditValue($field, $new) }}
+                                </div>
+
+                            </div>
+
+                        @endforeach
+
+                        @php
+                            $oldOvertime = $revision->old_data['overtime'] ?? null;
+                            $newOvertime = $revision->new_data['overtime'] ?? null;
+                        @endphp
+
+                        @if($oldOvertime || $newOvertime)
+
+                            <h5 class="fw-bold mt-4 mb-2">
+                                <i class="ti ti-clock-plus me-1"></i>
+                                Overtime
+                            </h5>
+
+                            @foreach($overtimeLabels as $field => $label)
+
+                                @php
+                                    $old = $oldOvertime[$field] ?? null;
+                                    $new = $newOvertime[$field] ?? null;
+                                @endphp
+
+                                @continue($old == $new)
+
+                                <div class="row py-2 border-bottom">
+
+                                    <div class="col-md-3 fw-semibold">
+                                        {{ $label }}
+                                    </div>
+
+                                    <div class="col-md-4 text-danger">
+                                        {{ auditValue($field, $old) }}
+                                    </div>
+
+                                    <div class="col-md-1 text-center">
+                                        <i class="ti ti-arrow-right"></i>
+                                    </div>
+
+                                    <div class="col-md-4 text-success fw-bold">
+                                        {{ auditValue($field, $new) }}
+                                    </div>
+
+                                </div>
+
+                            @endforeach
+
+                        @endif
+                        {{-- @foreach($labels as $field => $label)
 
                             @php
                                 $old = $revision->old_data[$field] ?? null;
@@ -164,7 +306,7 @@ function auditValue($field,$value){
 
                             </div>
 
-                        @endforeach
+                        @endforeach --}}
 
                     </div>
 
