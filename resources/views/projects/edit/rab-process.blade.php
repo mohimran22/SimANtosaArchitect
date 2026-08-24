@@ -1,9 +1,9 @@
-@php
+{{-- @php
     $latest = \Illuminate\Support\Facades\Cache::get('job_category_last_updated', 0);
 
     $needRefresh = $rab->analisa_version < $latest;
 
-@endphp
+@endphp --}}
 
 <form id="rab-edit-form" action="{{ route('projects.rab.update', [$project->id, $rab->id]) }}" method="POST">
     @csrf
@@ -20,7 +20,7 @@
                                     @endif
 
     <input type="hidden" name="project_id" value="{{ $project->id }}">
-        @if($needRefresh)
+        {{-- @if($needRefresh)
         <div class="alert alert-warning d-flex justify-content-between align-items-center">
             <div>
                 ⚠️ Harga analisa sudah berubah dari versi terakhir RAB ini dibuat.
@@ -29,7 +29,7 @@
                 🔄 Refresh Harga RAB
             </button>
         </div>
-        @endif
+        @endif --}}
     <h4 class="fw-bold mb-3">Informasi Pembuatan Rab</h4>
 
     <div class="row g-3">
