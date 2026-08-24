@@ -33,7 +33,7 @@
                 <select name="project_type" 
                         class="form-select select2 @error('project_type') is-invalid @enderror" 
                         required>
-                    <option value="">-- Pilih --</option>
+                    <option value="">-- Pilih Jenis Proyek--</option>
                     <option value="1" {{ old('project_type') == '1' ? 'selected' : '' }}>Desain</option>
                     <option value="2" {{ old('project_type') == '2' ? 'selected' : '' }}>RAB</option>
                     <option value="3" {{ old('project_type') == '3' ? 'selected' : '' }}>Build</option>

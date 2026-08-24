@@ -22,7 +22,7 @@
 
         </div>
         <div class="col-md-4">
-            <label>Tanggal Penawaran</label>
+            <label class="required">Tanggal Penawaran</label>
             <input type="date" name="offer_date" class="form-control" required>
         </div>
         <div class="col-md-4">
@@ -30,21 +30,6 @@
             <input type="text" name="contact_name" value="{{ $project->customer->user->fullname }}" class="form-control">
         </div>
     </div>
-
-    {{-- <div class="mb-3">
-        <label>Alamat / Lokasi</label>
-        <input type="text" name="kepada_alamat" class="form-control" value="{{ $project->city->name ?? '' }}">
-    </div>
-
-    <div class="mb-3">
-        <label>Jenis Pekerjaan</label>
-        <input type="text" name="jenis_pekerjaan" class="form-control" value="{{ $project->project_name ?? '' }}">
-    </div>
-
-    <div class="mb-3">
-        <label>Lokasi Pekerjaan</label>
-        <input type="text" name="lokasi" class="form-control" value="{{ $project->project_location ?? '' }}">
-    </div> --}}
 
     <div class="row mb-4 mt-4">
         <div class="col-md-4">
