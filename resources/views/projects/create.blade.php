@@ -457,7 +457,7 @@
                                     <i class="ti ti-edit"></i>
                                 </button>
 
-                                <button type="button"
+                                <button type="submit"
                                         form="rab-edit-form"
                                         id="btn-save-rab"
                                         class="btn btn-sm btn-dark d-none"
