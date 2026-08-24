@@ -1,8 +1,6 @@
 @php
-$rab = $project->rab()->with([
-    'categories.uraians.items',
-    'categories.uraians.images.image'
-])->first();
+$rab = $project->rab()->with(['items'])->first();
+
 function numberToLetters($num) {
     $letters = '';
     $num = $num + 1;
@@ -57,80 +55,123 @@ function numberToLetters($num) {
 
                 <tbody>
 
-                    @foreach($rab->categories as $category)
+                    @php
+                        $items = $rab->items->sortBy('order_no')->values();
+                        $floorGroups = $items->groupBy('floor_name');
+                    @endphp
+
+
+                    @foreach($floorGroups as $floorName => $floorItems)
+                        <tr class="table-secondary">
+                            <th colspan="6">
+                                {{ strtoupper($floorName ?: 'Tanpa Lantai') }}
+                            </th>
+                        </tr>
 
                         @php
-                            $categoryLetter = numberToLetters($loop->index);
-                            $uraianNo = 1;
-
-                            $categoryTotal = $category->uraians
-                                ->flatMap->items
-                                ->sum('total');
+                            $categoryIndex = 0;
+                            $categoryGroups = $floorItems->groupBy('category_name');
                         @endphp
 
-                            <tr class="table-secondary">
-                                <th>{{ $categoryLetter }}</th>
-                                <th colspan="4">{{ strtoupper($category->name) }}</th>
-                                <th class="text-end">
-                                    Rp {{ number_format($categoryTotal,2,',','.') }}
-                                </th>
-                            </tr>
+                        @foreach($categoryGroups as $categoryName => $categoryItems)
 
-                        @foreach($category->uraians as $uraian)
+                                                        @php
+                                $categoryLetter = numberToLetters($categoryIndex);
+                                $categoryTotal = $categoryItems->sum('total');
+                                $displayNo = 0;
+                                $previousDescription = null;
+                            @endphp
 
                             <tr class="fw-bold">
-                                <td>{{ $uraianNo }}</td>
-
-                                <td colspan="5">
-                                    <div class="d-flex align-items-center gap-2">
-
-                                        {{ ucwords($uraian->name) }}
-
-                                        <button type="button"
-                                            class="btn btn-sm btn-gambar"
-                                            onclick="bukagaleri(
-                                                '{{ route('rab.uraian-images', $uraian->id) }}',
-                                                '{{ $uraian->name }}'
-                                            )">
-
-                                            <i class="ti ti-photo"></i>
-
-                                        </button>
-
-                                    </div>
-                                </td>
-
-                            </tr>
-
-                            @php $itemNo = 1; @endphp
-
-                            @foreach($uraian->items as $item)
-
-                            <tr>
-
-                                <td>{{ $uraianNo.'.'.$itemNo }}</td>
-
-                                <td>{{ $item->job_name }}</td>
-
-                                <td>{{ $item->satuan }}</td>
-
-                                <td>{{ rtrim(rtrim(number_format($item->volume, 2, '.', ''), '0'), '.') }}</td>
-
                                 <td>
-                                    Rp {{ number_format($item->price,2,',','.') }}
+                                    {{ $categoryLetter }}
                                 </td>
-
+                                <td colspan="4">
+                                    {{ strtoupper(
+                                        $categoryName ?: 'Tanpa Kategori'
+                                    ) }}
+                                </td>
                                 <td class="text-end">
-                                    Rp {{ number_format($item->total,2,',','.') }}
+                                    Rp {{ number_format(
+                                        $categoryTotal,
+                                        2,
+                                        ',',
+                                        '.'
+                                    ) }}
                                 </td>
-
                             </tr>
 
-                            @php $itemNo++; @endphp
+                            @foreach($categoryItems as $item)
+
+                                @php
+                                    $currentDescription = $item->description ?? '';
+
+                                    $isNewGroup =
+                                        empty($currentDescription) ||
+                                        $currentDescription !== $previousDescription;
+
+                                    if ($isNewGroup) {
+                                        $displayNo++;
+                                    }
+
+                                    $previousDescription = $currentDescription;
+                                @endphp
+
+                                <tr>
+                                    <td>
+                                        {{ $displayNo }}
+                                    </td>
+                                    <td>
+                                        {{ $item->job_name }}
+
+                                        @if(!empty($item->description))
+
+                                            <div class="small text-muted">
+                                                {{ $item->description }}
+                                            </div>
+
+                                        @endif
+                                    </td>
+                                    <td>
+                                        {{ $item->satuan }}
+                                    </td>
+                                    <td>
+                                        {{ rtrim(
+                                            rtrim(
+                                                number_format(
+                                                    $item->volume,
+                                                    5,
+                                                    '.',
+                                                    ''
+                                                ),
+                                                '0'
+                                            ),
+                                            '.'
+                                        ) }}
+                                    </td>
+                                    <td>
+                                        Rp {{ number_format(
+                                            $item->price,
+                                            2,
+                                            ',',
+                                            '.'
+                                        ) }}
+                                    </td>
+                                    <td class="text-end">
+                                        Rp {{ number_format(
+                                            $item->total,
+                                            2,
+                                            ',',
+                                            '.'
+                                        ) }}
+                                    </td>
+                                </tr>
 
                             @endforeach
 
-                            @php $uraianNo++; @endphp
+                            @php
+                                $categoryIndex++;
+                            @endphp
 
                         @endforeach
 

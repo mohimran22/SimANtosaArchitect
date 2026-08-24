@@ -258,7 +258,7 @@ private function resolveExtraRelations(int $activeStep, ?int $projectType): arra
     }
 
     if ($projectType == 2 && $activeStep >= 7) {
-        $relations[] = 'rab.categories.uraians.items.category';
+        $relations[] = 'rab.items';
     }
 
     if ($projectType == 3 && $activeStep >= 8) {
@@ -477,7 +477,7 @@ private function resolveBuildData($project): array
         'survey.items',
         'offer.items',
         'offer.rab.items.category',
-        'rab.categories.uraians.items.category',
+        'rab.items',
         'buildItems.jobCategory',
         'buildItems.weeklyProgresses', 
         'buildItems.tambahan.weeklyProgresses',

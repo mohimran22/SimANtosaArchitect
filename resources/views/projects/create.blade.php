@@ -458,6 +458,7 @@
                                 </button>
 
                                 <button type="button"
+                                        form="rab-edit-form"
                                         id="btn-save-rab"
                                         class="btn btn-sm btn-dark d-none"
                                         title="Simpan">

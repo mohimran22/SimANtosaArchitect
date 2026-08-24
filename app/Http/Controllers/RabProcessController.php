@@ -15,157 +15,269 @@ use App\Services\BuildProcessSyncService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Validator;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Storage;
 
 class RabProcessController extends Controller
 {
-
-public function store(Request $request)
+    public function store(Request $request)
 {
-    abort_if(auth()->user()->cannot('lihat daftar proyek'), 403);
-
-    $request->validate([
+    $validator = Validator::make($request->all(), [
         'project_id' => 'required|exists:projects,id',
-        'contact_name' => 'required|string',
-        'job_location' => 'required|string',
+        'contact_name' => 'required|string|max:255',
+        'job_location' => 'required|string|max:255',
         'job_duration' => 'nullable|string',
-        'items' => 'required|array|min:1',
-        'items.*.job_category_id' => 'required|exists:job_categories,id',
-        'items.*.job_name' => 'required|string',
-        'items.*.satuan' => 'required|string',
-        'items.*.volume' => 'required|numeric|min:0',
-        'items.*.base_price' => 'required|numeric|min:0',
-        'items.*.price' => 'required|numeric|min:0',
-        'items.*.total' => 'required|numeric|min:0',
-
-        'profit' => 'required|numeric|max:100',
-        'overhead' => 'required|numeric|max:100',
+        'profit' => 'nullable|numeric|min:0|max:100',
+        'overhead' => 'nullable|numeric|min:0|max:100',
         'discount' => 'nullable|numeric|min:0',
         'tax_rate' => 'nullable|numeric|min:0|max:100',
         'shipping' => 'nullable|numeric|min:0',
-        'notes' => 'nullable|string',
+        'notes' => 'nullable|string|max:255',
+        'items' => 'required|array|min:1',
+        'items.*.floor_name' => 'required|string|max:255',
+        'items.*.category_name' => 'required|string|max:255',
+        'items.*.job_name' => 'required|string|max:255',
+        'items.*.description' => 'nullable|string',
+        'items.*.satuan' => 'required|string|max:100',
+        'items.*.volume' => 'required|numeric|gt:0',
+        'items.*.base_price' => 'required|numeric|min:0',
+        'items.*.price' => 'required|numeric|min:0',
+        'items.*.total' => 'required|numeric|min:0',
+        'items.*.order_no' => 'required|integer|min:1',
     ]);
 
-    $project = null;
-    $rab = null;
+    if ($validator->fails()) {
 
-    DB::transaction(function () use ($request, &$project, &$rab) {
+        return redirect()
+            ->back()
+            ->withErrors($validator)
+            ->withInput();
+    }
 
-        $project = Project::findOrFail($request->project_id);
+    DB::beginTransaction();
 
-        // 🔹 Ambil langsung dari form (hasil JS)
-        $subtotal = collect($request->items)->sum(fn($i) => (float) $i['total']);
+    try {
 
-        $discount = (float) ($request->discount ?? 0);
-        $taxRate  = (float) ($request->tax_rate ?? 0);
-        $shipping = (float) ($request->shipping ?? 0);
+        $profit =
+            (float) ($request->profit ?? 0);
 
-        $subtotalAfterDiscount = max($subtotal - $discount, 0);
-        $taxTotal = $subtotalAfterDiscount * ($taxRate / 100);
-        $grandTotal = $subtotalAfterDiscount + $taxTotal + $shipping;
+        $overhead =
+            (float) ($request->overhead ?? 0);
 
-        $rab = RabProcess::create([
-            'project_id' => $project->id,
-            'contact_name' => $request->contact_name,
-            'job_location' => $request->job_location,
-            'job_duration' => $request->job_duration,
+        $discount =
+            (float) ($request->discount ?? 0);
 
-            'base_subtotal' => $subtotal,
-            'subtotal' => $subtotal,
-            'discount' => $discount,
-            'subtotal_after_discount' => $subtotalAfterDiscount,
+        $taxRate =
+            (float) ($request->tax_rate ?? 0);
 
-            'tax_rate' => $taxRate,
-            'tax_total' => $taxTotal,
-            'profit' => $request->profit,      
-            'overhead' => $request->overhead,    
-            'shipping' => $shipping,
-            'grand_total' => $grandTotal,
+        $shipping =
+            (float) ($request->shipping ?? 0);
 
-            'notes' => $request->notes,
-            'created_by' => auth()->id(),
-            'updated_by' => auth()->id(),
-            'analisa_version' => Cache::get('job_category_last_updated', 0),
-        ]);
+        $baseSubtotal = 0;
 
-        $categoryMap = [];
+        $subtotal = 0;
 
-        foreach ($request->categories as $cat) {
-
-            $category = RabProcessCategory::create([
-                'rab_process_id' => $rab->id,
-                'name' => $cat['name'],
-            ]);
-
-            $categoryMap[$cat['key']] = $category->id;
-        }
-
-        $uraianMap = [];
 
         foreach ($request->items as $item) {
-        $key = $item['uraian_key'];
 
-        if(!isset($uraianMap[$key])) {
+            $volume =
+                (float) $item['volume'];
 
-            $uraian = RabProcessUraian::create([
-                'rab_process_id' => $rab->id,
-                'job_category_id' => $item['job_category_id'],
-                'category_id' => $categoryMap[$item['category_key']],
-                'uraian_key' => $key,
-                'name' => $item['uraian_name'],
-            ]);
+            $basePrice =
+                (float) $item['base_price'];
 
-            $uraianMap[$key] = $uraian->id;
+
+            $baseTotal =
+                $volume * $basePrice;
+
+            $baseSubtotal += $baseTotal;
+
+            $overheadAmount =
+                $basePrice * $overhead / 100;
+
+            $profitAmount =
+                $basePrice * $profit / 100;
+
+            $price =
+                $basePrice
+                + $overheadAmount
+                + $profitAmount;
+
+            $total =
+                $volume * $price;
+
+
+            $subtotal += $total;
         }
+
+        $subtotalAfterDiscount = max(
+            0,
+            $subtotal - $discount
+        );
+
+        $taxTotal =
+            $subtotalAfterDiscount
+            * $taxRate
+            / 100;
+        $grandTotal =
+            $subtotalAfterDiscount
+            + $taxTotal
+            + $shipping;
+
+
+        $rab = RabProcess::create([
+
+            'project_id' =>
+                $request->project_id,
+
+            'contact_name' =>
+                $request->contact_name,
+            'notes' =>
+                $request->notes,
+            'job_location' =>
+                $request->job_location,
+            'job_duration' => $request->job_duration,
+            'base_subtotal' =>
+                $baseSubtotal,
+
+            'profit' =>
+                $profit,
+
+            'overhead' => $overhead,
+
+            'subtotal' =>
+                $subtotal,
+
+            'discount' =>
+                $discount,
+
+            'subtotal_after_discount' =>
+                $subtotalAfterDiscount,
+
+            'tax_rate' =>
+                $taxRate,
+
+            'tax_total' =>
+                $taxTotal,
+
+            'shipping' =>
+                $shipping,
+
+            'grand_total' =>
+                $grandTotal,
+
+            'created_by' =>
+                auth()->id(),
+        ]);
+
+        foreach ($request->items as $index => $item) {
+
+            $volume =
+                (float) $item['volume'];
+
+            $basePrice =
+                (float) $item['base_price'];
+
+            $overheadAmount =
+                $basePrice * $overhead / 100;
+
+            $profitAmount =
+                $basePrice * $profit / 100;
+
+
+            $price =
+                $basePrice
+                + $overheadAmount
+                + $profitAmount;
+
+            $total =
+                $volume * $price;
+
+
             RabProcessItem::create([
-                'rab_process_id' => $rab->id,
-                'uraian_id' => $uraianMap[$key],
-                'job_category_id' => $item['job_category_id'],
-                'job_name' => $item['job_name'],
-                'base_price' => $item['base_price'],
-                'satuan' => $item['satuan'],
-                'volume' => $item['volume'],
-                'price' => $item['price'],   
-                'total' => $item['total'],  
+
+                'rab_process_id' =>
+                    $rab->id,
+
+                'floor_name' =>
+                    $item['floor_name'],
+
+                'category_name' =>
+                    $item['category_name'],
+
+                'job_name' =>
+                    $item['job_name'],
+
+                'description' =>
+                    $item['description'] ?? null,
+
+                'satuan' =>
+                    $item['satuan'],
+
+                'volume' =>
+                    $volume,
+
+                'base_price' =>
+                    $basePrice,
+
+                'price' =>
+                    $price,
+
+                'total' =>
+                    $total,
+
+                'order_no' =>
+                    $index + 1,
             ]);
         }
-
-        foreach($request->uraian_images ?? [] as $uraianKey => $images){
-
-            foreach($images as $imgId){
-
-                RabUraianImage::create([
-                    'rab_id' => $rab->id,
-                    'uraian_key' => $uraianKey,
-                    'image_id' => $imgId
-                ]);
-
-            }
-
-        }
+        $project = Project::findOrFail($request->project_id);
 
         $finalLevel = $project->levels()
             ->where('level_name', 'Proses Pengerjaan RAB')
             ->first();
 
         if ($finalLevel && !$finalLevel->is_completed) {
+
             $finalLevel->update([
                 'is_completed' => true,
                 'completed_at' => now(),
             ]);
         }
-    });
+        DB::commit();
+        $this->notifyProjectEvent(
+            $project,
+            'rab_created'
+        );
 
-    $this->notifyProjectEvent($project, 'rab_created');
+        return redirect()
+            ->back()
+            ->with(
+                'success',
+                'RAB berhasil disimpan.'
+            );
 
-    return back()->with('success', 'RAB berhasil disimpan dan proyek dinyatakan selesai');
+
+    } catch (\Throwable $e) {
+
+        DB::rollBack();
+
+        report($e);
+
+        return redirect()
+            ->back()
+            ->withInput()
+            ->with(
+                'error',
+                'RAB gagal disimpan: ' . $e->getMessage()
+            );
+    }
 }
 public function exportPdf(Project $project)
 {
     $rab = $project->rab()->with([
-        'categories.uraians.items',
-        'categories.uraians.images.image'
+        'items',
+        // 'categories.uraians.images.image'
     ])->first();
 
     if (!$rab) abort(404);
@@ -270,8 +382,7 @@ public function getPackage($id)
 public function items($id)
 {
     $rab = RabProcess::with([
-        'categories.uraians.items',
-        'categories.uraians.images.image'
+        'items'
     ])->findOrFail($id);
 
     $subtotal = 0;
@@ -370,8 +481,7 @@ public function uraianImages($uraianId)
 public function structure($id)
 {
     $rab = RabProcess::with([
-        'categories.uraians.items.category',
-        'categories.uraians.images.image'
+        'items',
     ])->findOrFail($id);
 
     return response()->json([
@@ -382,285 +492,562 @@ public function structure($id)
             'tax_rate' => $rab->tax_rate,
             'shipping' => $rab->shipping,
         ],
-        'categories' => $rab->categories
+        'items' => $rab->items
     ]);
 }
-public function update(Request $request, Project $project, RabProcess $rab)
-{
-    abort_if(auth()->user()->cannot('ubah data proyek'), 403);
+public function update(
+    Request $request,
+    Project $project,
+    RabProcess $rab
+) {
+    /*
+    |--------------------------------------------------------------------------
+    | Pastikan RAB memang milik project dari route
+    |--------------------------------------------------------------------------
+    */
 
-    $categoryMap = [];
+    if ($rab->project_id !== $project->id) {
 
-    $uraianMap = [];
-    
-    $itemMap = [];
-    DB::transaction(function () use ($request, $rab, &$categoryMap, &$uraianMap, &$itemMap) {
-        $existingCategories = RabProcessCategory::where('rab_process_id', $rab->id)
-            ->get()
-            ->keyBy('id');
+        abort(404);
 
-        $existingUraians = RabProcessUraian::where('rab_process_id', $rab->id)
-            ->get()
-            ->keyBy('id');
+    }
 
-        $existingItems = RabProcessItem::where('rab_process_id', $rab->id)
-            ->get()
-            ->keyBy('id');
 
-        $usedCategoryIds = [];
-        $usedUraianIds = [];
-        $usedItemIds = [];
+    /*
+    |--------------------------------------------------------------------------
+    | VALIDATION
+    |--------------------------------------------------------------------------
+    */
 
-        foreach ($request->categories ?? [] as $i => $cat) {
+    $validator = Validator::make($request->all(), [
 
-            if (empty($cat['name'])) continue;
+        'project_id' =>
+            'required|exists:projects,id',
 
-            $category = null; 
+        'contact_name' =>
+            'required|string|max:255',
 
-            if (!empty($cat['id'])) {
+        'job_location' =>
+            'required|string|max:255',
 
-                $category = $existingCategories[$cat['id']] ?? null;
+        'job_duration' =>
+            'nullable|string',
 
-                if ($category) {
-                    $category->update([
-                        'name' => $cat['name'],
-                        'order_no' => $cat['order'],
-                    ]);
+        'profit' =>
+            'nullable|numeric|min:0|max:100',
 
-                    $usedCategoryIds[] = $category->id;
-                } else {
-                    $category = RabProcessCategory::create([
-                        'rab_process_id' => $rab->id,
-                        'name' => $cat['name'],
-                        'order_no' => $cat['order'],
-                    ]);
+        'overhead' =>
+            'nullable|numeric|min:0|max:100',
 
-                    $usedCategoryIds[] = $category->id;
-                }
+        'discount' =>
+            'nullable|numeric|min:0',
 
-            } else {
+        'tax_rate' =>
+            'nullable|numeric|min:0|max:100',
 
-                $category = RabProcessCategory::create([
-                    'rab_process_id' => $rab->id,
-                    'name' => $cat['name'],
-                    'order_no' => $cat['order'],
-                ]);
+        'shipping' =>
+            'nullable|numeric|min:0',
+        'notes' => 'nullable|string',
 
-                $usedCategoryIds[] = $category->id;
-            }
+        /*
+        |--------------------------------------------------------------------------
+        | ITEMS
+        |--------------------------------------------------------------------------
+        */
 
-            if ($category) {
-                $categoryMap[$cat['temp_id']] = $category->id;
-            }
-            if (!$category) {
-                \Log::error('CATEGORY NULL', [
-                    'cat' => $cat
-                ]);
-            }
+        'items' =>
+            'required|array|min:1',
+
+        'items.*.id' =>
+            'nullable',
+
+        'items.*.floor_name' =>
+            'required|string|max:255',
+
+        'items.*.category_name' =>
+            'required|string|max:255',
+
+        'items.*.job_name' =>
+            'required|string|max:255',
+
+        'items.*.description' =>
+            'nullable|string',
+
+        'items.*.satuan' =>
+            'required|string|max:100',
+
+        'items.*.volume' =>
+            'required|numeric|gt:0',
+
+        'items.*.base_price' =>
+            'required|numeric|min:0',
+
+        'items.*.price' =>
+            'nullable|numeric|min:0',
+
+        'items.*.total' =>
+            'nullable|numeric|min:0',
+
+        'items.*.order_no' =>
+            'required|integer|min:1',
+    ]);
+
+
+    if ($validator->fails()) {
+
+        return redirect()
+            ->back()
+            ->withErrors($validator)
+            ->withInput();
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | PROJECT_ID DARI FORM HARUS SESUAI DENGAN ROUTE
+    |--------------------------------------------------------------------------
+    */
+
+    if ($request->project_id !== $project->id) {
+
+        return redirect()
+            ->back()
+            ->withInput()
+            ->with(
+                'error',
+                'Project RAB tidak valid.'
+            );
+
+    }
+
+
+    DB::beginTransaction();
+
+
+    try {
+
+        /*
+        |--------------------------------------------------------------------------
+        | GLOBAL RAB VALUES
+        |--------------------------------------------------------------------------
+        */
+
+        $profit =
+            (float) ($request->profit ?? 0);
+
+        $overhead =
+            (float) ($request->overhead ?? 0);
+
+        $discount =
+            (float) ($request->discount ?? 0);
+
+        $taxRate =
+            (float) ($request->tax_rate ?? 0);
+
+        $shipping =
+            (float) ($request->shipping ?? 0);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | CALCULATE SUBTOTAL
+        |--------------------------------------------------------------------------
+        */
+
+        $baseSubtotal = 0;
+
+        $subtotal = 0;
+
+
+        foreach ($request->items as $item) {
+
+            $volume =
+                (float) $item['volume'];
+
+            $basePrice =
+                (float) $item['base_price'];
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | BASE SUBTOTAL
+            |--------------------------------------------------------------------------
+            */
+
+            $baseTotal =
+                $volume * $basePrice;
+
+            $baseSubtotal += $baseTotal;
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | OVERHEAD
+            |--------------------------------------------------------------------------
+            */
+
+            $overheadAmount =
+                $basePrice
+                * $overhead
+                / 100;
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | PROFIT
+            |--------------------------------------------------------------------------
+            */
+
+            $profitAmount =
+                $basePrice
+                * $profit
+                / 100;
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | FINAL PRICE
+            |--------------------------------------------------------------------------
+            */
+
+            $price =
+                $basePrice
+                + $overheadAmount
+                + $profitAmount;
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | ITEM TOTAL
+            |--------------------------------------------------------------------------
+            */
+
+            $total =
+                $volume * $price;
+
+
+            $subtotal += $total;
         }
 
-        RabProcessCategory::where('rab_process_id', $rab->id)
-            ->when(
-                count($usedCategoryIds),
-                fn($q) => $q->whereNotIn('id', $usedCategoryIds)
-            )
-            ->when(
-                empty($usedCategoryIds),
-                fn($q) => $q
-            )
-            ->delete();
 
-        foreach ($request->categories ?? [] as $cat) {
+        /*
+        |--------------------------------------------------------------------------
+        | DISCOUNT
+        |--------------------------------------------------------------------------
+        */
 
-            foreach ($cat['uraians'] ?? [] as $j => $uraian) {
+        $subtotalAfterDiscount = max(
+            0,
+            $subtotal - $discount
+        );
 
-                if (empty($uraian['name'])) continue;
 
-                $categoryId = $categoryMap[$cat['temp_id']] ?? null;
-                if (!$categoryId) continue;
+        /*
+        |--------------------------------------------------------------------------
+        | TAX
+        |--------------------------------------------------------------------------
+        */
 
-                $u = null; 
+        $taxTotal =
+            $subtotalAfterDiscount
+            * $taxRate
+            / 100;
 
-                if (!empty($uraian['id'])) {
 
-                    $u = $existingUraians[$uraian['id']] ?? null;
+        /*
+        |--------------------------------------------------------------------------
+        | GRAND TOTAL
+        |--------------------------------------------------------------------------
+        */
 
-                    if ($u) {
-                        $u->update([
-                            'name' => $uraian['name'],
-                            'category_id' => $categoryId,
-                            'order_no' => $uraian['order'] ?? $j
-                        ]);
+        $grandTotal =
+            $subtotalAfterDiscount
+            + $taxTotal
+            + $shipping;
 
-                        $usedUraianIds[] = $u->id;
-                    } else {
-                        $u = RabProcessUraian::create([
-                            'rab_process_id' => $rab->id,
-                            'category_id' => $categoryId,
-                            'name' => $uraian['name'],
-                            'uraian_key' => $uraian['temp_id'],
-                            'order_no' => $uraian['order'] ?? $j,
-                        ]);
 
-                        $usedUraianIds[] = $u->id;
-                    }
+        /*
+        |--------------------------------------------------------------------------
+        | UPDATE RAB HEADER
+        |--------------------------------------------------------------------------
+        */
 
-                } else {
+        $rab->update([
 
-                    $u = RabProcessUraian::create([
-                        'rab_process_id' => $rab->id,
-                        'category_id' => $categoryId,
-                        'name' => $uraian['name'],
-                        'uraian_key' => $uraian['temp_id'],
-                        'order_no' => $uraian['order'] ?? $j,
-                    ]);
+            'contact_name' =>
+                $request->contact_name,
 
-                    $usedUraianIds[] = $u->id;
-                }
+            'job_location' =>
+                $request->job_location,
 
-                if ($u) {
-                    $uraianMap[$uraian['temp_id']] = $u->id;
-                }
-                if (!$u) {
-                    \Log::error('URAIAN NULL', [
-                        'uraian_data' => $u
-                    ]);
-                }
-            }
-        }
+            'job_duration' =>
+                $request->job_duration,
+            'notes' => $request->notes,
+            'base_subtotal' =>
+                $baseSubtotal,
 
-        RabProcessUraian::where('rab_process_id', $rab->id)
-        ->when(
-            count($usedUraianIds),
-            fn($q) => $q->whereNotIn('id', $usedUraianIds)
-        )
-        ->when(
-            empty($usedUraianIds),
-            fn($q) => $q
-        )
-        ->delete();
+            'profit' =>
+                $profit,
 
-        $jobIds = collect($request->items)
-            ->pluck('job_category_id')
-            ->filter()
-            ->unique();
+            'overhead' =>
+                $overhead,
 
-        $jobs = JobCategory::with('items')
-            ->whereIn('id', $jobIds)
-            ->get()
-            ->keyBy('id');
+            'subtotal' =>
+                $subtotal,
 
-        $profit = str_replace(',', '.', $request->profit ?? 0);
-        $overhead = str_replace(',', '.', $request->overhead ?? 0);
+            'discount' =>
+                $discount,
 
-        foreach ($request->items ?? [] as $index => $item) {
+            'subtotal_after_discount' =>
+                $subtotalAfterDiscount,
 
-            if (empty($item['job_category_id'])) continue;
+            'tax_rate' =>
+                $taxRate,
 
-            $uraianId = $uraianMap[$item['uraian_key']] ?? null;
-            if (!$uraianId) continue;
+            'tax_total' =>
+                $taxTotal,
 
-            $job = $jobs[$item['job_category_id']] ?? null;
-            if (!$job) continue;
+            'shipping' =>
+                $shipping,
 
-            $basePrice = $job->grand_total;
+            'grand_total' =>
+                $grandTotal,
+            'updated_by' => auth()->id(),
+        ]);
 
-            $price = $basePrice +
-                ($basePrice * $profit / 100) +
-                ($basePrice * $overhead / 100);
 
-            $volume = $item['volume'];
+        /*
+        |--------------------------------------------------------------------------
+        | SYNC RAB ITEMS
+        |--------------------------------------------------------------------------
+        */
 
-            $total = $volume * $price;
+        $submittedItemIds = [];
+
+
+        foreach (
+            $request->items
+            as $index => $item
+        ) {
+
+            $volume =
+                (float) $item['volume'];
+
+            $basePrice =
+                (float) $item['base_price'];
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | HITUNG ULANG PRICE
+            |--------------------------------------------------------------------------
+            */
+
+            $overheadAmount =
+                $basePrice
+                * $overhead
+                / 100;
+
+            $profitAmount =
+                $basePrice
+                * $profit
+                / 100;
+
+
+            $price =
+                $basePrice
+                + $overheadAmount
+                + $profitAmount;
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | HITUNG ULANG TOTAL
+            |--------------------------------------------------------------------------
+            */
+
+            $total =
+                $volume * $price;
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | ITEM LAMA
+            |--------------------------------------------------------------------------
+            */
 
             if (!empty($item['id'])) {
 
-                $existing = $existingItems[$item['id']] ?? null;
+                $rabItem = RabProcessItem::where(
+                    'id',
+                    $item['id']
+                )
+                    ->where(
+                        'rab_process_id',
+                        $rab->id
+                    )
+                    ->first();
 
-                if ($existing) {
-                    $existing->update([
-                        'uraian_id' => $uraianId,
-                        'job_category_id' => $job->id,
-                        'job_name' => $job->nama_pekerjaan,
-                        'base_price' => $basePrice,
-                        'satuan' => $job->satuan ?? '',
-                        'volume' => $volume,
-                        'price' => $price,
-                        'total' => $total,
-                        'order_no' => $item['order']
-                    ]);
 
-                    $usedItemIds[] = $existing->id;
-                    if (!empty($item['id'])) {
-                        $itemMap[$item['id']] = $existing->id;
-                    }
+                /*
+                |--------------------------------------------------------------------------
+                | Kalau ID tidak ditemukan / bukan milik RAB ini,
+                | jangan update sembarang item.
+                |--------------------------------------------------------------------------
+                */
+
+                if (!$rabItem) {
+
+                    throw new \Exception(
+                        'Item RAB tidak ditemukan atau tidak sesuai dengan RAB.'
+                    );
+
                 }
 
-            } else {
 
-                $new = RabProcessItem::create([
-                    'rab_process_id' => $rab->id,
-                    'uraian_id' => $uraianId,
-                    'job_category_id' => $job->id,
-                    'job_name' => $job->nama_pekerjaan,      
-                    'base_price' => $basePrice,     
-                    'satuan' => $job->satuan ?? '', 
-                    'volume' => $volume,
-                    'price' => $price,
-                    'total' => $total,
-                    'order_no' => $item['order'],
+                $rabItem->update([
+
+                    'floor_name' =>
+                        $item['floor_name'],
+
+                    'category_name' =>
+                        $item['category_name'],
+
+                    'job_name' =>
+                        $item['job_name'],
+
+                    'description' =>
+                        $item['description'] ?? null,
+
+                    'satuan' =>
+                        $item['satuan'],
+
+                    'volume' =>
+                        $volume,
+
+                    'base_price' =>
+                        $basePrice,
+
+                    'price' =>
+                        $price,
+
+                    'total' =>
+                        $total,
+
+                    'order_no' =>
+                        $index + 1,
                 ]);
 
-                $usedItemIds[] = $new->id;
-                if (!empty($item['id'])) {
-                    $itemMap[$item['id']] = $new->id;
-                }
+
+                $submittedItemIds[] =
+                    $rabItem->id;
+
+            }
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | ITEM BARU
+            |--------------------------------------------------------------------------
+            */
+
+            else {
+
+                $rabItem =
+                    RabProcessItem::create([
+
+                        'rab_process_id' =>
+                            $rab->id,
+
+                        'floor_name' =>
+                            $item['floor_name'],
+
+                        'category_name' =>
+                            $item['category_name'],
+
+                        'job_name' =>
+                            $item['job_name'],
+
+                        'description' =>
+                            $item['description'] ?? null,
+
+                        'satuan' =>
+                            $item['satuan'],
+
+                        'volume' =>
+                            $volume,
+
+                        'base_price' =>
+                            $basePrice,
+
+                        'price' =>
+                            $price,
+
+                        'total' =>
+                            $total,
+
+                        'order_no' =>
+                            $index + 1,
+                    ]);
+
+
+                $submittedItemIds[] =
+                    $rabItem->id;
             }
         }
 
-        RabProcessItem::where('rab_process_id', $rab->id)
-            ->when(
-                count($usedItemIds),
-                fn($q) => $q->whereNotIn('id', $usedItemIds)
-            )
-            ->when(
-                empty($usedItemIds),
-                fn($q) => $q
+
+        /*
+        |--------------------------------------------------------------------------
+        | DELETE ITEM YANG SUDAH DIHAPUS DI FRONTEND
+        |--------------------------------------------------------------------------
+        */
+
+        RabProcessItem::where(
+            'rab_process_id',
+            $rab->id
+        )
+            ->whereNotIn(
+                'id',
+                $submittedItemIds
             )
             ->delete();
 
-        $subtotal = RabProcessItem::where('rab_process_id', $rab->id)
-            ->sum('total');
 
-        $discount = $request->discount;
-        $taxRate  = $request->tax_rate;
-        $shipping = $request->shipping;
+        DB::commit();
 
-        $afterDiscount = max(0, $subtotal - $discount);
-        $tax = round($afterDiscount * $taxRate / 100);
-        $grandTotal = $afterDiscount + $tax + $shipping;
 
-        $rab->update([
-            'contact_name' => $request->contact_name,
-            'job_location' => $request->job_location,
-            'job_duration' => $request->job_duration,
-            'base_subtotal' => $subtotal,
-            'discount' => $discount,
-            'subtotal_after_discount' => $afterDiscount,
-            'profit' => $profit,
-            'overhead' => $overhead,
-            'tax_rate' => $taxRate,
-            'tax_total' => $tax,
-            'shipping' => $shipping,
-            'subtotal' => $subtotal,
-            'grand_total' => $grandTotal,
-            'updated_by' => auth()->id(),
-        ]);
-    });
+        /*
+        |--------------------------------------------------------------------------
+        | SUCCESS
+        |--------------------------------------------------------------------------
+        */
 
-    return response()->json([
-        'status' => 'saved',
-    ]);
+        return redirect()
+            ->back()
+            ->with(
+                'success',
+                'RAB berhasil diperbarui.'
+            );
+
+
+    } catch (\Throwable $e) {
+
+        DB::rollBack();
+
+        report($e);
+
+
+        return redirect()
+            ->back()
+            ->withInput()
+            ->with(
+                'error',
+                'RAB gagal diperbarui: '
+                . $e->getMessage()
+            );
+    }
 }
 public function loadDraft(RabProcess $rab)
 {

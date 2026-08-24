@@ -30,11 +30,11 @@
                     <i class="ti ti-map-pin"></i> Detail Usaha
                 </a>
             </li>
-            <li class="nav-item" role="presentation">
+            {{-- <li class="nav-item" role="presentation">
                 <a class="nav-link" data-bs-toggle="tab" href="#tab-catalogue" role="tab">
                     <i class="ti ti-shopping-cart"></i> Katalog Produk
                 </a>
-            </li>
+            </li> --}}
             <li class="nav-item" role="presentation">
                 <a class="nav-link" data-bs-toggle="tab" href="#tab-employment" role="tab">
                     <i class="ti ti-briefcase"></i> Riwayat Pembayaran
