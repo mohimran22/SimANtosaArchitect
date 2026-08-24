@@ -2712,40 +2712,6 @@ function prepareRabEditItemsForSubmit() {
     });
 
 }
-    const needRefresh = @json($needRefresh)
-
-    const btnRefresh = document.getElementById('btnRefreshRab')
-
-    if(btnRefresh){
-        btnRefresh.addEventListener('click', function(){
-
-            Swal.fire({
-                title: 'Refresh harga dari master?',
-                text: 'Dengan merefresh ini, harga RAB akan mengikuti harga analisa terbaru.',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Ya, Refresh',
-                cancelButtonText: 'Batal'
-            }).then((result) => {
-
-                if (!result.isConfirmed) return
-
-                fetch("{{ route('rab.refreshFromMaster', $rab->id) }}", {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
-                        'Accept': 'application/json'
-                    }
-                })
-                .then(res => res.json())
-                .then(res => {
-                    if (res.success) {
-                        location.reload()
-                    }
-                })
-            })
-        })
-    }
 
     document.addEventListener('DOMContentLoaded', function () {
         initRupiahInputsEdit();
