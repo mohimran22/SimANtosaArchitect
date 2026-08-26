@@ -19,16 +19,12 @@
     $items = $rab->items
         ->sortBy('order_no')
         ->values();
-
     $floorGroups = $items->groupBy('floor_name');
+    $categoryIndex = 0;
 @endphp
 
 
 @foreach($floorGroups as $floorName => $floorItems)
-
-    {{-- ============================== --}}
-    {{-- LANTAI --}}
-    {{-- ============================== --}}
 
     <tr style="font-weight:bold; background:#c4c4c4;">
 
@@ -38,12 +34,8 @@
 
     </tr>
 
-
     @php
-        $categoryIndex = 0;
-
-        $categoryGroups = $floorItems
-            ->groupBy('category_name');
+        $categoryGroups = $floorItems->groupBy('category_name');
     @endphp
 
 
@@ -82,13 +74,41 @@
             </td>
 
         </tr>
+        @php
+            $itemNo = 1;
+            $lastDescription = null;
+        @endphp
 
         @foreach($categoryItems as $item)
 
-            <tr>
+            @php
+                $description = trim((string) $item->description);
 
+                // Tampilkan nomor hanya jika:
+                // 1. description kosong
+                // 2. atau description berbeda dari baris sebelumnya
+                $showNumber = false;
+
+                if ($description === '') {
+                    $showNumber = true;
+                } elseif ($description !== $lastDescription) {
+                    $showNumber = true;
+                }
+
+                $currentNo = $itemNo;
+
+                if ($showNumber) {
+                    $itemNo++;
+                }
+
+                $lastDescription = $description;
+            @endphp
+
+            <tr>
                 <td align="center">
-                    {{ $itemNo }}
+                    @if($showNumber)
+                        {{ $currentNo }}
+                    @endif
                 </td>
 
                 <td>
@@ -138,16 +158,9 @@
                         '.'
                     ) }}
                 </td>
-
             </tr>
 
-
-            @php
-                $itemNo++;
-            @endphp
-
         @endforeach
-
 
         @php
             $categoryIndex++;
@@ -191,3 +204,81 @@
 </tfoot>
 
 </table>
+        {{-- @php
+            $descriptionNumbers = [];
+            $itemNo = 1;
+        @endphp
+
+        @foreach($categoryItems as $item)
+
+            @php
+                $description = trim((string) $item->description);
+
+                if ($description === '') {
+                    $currentNo = $itemNo;
+                    $itemNo++;
+                } else {
+                    if (!isset($descriptionNumbers[$description])) {
+                        $descriptionNumbers[$description] = $itemNo;
+                        $itemNo++;
+                    }
+
+                    $currentNo = $descriptionNumbers[$description];
+                }
+            @endphp
+
+            <tr>
+                <td align="center">
+                    {{ $currentNo }}
+                </td>
+
+                <td>
+                    {{ $item->job_name }}
+
+                    @if(!empty($item->description))
+                        <br>
+                        <span style="font-size:11px; color:#666;">
+                            {{ $item->description }}
+                        </span>
+                    @endif
+                </td>
+
+                <td align="center">
+                    {{ $item->satuan }}
+                </td>
+
+                <td align="right">
+                    {{ rtrim(
+                        rtrim(
+                            number_format(
+                                $item->volume,
+                                5,
+                                ',',
+                                '.'
+                            ),
+                            '0'
+                        ),
+                        ','
+                    ) }}
+                </td>
+
+                <td align="right">
+                    Rp {{ number_format(
+                        $item->price,
+                        0,
+                        ',',
+                        '.'
+                    ) }}
+                </td>
+
+                <td align="right">
+                    Rp {{ number_format(
+                        $item->total,
+                        0,
+                        ',',
+                        '.'
+                    ) }}
+                </td>
+            </tr>
+
+        @endforeach --}}
