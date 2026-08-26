@@ -33,7 +33,7 @@ return [
         ],
 
         'PENDAPATAN' => [
-            'Pendapatan Survei',
+            'Pendapatan Proyek',
             'Pendapatan Proyek Desain',
             'Pendapatan Proyek RAB',
             'Pendapatan Proyek Build',
@@ -42,7 +42,10 @@ return [
         ],
 
         'BEBAN' => [
-            'Biaya Lisensi',
+            'Biaya Proyek',
+            'Biaya Proyek Desain',
+            'Biaya Proyek RAB',
+            'Biaya Proyek Build',
             'Biaya Pembelian',
             'Biaya Pembelian Material',
             'Biaya Pembelian Merchandise',

@@ -380,26 +380,15 @@ public function getPackage($id)
 
 public function items($id)
 {
-    $rab = RabProcess::with([
-        'items'
-    ])->findOrFail($id);
+    $rab = RabProcess::with('items')->findOrFail($id);
 
-    $subtotal = 0;
+    $subtotal = $rab->items->sum(function ($item) {
+        return (float) $item->volume * (float) $item->price;
+    });
 
-    foreach ($rab->categories as $category) {
-
-        foreach ($category->uraians as $uraian) {
-
-            foreach ($uraian->items as $item) {
-
-                $subtotal += ($item->volume * $item->price);
-            }
-        }
-    }
-
-    $discount = $rab->discount ?? 0;
-    $shipping = $rab->shipping ?? 0;
-    $taxRate = $rab->tax_rate ?? 0;
+    $discount = (float) ($rab->discount ?? 0);
+    $shipping = (float) ($rab->shipping ?? 0);
+    $taxRate = (float) ($rab->tax_rate ?? 0);
 
     $subtotalAfterDiscount = $subtotal - $discount;
 
@@ -408,7 +397,7 @@ public function items($id)
     $grandTotal = $subtotalAfterDiscount + $taxTotal + $shipping;
 
     return response()->json([
-        'categories' => $rab->categories,
+        'items' => $rab->items,
 
         'header' => [
             'tax_rate' => $taxRate,

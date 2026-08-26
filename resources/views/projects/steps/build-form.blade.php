@@ -150,7 +150,7 @@ function setRupiah(selector,val){
 }
     function numberToLetters(num){
         let letters = ''
-        num = num + 1 // karena A = 1, bukan 0
+        num = num + 1
 
         while(num > 0){
             let rem = (num - 1) % 26
@@ -161,100 +161,161 @@ function setRupiah(selector,val){
         return letters
     }
 
-function loadRabItems(){
+function loadRabItems() {
 
-    let rabId = $('#rab_process_id').val()
-    if(!rabId) return
+    let rabId = $('#rab_process_id').val();
 
-    $.get(`/rab-process/${rabId}/items`,function(res){
+    if (!rabId) return;
 
-        const tbody = $('#buildItemsBody')
-        tbody.empty()
+    $.get(`/rab-process/${rabId}/items`, function(res) {
 
-        let categoryLetter
-        let uraianNo
-        let itemNo
+        const tbody = $('#buildItemsBody');
 
-        res.categories.forEach((category,cIndex)=>{
+        tbody.empty();
 
-            categoryLetter = numberToLetters(cIndex)
+        const grouped = {};
 
-            // CATEGORY
+        res.items.forEach(item => {
+
+            const floor = item.floor ?? 'Tanpa Lantai';
+            const category = item.category ?? 'Tanpa Kategori';
+
+            if (!grouped[floor]) {
+                grouped[floor] = {};
+            }
+
+            if (!grouped[floor][category]) {
+                grouped[floor][category] = [];
+            }
+
+            grouped[floor][category].push(item);
+        });
+
+        let categoryIndex = 0;
+
+        Object.entries(grouped).forEach(([floor, categories]) => {
+
             tbody.append(`
-                <tr class="table-secondary fw-bold">
-                    <td style="font-weight:600" colspan="6">
-                        ${categoryLetter}. ${category.name}
+                <tr class="table-primary fw-bold">
+                    <td colspan="6">
+                        LANTAI ${floor}
                     </td>
                 </tr>
-            `)
+            `);
 
-            category.uraians.forEach((uraian,uIndex)=>{
+            categoryIndex = 0;
 
-                uraianNo = uIndex + 1
+            Object.entries(categories).forEach(([categoryName, items]) => {
 
-                // URAIAN
+                const categoryLetter = numberToLetters(categoryIndex);
+
                 tbody.append(`
-                    <tr class="table-light fw-semibold">
-                        <td>${uraianNo}</td>
-                        <td colspan="5">
-                            ${uraian.name}
+                    <tr class="table-secondary">
+                        <td style="font-weight:600" colspan="6">
+                            ${categoryLetter}. ${categoryName}
                         </td>
                     </tr>
-                `)
+                `);
 
-                itemNo = 1
+                items.forEach((item, itemIndex) => {
 
-                uraian.items.forEach(item=>{
+                    const itemNo = itemIndex + 1;
+
+                    const total =
+                        item.total ??
+                        (
+                            (parseFloat(item.volume) || 0) *
+                            (parseFloat(item.price) || 0)
+                        );
 
                     tbody.append(`
                         <tr>
-                            <td>${uraianNo}.${itemNo}</td>
+                            <td>${itemNo}</td>
+
                             <td style="padding-left:30px">
-                                ${item.job_name}
+                                ${item.job_name ?? ''}
                             </td>
-                            <td>${item.satuan}</td>
-                            <td>${formatNumber(item.volume)}</td>
-                            <td>${formatRupiah(item.price)}</td>
-                            <td>${formatRupiah(item.total)}</td>
+
+                            <td>
+                                ${item.satuan ?? ''}
+                            </td>
+
+                            <td>
+                                ${formatNumber(item.volume)}
+                            </td>
+
+                            <td>
+                                ${formatRupiah(item.price)}
+                            </td>
+
+                            <td>
+                                ${formatRupiah(total)}
+                            </td>
                         </tr>
-                    `)
+                    `);
 
-                    itemNo++
-                })
+                });
 
-            })
+                categoryIndex++;
 
-        })
+            });
 
-        // HEADER RAB
-        $('#tax_rate').val(res.header.tax_rate)
+        });
 
-        setRupiah('#discount_display',res.header.discount)
-        setRupiah('#shipping_display',res.header.shipping)
+        $('#tax_rate').val(res.header.tax_rate);
 
-        $('#discount').val(res.header.discount)
-        $('#shipping').val(res.header.shipping)
+        setRupiah(
+            '#discount_display',
+            res.header.discount
+        );
 
-        $('#subtotalDisplay').text(formatRupiah(res.header.subtotal))
-        $('#subAfterDiscountDisplay').text(formatRupiah(res.header.subtotal_after_discount))
-        $('#totalTaxDisplay').text(formatRupiah(res.header.tax_total))
-        $('#grandTotalDisplay').text(formatRupiah(res.header.grand_total))
+        setRupiah(
+            '#shipping_display',
+            res.header.shipping
+        );
 
-    })
+        $('#discount').val(res.header.discount);
+        $('#shipping').val(res.header.shipping);
 
+        $('#subtotalDisplay').text(formatRupiah(res.header.subtotal));
+
+        $('#subAfterDiscountDisplay')
+            .text(formatRupiah(
+                res.header.subtotal_after_discount
+            ));
+
+        $('#totalTaxDisplay')
+            .text(formatRupiah(
+                res.header.tax_total
+            ));
+
+        $('#grandTotalDisplay')
+            .text(formatRupiah(
+                res.header.grand_total
+            ));
+
+    }).fail(function(xhr) {
+
+        console.error(
+            'Gagal mengambil data RAB:',
+            xhr.responseText
+        );
+
+    });
 }
 
-// trigger select
-$('#rab_process_id').on('change',loadRabItems)
+$('#rab_process_id').on(
+    'change',
+    loadRabItems
+);
 
-// auto load jika edit
-$(document).ready(function(){
+$(document).ready(function() {
 
-    if($('#rab_process_id').val()){
-        loadRabItems()
+    if ($('#rab_process_id').val()) {
+        loadRabItems();
     }
 
-})
+});
 
 </script>
 @endpush
