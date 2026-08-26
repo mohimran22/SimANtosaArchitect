@@ -63,22 +63,6 @@
                                 </div>
                                 <div class="row mb-4">
                                     <div class="col-md-6 mb-3">
-                                        <label class="form-label">Saldo Awal</label>
-                                        <input type="number" step="0.01" name="initial_balance" value="{{ $account->initial_balance }}" class="form-control">
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <label class="form-label">User</label>
-                                        <select name="person_type" class="form-select select2" value="{{ old('person_type') }}">
-                                            <option value="">-- Pilih --</option>
-                                            <option value="employee" {{ old('person_type', $account->person_type) == 'employee' ? 'selected' : '' }}>Karyawan</option>
-                                            <option value="customer" {{ old('person_type', $account->person_type) == 'customer' ? 'selected' : '' }}>Customer</option>
-                                            <option value="worker" {{ old('person_type', $account->person_type) == 'worker' ? 'selected' : '' }}>Tukang</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div class="row mb-4">
-                                    <div class="col-md-6 mb-3">
                                         <label class="form-label">Apakah Akun Induk?</label>
                                         <select name="is_parent" class="form-select select2">
                                             <option value="1" {{ $account->is_parent ? 'selected' : '' }}>
@@ -103,6 +87,22 @@
                                         </select>
                                     </div>
                                 </div>
+                                <div class="row mb-4">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Saldo Awal</label>
+                                        <input type="number" step="0.01" name="initial_balance" value="{{ $account->initial_balance }}" class="form-control">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">User</label>
+                                        <select name="person_type" class="form-select select2" value="{{ old('person_type') }}">
+                                            <option value="">-- Pilih --</option>
+                                            <option value="employee" {{ old('person_type', $account->person_type) == 'employee' ? 'selected' : '' }}>Karyawan</option>
+                                            <option value="customer" {{ old('person_type', $account->person_type) == 'customer' ? 'selected' : '' }}>Customer</option>
+                                            <option value="worker" {{ old('person_type', $account->person_type) == 'worker' ? 'selected' : '' }}>Tukang</option>
+                                        </select>
+                                    </div>
+                                </div>
+
                                 <div class="text-end mt-5">
                                             <button type="submit" class="btn btn-dark px-4">
                                                 <i class="ti ti-device-floppy me-1"></i>Simpan Perubahan
@@ -208,7 +208,6 @@ $(document).ready(function () {
             exclude_id: @json($account->id)
 
         });
-
 
         fetch(`/accounting/generate-code?${params.toString()}`)
 
