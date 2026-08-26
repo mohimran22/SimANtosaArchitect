@@ -143,47 +143,93 @@ public function store(Request $request)
         'category' => 'required|string|max:255',
         'sub_category' => 'required|string|max:255',
         'initial_balance' => 'nullable|numeric',
-        'is_parent' => 'nullable|boolean',
+        'is_parent' => 'required|boolean',
         'parent_id' => 'nullable|uuid|exists:accounting_accounts,id',
         'person_type' => 'nullable|string',
     ]);
 
     $isParent = $request->boolean('is_parent');
+    $parentId = $request->parent_id;
 
-    if (!$isParent && !$request->parent_id) {
-        return back()->withErrors([
-            'parent_id' => 'Akun child wajib punya akun induk'
-        ]);
+    if (!$parentId) {
+
+        $prefix = $this->getCategoryPrefix(
+            $request->category
+        );
+
+        $rootCode = "{$prefix}-000-000";
+
+        if (
+            AccountingAccount::where(
+                'account_code',
+                $rootCode
+            )->exists()
+        ) {
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'parent_id' =>
+                        'Akun baru wajib memiliki akun induk.'
+                ]);
+        }
     }
 
     $code = $this->generateAccountCode(
         $request->category,
-        $request->parent_id
+        $parentId,
+        $isParent
     );
-    $licenseId = config('app.license_id');
 
-    if (AccountingAccount::where('account_code', $code)->exists()) {
-        return back()->withErrors([
-            'account_code' => 'Kode akun sudah digunakan, silakan ulangi.'
-        ]);
+    if (!$code) {
+
+        return back()
+            ->withInput()
+            ->withErrors([
+                'account_code' =>
+                    'Kode akun tidak dapat dibuat.'
+            ]);
+    }
+
+    if (
+        AccountingAccount::where(
+            'account_code',
+            $code
+        )->exists()
+    ) {
+
+        return back()
+            ->withInput()
+            ->withErrors([
+                'account_code' =>
+                    'Kode akun sudah digunakan, silakan ulangi.'
+            ]);
     }
 
     AccountingAccount::create([
         'id' => Str::uuid(),
-        'license_id'   => $licenseId,
+        'license_id' => config('app.license_id'),
         'account_code' => $code,
         'account_name' => $request->account_name,
         'category' => $request->category,
         'sub_category' => $request->sub_category,
-        'initial_balance' => $isParent ? null : $request->initial_balance,
+        'initial_balance' =>
+            $isParent
+                ? null
+                : $request->initial_balance,
+
         'is_parent' => $isParent,
-        'parent_id' => $isParent ? null : $request->parent_id,
+        'parent_id' => $parentId,
         'person_type' => $request->person_type,
         'is_active' => true,
     ]);
 
-    return redirect()->route('accounting.index')
-        ->with('success', 'Akun berhasil ditambahkan.');
+
+    return redirect()
+        ->route('accounting.index')
+        ->with(
+            'success',
+            'Akun berhasil ditambahkan.'
+        );
 }
 
     public function edit(AccountingAccount $account)
@@ -324,17 +370,27 @@ public function generateCode(Request $request)
 {
     $category = $request->category;
     $parentId = $request->parent_id;
+    $isParent = $request->is_parent;
 
     if (!$category) {
-        return response()->json(['code' => '-']);
+        return response()->json([
+            'code' => '-'
+        ]);
     }
 
-    $code = $this->generateAccountCode($category, $parentId);
+    $code = $this->generateAccountCode(
+        $category,
+        $parentId,
+        $isParent
+    );
 
-    return response()->json(['code' => $code]);
+    return response()->json([
+        'code' => $code
+    ]);
 }
 
-    private function getCategoryPrefix($category)
+
+private function getCategoryPrefix($category)
 {
     return match (strtoupper($category)) {
         'AKTIVA' => '1',
@@ -346,58 +402,94 @@ public function generateCode(Request $request)
     };
 }
 
-private function generateAccountCode($category, $parentId = null)
-{
-    // LEVEL 1 → KATEGORI
+
+private function generateAccountCode($category, $parentId = null, $isParent = null) {
+    $prefix = $this->getCategoryPrefix($category);
+
     if (!$parentId) {
 
-        $prefix = $this->getCategoryPrefix($category);
+        $rootCode = "{$prefix}-000-000";
 
-        // cek apakah root sudah ada
-        $root = AccountingAccount::where('account_code', "{$prefix}-000-000")->first();
+        $root = AccountingAccount::where(
+            'account_code',
+            $rootCode
+        )->first();
 
-        if ($root) {
-            // berarti ini level 2
-            return $this->generateAccountCode($category, $root->id);
+        if (!$root) {
+            return $rootCode;
         }
 
-        // kalau belum ada → buat root
-        return "{$prefix}-000-000";
+        return null;
     }
 
     $parent = AccountingAccount::findOrFail($parentId);
+
     $parts = explode('-', $parent->account_code);
 
-    // LEVEL 2 → SUB KATEGORI
-    if ($parts[1] === '000') {
+    $parentPrefix = $parts[0];
+    $parentMid    = $parts[1];
 
-        $last = AccountingAccount::where('parent_id', $parentId)
-            ->orderBy('account_code', 'desc')
-            ->first();
+    if ($isParent == '1') {
 
-        if ($last) {
-            $lastMid = (int) explode('-', $last->account_code)[1];
-            $nextMid = str_pad($lastMid + 10, 3, '0', STR_PAD_LEFT);
-        } else {
-            $nextMid = '100';
-        }
-
-        return "{$parts[0]}-{$nextMid}-000";
-    }
-
-    // LEVEL 3 → AKUN DETAIL
-    $last = AccountingAccount::where('parent_id', $parentId)
+        $last = AccountingAccount::where(
+            'parent_id',
+            $parentId
+        )
+        ->where('is_parent', true)
         ->orderBy('account_code', 'desc')
         ->first();
 
+        if ($last) {
+
+            $lastParts = explode(
+                '-',
+                $last->account_code
+            );
+
+            $lastMid = (int) $lastParts[1];
+
+            $nextMid = str_pad(
+                $lastMid + 1,
+                3,
+                '0',
+                STR_PAD_LEFT
+            );
+
+        } else {
+
+            $nextMid = '100';
+        }
+
+        return "{$parentPrefix}-{$nextMid}-000";
+    }
+
+    $last = AccountingAccount::where(
+        'parent_id',
+        $parentId
+    )
+    ->orderBy('account_code', 'desc')
+    ->first();
+
     if ($last) {
-        $lastEnd = (int) substr($last->account_code, -3);
-        $nextEnd = str_pad($lastEnd + 1, 3, '0', STR_PAD_LEFT);
+
+        $lastEnd = (int) substr(
+            $last->account_code,
+            -3
+        );
+
+        $nextEnd = str_pad(
+            $lastEnd + 1,
+            3,
+            '0',
+            STR_PAD_LEFT
+        );
+
     } else {
+
         $nextEnd = '001';
     }
 
-    return "{$parts[0]}-{$parts[1]}-{$nextEnd}";
+    return "{$parentPrefix}-{$parentMid}-{$nextEnd}";
 }
 
 private function generateSubCategoryCode($subCategory)

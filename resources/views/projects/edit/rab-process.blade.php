@@ -1,10 +1,3 @@
-{{-- @php
-    $latest = \Illuminate\Support\Facades\Cache::get('job_category_last_updated', 0);
-
-    $needRefresh = $rab->analisa_version < $latest;
-
-@endphp --}}
-
 <form id="rab-edit-form" action="{{ route('projects.rab.update', [$project->id, $rab->id]) }}" method="POST">
     @csrf
     @method('PUT')
@@ -20,16 +13,7 @@
                                     @endif
 
     <input type="hidden" name="project_id" value="{{ $project->id }}">
-        {{-- @if($needRefresh)
-        <div class="alert alert-warning d-flex justify-content-between align-items-center">
-            <div>
-                ⚠️ Harga analisa sudah berubah dari versi terakhir RAB ini dibuat.
-            </div>
-            <button type="button" class="btn btn-dark" id="btnRefreshRab">
-                🔄 Refresh Harga RAB
-            </button>
-        </div>
-        @endif --}}
+
     <h4 class="fw-bold mb-3">Informasi Pembuatan Rab</h4>
 
     <div class="row g-3">
@@ -2518,31 +2502,6 @@ function renderEditRabItems() {
         normalizeOrderEdit();
         renderEditRabItems();
         calculateSummary();
-    }
-
-    function numberToLetters(num) {
-
-        let letters = '';
-
-        num = num + 1;
-
-        while (num > 0) {
-
-            const rem =
-                (num - 1) % 26;
-
-            letters =
-                String.fromCharCode(
-                    65 + rem
-                ) + letters;
-
-            num =
-                Math.floor(
-                    (num - 1) / 26
-                );
-        }
-
-        return letters;
     }
 
     function calculateSummary() {
