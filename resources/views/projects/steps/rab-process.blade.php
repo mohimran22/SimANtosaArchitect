@@ -2133,7 +2133,7 @@ function importRabFromExcel() {
                                     class="form-control vol"
                                     value="${item.volume}"
                                     min="0"
-                                    step="0.00001"
+                                    step="any"
                                     onchange="updateItemVolume(
                                         '${item.temp_id}',
                                         this.value

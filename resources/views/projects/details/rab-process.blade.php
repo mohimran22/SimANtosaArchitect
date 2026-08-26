@@ -58,8 +58,8 @@ function numberToLetters($num) {
                     @php
                         $items = $rab->items->sortBy('order_no')->values();
                         $floorGroups = $items->groupBy('floor_name');
+                        $categoryIndex = 0;
                     @endphp
-
 
                     @foreach($floorGroups as $floorName => $floorItems)
                         <tr class="table-secondary">
@@ -69,13 +69,12 @@ function numberToLetters($num) {
                         </tr>
 
                         @php
-                            $categoryIndex = 0;
                             $categoryGroups = $floorItems->groupBy('category_name');
                         @endphp
 
                         @foreach($categoryGroups as $categoryName => $categoryItems)
 
-                                                        @php
+                            @php
                                 $categoryLetter = numberToLetters($categoryIndex);
                                 $categoryTotal = $categoryItems->sum('total');
                                 $displayNo = 0;
