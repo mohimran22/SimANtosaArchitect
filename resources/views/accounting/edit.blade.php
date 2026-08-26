@@ -124,35 +124,25 @@ $(document).ready(function () {
         width: '100%'
     });
 
-    const selectIsParent = document.querySelector('[name="is_parent"]');
-    const parentField = document.getElementById('parent-field');
-
-    function toggleParent() {
-        if (!selectIsParent || !parentField) return;
-
-        if (selectIsParent.value === "1") {
-            parentField.style.display = 'none';
-        } else {
-            parentField.style.display = 'block';
-        }
-    }
-
-    toggleParent();
-
-    $(selectIsParent).on('change', toggleParent);
+    const selectIsParent = $('[name="is_parent"]');
 
     const subCategories = @json($subCategories);
+
     const selectedSub = @json($account->sub_category);
 
     function loadSub(category) {
 
-        let options = '<option value="">-- Pilih Sub kategori --</option>';
+        let options =
+            '<option value="">-- Pilih Sub kategori --</option>';
 
         if (subCategories[category]) {
 
             subCategories[category].forEach(function (item) {
 
-                let selected = item == selectedSub ? 'selected' : '';
+                let selected =
+                    item === selectedSub
+                        ? 'selected'
+                        : '';
 
                 options += `
                     <option value="${item}" ${selected}>
@@ -168,42 +158,98 @@ $(document).ready(function () {
             .trigger('change');
     }
 
+
     let category = $('[name="category"]').val();
 
     if (category) {
         loadSub(category);
     }
 
+
     $('[name="category"]').on('change', function () {
+
         loadSub($(this).val());
+
+        // Setelah kategori berubah,
+        // generate ulang kode
+        generateCode();
     });
 
-});
-</script>
-<script>
-$(document).ready(function(){
 
-    function generateCode(){
-        let category = $('[name="category"]').val()
-        let parentId = $('[name="parent_id"]').val()
+    /*
+    |--------------------------------------------------------------------------
+    | GENERATE ACCOUNT CODE
+    |--------------------------------------------------------------------------
+    */
 
-        if(!category){
-            $('#account_code_preview').val('')
-            return
+    function generateCode() {
+
+        let category = $('[name="category"]').val();
+
+        let parentId = $('[name="parent_id"]').val();
+
+        let isParent = $('[name="is_parent"]').val();
+
+
+        if (!category) {
+
+            $('#account_code_preview').val('');
+            $('#account_code').val('');
+
+            return;
         }
 
-        $('#account_code_preview').val('Generating...')
+        $('#account_code_preview').val('Generating...');
 
-        fetch(`/accounting/generate-code?category=${encodeURIComponent(category)}&parent_id=${encodeURIComponent(parentId ?? '')}`)
+        const params = new URLSearchParams({
+            category: category || '',
+            parent_id: parentId || '',
+            is_parent: isParent || '',
+            exclude_id: @json($account->id)
+
+        });
+
+
+        fetch(`/accounting/generate-code?${params.toString()}`)
+
             .then(res => res.json())
+
             .then(data => {
-                $('#account_code_preview').val(data.code)
+
+                $('#account_code_preview')
+                    .val(data.code);
+
+                $('#account_code')
+                    .val(data.code);
+
             })
+
+            .catch(error => {
+
+                console.error(error);
+
+                $('#account_code_preview').val('');
+
+                $('#account_code').val('');
+
+            });
     }
 
-    $('[name="category"]').on('change', generateCode)
-    $('[name="parent_id"]').on('change', generateCode)
+    $('[name="category"]').on(
+        'change',
+        generateCode
+    );
 
-})
+    $('[name="parent_id"]').on(
+        'change',
+        generateCode
+    );
+
+    $('[name="is_parent"]').on(
+        'change',
+        generateCode
+    );
+
+});
 </script>
 @endpush

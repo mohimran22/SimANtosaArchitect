@@ -187,16 +187,11 @@ $(document).ready(function(){
         });
     }
 
-
-    // Pilih kategori
     $('[name="category"]').on('change', generateCode);
 
-    // Pilih akun induk
     $('[name="parent_id"]').on('change', generateCode);
 
-    // Pilih Ya / Tidak akun induk
     $('[name="is_parent"]').on('change', generateCode);
-
 });
 </script>
 @endpush

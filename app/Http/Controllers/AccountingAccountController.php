@@ -271,7 +271,7 @@ public function store(Request $request)
 
     }
 
-    public function update(Request $request, AccountingAccount $account)
+public function update(Request $request, AccountingAccount $account)
 {
     $licenseId = config('app.license_id');
 
@@ -287,8 +287,10 @@ public function store(Request $request)
         'account_name' => 'required|string|max:255',
         'category' => 'required|string|max:255',
         'sub_category' => 'required|string|max:255',
+
         'initial_balance' => 'nullable|numeric',
-        'is_parent' => 'nullable|boolean',
+
+        'is_parent' => 'required|boolean',
 
         'parent_id' => [
             'nullable',
@@ -300,63 +302,189 @@ public function store(Request $request)
         'person_type' => 'nullable|string',
     ]);
 
+
     $isParent = $request->boolean('is_parent');
+    $parentId = $request->parent_id;
 
-    if ($isParent && $request->parent_id) {
-        return back()->withErrors([
-            'parent_id' => 'Akun parent tidak boleh memiliki induk.'
-        ]);
-    }
+    if ($parentId == $account->id) {
 
-    // Child wajib punya parent
-    if (!$isParent && !$request->parent_id) {
-        return back()->withErrors([
-            'parent_id' => 'Akun child wajib punya akun induk.'
-        ]);
-    }
-
-    if ($request->parent_id == $account->id) {
-        return back()->withErrors([
-            'parent_id' => 'Tidak boleh memilih diri sendiri sebagai parent.'
-        ]);
+        return back()
+            ->withInput()
+            ->withErrors([
+                'parent_id' =>
+                    'Tidak boleh memilih diri sendiri sebagai parent.'
+            ]);
     }
 
     $parent = null;
 
-    if ($request->parent_id) {
+    if ($parentId) {
 
-        $parent = AccountingAccount::where('license_id', $licenseId)
-            ->find($request->parent_id);
+        $parent = AccountingAccount::where(
+            'license_id',
+            $licenseId
+        )
+        ->find($parentId);
 
-        if ($parent && $parent->category !== $request->category) {
-            return back()->withErrors([
-                'parent_id' => 'Kategori parent harus sama dengan akun.'
-            ]);
+        if (!$parent) {
+
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'parent_id' =>
+                        'Akun induk tidak ditemukan.'
+                ]);
         }
 
-        if ($parent && $parent->parent_id == $account->id) {
-            return back()->withErrors([
-                'parent_id' => 'Circular parent tidak diperbolehkan.'
-            ]);
+        if (
+            strtoupper($parent->category)
+            !== strtoupper($request->category)
+        ) {
+
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'parent_id' =>
+                        'Kategori parent harus sama dengan akun.'
+                ]);
+        }
+
+        $current = $parent;
+
+        while ($current) {
+
+            if ($current->id == $account->id) {
+
+                return back()
+                    ->withInput()
+                    ->withErrors([
+                        'parent_id' =>
+                            'Circular parent tidak diperbolehkan.'
+                    ]);
+            }
+
+            if (!$current->parent_id) {
+                break;
+            }
+
+            $current = AccountingAccount::find(
+                $current->parent_id
+            );
+        }
+    }
+
+    if (!$parentId) {
+
+        $parts = explode(
+            '-',
+            $request->account_code
+        );
+
+        $isRoot =
+            isset($parts[1]) &&
+            $parts[1] === '000' &&
+            isset($parts[2]) &&
+            $parts[2] === '000';
+
+
+        if (!$isRoot) {
+
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'parent_id' =>
+                        'Akun ini wajib memiliki akun induk.'
+                ]);
+        }
+    }
+
+    if ($parentId) {
+
+        $descendantIds = [];
+
+        $children = AccountingAccount::where(
+            'parent_id',
+            $account->id
+        )->get();
+
+
+        $collectChildren = function ($items) use (
+            &$collectChildren,
+            &$descendantIds
+        ) {
+
+            foreach ($items as $item) {
+
+                $descendantIds[] = $item->id;
+
+                $children = AccountingAccount::where(
+                    'parent_id',
+                    $item->id
+                )->get();
+
+                $collectChildren($children);
+            }
+        };
+
+        $collectChildren($children);
+
+
+        if (in_array(
+            $parentId,
+            $descendantIds
+        )) {
+
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'parent_id' =>
+                        'Tidak boleh memilih akun anak sebagai parent.'
+                ]);
         }
     }
 
     $account->update([
-        'account_code' => $request->account_code,
-        'account_name' => $request->account_name,
-        'category' => $request->category,
-        'sub_category' => $request->sub_category,
-        'initial_balance' => $isParent ? null : ($request->initial_balance ?? 0),
-        'is_parent' => $isParent,
-        'parent_id' => $isParent ? null : $request->parent_id,
-        'is_active' => true,
-        'person_type' => $request->person_type,
-        'license_id' => $licenseId,
+
+        'account_code' =>
+            $request->account_code,
+
+        'account_name' =>
+            $request->account_name,
+
+        'category' =>
+            $request->category,
+
+        'sub_category' =>
+            $request->sub_category,
+
+        'initial_balance' =>
+            $isParent
+                ? null
+                : ($request->initial_balance ?? 0),
+
+        'is_parent' =>
+            $isParent,
+
+        'parent_id' =>
+            $parentId,
+
+        'is_active' =>
+            true,
+
+        'person_type' =>
+            $request->person_type,
+
+        'license_id' =>
+            $licenseId,
     ]);
+
 
     return redirect()
         ->route('accounting.index')
-        ->with('success', 'Akun berhasil diubah.');
+        ->with(
+            'success',
+            'Akun berhasil diubah.'
+        );
 }
 
     public function destroy($id)
@@ -366,28 +494,30 @@ public function store(Request $request)
 
         return response()->json(['status' => 'success']);
     }
-public function generateCode(Request $request)
-{
-    $category = $request->category;
-    $parentId = $request->parent_id;
-    $isParent = $request->is_parent;
+    public function generateCode(Request $request)
+    {
+        $category = $request->category;
+        $parentId = $request->parent_id;
+        $isParent = $request->is_parent;
+        $excludeId = $request->exclude_id;
 
-    if (!$category) {
+        if (!$category) {
+            return response()->json([
+                'code' => '-'
+            ]);
+        }
+
+        $code = $this->generateAccountCode(
+            $category,
+            $parentId,
+            $isParent,
+            $excludeId
+        );
+
         return response()->json([
-            'code' => '-'
+            'code' => $code
         ]);
     }
-
-    $code = $this->generateAccountCode(
-        $category,
-        $parentId,
-        $isParent
-    );
-
-    return response()->json([
-        'code' => $code
-    ]);
-}
 
 
 private function getCategoryPrefix($category)
@@ -403,17 +533,28 @@ private function getCategoryPrefix($category)
 }
 
 
-private function generateAccountCode($category, $parentId = null, $isParent = null) {
+private function generateAccountCode(
+    $category,
+    $parentId = null,
+    $isParent = null,
+    $excludeId = null
+) {
     $prefix = $this->getCategoryPrefix($category);
 
     if (!$parentId) {
 
         $rootCode = "{$prefix}-000-000";
 
-        $root = AccountingAccount::where(
+        $query = AccountingAccount::where(
             'account_code',
             $rootCode
-        )->first();
+        );
+
+        if ($excludeId) {
+            $query->where('id', '!=', $excludeId);
+        }
+
+        $root = $query->first();
 
         if (!$root) {
             return $rootCode;
@@ -424,20 +565,32 @@ private function generateAccountCode($category, $parentId = null, $isParent = nu
 
     $parent = AccountingAccount::findOrFail($parentId);
 
-    $parts = explode('-', $parent->account_code);
+    $parts = explode(
+        '-',
+        $parent->account_code
+    );
 
     $parentPrefix = $parts[0];
     $parentMid    = $parts[1];
 
     if ($isParent == '1') {
 
-        $last = AccountingAccount::where(
+        $query = AccountingAccount::where(
             'parent_id',
             $parentId
         )
         ->where('is_parent', true)
-        ->orderBy('account_code', 'desc')
-        ->first();
+        ->orderBy('account_code', 'desc');
+
+        if ($excludeId) {
+            $query->where(
+                'id',
+                '!=',
+                $excludeId
+            );
+        }
+
+        $last = $query->first();
 
         if ($last) {
 
@@ -460,15 +613,26 @@ private function generateAccountCode($category, $parentId = null, $isParent = nu
             $nextMid = '100';
         }
 
+
         return "{$parentPrefix}-{$nextMid}-000";
     }
 
-    $last = AccountingAccount::where(
+    $query = AccountingAccount::where(
         'parent_id',
         $parentId
     )
-    ->orderBy('account_code', 'desc')
-    ->first();
+    ->orderBy('account_code', 'desc');
+
+    if ($excludeId) {
+        $query->where(
+            'id',
+            '!=',
+            $excludeId
+        );
+    }
+
+
+    $last = $query->first();
 
     if ($last) {
 
@@ -488,6 +652,7 @@ private function generateAccountCode($category, $parentId = null, $isParent = nu
 
         $nextEnd = '001';
     }
+
 
     return "{$parentPrefix}-{$parentMid}-{$nextEnd}";
 }
