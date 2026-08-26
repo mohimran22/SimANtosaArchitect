@@ -15,51 +15,147 @@
 </thead>
 
 <tbody>
-@php $noGroup = 'A'; @endphp
+@php
+    $items = $rab->items
+        ->sortBy('order_no')
+        ->values();
 
-    @foreach($rab->categories as $category)
-            @php
-                $subtotal = $category->uraians->flatMap->items->sum('total');
-            @endphp
-            <tr style="font-weight:bold; background:#c4c4c4;">
-                <td align="center">{{ $noGroup }}</td>
-                <td colspan="4">{{ strtoupper($category->name) }}</td>
+    $floorGroups = $items->groupBy('floor_name');
+@endphp
+
+
+@foreach($floorGroups as $floorName => $floorItems)
+
+    {{-- ============================== --}}
+    {{-- LANTAI --}}
+    {{-- ============================== --}}
+
+    <tr style="font-weight:bold; background:#c4c4c4;">
+
+        <td colspan="6">
+            {{ strtoupper($floorName ?: 'Tanpa Lantai') }}
+        </td>
+
+    </tr>
+
+
+    @php
+        $categoryIndex = 0;
+
+        $categoryGroups = $floorItems
+            ->groupBy('category_name');
+    @endphp
+
+
+    @foreach($categoryGroups as $categoryName => $categoryItems)
+
+        @php
+            $categoryLetter =
+                number_to_letters($categoryIndex);
+
+            $categorySubtotal =
+                $categoryItems->sum('total');
+
+            // RESET ITEM SETIAP KATEGORI
+            $itemNo = 1;
+        @endphp
+
+        <tr style="font-weight:bold; background:#c4c4c4;">
+
+            <td align="center">
+                {{ $categoryLetter }}
+            </td>
+
+            <td colspan="4">
+                {{ strtoupper(
+                    $categoryName ?: 'Tanpa Kategori'
+                ) }}
+            </td>
+
+            <td align="right">
+                Rp {{ number_format(
+                    $categorySubtotal,
+                    0,
+                    ',',
+                    '.'
+                ) }}
+            </td>
+
+        </tr>
+
+        @foreach($categoryItems as $item)
+
+            <tr>
+
+                <td align="center">
+                    {{ $itemNo }}
+                </td>
+
+                <td>
+                    {{ $item->job_name }}
+
+                    @if(!empty($item->description))
+                        <br>
+                        <span style="font-size:11px; color:#666;">
+                            {{ $item->description }}
+                        </span>
+                    @endif
+                </td>
+
+                <td align="center">
+                    {{ $item->satuan }}
+                </td>
 
                 <td align="right">
-                    Rp {{ number_format($subtotal,0,',','.') }}
+                    {{ rtrim(
+                        rtrim(
+                            number_format(
+                                $item->volume,
+                                5,
+                                ',',
+                                '.'
+                            ),
+                            '0'
+                        ),
+                        ','
+                    ) }}
                 </td>
+
+                <td align="right">
+                    Rp {{ number_format(
+                        $item->price,
+                        0,
+                        ',',
+                        '.'
+                    ) }}
+                </td>
+
+                <td align="right">
+                    Rp {{ number_format(
+                        $item->total,
+                        0,
+                        ',',
+                        '.'
+                    ) }}
+                </td>
+
             </tr>
 
-        @php $no = 1; @endphp
 
-        @foreach($category->uraians as $uraian)
+            @php
+                $itemNo++;
+            @endphp
 
-            <tr style="font-size:14px;">
-                <td align="center">{{ $no }}</td>
-                <td colspan="5">{{ $uraian->name }}</td>
-            </tr>
-
-            @php $itemNo = 1; @endphp
-
-            @foreach($uraian->items as $item)
-
-                <tr>
-                    <td align="center">{{ $no }}.{{ $itemNo }}</td>
-                    <td>{{ $item->job_name }}</td>
-                    <td align="center">{{ $item->satuan }}</td>
-                    <td align="right">{{ number_format($item->volume,2,',','.') }}</td>
-                    <td align="right">Rp {{ number_format($item->price,0,',','.') }}</td>
-                    <td align="right">Rp {{ number_format($item->total,0,',','.') }}</td>
-                </tr>
-
-                @php $itemNo++; @endphp
-            @endforeach
-
-            @php $no++; @endphp
         @endforeach
 
-        @php $noGroup++; @endphp
+
+        @php
+            $categoryIndex++;
+        @endphp
+
     @endforeach
+
+@endforeach
 </tbody>
 <tfoot>
 <tr>

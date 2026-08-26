@@ -276,8 +276,7 @@ class RabProcessController extends Controller
 public function exportPdf(Project $project)
 {
     $rab = $project->rab()->with([
-        'items',
-        // 'categories.uraians.images.image'
+        'items'
     ])->first();
 
     if (!$rab) abort(404);

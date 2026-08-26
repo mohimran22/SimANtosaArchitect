@@ -81,7 +81,7 @@ function numberToLetters($num) {
                                 $previousDescription = null;
                             @endphp
 
-                            <tr class="fw-bold">
+                            <tr class="table-secondary fw-bold">
                                 <td>
                                     {{ $categoryLetter }}
                                 </td>

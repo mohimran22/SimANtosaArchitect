@@ -56,14 +56,6 @@
             <input type="hidden" name="overhead" id="rab_overhead_edit">
         </div>
     </div>
-    <select style="display:none" id="jobCategorySelectEdit">
-        <option value="">-- Pilih AHSP --</option>
-        @foreach($jobCategories as $job) 
-        <option value="{{ $job->id }}" > 
-            {{ $job->nama_pekerjaan }} 
-        </option> 
-        @endforeach
-    </select>
   
     <div class="row mb-4 mt-3">
         <div class="rab-detail-header mb-3">
