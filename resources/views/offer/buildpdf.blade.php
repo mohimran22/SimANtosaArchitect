@@ -162,99 +162,411 @@ berikut kami sampaikan penawaran harga untuk pelaksanaan pekerjaan:
 
 <!-- ================= TABEL RINCIAN ================= -->
 <table width="100%" cellspacing="0" cellpadding="6" border="1">
-<thead style="background:#eee; font-weight:bold; text-align:center;">
-<tr>
-    <th width="4%">NO</th>
-    <th>URAIAN PEKERJAAN</th>
-    <th width="6%">SAT</th>
-    <th width="8%">VOL</th>
-    <th width="15%">HARGA SATUAN</th>
-    <th width="17%">JUMLAH HARGA</th>
-</tr>
-</thead>
 
-<tbody>
-@php $noGroup = 'A'; @endphp
+    <thead style="background:#eee; font-weight:bold; text-align:center;">
+        <tr>
+            <th width="4%">NO</th>
+            <th>URAIAN PEKERJAAN</th>
+            <th width="6%">SAT</th>
+            <th width="8%">VOL</th>
+            <th width="15%">HARGA SATUAN</th>
+            <th width="17%">JUMLAH HARGA</th>
+        </tr>
+    </thead>
 
-    @foreach($rab->categories as $category)
+    <tbody>
             @php
-                $subtotal = $category->uraians->flatMap->items->sum('total');
+                $categoryIndex = 0;
             @endphp
-            <tr style="font-weight:bold; background:#f5f5f5;">
-                <td align="center">{{ $noGroup }}</td>
-                <td colspan="4">{{ strtoupper($category->name) }}</td>
+        @foreach($grouped as $floorName => $categories)
 
-                <td align="right">
-                    Rp {{ number_format($subtotal,0,',','.') }}
+            <tr style="font-weight:bold; background:#ddd;">
+
+                <td colspan="6">
+                    {{ strtoupper($floorName ?: 'Tanpa Lantai') }}
                 </td>
+
             </tr>
 
-        @php $no = 1; @endphp
+            @foreach($categories as $categoryName => $category)
 
-        @foreach($category->uraians as $uraian)
+                @php
+                    $categoryLetter = number_to_letters($categoryIndex);
+                    $categorySubtotal = $category['subtotal'];
+                    $itemNo = 1;
+                    $lastDescription = null;
+                @endphp
 
-            <tr style="font-weight:bold;">
-                <td align="center">{{ $no }}</td>
-                <td colspan="5">{{ $uraian->name }}</td>
-            </tr>
+                <tr style="font-weight:bold; background:#f5f5f5;">
 
-            @php $itemNo = 1; @endphp
+                    <td align="center">
+                        {{ $categoryLetter }}
+                    </td>
 
-            @foreach($uraian->items as $item)
+                    <td colspan="4">
 
-                <tr>
-                    <td align="center">{{ $no }}.{{ $itemNo }}</td>
-                    <td>{{ $item->job_name }}</td>
-                    <td align="center">{{ $item->satuan }}</td>
-                    <td align="right">{{ number_format($item->volume,2,',','.') }}</td>
-                    <td align="right">Rp {{ number_format($item->price,0,',','.') }}</td>
-                    <td align="right">Rp {{ number_format($item->total,0,',','.') }}</td>
+                        {{ strtoupper(
+                            $categoryName ?: 'Tanpa Kategori'
+                        ) }}
+
+                    </td>
+
+                    <td align="right">
+
+                        Rp
+                        {{ number_format(
+                            $categorySubtotal,
+                            0,
+                            ',',
+                            '.'
+                        ) }}
+
+                    </td>
+
                 </tr>
 
-                @php $itemNo++; @endphp
+                @foreach($category['items'] as $item)
+
+                    @php
+
+                        $description = trim((string) $item->description);
+
+                        $showNumber = false;
+
+                        if ($description === '') {
+
+                            $showNumber = true;
+
+                        } elseif (
+                            $description !== $lastDescription
+                        ) {
+                            $showNumber = true;
+                        }
+
+                        $currentNo = $itemNo;
+
+                        if ($showNumber) {
+                            $itemNo++;
+                        }
+
+                        $lastDescription = $description;
+
+                    @endphp
+
+
+                    <tr>
+
+                        {{-- NO --}}
+
+                        <td align="center">
+
+                            @if($showNumber)
+                                {{ $currentNo }}
+                            @endif
+
+                        </td>
+
+
+                        {{-- PEKERJAAN --}}
+
+                        <td>
+
+                            {{ $item->job_name }}
+
+                            @if($description !== '')
+
+                                <br>
+
+                                <span style="
+                                    font-size:11px;
+                                    color:#666;
+                                ">
+                                    {{ $description }}
+                                </span>
+
+                            @endif
+
+                        </td>
+
+
+                        {{-- SAT --}}
+
+                        <td align="center">
+                            {{ $item->satuan }}
+                        </td>
+
+
+                        {{-- VOL --}}
+
+                        <td align="right">
+
+                            {{ rtrim(
+                                rtrim(
+                                    number_format(
+                                        $item->volume,
+                                        5,
+                                        ',',
+                                        '.'
+                                    ),
+                                    '0'
+                                ),
+                                ','
+                            ) }}
+
+                        </td>
+
+
+                        {{-- HARGA --}}
+
+                        <td align="right">
+
+                            Rp
+                            {{ number_format(
+                                $item->price,
+                                0,
+                                ',',
+                                '.'
+                            ) }}
+
+                        </td>
+
+
+                        {{-- TOTAL --}}
+
+                        <td align="right">
+
+                            Rp
+                            {{ number_format(
+                                $item->total,
+                                0,
+                                ',',
+                                '.'
+                            ) }}
+
+                        </td>
+
+                    </tr>
+
+                @endforeach
+
+
+                @php
+                    $categoryIndex++;
+                @endphp
+
             @endforeach
 
-            @php $no++; @endphp
         @endforeach
 
-        @php $noGroup++; @endphp
-    @endforeach
-</tbody>
-<tfoot>
-<tr>
-    <th colspan="5" align="right">SUBTOTAL</th>
-    <th align="right">{{ number_format($rab->subtotal,0,',','.') }}</th>
-</tr>
-<tr>
-    <th colspan="5" align="right">DISCOUNT</th>
-    <th align="right">{{ number_format($rab->discount,0,',','.') }}</th>
-</tr>
-<tr>
-    <th colspan="5" align="right">SUBTOTAL AFTER DISCOUNT</th>
-    <th align="right">{{ number_format($rab->subtotal_after_discount,0,',','.') }}</th>
-</tr>
-<tr>
-    <th colspan="5" align="right">TAX ({{ $rab->tax_rate }}%)</th>
-    <th align="right">{{ number_format($rab->tax_total,0,',','.') }}</th>
-</tr>
-<tr>
-    <th colspan="5" align="right">SHIPPING</th>
-    <th align="right">{{ number_format($rab->shipping,0,',','.') }}</th>
-</tr>
-@php
-    $dibulatkan = round($rab->grand_total, -5);
-@endphp
-<tr style="font-weight:bold;">
-    <th colspan="5" align="right">GRAND TOTAL</th>
-    <th align="right">{{ number_format($rab->grand_total,0,',','.') }}</th>
-</tr>
-<tr style="font-weight:bold;">
-    <th colspan="5" align="right">DIBULATKAN</th>
-    <th align="right">
-        {{ number_format(round($rab->grand_total,-5),0,',','.') }}
-    </th>
-</tr>
-</tfoot>
+    </tbody>
+
+    @php
+
+        $subtotal = $rab->subtotal ?? 0;
+
+        $discount = $rab->discount ?? 0;
+
+        $subtotalAfterDiscount = $rab->subtotal_after_discount ?? 0;
+
+        $taxRate = $rab->tax_rate ?? 0;
+
+        $totalTax = $rab->tax_total ?? 0;
+
+        $shipping = $rab->shipping ?? 0;
+
+        $grandTotal = $rab->grand_total ?? 0;
+
+        $dibulatkan =
+            floor(
+                $grandTotal / 1000000
+            ) * 1000000;
+
+        $extraDiscount = $offer->extra_discount ?? 0;
+        $grandTotalPenawaran =max(0,$dibulatkan - $extraDiscount);
+
+    @endphp
+
+    <tfoot>
+
+        <tr>
+
+            <th colspan="5" align="right">
+                SUBTOTAL
+            </th>
+
+            <th align="right">
+
+                Rp
+                {{ number_format(
+                    $subtotal,
+                    0,
+                    ',',
+                    '.'
+                ) }}
+
+            </th>
+
+        </tr>
+
+        <tr>
+            <th colspan="5" align="right">
+                DISCOUNT
+            </th>
+            <th align="right">
+
+                Rp
+                {{ number_format(
+                    $discount,
+                    0,
+                    ',',
+                    '.'
+                ) }}
+
+            </th>
+
+        </tr>
+
+        <tr>
+
+            <th colspan="5" align="right">
+                SUBTOTAL AFTER DISCOUNT
+            </th>
+
+            <th align="right">
+
+                Rp
+                {{ number_format(
+                    $subtotalAfterDiscount,
+                    0,
+                    ',',
+                    '.'
+                ) }}
+
+            </th>
+
+        </tr>
+
+        <tr>
+
+            <th colspan="5" align="right">
+                TAX ({{ $taxRate }}%)
+            </th>
+
+            <th align="right">
+
+                Rp
+                {{ number_format(
+                    $totalTax,
+                    0,
+                    ',',
+                    '.'
+                ) }}
+
+            </th>
+
+        </tr>
+
+        <tr>
+
+            <th colspan="5" align="right">
+                SHIPPING
+            </th>
+
+            <th align="right">
+
+                Rp
+                {{ number_format(
+                    $shipping,
+                    0,
+                    ',',
+                    '.'
+                ) }}
+
+            </th>
+
+        </tr>
+
+        <tr style="font-weight:bold;">
+
+            <th colspan="5" align="right">
+                GRAND TOTAL
+            </th>
+
+            <th align="right">
+
+                Rp
+                {{ number_format(
+                    $grandTotal,
+                    0,
+                    ',',
+                    '.'
+                ) }}
+
+            </th>
+
+        </tr>
+
+        <tr style="font-weight:bold;">
+
+            <th colspan="5" align="right">
+                DIBULATKAN
+            </th>
+
+            <th align="right">
+
+                Rp
+                {{ number_format(
+                    $dibulatkan,
+                    0,
+                    ',',
+                    '.'
+                ) }}
+
+            </th>
+
+        </tr>
+
+        <tr>
+
+            <th colspan="5" align="right">
+                EXTRA DISCOUNT
+            </th>
+
+            <th align="right">
+
+                Rp
+                {{ number_format(
+                    $extraDiscount,
+                    0,
+                    ',',
+                    '.'
+                ) }}
+
+            </th>
+
+        </tr>
+
+        <tr style="font-weight:bold;">
+
+            <th colspan="5" align="right">
+                GRAND TOTAL PENAWARAN
+            </th>
+
+            <th align="right">
+
+                Rp
+                {{ number_format(
+                    $grandTotalPenawaran,
+                    0,
+                    ',',
+                    '.'
+                ) }}
+
+            </th>
+
+        </tr>
+
+    </tfoot>
 
 </table>
 

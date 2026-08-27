@@ -412,7 +412,7 @@ public function items($id)
             'subtotal_after_discount' => $subtotalAfterDiscount,
             'tax_total' => $taxTotal,
             'grand_total' => $grandTotal,
-
+            'extra_discount' => $offer->extra_discount ?? 0,
             'notes' => $rab->notes,
         ],
     ]);

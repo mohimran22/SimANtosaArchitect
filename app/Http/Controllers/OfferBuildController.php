@@ -364,40 +364,58 @@ public function update(OfferBuildUpdateRequest $request, $id)
 public function printPdf(Project $project)
 {
     $project->load([
-        'offer.rab.categories.uraians.items'
+        'offer.rab.items'
     ]);
-    
+
     $offer = $project->offer;
     $rab   = $offer?->rab;
 
-    if (!$rab) abort(404);
-
-    $grouped = [];
-
-    foreach ($rab->items as $item) {
-
-        $kode = $item->category->kode_group ?? '-';
-        $nama = $item->category->nama_group ?? 'PEKERJAAN LAIN-LAIN';
-
-        if (!isset($grouped[$kode])) {
-            $grouped[$kode] = [
-                'kode' => $kode,
-                'nama' => $nama,
-                'items' => [],
-                'subtotal' => 0
-            ];
-        }
-
-        $grouped[$kode]['items'][] = $item;
-        $grouped[$kode]['subtotal'] += $item->total ?? 0;
+    if (!$rab) {
+        abort(404);
     }
 
-    $safeName = str_replace(['/', '\\'], '-', $offer->offer_number);
+    $items = $rab->items->sortBy('order_no')->values();
 
-    $filename = 'Penawaran-'.$safeName.'.pdf';
+    $grouped = $items
+        ->groupBy('floor_name')
+        ->map(function ($floorItems) {
 
-    $pdf = Pdf::loadView('offer.buildpdf', compact('offer', 'rab', 'project', 'grouped'))
-        ->setPaper('A4', 'portrait');
+            return $floorItems
+                ->groupBy('category_name')
+                ->map(function ($categoryItems) {
+
+                    return [
+                        'items' =>
+                            $categoryItems
+                                ->sortBy('order_no')
+                                ->values(),
+
+                        'subtotal' =>
+                            $categoryItems->sum('total'),
+                    ];
+
+                });
+
+        });
+
+    $safeName = str_replace(
+        ['/', '\\'],
+        '-',
+        $offer->offer_number
+    );
+
+    $filename = 'Penawaran-' . $safeName . '.pdf';
+
+    $pdf = Pdf::loadView(
+        'offer.buildpdf',
+        compact(
+            'offer',
+            'rab',
+            'project',
+            'grouped'
+        )
+    )
+    ->setPaper('A4', 'portrait');
 
     return $pdf->stream($filename);
 }

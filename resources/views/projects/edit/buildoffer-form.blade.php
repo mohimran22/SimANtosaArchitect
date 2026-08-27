@@ -488,7 +488,15 @@ foreach ($items as $item) {
                 '#shipping_display_build',
                 res.header.shipping
             );
+            const extraDiscount =
+                parseFloat(res.header.extra_discount) || 0;
 
+            $('#extra_discount_build').val(extraDiscount);
+
+            setRupiahBuild(
+                '#extra_discount_display_build',
+                extraDiscount
+            );
             $('#discount_build').val(res.header.discount);
             $('#shipping_build').val(res.header.shipping);
 
@@ -510,7 +518,7 @@ foreach ($items as $item) {
                 .text(formatRupiahBuild(
                     res.header.grand_total
                 ));
-
+            calculateOfferTotal();
         }).fail(function(xhr) {
 
             console.error(
@@ -520,8 +528,7 @@ foreach ($items as $item) {
 
         });
     }
-    $('#extra_discount_build').val(0);
-    setRupiahBuild('#extra_discount_display_build', 0);
+
     function calculateOfferTotal() {
 
         const subtotal = parseFloat($('#subtotalDisplayBuild').data('value')) || 0;
