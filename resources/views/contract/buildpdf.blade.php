@@ -238,46 +238,82 @@ adalah sebagai berikut:
     </li>
 </ol>
 
+@php
+    $categoryGroups = $items
+        ->groupBy('category_name')
+        ->values();
+@endphp
+
 <ol type="A" style="margin-left: 30px;">
 
-@foreach($categories as $category)
+    @foreach($categoryGroups as $categoryIndex => $categoryItems)
+        @php
+            $categoryName = $categoryItems->first()->category_name ?? 'Tanpa Kategori';
 
-    <li>
+            $categoryName = preg_replace(
+                '/^HARGA SATUAN\s*\*/i',
+                '',
+                $categoryName
+            );
+            $uraianGroups = $categoryItems->groupBy(function ($item) {
+                $description = trim((string) $item->description);
 
-        <strong>
-            {{ preg_replace('/^HARGA SATUAN\s*/i', '', $category->name) }}
-        </strong>
+                return $description !== ''
+                    ? $description
+                    : '__NO_DESCRIPTION__' . $item->id;
+            })->values();
+        @endphp
 
-        <ol type="1" style="margin-top:6px; margin-left:20px;">
+        <li>
 
-            @foreach($category->uraians as $uraian)
+            <strong>
+                {{ $categoryName }}
+            </strong>
 
-                <li>
+            <ol
+                type="1"
+                style="margin-top:6px; margin-left:20px;"
+            >
 
-                    <strong>{{ $uraian->name }}</strong>
+                @foreach($uraianGroups as $uraianItems)
 
-                    <ol type="a" style="margin-left:20px; margin-top:4px;">
+                    @php
+                        $firstItem = $uraianItems->first();
 
-                        @foreach($uraian->items as $item)
+                        $description = trim(
+                            (string) $firstItem->description
+                        );
+                    @endphp
 
-                            <li>
-                                {{ $item->job_name }}
-                            </li>
+                    <li>
 
-                        @endforeach
+                        @if($description !== '')
+                            <strong>
+                                {{ $description }}
+                            </strong>
+                        @endif
 
-                    </ol>
+                        <ol
+                            type="a"
+                            style="margin-left:20px; margin-top:4px;"
+                        >
 
-                </li>
+                            @foreach($uraianItems as $item)
 
-            @endforeach
+                                <li>
+                                    {{ $item->job_name }}
+                                </li>
 
-        </ol>
+                            @endforeach
 
-    </li>
+                        </ol>
 
-@endforeach
+                    </li>
 
+                @endforeach
+            </ol>
+        </li>
+    @endforeach
 </ol>
 
 <!-- PASAL 3 -->

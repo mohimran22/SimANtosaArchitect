@@ -114,7 +114,6 @@ public function store(OfferBuildRequest $request)
             'is_completed' => true
         ]);
 
-
         ProjectLevel::where([
             'project_id'  => $data['project_id'],
             'level_order' => 5,
@@ -280,85 +279,102 @@ protected function generateOfferNumber(string $type): string
 
 }
 
-
 public function update(OfferBuildUpdateRequest $request, $id)
 {
-    abort_if(auth()->user()->cannot('ubah data proyek'), 403);
+    abort_if(
+        auth()->user()->cannot('ubah data proyek'),
+        403
+    );
 
     $data = $request->validated();
 
-    $rab = RabProcess::with([
-        'categories.uraians.items'
-    ])->findOrFail($data['rab_process_id']);
     $offer = Offer::findOrFail($id);
 
-    $request->validate([
-        'project_id'        => 'required|uuid|exists:projects,id',
-        'offer_number'      => 'required|string',
-        'offer_date'        => 'required|date',
-        'contact_name'      => 'nullable|string',
+    $rab = RabProcess::with([
+        'items' => function ($query) {
+            $query->orderBy('order_no');
+        }
+    ])->findOrFail($data['rab_process_id']);
 
-        'rab_process_id' => 'nullable|exists:rab_process,id',
-        'volume'            => 'nullable|numeric',
-        'satuan'            => 'nullable|string',
-        'price_meter'       => 'nullable|numeric',
-        'total_price'       => 'nullable|numeric',
+    $subtotal = (float) (
+        $data['subtotal']
+        ?? $rab->subtotal
+        ?? 0
+    );
 
-        'discount'          => 'nullable|numeric',
-        'tax_rate'          => 'nullable|numeric',
-        'shipping'          => 'nullable|numeric',
+    $discount = (float) (
+        $data['discount']
+        ?? $rab->discount
+        ?? 0
+    );
 
-        'notes'             => 'nullable|string',
-        'items'             => 'array',
-    ]);
+    $subtotalAfterDiscount = $subtotal - $discount;
+
+    $taxRate = (float) (
+        $data['tax_rate']
+        ?? $rab->tax_rate
+        ?? 0
+    );
+
+    $taxTotal = $subtotalAfterDiscount * ($taxRate / 100);
+
+    $shipping = (float) (
+        $data['shipping']
+        ?? $rab->shipping
+        ?? 0
+    );
+
+    $grandTotalRab = $subtotalAfterDiscount + $taxTotal + $shipping;
+
+    $roundedTotal = floor($grandTotalRab / 1000000) * 1000000;
+    $extraDiscount = (float) ($data['extra_discount'] ?? 0);
+
+    $grandTotalOffer = max(0, $roundedTotal - $extraDiscount);
 
     $offer->update([
-        'project_id'               => $data['project_id'],
-        'offer_number'             => $request->offer_number,
-        'offer_date'               => $data['offer_date'],
-        'contact_name'             => $data['contact_name'],
-        'rab_process_id'           => $rab->id,
-        'volume'                   => $rab->volume,
-        'satuan'                   => $request->satuan,
-        'price_meter'              => $rab->price_meter,
-        'total_price'              => $rab->volume * $rab->price_meter,
 
-        'subtotal'                 => $request->subtotal ?? 0,
-        'discount'                 => $request->discount ?? 0,
-        'subtotal_after_discount'  => $request->subtotal_after_discount ?? 0,
-
-        'tax_rate'                 => $request->tax_rate ?? 0,
-        'tax_total'                => $request->tax_total ?? 0,
-
-        'shipping'                 => $request->shipping ?? 0,
-        'grand_total'              => $request->grand_total ?? 0,
-
-        'notes'                    => $data['notes'] ?? null,
+        'project_id' => $data['project_id'],
+        'offer_number' => $data['offer_number'],
+        'offer_date' => $data['offer_date'],
+        'contact_name' => $data['contact_name'] ?? null,
+        'rab_process_id' => $rab->id,
+        'volume' => $rab->volume,
+        'satuan' => $rab->satuan ?? null,
+        'price_meter' => $rab->price_meter,
+        'total_price' => $rab->volume * $rab->price_meter,
+        'subtotal' => $subtotal,
+        'discount' => $discount,
+        'subtotal_after_discount' => $subtotalAfterDiscount,
+        'tax_rate' => $taxRate,
+        'tax_total' => $taxTotal,
+        'shipping' => $shipping,
+        'extra_discount' => $extraDiscount,
+        'grand_total' => $grandTotalOffer,
+        'notes' => $data['notes'] ?? null,
     ]);
 
     $offer->items()->delete();
 
-    foreach ($rab->categories as $category) {
+    foreach ($rab->items as $item) {
 
-        foreach ($category->uraians as $uraian) {
+        $offer->items()->create([
 
-            foreach ($uraian->items as $item) {
-
-                $offer->items()->create([
-                    'category_name' => $category->name,
-                    'uraian_name'   => $uraian->name,
-
-                    'item_name'     => $item->job_name,
-                    'volume'        => $item->volume,
-                    'satuan'        => $item->satuan,
-                    'price'         => $item->price,
-                    'total'         => $item->total,
-                ]);
-            }
-        }
+            'floor_name' => $item->floor_name,
+            'category_name' => $item->category_name,
+            'item_name' => $item->job_name,
+            'description' => $item->description,
+            'volume' => $item->volume,
+            'satuan' => $item->satuan,
+            'price' => $item->price,
+            'total' => $item->total,
+            'sort_order' => $item->order_no,
+        ]);
     }
 
-    return back()->with('success', 'Data Penawaran berhasil diperbarui.');
+    return back()->with(
+        'success',
+        'Data Penawaran berhasil diperbarui.'
+    );
 }
 
 public function printPdf(Project $project)

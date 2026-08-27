@@ -287,9 +287,15 @@
 
         let rabId = $('#rab_process_id').val();
 
-        if (!rabId) return;
+        console.log('RAB ID:', rabId);
+
+        if (!rabId) {
+            console.warn('RAB ID kosong');
+            return;
+        }
 
         $.get(`/rab-process/${rabId}/items`, function(res) {
+            console.log('Response RAB:', res);
             const tbody = $('#buildItemsBody');
 
             tbody.empty();
@@ -325,7 +331,7 @@
 
 
                 Object.entries(categories).forEach(
-                    ([categoryName, items], categoryIndex) => {
+                    ([categoryName, items]) => {
 
                         const categoryLetter =
                             numberToLetters(categoryIndex);
@@ -418,7 +424,7 @@
                             `);
 
                         });
-
+                        categoryIndex++;
                     }
                 );
 

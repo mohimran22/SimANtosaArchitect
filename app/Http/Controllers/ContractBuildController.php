@@ -10,83 +10,245 @@ use App\Services\ProjectNotifier;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 
 class ContractBuildController extends Controller
 {
-    //     public function buildpdf(Project $project)
-    // {
+public function storeBuildTermin(Request $request, $projectId)
+{
+    abort_if(
+        auth()->user()->cannot('ubah data proyek'),
+        403
+    );
 
-    //     $offer = $project->offer;
-    //     abort_if(!$offer, 404, 'Penawaran belum tersedia');
-        
-    //     Carbon::setLocale('id');
+    $project = Project::with([
+        'offer',
+        'levels',
+    ])->findOrFail($projectId);
 
-    //     $tanggal = Carbon::parse($offer->offer_date ?? now());
-    //     $jobDuration = (int) ($offer->rab->job_duration ?? 0);
-    //     $items = $offer->items
-    //         ->groupBy('category_name')
-    //         ->map(function ($categoryItems) {
-    //             return $categoryItems->groupBy('uraian_name');
-    //         });
-    //     $data = [
-    //         'project'  => $project,
-    //         'offer'    => $offer,
-    //         'customer' => optional($project->customer->user)->fullname,
-    //         'offerItems' => $items,
-    //         'hari'              => $tanggal->translatedFormat('l'),
-    //         'tanggal'           => $tanggal->day,
-    //         'tanggal_terbilang' => terbilang($tanggal->day),
-    //         'job_duration'          => $jobDuration,
-    //         'job_duration_text'     => terbilang($jobDuration),
-    //         'bulan'             => $tanggal->translatedFormat('F'),
-    //         'tahun'             => $tanggal->year,
-    //         'tahun_terbilang'   => terbilang($tanggal->year),
-    //     ];
+    // Pastikan hanya project Build
+    if ((int) $project->project_type !== 3) {
+        abort(404);
+    }
 
-    //     $pdf = Pdf::loadView('contract.buildpdf', $data)
-    //         ->setPaper('A4', 'portrait');
+    // Pastikan offer sudah ada
+    if (!$project->offer) {
+        return back()->withErrors([
+            'termin' => 'Penawaran Build belum tersedia.'
+        ]);
+    }
 
-    //     return $pdf->stream('Draft-Kontrak-' . $project->project_name . '.pdf');
-    // }
-    public function buildpdf(Project $project)
+    $validated = $request->validate([
+        'percentage' => [
+            'required',
+            'array',
+            'min:1',
+        ],
+
+        'percentage.*' => [
+            'required',
+            'numeric',
+            'min:0.01',
+            'max:100',
+        ],
+
+        'description' => [
+            'nullable',
+            'array',
+        ],
+
+        'description.*' => [
+            'nullable',
+            'string',
+            'max:255',
+        ],
+    ]);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Validasi total persentase
+    |--------------------------------------------------------------------------
+    */
+
+    $totalPercentage = collect($validated['percentage'])
+        ->sum(fn ($percentage) => (float) $percentage);
+
+    if (abs($totalPercentage - 100) > 0.01) {
+        return back()
+            ->withErrors([
+                'percentage' =>
+                    'Total persentase termin harus tepat 100%.'
+            ])
+            ->withInput();
+    }
+
+
+    DB::beginTransaction();
+
+    try {
+
+        $offerTotal = (float) $project->offer->grand_total;
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Hapus termin lama
+        |--------------------------------------------------------------------------
+        |
+        | Ini penting kalau nanti Setting Termin diedit.
+        |
+        */
+
+        $project->buildTermins()->delete();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Simpan termin baru
+        |--------------------------------------------------------------------------
+        */
+
+        foreach ($validated['percentage'] as $index => $percentage) {
+
+            $percentage = (float) $percentage;
+
+            $amount = $offerTotal * ($percentage / 100);
+
+            $project->buildTermins()->create([
+                'termin_no' => $index + 1,
+
+                'percentage' => $percentage,
+
+                'amount' => $amount,
+
+                'description' =>
+                    $validated['description'][$index]
+                    ?? null,
+            ]);
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Level 5 - Setting Termin
+        |--------------------------------------------------------------------------
+        */
+
+        ProjectLevel::where([
+            'project_id' => $project->id,
+            'level_order' => 5,
+        ])->update([
+            'is_completed' => true,
+        ]);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Level 6 - Kontrak Kerja
+        |--------------------------------------------------------------------------
+        */
+
+        ProjectLevel::where([
+            'project_id' => $project->id,
+            'level_order' => 6,
+        ])->update([
+            'is_started' => true,
+        ]);
+
+
+        DB::commit();
+
+
+        return redirect()
+            ->route('projects.create', [
+                'project_id' => $project->id,
+            ])
+            ->with(
+                'success',
+                'Setting termin Build berhasil disimpan.'
+            );
+
+
+    } catch (\Throwable $e) {
+
+        DB::rollBack();
+
+        \Log::error(
+            'Gagal menyimpan setting termin Build',
+            [
+                'project_id' => $project->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]
+        );
+
+        return back()
+            ->withErrors([
+                'termin' =>
+                    'Terjadi kesalahan saat menyimpan setting termin.'
+            ])
+            ->withInput();
+    }
+}
+public function buildpdf(Project $project)
 {
     $offer = $project->offer;
 
-    abort_if(!$offer, 404, 'Penawaran belum tersedia');
+    abort_if(
+        !$offer,
+        404,
+        'Penawaran belum tersedia'
+    );
 
     $rab = $offer->rab;
+
+    $items = $offer->items()->orderBy('sort_order')->get();
 
     Carbon::setLocale('id');
 
     $tanggal = Carbon::parse($offer->offer_date ?? now());
 
-    $jobDuration = (int) ($offer->rab->job_duration ?? 0);
+    $jobDuration = (int) ($rab->job_duration ?? 0);
 
     $data = [
-        'project'               => $project,
-        'offer'                 => $offer,
-        'rab'                   => $rab,
-        'categories'            => $rab->categories,
+        'project' => $project,
 
-        'customer'              => optional($project->customer->user)->fullname,
+        'offer' => $offer,
 
-        'hari'                  => $tanggal->translatedFormat('l'),
-        'tanggal'               => $tanggal->day,
-        'tanggal_terbilang'     => terbilang($tanggal->day),
+        'rab' => $rab,
+        'items' => $items,
 
-        'job_duration'          => $jobDuration,
-        'job_duration_text'     => terbilang($jobDuration),
+        'customer' =>optional($project->customer->user)->fullname,
 
-        'bulan'                 => $tanggal->translatedFormat('F'),
-        'tahun'                 => $tanggal->year,
-        'tahun_terbilang'       => terbilang($tanggal->year),
+        'hari' =>$tanggal->translatedFormat('l'),
+
+        'tanggal' => $tanggal->day,
+
+        'tanggal_terbilang' => terbilang($tanggal->day),
+
+        'job_duration' => $jobDuration,
+
+        'job_duration_text' => terbilang($jobDuration),
+
+        'bulan' => $tanggal->translatedFormat('F'),
+
+        'tahun' => $tanggal->year,
+
+        'tahun_terbilang' => terbilang($tanggal->year),
     ];
 
-    $pdf = Pdf::loadView('contract.buildpdf', $data)
-        ->setPaper('A4', 'portrait');
+    $pdf = Pdf::loadView(
+        'contract.buildpdf',
+        $data
+    )->setPaper(
+        'A4',
+        'portrait'
+    );
 
     return $pdf->stream(
-        'Draft-Kontrak-' . $project->project_name . '.pdf'
+        'Draft-Kontrak-' .
+        $project->project_name .
+        '.pdf'
     );
 }
 

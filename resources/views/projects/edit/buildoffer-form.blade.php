@@ -1,33 +1,5 @@
 @php
-$offer = $project->offer;
-$items = $offer?->items ?? collect();
-
-$grouped = [];
-
-foreach ($items as $item) {
-
-    $category = $item->category_name ?? 'Tanpa Kategori';
-    $uraian   = $item->uraian_name ?? 'Tanpa Uraian';
-
-    if (!isset($grouped[$category])) {
-        $grouped[$category] = [
-            'items' => [],
-            'subtotal' => 0
-        ];
-    }
-
-    if (!isset($grouped[$category]['items'][$uraian])) {
-        $grouped[$category]['items'][$uraian] = [
-            'items' => [],
-            'subtotal' => 0
-        ];
-    }
-
-    $grouped[$category]['items'][$uraian]['items'][] = $item;
-
-    $grouped[$category]['items'][$uraian]['subtotal'] += $item->total;
-    $grouped[$category]['subtotal'] += $item->total;
-}
+    $offer = $project->offer;
 @endphp
 
 <div class="card mb-4">
@@ -46,7 +18,6 @@ foreach ($items as $item) {
                     </ul>
                 </div>
             @endif
-
             <input type="hidden" name="project_id" value="{{ $project->id }}">
 
             <h4 class="fw-bold mb-3">Informasi Penawaran</h4>
@@ -79,7 +50,7 @@ foreach ($items as $item) {
                     <label class="form-label">Pilih RAB</label>
 
                     <select name="rab_process_id"
-                            id="rab_process_idd"
+                            id="rab_process_id"
                             class="form-select select2"
                             required>
 
@@ -105,6 +76,7 @@ foreach ($items as $item) {
                 <h4 class="fw-bold mb-3">Rincian Pekerjaan</h4>
 
                 <table class="table table-bordered align-middle">
+
                     <thead>
                         <tr>
                             <th width="50">NO</th>
@@ -112,7 +84,7 @@ foreach ($items as $item) {
                             <th>SAT</th>
                             <th>VOL</th>
                             <th>HARGA SATUAN</th>
-                            <th>JUMLAH HARGA</th>            
+                            <th>JUMLAH HARGA</th>
                         </tr>
                     </thead>
 
@@ -125,7 +97,6 @@ foreach ($items as $item) {
                             <th colspan="5" class="text-end">
                                 SUBTOTAL
                             </th>
-
                             <th id="subtotalDisplayBuild">
                                 Rp 0
                             </th>
@@ -209,16 +180,18 @@ foreach ($items as $item) {
                             </th>
                         </tr>
 
+                        {{-- GRAND TOTAL RAB --}}
                         <tr>
                             <th colspan="5" class="text-end">
                                 GRAND TOTAL
                             </th>
 
-                            <th id="rabgrandTotalDisplayBuild">
+                            <th id="rabGrandTotalDisplayBuild">
                                 Rp 0
                             </th>
                         </tr>
 
+                        {{-- PEMBULATAN --}}
                         <tr>
                             <th colspan="5" class="text-end fw-bold">
                                 DIBULATKAN
@@ -232,6 +205,7 @@ foreach ($items as $item) {
                             </th>
                         </tr>
 
+                        {{-- EXTRA DISCOUNT --}}
                         <tr>
                             <th colspan="5" class="text-end">
                                 EXTRA DISCOUNT
@@ -254,6 +228,7 @@ foreach ($items as $item) {
                             </th>
                         </tr>
 
+                        {{-- GRAND TOTAL PENAWARAN --}}
                         <tr>
                             <th colspan="5" class="text-end fw-bold">
                                 GRAND TOTAL PENAWARAN
@@ -268,6 +243,7 @@ foreach ($items as $item) {
                         </tr>
 
                     </tfoot>
+
                 </table>
                 <input type="hidden" name="subtotal" id="subtotal_build">
                 <input type="hidden" name="subtotal_after_discount" id="subtotal_after_discount_build">
@@ -378,7 +354,7 @@ foreach ($items as $item) {
 
 
                 Object.entries(categories).forEach(
-                    ([categoryName, items], categoryIndex) => {
+                    ([categoryName, items]) => {
 
                         const categoryLetter =
                             numberToLettersBuild(categoryIndex);
@@ -471,7 +447,7 @@ foreach ($items as $item) {
                             `);
 
                         });
-
+                        categoryIndex++;
                     }
                 );
 

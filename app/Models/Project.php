@@ -167,6 +167,12 @@ public function progressSnapshots()
     return $this->hasMany(BuildProgressSnapshot::class);
 }
 
+public function buildTermins()
+{
+    return $this->hasMany(BuildTermin::class)
+        ->orderBy('termin_no');
+}
+
     public function getCurrentLevelAttribute()
     {
         return $this->levels()

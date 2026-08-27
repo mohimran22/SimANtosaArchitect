@@ -411,7 +411,10 @@ Route::get(
     'projects/{project}/contract/buildpdf',
     [\App\Http\Controllers\ContractBuildController::class, 'buildpdf']
 )->name('projects.contract.buildpdf');
-
+Route::post(
+    '/projects/{project}/build-termin',
+    [\App\Http\Controllers\ContractBuildController::class, 'storeBuildTermin']
+)->name('projects.build-termin.store');
 Route::get(
     'projects/{project}/invoice/pdf',
     [\App\Http\Controllers\InvoiceController::class, 'invoiceDp']

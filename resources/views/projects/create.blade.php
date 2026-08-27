@@ -35,7 +35,10 @@
                                 : ($project?->project_type == 2
                                     ? '4. Penawaran Jasa RAB'
                                     : '4. Penawaran Jasa Build');
-                        $contractTitle = '5. Draft Kontrak Pelaksanaan Pekerjaan';
+
+                        $contractTitle = $project?->project_type == 1
+                                ? '5. Draft Kontrak Pelaksanaan Pekerjaan'
+                                : '6. Draft Kontrak Pelaksanaan Pekerjaan';
                             $invoiceTitle =
                                 $project?->project_type == 1
                                     ? '6. Invoice Pembayaran Desain (DP)'
@@ -250,7 +253,6 @@
                                         @include('projects.details.buildoffer')
                                     @endif
                                 </div>
-                            
                                 <div id="offer-edit" style="display:none;">
                                     @if($project->project_type == 1)
                                         @include('projects.edit.offer-form')
@@ -264,7 +266,38 @@
                     </x-collapse-card>    
                 @endif
             </div>
-            @if($activeStep >= 6 && $project->offer && in_array($project->project_type, [1, 3]))
+            @if(
+                $project?->project_type == 3
+                && $activeStep >= 5
+                && $project->offer
+            )
+            <div id="termin-setting" class="step-section">
+                <x-collapse-card
+                    :title="'5. Setting Termin Build'"
+                    target="termin-setting-body"
+                >
+                    @include('projects.steps.build-termin-setting')
+                </x-collapse-card>
+            </div>
+            @endif
+            @if(
+                $project?->offer
+                &&
+                (
+                    (
+                        $project->project_type == 1
+                        && $activeStep >= 6
+                    )
+                    ||
+                    (
+                        $project->project_type == 3
+                        && $activeStep >= 6
+                        && $project->levels
+                            ->firstWhere('level_order', 5)
+                            ?->is_completed
+                    )
+                )
+            )
             <div id="kontrak" class="step-section">
                 <x-collapse-card :title="$contractTitle" target="kontrak-body">
                         <div class="d-flex gap-2">
@@ -1204,42 +1237,47 @@ document.addEventListener("DOMContentLoaded", () => {
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
-    function showEdit(viewId, editId) {
-        const viewEl = document.getElementById(viewId);
-        const editEl = document.getElementById(editId);
+    document.querySelectorAll('.btn-toggle-offer').forEach(button => {
 
-        if (!viewEl || !editEl) return;
+        button.addEventListener('click', function () {
 
-        viewEl.style.display = 'none';
-        editEl.style.display = 'block';
-    }
+            const viewId = this.dataset.view;
+            const editId = this.dataset.edit;
 
-    function showView(viewId, editId) {
-        const viewEl = document.getElementById(viewId);
-        const editEl = document.getElementById(editId);
+            const viewEl = document.getElementById(viewId);
+            const editEl = document.getElementById(editId);
+
+            if (!viewEl || !editEl) {
+                console.error('Element tidak ditemukan:', {
+                    viewId,
+                    editId
+                });
+                return;
+            }
+
+            viewEl.style.display = 'none';
+            editEl.style.display = 'block';
+
+        });
+
+    });
+
+    document.addEventListener('click', function (e) {
+
+        const cancelButton = e.target.closest('.btn-cancel');
+
+        if (!cancelButton) return;
+
+        e.preventDefault();
+
+        const viewEl = document.getElementById('offer-view');
+        const editEl = document.getElementById('offer-edit');
 
         if (!viewEl || !editEl) return;
 
         editEl.style.display = 'none';
         viewEl.style.display = 'block';
-    }
 
-    // === BUTTON EDIT ===
-    document.querySelectorAll('.btn-toggle-offer').forEach(button => {
-        button.addEventListener('click', function () {
-            showEdit(
-                this.dataset.view || 'offer-view',
-                this.dataset.edit || 'offer-edit'
-            );
-        });
-    });
-
-    // === BUTTON CANCEL ===
-    document.addEventListener('click', function (e) {
-        if (e.target.closest('.btn-cancel')) {
-            e.preventDefault();
-            showView('offer-view', 'offer-edit');
-        }
     });
 
 });
