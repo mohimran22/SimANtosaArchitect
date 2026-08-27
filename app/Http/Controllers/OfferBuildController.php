@@ -24,118 +24,215 @@ public function store(OfferBuildRequest $request)
     $data = $request->validated();
 
     $rab = RabProcess::with([
-        'categories.uraians.items'
+        'items' => function ($query) {
+            $query->orderBy('order_no');
+        }
     ])->findOrFail($data['rab_process_id']);
+
 
     DB::beginTransaction();
 
     try {
 
+        $extraDiscount = (float) ($data['extra_discount'] ?? 0);
+        $subtotal = (float) $rab->subtotal;
+        $discount = (float) ($rab->discount ?? 0);
+        $subtotalAfterDiscount = $subtotal - $discount;
+        $taxRate = (float) ($rab->tax_rate ?? 0);
+        $totalTax = $subtotalAfterDiscount * ($taxRate / 100);
+        $shipping = (float) ($rab->shipping ?? 0);
+        $grandTotalRab = $subtotalAfterDiscount + $totalTax + $shipping;
+        $roundedTotal = floor($grandTotalRab / 1000000) * 1000000;
+        $extraDiscount = (float) ($data['extra_discount'] ?? 0);
+        $grandTotal = max(0, $roundedTotal - $extraDiscount);
         $offer = Offer::create([
+
             'project_id'     => $data['project_id'],
             'rab_process_id' => $rab->id,
 
-            'offer_number'   => $this->generateOfferNumber('BLD'),
-            'offer_date'     => $data['offer_date'],
-            'contact_name'   => $data['contact_name'],
-            'volume' => $rab->volume,
-            'price_meter' => $rab->price_meter,
-            'total_price' => $rab->volume * $rab->price_meter,
-            'subtotal'       => $rab->subtotal,
-            'subtotal_after_discount'       => $rab->subtotal_after_discount,
-            'discount'       => $rab->discount,
-            'tax_rate'       => $rab->tax_rate,
-            'total_tax'      => $rab->tax_total,
-            'shipping'       => $rab->shipping,
-            'grand_total'    => $rab->grand_total,
+            'offer_number' => $this->generateOfferNumber('BLD'),
+            'offer_date'   => $data['offer_date'],
 
-            'notes'          => $data['notes'] ?? null,
-            'created_by'     => auth()->id(),
+            'contact_name' => $data['contact_name'],
+
+            'volume'      => $rab->volume,
+            'price_meter' => $rab->price_meter,
+
+            'total_price' => $rab->volume * $rab->price_meter,
+
+            'subtotal' => $subtotal,
+
+            'discount' =>$discount,
+
+            'subtotal_after_discount' => $subtotalAfterDiscount,
+
+            'extra_discount' => $extraDiscount,
+
+            'tax_rate' => $taxRate,
+
+            'total_tax' => $totalTax,
+
+            'shipping' =>$shipping,
+
+            'grand_total' => $grandTotal,
+
+            'notes' => $data['notes'] ?? null,
+
+            'created_by' => auth()->id(),
         ]);
 
-        foreach ($rab->categories as $category) {
+        foreach ($rab->items as $item) {
 
-            foreach ($category->uraians as $uraian) {
+            OfferItem::create([
 
-                foreach ($uraian->items as $item) {
+                'offer_id' => $offer->id,
 
-                    OfferItem::create([
-                        'offer_id' => $offer->id,
-                        'category_name' => $category->name,
-                        'uraian_name'   => $uraian->name,
-                        'item_name'     => $item->job_name,
-                        'volume' => $item->volume,
-                        'satuan' => $item->satuan,
-                        'price'  => $item->price,
-                        'total'  => $item->total,
-                    ]);
+                'floor_name' => $item->floor_name,
 
-                }
+                'category_name' => $item->category_name,
 
-            }
+                'item_name' => $item->job_name,
 
+                'description' => $item->description,
+
+                'volume' => $item->volume,
+
+                'satuan' => $item->satuan,
+
+                'price' => $item->price,
+
+                'total' => $item->total,
+
+                'sort_order' => $item->order_no,
+            ]);
         }
 
         ProjectLevel::where([
             'project_id'  => $data['project_id'],
             'level_order' => 4,
-        ])->update(['is_completed' => true]);
+        ])->update([
+            'is_completed' => true
+        ]);
+
 
         ProjectLevel::where([
             'project_id'  => $data['project_id'],
             'level_order' => 5,
-        ])->update(['is_started' => true]);
+        ])->update([
+            'is_started' => true
+        ]);
+
 
         DB::commit();
 
         $creatorUser = auth()->user();
-        $project = $offer->load('project.customer.user')->project;
+
+        $project = $offer
+            ->load('project.customer.user')
+            ->project;
+
 
         $event = 'offerbuild_created';
-        $cfg   = config("project_events.offerbuild_created");
+
+        $cfg = config(
+            "project_events.offerbuild_created"
+        );
 
 
         if (!$cfg) {
-            throw new \Exception("Config project_events.$event not found");
+            throw new \Exception(
+                "Config project_events.$event not found"
+            );
         }
+
 
         $targets = [
             'created_self' => $creatorUser,
         ];
 
+
         if ($project->customer?->user) {
-            $targets['customer'] = $project->customer->user;
+            $targets['customer'] =
+                $project->customer->user;
         }
 
+
         foreach ($targets as $key => $user) {
-            if (!$user) continue;
-            $role = null;
 
-            if ($user->id === $creatorUser->id) {
-                $role = 'created_self';
-            } elseif ($project->customer?->user && $user->id === $project->customer->user->id) {
-                $role = 'customer';
-            }
-
-            if (!$role || !isset($cfg['message'][$role])) {
+            if (!$user) {
                 continue;
             }
 
+            $role = null;
+
+
+            if ($user->id === $creatorUser->id) {
+
+                $role = 'created_self';
+
+            } elseif (
+                $project->customer?->user &&
+                $user->id ===
+                    $project->customer->user->id
+            ) {
+
+                $role = 'customer';
+            }
+
+
+            if (
+                !$role ||
+                !isset($cfg['message'][$role])
+            ) {
+                continue;
+            }
+
+
             ProjectNotifier::notifyUsers(
                 [$user],
-                ProjectNotifier::makePayload($project, [
-                    'type'    => $event,
-                    'role'    => $role,
-                    'title'   => $cfg['title'],
-                    'message' => $cfg['message'][$role],
-                    'url'     => route('projects.create', ['project_id' => $project->id]),
-                ])
+
+                ProjectNotifier::makePayload(
+                    $project,
+                    [
+                        'type' =>
+                            $event,
+
+                        'role' =>
+                            $role,
+
+                        'title' =>
+                            $cfg['title'],
+
+                        'message' =>
+                            $cfg['message'][$role],
+
+                        'url' =>
+                            route(
+                                'projects.create',
+                                [
+                                    'project_id' =>
+                                        $project->id
+                                ]
+                            ),
+                    ]
+                )
             );
         }
 
+
         return redirect()
-            ->route('projects.create', ['project_id' => $offer->project_id])
-            ->with('success', 'Penawaran berhasil disimpan!');
+            ->route(
+                'projects.create',
+                [
+                    'project_id' =>
+                        $offer->project_id
+                ]
+            )
+            ->with(
+                'success',
+                'Penawaran berhasil disimpan!'
+            );
+
 
     } catch (\Exception $e) {
 
@@ -143,7 +240,10 @@ public function store(OfferBuildRequest $request)
 
         \Log::error($e);
 
-        return back()->withErrors('Terjadi kesalahan saat menyimpan penawaran');
+        return back()
+            ->withErrors(
+                'Terjadi kesalahan saat menyimpan penawaran'
+            );
     }
 }
 

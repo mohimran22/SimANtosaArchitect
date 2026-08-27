@@ -380,10 +380,14 @@ public function getPackage($id)
 
 public function items($id)
 {
-    $rab = RabProcess::with('items')->findOrFail($id);
+    $rab = RabProcess::with([
+        'items' => function ($query) {
+            $query->orderBy('order_no');
+        }
+    ])->findOrFail($id);
 
     $subtotal = $rab->items->sum(function ($item) {
-        return (float) $item->volume * (float) $item->price;
+        return (float) $item->total;
     });
 
     $discount = (float) ($rab->discount ?? 0);

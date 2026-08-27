@@ -18,15 +18,14 @@ class OfferItem extends Model
         'item_name',
         'category',
         'category_name',
-        'uraian_name',
+        'floor_name',
         'volume',
         'satuan',
         'price',
         'total',
         'sort_order',
+        'description'
     ];
-
-
 
         public function offer()
     {

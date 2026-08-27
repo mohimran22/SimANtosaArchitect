@@ -25,7 +25,7 @@ public function rules()
         'volume'      => 'nullable|numeric|min:0',
         'price_meter' => 'nullable|numeric|min:0',
         'total_price' => 'nullable|numeric|min:0',
-
+        'extra_discount'    => 'nullable|numeric|min:0',
         'discount'    => 'nullable|numeric|min:0',
         'tax_rate'    => 'nullable|numeric|min:0',
         'total_tax'   => 'nullable|numeric|min:0',

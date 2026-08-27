@@ -476,7 +476,7 @@ private function resolveBuildData($project): array
         'planning',
         'survey.items',
         'offer.items',
-        'offer.rab.items.category',
+        'offer.rab.items',
         'rab.items',
         'buildItems.jobCategory',
         'buildItems.weeklyProgresses', 

@@ -70,50 +70,153 @@
                 </tbody>
 
                 <tfoot>
-                    <tr>
-                        <th colspan="5" class="text-end">SUBTOTAL</th>
-                        <th id="subtotalDisplay">Rp 0</th>
-                    </tr>
 
                     <tr>
-                        <th colspan="5" class="text-end">DISCOUNT</th>
-                        <th>
-                        <input type="text" class="form-control rupiah" id="discount_display" readonly>
-                        <input type="hidden" name="discount" id="discount">
+                        <th colspan="5" class="text-end">
+                            SUBTOTAL
+                        </th>
 
+                        <th id="subtotalDisplay">
+                            Rp 0
                         </th>
                     </tr>
 
                     <tr>
-                        <th colspan="5" class="text-end">SUBTOTAL AFTER DISCOUNT</th>
-                        <th id="subAfterDiscountDisplay">Rp 0</th>
-                    </tr>
+                        <th colspan="5" class="text-end">
+                            DISCOUNT
+                        </th>
 
-                    <tr>
-                        <th colspan="5" class="text-end">TAX RATE (%)</th>
                         <th>
-                            <input type="number" class="form-control"
-                                name="tax_rate" id="tax_rate" readonly>
+                            <input
+                                type="text"
+                                class="form-control rupiah"
+                                id="discount_display"
+                                readonly
+                            >
+
+                            <input
+                                type="hidden"
+                                name="discount"
+                                id="discount"
+                            >
                         </th>
                     </tr>
 
                     <tr>
-                        <th colspan="5" class="text-end">TOTAL TAX</th>
-                        <th id="totalTaxDisplay">Rp 0</th>
-                    </tr>
+                        <th colspan="5" class="text-end">
+                            SUBTOTAL AFTER DISCOUNT
+                        </th>
 
-                    <tr>
-                        <th colspan="5" class="text-end">SHIPPING / HANDLING</th>
-                        <th>
-                        <input type="text" class="form-control rupiah" id="shipping_display" readonly>
-                        <input type="hidden" name="shipping" id="shipping">
+                        <th id="subAfterDiscountDisplay">
+                            Rp 0
                         </th>
                     </tr>
 
                     <tr>
-                        <th colspan="5" class="text-end">GRAND TOTAL</th>
-                        <th id="grandTotalDisplay">Rp 0</th>
+                        <th colspan="5" class="text-end">
+                            TAX RATE (%)
+                        </th>
+
+                        <th>
+                            <input
+                                type="number"
+                                class="form-control"
+                                name="tax_rate"
+                                id="tax_rate"
+                                readonly
+                            >
+                        </th>
                     </tr>
+
+                    <tr>
+                        <th colspan="5" class="text-end">
+                            TOTAL TAX
+                        </th>
+
+                        <th id="totalTaxDisplay">
+                            Rp 0
+                        </th>
+                    </tr>
+
+                    <tr>
+                        <th colspan="5" class="text-end">
+                            SHIPPING / HANDLING
+                        </th>
+
+                        <th>
+                            <input
+                                type="text"
+                                class="form-control rupiah"
+                                id="shipping_display"
+                                readonly
+                            >
+
+                            <input
+                                type="hidden"
+                                name="shipping"
+                                id="shipping"
+                            >
+                        </th>
+                    </tr>
+
+                    <tr>
+                        <th colspan="5" class="text-end">
+                            GRAND TOTAL
+                        </th>
+
+                        <th id="rabGrandTotalDisplay">
+                            Rp 0
+                        </th>
+                    </tr>
+
+                    <tr>
+                        <th colspan="5" class="text-end fw-bold">
+                            DIBULATKAN
+                        </th>
+
+                        <th
+                            id="roundedTotalDisplay"
+                            class="fw-bold"
+                        >
+                            Rp 0
+                        </th>
+                    </tr>
+
+                    <tr>
+                        <th colspan="5" class="text-end">
+                            EXTRA DISCOUNT
+                        </th>
+
+                        <th>
+                            <input
+                                type="text"
+                                class="form-control rupiah"
+                                id="extra_discount_display"
+                                value="Rp 0"
+                            >
+
+                            <input
+                                type="hidden"
+                                name="extra_discount"
+                                id="extra_discount"
+                                value="0"
+                            >
+                        </th>
+                    </tr>
+
+                    <tr>
+                        <th colspan="5" class="text-end fw-bold">
+                            GRAND TOTAL PENAWARAN
+                        </th>
+
+                        <th
+                            id="grandTotalDisplay"
+                            class="fw-bold"
+                        >
+                            Rp 0
+                        </th>
+                    </tr>
+
                 </tfoot>
             </table>
         </div>
@@ -134,20 +237,39 @@
 @push('js')
 <script>
 
-function formatRupiah(n){
-    return 'Rp ' + Number(n || 0).toLocaleString('id-ID')
-}
+    function formatRupiah(n){
+        return 'Rp ' + Number(n || 0).toLocaleString('id-ID')
+    }
+    function parseRupiah(value) {
 
-function formatNumber(n){
-    return Number(n || 0).toLocaleString('id-ID', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-    })
-}
+        if (value === null || value === undefined) {
+            return 0;
+        }
 
-function setRupiah(selector,val){
-    $(selector).val(formatRupiah(val))
-}
+        if (typeof value === 'number') {
+            return value;
+        }
+
+        let str = String(value)
+            .replace(/Rp/gi, '')
+            .replace(/\s/g, '')
+            .replace(/\./g, '')
+            .replace(',', '.');
+
+        const number = parseFloat(str);
+
+        return isNaN(number) ? 0 : number;
+    }
+    function formatNumber(n){
+        return Number(n || 0).toLocaleString('id-ID', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        })
+    }
+
+    function setRupiah(selector,val){
+        $(selector).val(formatRupiah(val))
+    }
     function numberToLetters(num){
         let letters = ''
         num = num + 1
@@ -161,161 +283,244 @@ function setRupiah(selector,val){
         return letters
     }
 
-function loadRabItems() {
+    function loadRabItems() {
 
-    let rabId = $('#rab_process_id').val();
+        let rabId = $('#rab_process_id').val();
 
-    if (!rabId) return;
+        if (!rabId) return;
 
-    $.get(`/rab-process/${rabId}/items`, function(res) {
+        $.get(`/rab-process/${rabId}/items`, function(res) {
+            const tbody = $('#buildItemsBody');
 
-        const tbody = $('#buildItemsBody');
+            tbody.empty();
 
-        tbody.empty();
+            const grouped = {};
 
-        const grouped = {};
+            res.items.forEach(item => {
 
-        res.items.forEach(item => {
+                const floor = item.floor_name ?? 'Tanpa Lantai';
+                const category = item.category_name ?? 'Tanpa Kategori';
 
-            const floor = item.floor ?? 'Tanpa Lantai';
-            const category = item.category ?? 'Tanpa Kategori';
+                if (!grouped[floor]) {
+                    grouped[floor] = {};
+                }
 
-            if (!grouped[floor]) {
-                grouped[floor] = {};
-            }
+                if (!grouped[floor][category]) {
+                    grouped[floor][category] = [];
+                }
 
-            if (!grouped[floor][category]) {
-                grouped[floor][category] = [];
-            }
-
-            grouped[floor][category].push(item);
-        });
-
-        let categoryIndex = 0;
-
-        Object.entries(grouped).forEach(([floor, categories]) => {
-
-            tbody.append(`
-                <tr class="table-primary fw-bold">
-                    <td colspan="6">
-                        LANTAI ${floor}
-                    </td>
-                </tr>
-            `);
-
-            categoryIndex = 0;
-
-            Object.entries(categories).forEach(([categoryName, items]) => {
-
-                const categoryLetter = numberToLetters(categoryIndex);
+                grouped[floor][category].push(item);
+            });
+            
+            let categoryIndex = 0;
+            Object.entries(grouped).forEach(([floor, categories]) => {
 
                 tbody.append(`
-                    <tr class="table-secondary">
-                        <td style="font-weight:600" colspan="6">
-                            ${categoryLetter}. ${categoryName}
+                    <tr class="table-secondary fw-bold">
+                        <td colspan="6">
+                            ${floor}
                         </td>
                     </tr>
                 `);
 
-                items.forEach((item, itemIndex) => {
 
-                    const itemNo = itemIndex + 1;
+                Object.entries(categories).forEach(
+                    ([categoryName, items], categoryIndex) => {
 
-                    const total =
-                        item.total ??
-                        (
-                            (parseFloat(item.volume) || 0) *
-                            (parseFloat(item.price) || 0)
-                        );
+                        const categoryLetter =
+                            numberToLetters(categoryIndex);
 
-                    tbody.append(`
-                        <tr>
-                            <td>${itemNo}</td>
 
-                            <td style="padding-left:30px">
-                                ${item.job_name ?? ''}
-                            </td>
+                        // CATEGORY
+                        tbody.append(`
+                            <tr class="table-secondary">
+                                <td style="font-weight:600" colspan="6">
+                                    ${categoryLetter}. ${categoryName}
+                                </td>
+                            </tr>
+                        `);
 
-                            <td>
-                                ${item.satuan ?? ''}
-                            </td>
+                        let itemNo = 1;
+                        let lastDescription = null;
 
-                            <td>
-                                ${formatNumber(item.volume)}
-                            </td>
+                        items.forEach(item => {
 
-                            <td>
-                                ${formatRupiah(item.price)}
-                            </td>
+                            const description = (item.description ?? '').trim();
 
-                            <td>
-                                ${formatRupiah(total)}
-                            </td>
-                        </tr>
-                    `);
+                            let showNumber = false;
 
-                });
+                            if (description === '') {
 
-                categoryIndex++;
+                                showNumber = true;
+
+                            } else if (description !== lastDescription) {
+
+                                showNumber = true;
+
+                            }
+
+                            const currentNo = itemNo;
+
+                            if (showNumber) {
+                                itemNo++;
+                            }
+
+                            lastDescription = description;
+
+                            const total =
+                                item.total ??
+                                (
+                                    (parseFloat(item.volume) || 0) *
+                                    (parseFloat(item.price) || 0)
+                                );
+
+                            const descriptionHtml = description
+                                ? `
+                                    <br>
+                                    <span style="
+                                        font-size:11px;
+                                        color:#666;
+                                    ">
+                                        ${description}
+                                    </span>
+                                `
+                                : '';
+
+                            tbody.append(`
+                                <tr>
+
+                                    <td class="text-center">
+                                        ${showNumber ? currentNo : ''}
+                                    </td>
+
+                                    <td style="padding-left:30px">
+                                        ${item.job_name ?? ''}
+                                        ${descriptionHtml}
+                                    </td>
+
+                                    <td class="text-center">
+                                        ${item.satuan ?? ''}
+                                    </td>
+
+                                    <td class="text-end">
+                                        ${formatNumber(item.volume)}
+                                    </td>
+
+                                    <td class="text-end">
+                                        ${formatRupiah(item.price)}
+                                    </td>
+
+                                    <td class="text-end">
+                                        ${formatRupiah(total)}
+                                    </td>
+
+                                </tr>
+                            `);
+
+                        });
+
+                    }
+                );
 
             });
 
+            $('#tax_rate').val(res.header.tax_rate);
+
+            setRupiah(
+                '#discount_display',
+                res.header.discount
+            );
+
+            setRupiah(
+                '#shipping_display',
+                res.header.shipping
+            );
+
+            $('#discount').val(res.header.discount);
+            $('#shipping').val(res.header.shipping);
+
+            $('#subtotalDisplay')
+                .data('value', parseFloat(res.header.subtotal) || 0)
+                .text(formatRupiah(res.header.subtotal));
+
+            $('#subAfterDiscountDisplay')
+                .text(formatRupiah(
+                    res.header.subtotal_after_discount
+                ));
+
+            $('#totalTaxDisplay')
+                .text(formatRupiah(
+                    res.header.tax_total
+                ));
+
+            $('#grandTotalDisplay')
+                .text(formatRupiah(
+                    res.header.grand_total
+                ));
+
+        }).fail(function(xhr) {
+
+            console.error(
+                'Gagal mengambil data RAB:',
+                xhr.responseText
+            );
+
         });
+    }
+    $('#extra_discount').val(0);
+    setRupiah('#extra_discount_display', 0);
+    function calculateOfferTotal() {
 
-        $('#tax_rate').val(res.header.tax_rate);
+        const subtotal = parseFloat($('#subtotalDisplay').data('value')) || 0;
 
-        setRupiah(
-            '#discount_display',
-            res.header.discount
-        );
+        const discount = parseFloat($('#discount').val()) || 0;
 
-        setRupiah(
-            '#shipping_display',
-            res.header.shipping
-        );
+        const extraDiscount = parseFloat($('#extra_discount').val()) || 0;
 
-        $('#discount').val(res.header.discount);
-        $('#shipping').val(res.header.shipping);
+        const taxRate = parseFloat($('#tax_rate').val()) || 0;
 
-        $('#subtotalDisplay').text(formatRupiah(res.header.subtotal));
+        const shipping = parseFloat($('#shipping').val()) || 0;
 
-        $('#subAfterDiscountDisplay')
-            .text(formatRupiah(
-                res.header.subtotal_after_discount
-            ));
+        const subtotalAfterDiscount = subtotal - discount;
 
-        $('#totalTaxDisplay')
-            .text(formatRupiah(
-                res.header.tax_total
-            ));
+        const taxTotal = subtotalAfterDiscount * (taxRate / 100);
 
-        $('#grandTotalDisplay')
-            .text(formatRupiah(
-                res.header.grand_total
-            ));
+        const grandTotalRab = subtotalAfterDiscount + taxTotal + shipping;
 
-    }).fail(function(xhr) {
+        const roundedTotal = Math.floor(grandTotalRab / 1000000) * 1000000;
 
-        console.error(
-            'Gagal mengambil data RAB:',
-            xhr.responseText
-        );
+        const grandTotalOffer = Math.max(0,roundedTotal - extraDiscount);
+        $('#subAfterDiscountDisplay').text(formatRupiah(subtotalAfterDiscount));
 
-    });
-}
+        $('#totalTaxDisplay').text(formatRupiah(taxTotal));
 
-$('#rab_process_id').on(
-    'change',
-    loadRabItems
-);
+        $('#rabGrandTotalDisplay').text(formatRupiah(grandTotalRab));
 
-$(document).ready(function() {
+        $('#roundedTotalDisplay').text(formatRupiah(roundedTotal));
 
-    if ($('#rab_process_id').val()) {
-        loadRabItems();
+        $('#grandTotalDisplay').text(formatRupiah(grandTotalOffer));
     }
 
-});
+    $('#extra_discount_display').on('input', function () {
+
+        const value = parseRupiah($(this).val());
+
+        $('#extra_discount').val(value);
+
+        calculateOfferTotal();
+    });
+    $('#rab_process_id').on(
+        'change',
+        loadRabItems
+    );
+
+    $(document).ready(function() {
+
+        if ($('#rab_process_id').val()) {
+            loadRabItems();
+        }
+
+    });
 
 </script>
 @endpush

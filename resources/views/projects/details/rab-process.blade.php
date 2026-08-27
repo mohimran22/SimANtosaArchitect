@@ -219,6 +219,12 @@ function numberToLetters($num) {
                         </th>
                         
                     </tr>
+                    <tr>
+                        <th colspan="5" class="text-end fw-bold">DIBULATKAN</th>
+                        <th class="fw-bold">
+                            Rp {{ number_format(floor($rab->grand_total / 1000000) * 1000000,0,',','.') }}
+                        </th>
+                    </tr>
                 </tfoot>
             </table>
         </div>

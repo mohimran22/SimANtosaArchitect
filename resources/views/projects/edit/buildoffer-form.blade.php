@@ -112,7 +112,7 @@ foreach ($items as $item) {
                             <th>SAT</th>
                             <th>VOL</th>
                             <th>HARGA SATUAN</th>
-                            <th>JUMAH HARGA</th>
+                            <th>JUMLAH HARGA</th>            
                         </tr>
                     </thead>
 
@@ -120,50 +120,153 @@ foreach ($items as $item) {
                     </tbody>
 
                     <tfoot>
-                        <tr>
-                            <th colspan="5" class="text-end">SUBTOTAL</th>
-                            <th id="subtotalDisplayBuild">Rp 0</th>
-                        </tr>
 
                         <tr>
-                            <th colspan="5" class="text-end">DISCOUNT</th>
-                            <th>
-                            <input type="text" class="form-control rupiah" id="discount_display_build" readonly>
-                            <input type="hidden" name="discount" id="discount_build">
+                            <th colspan="5" class="text-end">
+                                SUBTOTAL
+                            </th>
 
+                            <th id="subtotalDisplayBuild">
+                                Rp 0
                             </th>
                         </tr>
 
                         <tr>
-                            <th colspan="5" class="text-end">SUBTOTAL AFTER DISCOUNT</th>
-                            <th id="subAfterDiscountDisplayBuild">Rp 0</th>
-                        </tr>
+                            <th colspan="5" class="text-end">
+                                DISCOUNT
+                            </th>
 
-                        <tr>
-                            <th colspan="5" class="text-end">TAX RATE (%)</th>
                             <th>
-                                <input type="number" class="form-control"
-                                    name="tax_rate" id="tax_rate_build" readonly>
+                                <input
+                                    type="text"
+                                    class="form-control rupiah"
+                                    id="discount_display_build"
+                                    readonly
+                                >
+
+                                <input
+                                    type="hidden"
+                                    name="discount"
+                                    id="discount_build"
+                                >
                             </th>
                         </tr>
 
                         <tr>
-                            <th colspan="5" class="text-end">TOTAL TAX</th>
-                            <th id="totalTaxDisplayBuild">Rp 0</th>
-                        </tr>
+                            <th colspan="5" class="text-end">
+                                SUBTOTAL AFTER DISCOUNT
+                            </th>
 
-                        <tr>
-                            <th colspan="5" class="text-end">SHIPPING / HANDLING</th>
-                            <th>
-                            <input type="text" class="form-control rupiah" id="shipping_display_build" readonly>
-                            <input type="hidden" name="shipping" id="shipping_build">
+                            <th id="subAfterDiscountDisplayBuild">
+                                Rp 0
                             </th>
                         </tr>
 
                         <tr>
-                            <th colspan="5" class="text-end">GRAND TOTAL</th>
-                            <th id="grandTotalDisplayBuild">Rp 0</th>
+                            <th colspan="5" class="text-end">
+                                TAX RATE (%)
+                            </th>
+
+                            <th>
+                                <input
+                                    type="number"
+                                    class="form-control"
+                                    name="tax_rate"
+                                    id="tax_rate_build"
+                                    readonly
+                                >
+                            </th>
                         </tr>
+
+                        <tr>
+                            <th colspan="5" class="text-end">
+                                TOTAL TAX
+                            </th>
+
+                            <th id="totalTaxDisplayBuild">
+                                Rp 0
+                            </th>
+                        </tr>
+
+                        <tr>
+                            <th colspan="5" class="text-end">
+                                SHIPPING / HANDLING
+                            </th>
+
+                            <th>
+                                <input
+                                    type="text"
+                                    class="form-control rupiah"
+                                    id="shipping_display_build"
+                                    readonly
+                                >
+
+                                <input
+                                    type="hidden"
+                                    name="shipping"
+                                    id="shipping_build"
+                                >
+                            </th>
+                        </tr>
+
+                        <tr>
+                            <th colspan="5" class="text-end">
+                                GRAND TOTAL
+                            </th>
+
+                            <th id="rabgrandTotalDisplayBuild">
+                                Rp 0
+                            </th>
+                        </tr>
+
+                        <tr>
+                            <th colspan="5" class="text-end fw-bold">
+                                DIBULATKAN
+                            </th>
+
+                            <th
+                                id="roundedTotalDisplayBuild"
+                                class="fw-bold"
+                            >
+                                Rp 0
+                            </th>
+                        </tr>
+
+                        <tr>
+                            <th colspan="5" class="text-end">
+                                EXTRA DISCOUNT
+                            </th>
+
+                            <th>
+                                <input
+                                    type="text"
+                                    class="form-control rupiah"
+                                    id="extra_discount_display_build"
+                                    value="Rp 0"
+                                >
+
+                                <input
+                                    type="hidden"
+                                    name="extra_discount"
+                                    id="extra_discount_build"
+                                    value="0"
+                                >
+                            </th>
+                        </tr>
+
+                        <tr>
+                            <th colspan="5" class="text-end fw-bold">
+                                GRAND TOTAL PENAWARAN
+                            </th>
+
+                            <th
+                                id="grandTotalDisplayBuild"
+                                class="fw-bold"
+                            >
+                                Rp 0
+                            </th>
+                        </tr>
+
                     </tfoot>
                 </table>
                 <input type="hidden" name="subtotal" id="subtotal_build">
@@ -187,23 +290,42 @@ foreach ($items as $item) {
 @push('js')
 <script>
 
-function formatRupiah(n){
-    return 'Rp ' + Number(n || 0).toLocaleString('id-ID')
-}
+    function formatRupiahBuild(n){
+        return 'Rp ' + Number(n || 0).toLocaleString('id-ID')
+    }
+    function parseRupiahBuild(value) {
 
-function formatNumber(n){
-    return Number(n || 0).toLocaleString('id-ID', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-    })
-}
+        if (value === null || value === undefined) {
+            return 0;
+        }
 
-function setRupiah(selector,val){
-    $(selector).val(formatRupiah(val))
-}
-    function numberToLetters(num){
+        if (typeof value === 'number') {
+            return value;
+        }
+
+        let str = String(value)
+            .replace(/Rp/gi, '')
+            .replace(/\s/g, '')
+            .replace(/\./g, '')
+            .replace(',', '.');
+
+        const number = parseFloat(str);
+
+        return isNaN(number) ? 0 : number;
+    }
+    function formatNumberBuild(n){
+        return Number(n || 0).toLocaleString('id-ID', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        })
+    }
+
+    function setRupiahBuild(selector,val){
+        $(selector).val(formatRupiahBuild(val))
+    }
+    function numberToLettersBuild(num){
         let letters = ''
-        num = num + 1 // karena A = 1, bukan 0
+        num = num + 1
 
         while(num > 0){
             let rem = (num - 1) % 26
@@ -213,103 +335,245 @@ function setRupiah(selector,val){
 
         return letters
     }
-function loadRabItemsEdit(){
 
-    let rabId = $('#rab_process_idd').val()
-    if(!rabId) return
+    function loadRabItemsEdit() {
 
-    $.get(`/rab-process/${rabId}/items`,function(res){
+        let rabId = $('#rab_process_id').val();
 
-        const tbody = $('#buildItemsBodyEdit')
-        tbody.empty()
+        if (!rabId) return;
 
-        let categoryLetter
-        let uraianNo
-        let itemNo
+        $.get(`/rab-process/${rabId}/items`, function(res) {
+            const tbody = $('#buildItemsBodyEdit');
 
-        res.categories.forEach((category,cIndex)=>{
+            tbody.empty();
 
-            categoryLetter = numberToLetters(cIndex)
+            const grouped = {};
 
-            // CATEGORY
-            tbody.append(`
-                <tr class="table-secondary fw-bold">
-                    <td style="font-weight:600" colspan="6">
-                        ${categoryLetter}. ${category.name}
-                    </td>
-                </tr>
-            `)
+            res.items.forEach(item => {
 
-            category.uraians.forEach((uraian,uIndex)=>{
+                const floor = item.floor_name ?? 'Tanpa Lantai';
+                const category = item.category_name ?? 'Tanpa Kategori';
 
-                uraianNo = uIndex + 1
+                if (!grouped[floor]) {
+                    grouped[floor] = {};
+                }
 
-                // URAIAN
+                if (!grouped[floor][category]) {
+                    grouped[floor][category] = [];
+                }
+
+                grouped[floor][category].push(item);
+            });
+            
+            let categoryIndex = 0;
+            Object.entries(grouped).forEach(([floor, categories]) => {
+
                 tbody.append(`
-                    <tr class="table-light fw-semibold">
-                        <td>${uraianNo}</td>
-                        <td colspan="5">
-                            ${uraian.name}
+                    <tr class="table-secondary fw-bold">
+                        <td colspan="6">
+                            ${floor}
                         </td>
                     </tr>
-                `)
+                `);
 
-                itemNo = 1
 
-                uraian.items.forEach(item=>{
+                Object.entries(categories).forEach(
+                    ([categoryName, items], categoryIndex) => {
 
-                    tbody.append(`
-                        <tr>
-                            <td>${uraianNo}.${itemNo}</td>
-                            <td style="padding-left:30px">
-                                ${item.job_name}
-                            </td>
-                            <td>${item.satuan}</td>
-                            <td>${formatNumber(item.volume)}</td>
-                            <td>${formatRupiah(item.price)}</td>
-                            <td>${formatRupiah(item.total)}</td>
-                        </tr>
-                    `)
+                        const categoryLetter =
+                            numberToLettersBuild(categoryIndex);
 
-                    itemNo++
-                })
 
-            })
+                        // CATEGORY
+                        tbody.append(`
+                            <tr class="table-secondary">
+                                <td style="font-weight:600" colspan="6">
+                                    ${categoryLetter}. ${categoryName}
+                                </td>
+                            </tr>
+                        `);
 
-        })
+                        let itemNo = 1;
+                        let lastDescription = null;
 
-        // HEADER RAB
-        $('#tax_rate_build').val(res.header.tax_rate)
+                        items.forEach(item => {
 
-        setRupiah('#discount_display_build',res.header.discount)
-        setRupiah('#shipping_display_build',res.header.shipping)
+                            const description = (item.description ?? '').trim();
 
-        $('#discount_build').val(res.header.discount)
-        $('#shipping_build').val(res.header.shipping)
+                            let showNumber = false;
 
-        $('#subtotalDisplayBuild').text(formatRupiah(res.header.subtotal))
-        $('#subAfterDiscountDisplayBuild').text(formatRupiah(res.header.subtotal_after_discount))
-        $('#totalTaxDisplayBuild').text(formatRupiah(res.header.tax_total))
-        $('#grandTotalDisplayBuild').text(formatRupiah(res.header.grand_total))
-        $('#subtotal_build').val(res.header.subtotal)
-        $('#subtotal_after_discount_build').val(res.header.subtotal_after_discount)
-        $('#tax_total_build').val(res.header.tax_total)
-        $('#grand_total_build').val(res.header.grand_total)
+                            if (description === '') {
 
-    })
+                                showNumber = true;
 
-}
+                            } else if (description !== lastDescription) {
 
-// trigger select
-$('#rab_process_idd').on('change',loadRabItemsEdit)
+                                showNumber = true;
 
-// auto load jika edit
-$(document).ready(function(){
+                            }
 
-    if($('#rab_process_idd').val()){
-        loadRabItemsEdit()
+                            const currentNo = itemNo;
+
+                            if (showNumber) {
+                                itemNo++;
+                            }
+
+                            lastDescription = description;
+
+                            const total =
+                                item.total ??
+                                (
+                                    (parseFloat(item.volume) || 0) *
+                                    (parseFloat(item.price) || 0)
+                                );
+
+                            const descriptionHtml = description
+                                ? `
+                                    <br>
+                                    <span style="
+                                        font-size:11px;
+                                        color:#666;
+                                    ">
+                                        ${description}
+                                    </span>
+                                `
+                                : '';
+
+                            tbody.append(`
+                                <tr>
+
+                                    <td class="text-center">
+                                        ${showNumber ? currentNo : ''}
+                                    </td>
+
+                                    <td style="padding-left:30px">
+                                        ${item.job_name ?? ''}
+                                        ${descriptionHtml}
+                                    </td>
+
+                                    <td class="text-center">
+                                        ${item.satuan ?? ''}
+                                    </td>
+
+                                    <td class="text-end">
+                                        ${formatNumberBuild(item.volume)}
+                                    </td>
+
+                                    <td class="text-end">
+                                        ${formatRupiahBuild(item.price)}
+                                    </td>
+
+                                    <td class="text-end">
+                                        ${formatRupiahBuild(total)}
+                                    </td>
+
+                                </tr>
+                            `);
+
+                        });
+
+                    }
+                );
+
+            });
+
+            $('#tax_rate_build').val(res.header.tax_rate);
+
+            setRupiahBuild(
+                '#discount_display_build',
+                res.header.discount
+            );
+
+            setRupiahBuild(
+                '#shipping_display_build',
+                res.header.shipping
+            );
+
+            $('#discount_build').val(res.header.discount);
+            $('#shipping_build').val(res.header.shipping);
+
+            $('#subtotalDisplayBuild')
+                .data('value', parseFloat(res.header.subtotal) || 0)
+                .text(formatRupiahBuild(res.header.subtotal));
+
+            $('#subAfterDiscountDisplayBuild')
+                .text(formatRupiahBuild(
+                    res.header.subtotal_after_discount
+                ));
+
+            $('#totalTaxDisplayBuild')
+                .text(formatRupiahBuild(
+                    res.header.tax_total
+                ));
+
+            $('#grandTotalDisplayBuild')
+                .text(formatRupiahBuild(
+                    res.header.grand_total
+                ));
+
+        }).fail(function(xhr) {
+
+            console.error(
+                'Gagal mengambil data RAB:',
+                xhr.responseText
+            );
+
+        });
+    }
+    $('#extra_discount_build').val(0);
+    setRupiahBuild('#extra_discount_display_build', 0);
+    function calculateOfferTotal() {
+
+        const subtotal = parseFloat($('#subtotalDisplayBuild').data('value')) || 0;
+
+        const discount = parseFloat($('#discount_build').val()) || 0;
+
+        const extraDiscount = parseFloat($('#extra_discount_build').val()) || 0;
+
+        const taxRate = parseFloat($('#tax_rate_build').val()) || 0;
+
+        const shipping = parseFloat($('#shipping_build').val()) || 0;
+
+        const subtotalAfterDiscount = subtotal - discount;
+
+        const taxTotal = subtotalAfterDiscount * (taxRate / 100);
+
+        const grandTotalRab = subtotalAfterDiscount + taxTotal + shipping;
+
+        const roundedTotal = Math.floor(grandTotalRab / 1000000) * 1000000;
+
+        const grandTotalOffer = Math.max(0,roundedTotal - extraDiscount);
+        $('#subAfterDiscountDisplayBuild').text(formatRupiahBuild(subtotalAfterDiscount));
+
+        $('#totalTaxDisplayBuild').text(formatRupiahBuild(taxTotal));
+
+        $('#rabGrandTotalDisplayBuild').text(formatRupiahBuild(grandTotalRab));
+
+        $('#roundedTotalDisplayBuild').text(formatRupiahBuild(roundedTotal));
+
+        $('#grandTotalDisplayBuild').text(formatRupiahBuild(grandTotalOffer));
     }
 
-})
+    $('#extra_discount_display_build').on('input', function () {
+
+        const value = parseRupiahBuild($(this).val());
+
+        $('#extra_discount_build').val(value);
+
+        calculateOfferTotal();
+    });
+    $('#rab_process_id').on(
+        'change',
+        loadRabItemsEdit
+    );
+
+    $(document).ready(function() {
+
+        if ($('#rab_process_id').val()) {
+            loadRabItemsEdit();
+        }
+
+    });
+
 </script>
 @endpush

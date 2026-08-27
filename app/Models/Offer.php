@@ -35,6 +35,7 @@ class Offer extends Model
         'price_meter',
         'total_price',
         'discount',
+        'extra_discount',
         'tax_rate',
         'total_tax',
         'shipping',

@@ -1119,9 +1119,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     btnCancel.addEventListener("click", () => {
 
-        // kalau ingin reload data dari server saat cancel
-        // location.reload();
-
         exitEditMode();
     });
 
