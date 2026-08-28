@@ -272,12 +272,60 @@
                 && $project->offer
             )
             <div id="termin-setting" class="step-section">
-                <x-collapse-card
-                    :title="'5. Setting Termin Build'"
-                    target="termin-setting-body"
-                >
-                    @include('projects.steps.build-termin-setting')
-                </x-collapse-card>
+
+                @if(!$project->buildTermins->count())
+
+                    <div class="card shadow-sm border-0 mb-4">
+                        <div class="card-body px-5 py-4">
+
+                            <h3 class="mb-3 fw-bold">
+                                5. Form Setting Termin Build
+                            </h3>
+
+                            @include('projects.steps.build-termin-setting')
+
+                        </div>
+                    </div>
+
+                @else
+
+                    <x-collapse-card
+                        title="5. Setting Termin Build"
+                        target="termin-setting-body"
+                    >
+
+                        <x-slot:actions>
+
+                            @can('ubah data proyek')
+
+                            <div class="btn-group">
+
+                                <button
+                                    type="button"
+                                    class="btn btn-sm btn-dark me-2 btn-toggle-termin"
+                                    data-view="termin-view"
+                                    data-edit="termin-edit"
+                                    title="Edit Setting Termin"
+                                >
+                                    <i class="ti ti-edit"></i>
+                                </button>
+
+                            </div>
+
+                            @endcan
+
+                        </x-slot:actions>
+                        <div id="termin-view">
+                            @include('projects.details.build-termin')
+                        </div>
+                        <div id="termin-edit" style="display:none;">
+                            @include('projects.edit.build-termin-form')
+                        </div>
+
+                    </x-collapse-card>
+
+                @endif
+
             </div>
             @endif
             @if(
@@ -357,14 +405,33 @@
             <div id="invoice" class="step-section">
                 <x-collapse-card :title="$invoiceTitle" target="invoice-body">
                         @php
-                            $termin = $project->build_progress < 30 ? 1 :
-                                    ($project->build_progress < 60 ? 2 :
-                                    ($project->build_progress < 90 ? 3 : 4));
-                            $invoice = $project->invoicebuilds()
-                            ->where('termin', $termin)
-                            ->whereNotNull('downloaded_at')
-                            ->whereNull('approved_at')
-                            ->first();
+                            $termins = $project->buildTermins
+                                ->sortBy('termin_no')
+                                ->values();
+
+                            $termin = null;
+                            $cumulativePercentage = 0;
+
+                            foreach ($termins as $buildTermin) {
+                                $cumulativePercentage += (float) $buildTermin->percentage;
+
+                                if ((float) $project->build_progress < $cumulativePercentage) {
+                                    $termin = $buildTermin->termin_no;
+                                    break;
+                                }
+                            }
+
+                            if ($termin === null && $termins->isNotEmpty()) {
+                                $termin = $termins->last()->termin_no;
+                            }
+
+                            $invoice = $termin
+                                ? $project->invoicebuilds()
+                                    ->where('termin', $termin)
+                                    ->whereNotNull('downloaded_at')
+                                    ->whereNull('approved_at')
+                                    ->first()
+                                : null;
                         @endphp
                         <div class="d-flex gap-2">
 
@@ -424,7 +491,7 @@
                                     </button>
                                 </form>
                             @endif
-                            @if($invoice && $termin < 4)
+                            @if($invoice && $termin && $termin < $termins->count())
                             <form action="{{ route('projects.invoice.build.approve', [$project->id, $invoice->id]) }}" method="POST"
                                 class="approve-form"
                                 data-title="Lanjut ke Tahap Berikutnya?"
@@ -1282,7 +1349,54 @@ document.addEventListener('DOMContentLoaded', function () {
 
 });
 </script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
 
+    document.querySelectorAll('.btn-toggle-termin').forEach(button => {
+
+        button.addEventListener('click', function () {
+
+            const viewId = this.dataset.view;
+            const editId = this.dataset.edit;
+
+            const viewEl = document.getElementById(viewId);
+            const editEl = document.getElementById(editId);
+
+            if (!viewEl || !editEl) {
+                console.error('Element tidak ditemukan:', {
+                    viewId,
+                    editId
+                });
+                return;
+            }
+
+            viewEl.style.display = 'none';
+            editEl.style.display = 'block';
+
+        });
+
+    });
+
+    document.addEventListener('click', function (e) {
+
+        const cancelButton = e.target.closest('.btn-cancel');
+
+        if (!cancelButton) return;
+
+        e.preventDefault();
+
+        const viewEl = document.getElementById('termin-view');
+        const editEl = document.getElementById('termin-edit');
+
+        if (!viewEl || !editEl) return;
+
+        editEl.style.display = 'none';
+        viewEl.style.display = 'block';
+
+    });
+
+});
+</script>
 <script>
 document.querySelectorAll('.preview-image').forEach(img => {
     img.addEventListener('click', function () {

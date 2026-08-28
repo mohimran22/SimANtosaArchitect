@@ -413,8 +413,12 @@ Route::get(
 )->name('projects.contract.buildpdf');
 Route::post(
     '/projects/{project}/build-termin',
-    [\App\Http\Controllers\ContractBuildController::class, 'storeBuildTermin']
+    [\App\Http\Controllers\BuildTerminController::class, 'store']
 )->name('projects.build-termin.store');
+Route::put(
+    '/projects/{project}/build-termin',
+    [\App\Http\Controllers\BuildTerminController::class, 'store']
+)->name('projects.build-termin.update');
 Route::get(
     'projects/{project}/invoice/pdf',
     [\App\Http\Controllers\InvoiceController::class, 'invoiceDp']

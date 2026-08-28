@@ -255,7 +255,10 @@
             <textarea name="notes" rows="5" class="form-control">{{ $offer->notes }}</textarea>
 
             <div class="mt-4">
-                <button class="btn btn-dark">Update Penawaran</button>
+                <button type="submit" class="btn btn-dark">
+                    <i class="ti ti-device-floppy"></i>
+                    Update Penawaran
+                </button>
                 <button type="button" class="btn btn-secondary btn-cancel">
                     <i class="ti ti-x"></i> Batal
                 </button>

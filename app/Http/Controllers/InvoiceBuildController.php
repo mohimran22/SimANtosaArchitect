@@ -17,101 +17,114 @@ use DB;
 class InvoiceBuildController extends Controller
 {
 
-    public function invoiceBuild(Project $project, int $termin)
-    {
-        abort_if($project->project_type != 3, 403);
-        abort_if(!$project->offer, 404);
+public function invoiceBuild(Project $project, int $termin)
+{
+    abort_if($project->project_type != 3, 403);
+    abort_if(!$project->offer, 404);
 
-        Carbon::setLocale('id');
+    Carbon::setLocale('id');
+    $buildTermin = $project->buildTermins()
+        ->where('termin_no', $termin)
+        ->first();
 
-        $terminMap = [
-            1 => ['start' => 0,  'end' => 30,  'percent' => 30],
-            2 => ['start' => 30, 'end' => 60,  'percent' => 30],
-            3 => ['start' => 60, 'end' => 90,  'percent' => 30],
-            4 => ['start' => 90, 'end' => 100, 'percent' => 10],
-        ];
+    abort_if(
+        !$buildTermin,
+        404,
+        'Termin Build tidak ditemukan.'
+    );
 
-        abort_if(!isset($terminMap[$termin]), 404);
+    $offer = $project->offer;
 
-        $conf = $terminMap[$termin];
-        $offer = $project->offer;
-        $rab = $offer->rab;
+    $grandTotal = (float) $offer->grand_total;
 
-        $result = DB::transaction(function () use ($project, $termin, $conf, $rab, $offer) {
+    $result = DB::transaction(function () use (
+        $project,
+        $termin,
+        $buildTermin,
+        $grandTotal
+    ) {
 
-            $subtotal = $rab->categories
-                ->flatMap(fn($c) => $c->uraians)
-                ->flatMap(fn($u) => $u->items)
-                ->sum(fn($i) => $i->volume * $i->price);
+        $paymentPercentage = (float) $buildTermin->percentage;
+        $newAmount = (float) $buildTermin->amount;
+        $termins = $project->buildTermins()
+            ->orderBy('termin_no')
+            ->get();
 
-            $discount = $offer->discount ?? 0;
+        $progressStart = 0;
 
-            $subtotalAfterDiscount = $subtotal - $discount;
+        foreach ($termins as $item) {
 
-            $taxRate = $offer->tax_rate ?? 0;
-
-            $totalTax = $subtotalAfterDiscount * ($taxRate / 100);
-
-            $shipping = $offer->shipping ?? 0;
-
-            $grandTotal = $subtotalAfterDiscount + $totalTax + $shipping;
-
-            $newAmount = $grandTotal * ($conf['percent'] / 100);
-
-            $invoice = InvoiceBuild::where('project_id', $project->id)
-                ->where('termin', $termin)
-                ->lockForUpdate()
-                ->first();
-
-            if (!$invoice) {
-
-                $invoice = InvoiceBuild::create([
-                    'project_id'          => $project->id,
-                    'invoice_type'        => InvoiceBuild::TYPE_BUILD,
-                    'invoice_number'      => InvoiceBuildNumberGenerator::generate($termin),
-                    'invoice_date'        => now(),
-                    'termin'              => $termin,
-                    'progress_start'      => $conf['start'],
-                    'progress_end'        => $conf['end'],
-                    'payment_percentage'  => $conf['percent'],
-                    'amount'              => $newAmount,
-                    'status'              => 'waiting',
-                ]);
-
-            } else {
-
-                if ($invoice->amount != $newAmount) {
-
-                    $invoice->update([
-                        'amount' => $newAmount,
-                    ]);
-                }
+            if ((int) $item->termin_no === $termin) {
+                break;
             }
 
-            if (!$invoice->downloaded_at) {
+            $progressStart += (float) $item->percentage;
+        }
+
+        $progressEnd = $progressStart + $paymentPercentage;
+
+        $invoice = InvoiceBuild::where('project_id', $project->id)
+            ->where('termin', $termin)
+            ->lockForUpdate()
+            ->first();
+
+        if (!$invoice) {
+
+            $invoice = InvoiceBuild::create([
+                'project_id'         => $project->id,
+                'invoice_type'       => InvoiceBuild::TYPE_BUILD,
+                'invoice_number'     => InvoiceBuildNumberGenerator::generate($termin),
+                'invoice_date'       => now(),
+                'termin'             => $termin,
+                'progress_start'     => $progressStart,
+                'progress_end'       => $progressEnd,
+                'payment_percentage' => $paymentPercentage,
+                'amount'             => $newAmount,
+                'status'             => 'waiting',
+            ]);
+
+        } else {
+
+            if (
+                (float) $invoice->amount !== $newAmount ||
+                (float) $invoice->payment_percentage !== $paymentPercentage ||
+                (float) $invoice->progress_start !== $progressStart ||
+                (float) $invoice->progress_end !== $progressEnd
+            ) {
 
                 $invoice->update([
-                    'downloaded_at' => now(),
+                    'amount'             => $newAmount,
+                    'payment_percentage' => $paymentPercentage,
+                    'progress_start'     => $progressStart,
+                    'progress_end'       => $progressEnd,
                 ]);
             }
+        }
 
-            return [
-                'invoice' => $invoice->fresh(),
-                'grandTotal' => $grandTotal,
-            ];
-        });
+        if (!$invoice->downloaded_at) {
 
-        return Pdf::loadView('invoice.build', [
-            'invoice' => $result['invoice'],
-            'project' => $project,
-            'offer'   => $offer,
-            'grandTotal' => $result['grandTotal']
-        ])
-        ->setPaper('A4', 'portrait')
-        ->stream(
-            "Invoice-Build-Termin-{$termin}-{$project->project_name}.pdf"
-        );
-    }
+            $invoice->update([
+                'downloaded_at' => now(),
+            ]);
+        }
+
+        return [
+            'invoice'    => $invoice->fresh(),
+            'grandTotal' => $grandTotal,
+        ];
+    });
+
+    return Pdf::loadView('invoice.build', [
+        'invoice'    => $result['invoice'],
+        'project'    => $project,
+        'offer'      => $offer,
+        'grandTotal' => $result['grandTotal'],
+    ])
+    ->setPaper('A4', 'portrait')
+    ->stream(
+        "Invoice-Build-Termin-{$termin}-{$project->project_name}.pdf"
+    );
+}
 
     public function approve(Project $project, InvoiceBuild $invoice)
     {

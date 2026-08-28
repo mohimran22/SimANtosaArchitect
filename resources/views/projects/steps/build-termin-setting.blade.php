@@ -9,162 +9,233 @@
         $offerTotal = (float) ($project->offer?->grand_total ?? 0);
     @endphp
 
-    <div class="mb-4">
-        <label class="form-label fw-bold">
-            Total Penawaran Build
-        </label>
+    <div class="card border-0 bg-light mb-4">
+        <div class="card-body p-4">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <div class="text-muted small mb-1">
+                        TOTAL PENAWARAN BUILD
+                    </div>
 
-        <input
-            type="text"
-            class="form-control"
-            value="Rp {{ number_format($offerTotal, 0, ',', '.') }}"
-            readonly
-        >
+                    <div class="fs-2 fw-bold text-dark">
+                        Rp {{ number_format($offerTotal, 0, ',', '.') }}
+                    </div>
 
-        <input
-            type="hidden"
-            id="build-offer-total"
-            value="{{ $offerTotal }}"
-        >
+                    <div class="text-muted small mt-1">
+                        Nilai ini menjadi dasar perhitungan setiap termin.
+                    </div>
+                </div>
+
+                <div class="avatar avatar-lg bg-white shadow-sm">
+                    <i class="ti ti-receipt-2 fs-2"></i>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div id="termin-container">
+    <input
+        type="hidden"
+        id="build-offer-total"
+        value="{{ $offerTotal }}"
+    >
 
-        <div class="row g-2 mb-2 termin-row">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <div>
+            <h3 class="mb-1 fw-bold">
+                Setting Termin Pembayaran
+            </h3>
 
-            <div class="col-md-2">
-                <label class="form-label">
-                    Termin
-                </label>
-
-                <input
-                    type="text"
-                    class="form-control termin-no"
-                    value="1"
-                    readonly
-                >
+            <div class="text-muted">
+                Atur pembagian pembayaran berdasarkan persentase termin.
             </div>
-
-
-            <div class="col-md-3">
-                <label class="form-label">
-                    Persentase (%)
-                </label>
-
-                <input
-                    type="number"
-                    name="percentage[]"
-                    class="form-control termin-percentage"
-                    min="0"
-                    max="100"
-                    step="0.01"
-                    placeholder="Contoh: 30"
-                    required
-                >
-            </div>
-
-
-            <div class="col-md-3">
-                <label class="form-label">
-                    Nominal
-                </label>
-
-                <input
-                    type="text"
-                    class="form-control termin-amount"
-                    value="Rp 0"
-                    readonly
-                >
-            </div>
-
-
-            <div class="col-md-3">
-                <label class="form-label">
-                    Keterangan
-                </label>
-
-                <input
-                    type="text"
-                    name="description[]"
-                    class="form-control"
-                    placeholder="Contoh: DP"
-                >
-            </div>
-
-
-            <div class="col-md-1 d-flex align-items-end">
-                <button
-                    type="button"
-                    class="btn btn-dark btn-remove-termin"
-                    title="Hapus Termin"
-                >
-                    <i class="ti ti-trash"></i>
-                </button>
-            </div>
-
         </div>
 
-    </div>
-
-
-    <div class="mt-3">
         <button
             type="button"
             id="btn-add-termin"
-            class="btn btn-outline-dark"
+            class="btn btn-dark"
+            title="Tambah Termin"
         >
-            <i class="ti ti-plus"></i>
-            Tambah Termin
+            <i class="ti ti-plus me-1"></i>
         </button>
     </div>
+    <div id="termin-container">
 
+        <div class="card border-0 shadow-sm mb-3 termin-card termin-row">
 
-    <hr>
+            <div class="card-body p-3">
 
+                <div class="row g-3 align-items-end">
 
-    <div class="row">
-        <div class="col-md-6">
-            <strong>Total Persentase</strong>
+                    {{-- NOMOR --}}
+                    <div class="col-md-1">
+                        <label class="form-label text-muted small">
+                            Termin
+                        </label>
+
+                        <div class="termin-number">
+                            <span class="termin-no">1</span>
+                        </div>
+                    </div>
+
+                    {{-- PERSENTASE --}}
+                    <div class="col-md-2">
+                        <label class="form-label small fw-semibold">
+                            Persentase
+                        </label>
+
+                        <div class="input-group">
+                            <input
+                                type="number"
+                                name="percentage[]"
+                                class="form-control termin-percentage"
+                                min="0"
+                                max="100"
+                                step="0.01"
+                                placeholder="30"
+                                required
+                            >
+
+                            <span class="input-group-text">
+                                %
+                            </span>
+                        </div>
+                    </div>
+
+                    {{-- NOMINAL --}}
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">
+                            Nominal Pembayaran
+                        </label>
+
+                        <input
+                            type="text"
+                            class="form-control termin-amount fw-bold"
+                            value="Rp 0"
+                            readonly
+                        >
+                    </div>
+
+                    {{-- KETERANGAN --}}
+                    <div class="col-md-5">
+                        <label class="form-label small fw-semibold">
+                            Keterangan
+                        </label>
+
+                        <input
+                            type="text"
+                            name="termin_description[]"
+                            class="form-control"
+                            placeholder="Contoh: DP / Pembayaran Tahap 1 / Pelunasan"
+                        >
+                    </div>
+
+                    {{-- DELETE --}}
+                    <div class="col-md-1">
+                        <button
+                            type="button"
+                            class="btn btn-outline-danger btn-icon w-100 btn-remove-termin"
+                            title="Hapus Termin"
+                        >
+                            <i class="ti ti-trash"></i>
+                        </button>
+                    </div>
+
+                </div>
+
+            </div>
+
         </div>
 
-        <div class="col-md-6 text-end">
-            <strong id="total-termin-percentage">
-                0%
-            </strong>
-        </div>
     </div>
 
+    <div class="card border-0 shadow-sm mt-4">
 
-    <div class="row mt-2">
-        <div class="col-md-6">
-            <strong>Total Nominal</strong>
+        <div class="card-body p-4">
+
+            <div class="row g-4">
+
+                <div class="col-md-6">
+                    <div class="summary-item">
+
+                        <div class="summary-icon">
+                            <i class="ti ti-percentage"></i>
+                        </div>
+
+                        <div>
+                            <div class="text-muted small">
+                                Total Persentase
+                            </div>
+
+                            <div
+                                id="total-termin-percentage"
+                                class="fs-3 fw-bold"
+                            >
+                                0%
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="summary-item">
+
+                        <div class="summary-icon">
+                            <i class="ti ti-cash"></i>
+                        </div>
+
+                        <div>
+                            <div class="text-muted small">
+                                Total Nominal
+                            </div>
+
+                            <div
+                                id="total-termin-amount"
+                                class="fs-3 fw-bold"
+                            >
+                                Rp 0
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+            <div
+                id="termin-warning"
+                class="alert alert-warning mt-4 mb-0 d-none"
+            >
+                <div class="d-flex align-items-center">
+                    <i class="ti ti-alert-triangle me-2 fs-2"></i>
+
+                    <div>
+                        <div class="fw-bold">
+                            Persentase belum lengkap
+                        </div>
+
+                        <div class="small">
+                            Total persentase termin harus tepat 100%.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
-        <div class="col-md-6 text-end">
-            <strong id="total-termin-amount">
-                Rp 0
-            </strong>
-        </div>
     </div>
 
+    <div class="d-flex justify-content-end mt-4">
 
-    <div
-        id="termin-warning"
-        class="alert alert-warning mt-3 d-none"
-    >
-        Total persentase termin harus tepat 100%.
-    </div>
-
-
-    <div class="mt-4">
         <button
             type="submit"
-            class="btn btn-dark"
+            class="btn btn-dark px-4"
             id="btn-save-termin"
         >
-            <i class="ti ti-device-floppy"></i>
+            <i class="ti ti-device-floppy me-1"></i>
             Simpan Setting Termin
         </button>
+
     </div>
 
 </form>
@@ -183,22 +254,17 @@ document.addEventListener('DOMContentLoaded', function () {
     const addButton = document.getElementById('btn-add-termin');
     const offerTotalInput = document.getElementById('build-offer-total');
 
-    const totalPercentageElement =
-        document.getElementById('total-termin-percentage');
+    const totalPercentageElement = document.getElementById('total-termin-percentage');
 
-    const totalAmountElement =
-        document.getElementById('total-termin-amount');
+    const totalAmountElement = document.getElementById('total-termin-amount');
 
-    const warningElement =
-        document.getElementById('termin-warning');
+    const warningElement = document.getElementById('termin-warning');
 
-    const saveButton =
-        document.getElementById('btn-save-termin');
-
+    const saveButton = document.getElementById('btn-save-termin');
 
     const offerTotal = parseFloat(
         offerTotalInput?.value || 0
-    );
+    ) || 0;
 
 
     function formatRupiah(value) {
@@ -208,16 +274,16 @@ document.addEventListener('DOMContentLoaded', function () {
         return 'Rp ' + new Intl.NumberFormat('id-ID', {
             maximumFractionDigits: 0
         }).format(value);
-    }
 
+    }
 
     function getRows() {
 
         return container.querySelectorAll(
             '.termin-row'
         );
-    }
 
+    }
 
     function updateTerminNumbers() {
 
@@ -225,16 +291,19 @@ document.addEventListener('DOMContentLoaded', function () {
 
         rows.forEach((row, index) => {
 
-            const numberInput =
+            const numberElement =
                 row.querySelector('.termin-no');
 
-            if (numberInput) {
-                numberInput.value = index + 1;
+            if (numberElement) {
+
+                numberElement.textContent =
+                    index + 1;
+
             }
 
         });
-    }
 
+    }
 
     function calculateTermin() {
 
@@ -246,12 +315,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
         rows.forEach(row => {
 
-            const percentageInput =
-                row.querySelector('.termin-percentage');
+            const percentageInput = row.querySelector('.termin-percentage');
 
-            const amountInput =
-                row.querySelector('.termin-amount');
-
+            const amountInput = row.querySelector('.termin-amount');
 
             const percentage =
                 parseFloat(
@@ -259,258 +325,308 @@ document.addEventListener('DOMContentLoaded', function () {
                 ) || 0;
 
 
-            const amount =
-                offerTotal * (percentage / 100);
-
+            const amount = offerTotal * (percentage / 100);
 
             totalPercentage += percentage;
             totalAmount += amount;
 
-
             if (amountInput) {
+
                 amountInput.value =
                     formatRupiah(amount);
+
             }
 
         });
 
+        if (totalPercentageElement) {
 
-        totalPercentageElement.textContent =
-            totalPercentage.toFixed(2) + '%';
+            totalPercentageElement.textContent =
+                totalPercentage.toFixed(2) + '%';
 
+        }
 
-        totalAmountElement.textContent =
-            formatRupiah(totalAmount);
+        if (totalAmountElement) {
 
+            totalAmountElement.textContent =
+                formatRupiah(totalAmount);
 
-        const isValid =
-            Math.abs(totalPercentage - 100) < 0.01;
+        }
+
+        const isValid = Math.abs(totalPercentage - 100) < 0.01;
 
 
         if (isValid) {
 
-            warningElement.classList.add('d-none');
+            if (warningElement) {
 
-            saveButton.disabled = false;
+                warningElement.classList.add(
+                    'd-none'
+                );
+
+            }
+
+            if (saveButton) {
+
+                saveButton.disabled = false;
+
+            }
 
         } else {
 
-            warningElement.classList.remove('d-none');
+            if (warningElement) {
 
-            saveButton.disabled = true;
+                warningElement.classList.remove(
+                    'd-none'
+                );
+
+            }
+
+            if (saveButton) {
+
+                saveButton.disabled = true;
+
+            }
 
         }
 
     }
-
 
     function createTerminRow() {
 
         const row = document.createElement('div');
 
-        row.className =
-            'row g-2 mb-2 termin-row';
-
+        row.className = 'card border-0 shadow-sm mb-3 termin-card termin-row';
 
         row.innerHTML = `
 
-            <div class="col-md-2">
+            <div class="card-body p-3">
 
-                <label class="form-label">
-                    Termin
-                </label>
+                <div class="row g-3 align-items-end">
 
-                <input
-                    type="text"
-                    class="form-control termin-no"
-                    value="1"
-                    readonly
-                >
+                    <div class="col-md-1">
 
-            </div>
+                        <label class="form-label text-muted small">
+                            Termin
+                        </label>
 
+                        <div class="termin-number">
 
-            <div class="col-md-3">
+                            <span class="termin-no">
+                                1
+                            </span>
 
-                <label class="form-label">
-                    Persentase (%)
-                </label>
+                        </div>
 
-                <input
-                    type="number"
-                    name="percentage[]"
-                    class="form-control termin-percentage"
-                    min="0"
-                    max="100"
-                    step="0.01"
-                    placeholder="Contoh: 30"
-                    required
-                >
+                    </div>
 
-            </div>
+                    <div class="col-md-2">
 
+                        <label class="form-label small fw-semibold">
+                            Persentase
+                        </label>
 
-            <div class="col-md-3">
+                        <div class="input-group">
 
-                <label class="form-label">
-                    Nominal
-                </label>
+                            <input
+                                type="number"
+                                name="percentage[]"
+                                class="form-control termin-percentage"
+                                min="0"
+                                max="100"
+                                step="0.01"
+                                placeholder="30"
+                                required
+                            >
 
-                <input
-                    type="text"
-                    class="form-control termin-amount"
-                    value="Rp 0"
-                    readonly
-                >
+                            <span class="input-group-text">
+                                %
+                            </span>
 
-            </div>
+                        </div>
 
+                    </div>
 
-            <div class="col-md-3">
+                    <div class="col-md-3">
 
-                <label class="form-label">
-                    Keterangan
-                </label>
+                        <label class="form-label small fw-semibold">
+                            Nominal Pembayaran
+                        </label>
 
-                <input
-                    type="text"
-                    name="description[]"
-                    class="form-control"
-                    placeholder="Contoh: Pelaksanaan Struktur"
-                >
+                        <input
+                            type="text"
+                            class="form-control termin-amount fw-bold"
+                            value="Rp 0"
+                            readonly
+                        >
 
-            </div>
+                    </div>
 
+                    <div class="col-md-5">
 
-            <div class="col-md-1 d-flex align-items-end">
+                        <label class="form-label small fw-semibold">
+                            Keterangan
+                        </label>
 
-                <button
-                    type="button"
-                    class="btn btn-dark btn-remove-termin"
-                    title="Hapus Termin"
-                >
-                    <i class="ti ti-trash"></i>
-                </button>
+                        <input
+                            type="text"
+                            name="termin_description[]"
+                            class="form-control"
+                            placeholder="Contoh: DP / Pembayaran Tahap 1 / Pelunasan"
+                        >
+
+                    </div>
+
+                    <div class="col-md-1">
+
+                        <button
+                            type="button"
+                            class="btn btn-outline-danger btn-icon w-100 btn-remove-termin"
+                            title="Hapus Termin"
+                        >
+                            <i class="ti ti-trash"></i>
+                        </button>
+
+                    </div>
+
+                </div>
 
             </div>
 
         `;
 
+
         return row;
+
     }
 
+    if (addButton) {
 
-    addButton.addEventListener('click', function () {
+        addButton.addEventListener(
+            'click',
+            function () {
 
-        const row = createTerminRow();
+                const row = createTerminRow();
 
-        container.appendChild(row);
+                container.appendChild(row);
 
-        updateTerminNumbers();
+                updateTerminNumbers();
 
-        calculateTermin();
+                calculateTermin();
 
-    });
+            }
+        );
 
+    }
 
-    container.addEventListener('click', function (event) {
+    container.addEventListener(
+        'click',
+        function (event) {
 
-        const removeButton =
-            event.target.closest(
-                '.btn-remove-termin'
-            );
-
-
-        if (!removeButton) {
-            return;
-        }
-
-
-        const rows = getRows();
-
-
-        // Minimal harus ada 1 termin
-        if (rows.length <= 1) {
-
-            return;
-
-        }
-
-
-        const row =
-            removeButton.closest('.termin-row');
-
-
-        if (row) {
-
-            row.remove();
-
-            updateTerminNumbers();
-
-            calculateTermin();
-
-        }
-
-    });
-
-
-    container.addEventListener('input', function (event) {
-
-        if (
-            event.target.classList.contains(
-                'termin-percentage'
-            )
-        ) {
-
-            calculateTermin();
-
-        }
-
-    });
-
-
-    form.addEventListener('submit', function (event) {
-
-        const rows = getRows();
-
-        let totalPercentage = 0;
-
-
-        rows.forEach(row => {
-
-            const input =
-                row.querySelector(
-                    '.termin-percentage'
+            const removeButton =
+                event.target.closest(
+                    '.btn-remove-termin'
                 );
 
-            totalPercentage +=
-                parseFloat(input?.value || 0) || 0;
 
-        });
+            if (!removeButton) {
+                return;
+            }
+
+            const rows = getRows();
+
+            if (rows.length <= 1) {
+
+                return;
+
+            }
+
+            const row = removeButton.closest('.termin-row');
 
 
-        if (
-            Math.abs(totalPercentage - 100) > 0.01
-        ) {
+            if (row) {
 
-            event.preventDefault();
+                row.remove();
 
-            warningElement.classList.remove(
-                'd-none'
-            );
+                updateTerminNumbers();
 
-            alert(
-                'Total persentase termin harus tepat 100%.'
-            );
+                calculateTermin();
 
-            return;
+            }
 
         }
+    );
 
-    });
+    container.addEventListener(
+        'input',
+        function (event) {
+
+            if (
+                event.target.classList.contains(
+                    'termin-percentage'
+                )
+            ) {
+
+                calculateTermin();
+
+            }
+
+        }
+    );
+
+    form.addEventListener(
+        'submit',
+        function (event) {
+
+            const rows =
+                getRows();
 
 
-    // Initial calculation
+            let totalPercentage = 0;
+
+
+            rows.forEach(row => {
+
+                const input =
+                    row.querySelector(
+                        '.termin-percentage'
+                    );
+
+
+                totalPercentage +=
+                    parseFloat(
+                        input?.value || 0
+                    ) || 0;
+
+            });
+
+            if (
+                Math.abs(
+                    totalPercentage - 100
+                ) > 0.01
+            ) {
+
+                event.preventDefault();
+
+                if (warningElement) {
+
+                    warningElement.classList.remove(
+                        'd-none'
+                    );
+
+                }
+
+                alert(
+                    'Total persentase termin harus tepat 100%.'
+                );
+
+                return;
+
+            }
+
+        }
+    );
+
     updateTerminNumbers();
 
     calculateTermin();

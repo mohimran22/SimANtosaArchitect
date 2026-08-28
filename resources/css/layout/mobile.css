@@ -332,4 +332,17 @@
     .footer.footer-transparent{
         padding: 20px 0px !important;
     }
+
+            .termin-card .card-body {
+            padding: 1rem !important;
+        }
+
+        .summary-item {
+            padding: 5px 0;
+        }
+
+        #btn-add-termin {
+            padding-left: 10px;
+            padding-right: 10px;
+        }
 }

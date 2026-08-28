@@ -88,6 +88,53 @@ body {
     border: none !important;
     padding: 4px 0;
 }
+
+.pekerjaan-list {
+width: 100%;
+}
+
+.pekerjaan-category {
+display: flex;
+align-items: flex-start;
+margin-top: 10px;
+margin-bottom: 5px;
+}
+
+.category-number {
+width: 45px;
+flex-shrink: 0;
+}
+
+.pekerjaan-category strong {
+flex: 1;
+}
+
+.pekerjaan-item {
+display: flex;
+align-items: flex-start;
+margin-bottom: 5px;
+}
+
+.item-number {
+width: 45px;
+flex-shrink: 0;
+}
+
+.item-content {
+flex: 1;
+}
+
+.item-description {
+line-height: 1.3;
+}
+
+.item-name {
+line-height: 1.3;
+}
+
+.item-name-no-description {
+flex: 1;
+}
 </style>
 </head>
 <body>
@@ -238,83 +285,90 @@ adalah sebagai berikut:
     </li>
 </ol>
 
-@php
-    $categoryGroups = $items
-        ->groupBy('category_name')
-        ->values();
-@endphp
+    @php
+        $categoryGroups = $items->groupBy('category_name')->values();
+        $categoryIndex = 0;
+    @endphp
 
-<ol type="A" style="margin-left: 30px;">
+    <div class="pekerjaan-list">
 
-    @foreach($categoryGroups as $categoryIndex => $categoryItems)
-        @php
-            $categoryName = $categoryItems->first()->category_name ?? 'Tanpa Kategori';
+        @foreach($categoryGroups as $categoryItems)
 
-            $categoryName = preg_replace(
-                '/^HARGA SATUAN\s*\*/i',
-                '',
-                $categoryName
-            );
-            $uraianGroups = $categoryItems->groupBy(function ($item) {
-                $description = trim((string) $item->description);
+            @php
+                $categoryName = $categoryItems->first()->category_name ?? 'Tanpa Kategori';
 
-                return $description !== ''
-                    ? $description
-                    : '__NO_DESCRIPTION__' . $item->id;
-            })->values();
-        @endphp
+                $categoryName = preg_replace(
+                    '/^HARGA SATUAN\s*\**\s*/i',
+                    '',
+                    $categoryName
+                );
 
-        <li>
+                $categoryLetter = number_to_letters($categoryIndex);
 
-            <strong>
-                {{ $categoryName }}
-            </strong>
+                $itemNo = 1;
+                $lastDescription = null;
+            @endphp
 
-            <ol
-                type="1"
-                style="margin-top:6px; margin-left:20px;"
-            >
+            <div class="pekerjaan-category">
 
-                @foreach($uraianGroups as $uraianItems)
+                <span class="category-number">
+                    {{ $categoryLetter }}.
+                </span>
 
-                    @php
-                        $firstItem = $uraianItems->first();
+                <strong>
+                    {{ strtoupper($categoryName) }}
+                </strong>
 
-                        $description = trim(
-                            (string) $firstItem->description
-                        );
-                    @endphp
+            </div>
 
-                    <li>
+            @foreach($categoryItems as $item)
+                @php
+                    $description = trim((string) $item->description);
 
-                        @if($description !== '')
-                            <strong>
-                                {{ $description }}
-                            </strong>
+                    $showNumber = false;
+
+                    if ($description === '') {
+                        $showNumber = true;
+                    } elseif ($description !== $lastDescription) {
+                        $showNumber = true;
+                    }
+
+                    $currentNo = $itemNo;
+
+                    if ($showNumber) {
+                        $itemNo++;
+                    }
+
+                    $lastDescription = $description;
+                @endphp
+                <div class="pekerjaan-item">
+                    <span class="item-number">
+                        @if($showNumber)
+                            {{ $currentNo }}.
                         @endif
+                    </span>
+                    @if($description !== '')
+                        <div class="item-content">
+                            <div class="item-description">
+                                {{ $description }}
+                            </div>
+                            <div class="item-name">
+                                {{ $item->item_name }}
+                            </div>
 
-                        <ol
-                            type="a"
-                            style="margin-left:20px; margin-top:4px;"
-                        >
-
-                            @foreach($uraianItems as $item)
-
-                                <li>
-                                    {{ $item->job_name }}
-                                </li>
-
-                            @endforeach
-
-                        </ol>
-
-                    </li>
-
-                @endforeach
-            </ol>
-        </li>
-    @endforeach
-</ol>
+                        </div>
+                    @else
+                        <div class="item-name item-name-no-description">
+                            {{ $item->item_name }}
+                        </div>
+                    @endif
+                </div>
+            @endforeach
+            @php
+                $categoryIndex++;
+            @endphp
+        @endforeach
+    </div>
 
 <!-- PASAL 3 -->
 <p class="section-title text-center">
@@ -369,34 +423,31 @@ sesuai desain gambar dan spesifikasi yang telah ditetapkan.
 Pembayaran atas pekerjaan pembangunan dilakukan dengan sistem bertahap yaitu:
 </p>
 
-<p class="indent">
-Tahap I : Pembayaran Uang Muka = 30% x <strong>Rp {{ number_format($offer->grand_total, 0, ',', '.') }}</strong>
-= <strong>Rp {{ number_format($offer->grand_total * 0.3, 0, ',', '.') }}</strong>
-( {{ ucwords(terbilang($offer->grand_total * 0.3)) }} Rupiah )
-Setelah kontrak di tanda tangani, progress pekerjaan mulai
-berjalan.
-</p>
+@foreach($termins as $termin)
 
 <p class="indent">
-Tahap II : Pembayaran 30% x <strong>Rp {{ number_format($offer->grand_total, 0, ',', '.') }}</strong>
-= <strong>Rp {{ number_format($offer->grand_total * 0.3, 0, ',', '.') }}</strong>
-( {{ ucwords(terbilang($offer->grand_total * 0.3)) }} Rupiah )
-Ketika progress pekerjaan telah mencapai 60 %
+    Tahap {{ $termin->termin_no }} :
+    Pembayaran
+    {{ number_format((float) $termin->percentage, 2, ',', '.') }}%
+    x
+    <strong>
+        Rp {{ number_format((float) $offer->grand_total, 0, ',', '.') }}
+    </strong>
+    =
+    <strong>
+        Rp {{ number_format((float) $termin->amount, 0, ',', '.') }}
+    </strong>
+    (
+    {{ ucwords(terbilang((float) $termin->amount)) }}
+    Rupiah
+    )
+
+    @if($termin->description)
+        {{ $termin->description }}
+    @endif
 </p>
 
-<p class="indent">
-Tahap III : Pembayaran 30% x <strong>Rp {{ number_format($offer->grand_total, 0, ',', '.') }}</strong>
-= <strong>Rp {{ number_format($offer->grand_total * 0.3, 0, ',', '.') }}</strong>
-( {{ ucwords(terbilang($offer->grand_total * 0.3)) }} Rupiah )
-Ketika progress pekerjaan telah mencapai 90 %
-</p>
-
-<p class="indent">
-Tahap IV : Pembayaran 10% x <strong>Rp {{ number_format($offer->grand_total, 0, ',', '.') }}</strong>
-= <strong>Rp {{ number_format($offer->grand_total * 0.1, 0, ',', '.') }}</strong>
-( {{ ucwords(terbilang($offer->grand_total * 0.1)) }} Rupiah )
-Ketika progress pekerjaan telah mencapai 100 %
-</p>
+@endforeach
 
 <p class="indent">
 Pelunasan dibayarkan pada saat Berita Acara Serah Terima Pekerjaan ditandatangani
