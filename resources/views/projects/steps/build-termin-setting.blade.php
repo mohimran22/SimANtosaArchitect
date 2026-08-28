@@ -134,7 +134,7 @@
                     <div class="col-md-1">
                         <button
                             type="button"
-                            class="btn btn-outline-danger btn-icon w-100 btn-remove-termin"
+                            class="btn btn-outline-danger btn-icon btn-remove-termin"
                             title="Hapus Termin"
                         >
                             <i class="ti ti-trash"></i>

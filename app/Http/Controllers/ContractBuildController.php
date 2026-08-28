@@ -28,7 +28,8 @@ public function buildpdf(Project $project)
 
     $items = $offer->items()
         ->orderBy('sort_order')
-        ->get();
+        ->get()
+        ->groupBy('floor_name');
 
     $termins = $project->buildTermins()
         ->orderBy('termin_no')

@@ -417,7 +417,7 @@ Route::post(
 )->name('projects.build-termin.store');
 Route::put(
     '/projects/{project}/build-termin',
-    [\App\Http\Controllers\BuildTerminController::class, 'store']
+    [\App\Http\Controllers\BuildTerminController::class, 'update']
 )->name('projects.build-termin.update');
 Route::get(
     'projects/{project}/invoice/pdf',

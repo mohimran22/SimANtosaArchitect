@@ -165,4 +165,133 @@ class BuildTerminController extends Controller
                 ->withInput();
         }
     }
+
+    public function update(Request $request, $projectId)
+{
+    abort_if(
+        auth()->user()->cannot('ubah data proyek'),
+        403
+    );
+
+    $project = Project::with([
+        'offer',
+        'levels',
+    ])->findOrFail($projectId);
+
+    if ((int) $project->project_type !== 3) {
+        abort(404);
+    }
+
+    if (!$project->offer) {
+        return back()->withErrors([
+            'termin' => 'Penawaran Build belum tersedia.'
+        ]);
+    }
+
+    $validated = $request->validate([
+
+        'percentage' => [
+            'required',
+            'array',
+            'min:1',
+        ],
+
+        'percentage.*' => [
+            'required',
+            'numeric',
+            'min:0.01',
+            'max:100',
+        ],
+
+        'termin_description' => [
+            'nullable',
+            'array',
+        ],
+
+        'termin_description.*' => [
+            'nullable',
+            'string',
+            'max:255',
+        ],
+
+    ]);
+
+    $totalPercentage = collect(
+        $validated['percentage']
+    )->sum(
+        fn ($percentage) => (float) $percentage
+    );
+
+    if (abs($totalPercentage - 100) > 0.01) {
+
+        return back()
+            ->withErrors([
+                'percentage' =>
+                    'Total persentase termin harus tepat 100%.'
+            ])
+            ->withInput();
+    }
+
+    DB::beginTransaction();
+
+    try {
+
+        $offerTotal = (float) $project->offer->grand_total;
+
+        BuildTermin::where(
+            'project_id',
+            $project->id
+        )->delete();
+
+        foreach ($validated['percentage'] as $index => $percentage) {
+
+            $percentage = (float) $percentage;
+
+            $amount = $offerTotal * ($percentage / 100);
+
+            BuildTermin::create([
+                'project_id'  => $project->id,
+                'termin_no'   => $index + 1,
+                'percentage'  => $percentage,
+                'amount'      => $amount,
+                'description' =>
+                    $validated['termin_description'][$index] ?? null,
+            ]);
+        }
+
+        DB::commit();
+
+        return redirect()
+            ->route(
+                'projects.create',
+                [
+                    'project_id' => $project->id,
+                ]
+            )
+            ->with(
+                'success',
+                'Setting termin Build berhasil diperbarui.'
+            );
+
+    } catch (\Throwable $e) {
+
+        DB::rollBack();
+
+        \Log::error(
+            'Gagal memperbarui setting termin Build',
+            [
+                'project_id' => $project->id,
+                'error'      => $e->getMessage(),
+                'trace'      => $e->getTraceAsString(),
+            ]
+        );
+
+        return back()
+            ->withErrors([
+                'termin' =>
+                    'Terjadi kesalahan saat memperbarui setting termin.'
+            ])
+            ->withInput();
+    }
+}
 }

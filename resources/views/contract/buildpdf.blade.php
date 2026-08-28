@@ -88,53 +88,25 @@ body {
     border: none !important;
     padding: 4px 0;
 }
-
-.pekerjaan-list {
-width: 100%;
+table.pekerjaan-list,
+table.pekerjaan-list tr,
+table.pekerjaan-list td {
+    border: none;
+    border-collapse: collapse;
+    padding: 0;
+    margin: 0;
+    background: none;
 }
 
-.pekerjaan-category {
-display: flex;
-align-items: flex-start;
-margin-top: 10px;
-margin-bottom: 5px;
+table.pekerjaan-list {
+    width: 100%;
 }
 
-.category-number {
-width: 45px;
-flex-shrink: 0;
+table.pekerjaan-list td {
+    vertical-align: top;
+    padding-bottom: 3px; /* jarak antar baris, ganti .item-name margin-bottom lama */
 }
 
-.pekerjaan-category strong {
-flex: 1;
-}
-
-.pekerjaan-item {
-display: flex;
-align-items: flex-start;
-margin-bottom: 5px;
-}
-
-.item-number {
-width: 45px;
-flex-shrink: 0;
-}
-
-.item-content {
-flex: 1;
-}
-
-.item-description {
-line-height: 1.3;
-}
-
-.item-name {
-line-height: 1.3;
-}
-
-.item-name-no-description {
-flex: 1;
-}
 </style>
 </head>
 <body>
@@ -285,90 +257,65 @@ adalah sebagai berikut:
     </li>
 </ol>
 
+@php
+    $categoryIndex = 0;
+@endphp
+
+@foreach($items as $floorName => $floorItems)
+
+    <h3>{{ strtoupper($floorName) }}</h3>
+
     @php
-        $categoryGroups = $items->groupBy('category_name')->values();
-        $categoryIndex = 0;
+        $categoryGroups = $floorItems->groupBy('category_name')->values();
     @endphp
 
-    <div class="pekerjaan-list">
+    @foreach($categoryGroups as $categoryItems)
+        @php
+            $categoryName = $categoryItems->first()->category_name ?? 'Tanpa Kategori';
+            $categoryName = preg_replace('/^HARGA SATUAN\s*\**\s*/i', '', $categoryName);
+            $categoryLetter = number_to_letters($categoryIndex);
+            $itemNo = 1;
+            $lastDescription = null;
+        @endphp
 
-        @foreach($categoryGroups as $categoryItems)
-
-            @php
-                $categoryName = $categoryItems->first()->category_name ?? 'Tanpa Kategori';
-
-                $categoryName = preg_replace(
-                    '/^HARGA SATUAN\s*\**\s*/i',
-                    '',
-                    $categoryName
-                );
-
-                $categoryLetter = number_to_letters($categoryIndex);
-
-                $itemNo = 1;
-                $lastDescription = null;
-            @endphp
-
-            <div class="pekerjaan-category">
-
-                <span class="category-number">
-                    {{ $categoryLetter }}.
-                </span>
-
-                <strong>
-                    {{ strtoupper($categoryName) }}
-                </strong>
-
-            </div>
+        <table class="pekerjaan-list">
+            <tr>
+                <td style="width:45px;"><strong>{{ $categoryLetter }}.</strong></td>
+                <td><strong>{{ strtoupper($categoryName) }}</strong></td>
+            </tr>
 
             @foreach($categoryItems as $item)
                 @php
                     $description = trim((string) $item->description);
-
-                    $showNumber = false;
-
-                    if ($description === '') {
-                        $showNumber = true;
-                    } elseif ($description !== $lastDescription) {
-                        $showNumber = true;
-                    }
-
+                    $showNumber = $description === '' || $description !== $lastDescription;
                     $currentNo = $itemNo;
-
-                    if ($showNumber) {
-                        $itemNo++;
-                    }
-
+                    if ($showNumber) { $itemNo++; }
                     $lastDescription = $description;
                 @endphp
-                <div class="pekerjaan-item">
-                    <span class="item-number">
+                <tr>
+                    <td style="width:45px;">
                         @if($showNumber)
                             {{ $currentNo }}.
                         @endif
-                    </span>
-                    @if($description !== '')
-                        <div class="item-content">
-                            <div class="item-description">
-                                {{ $description }}
-                            </div>
-                            <div class="item-name">
-                                {{ $item->item_name }}
-                            </div>
-
-                        </div>
-                    @else
-                        <div class="item-name item-name-no-description">
+                    </td>
+                    <td>
+                        @if($description !== '')
+                            @if($showNumber)
+                                {{ $description }}<br>
+                            @endif
+                            <span style="padding-left:12px; display:inline-block;">- {{ $item->item_name }}</span>
+                        @else
                             {{ $item->item_name }}
-                        </div>
-                    @endif
-                </div>
+                        @endif
+                    </td>
+                </tr>
             @endforeach
-            @php
-                $categoryIndex++;
-            @endphp
-        @endforeach
-    </div>
+        </table>
+
+        @php $categoryIndex++; @endphp
+    @endforeach
+
+@endforeach
 
 <!-- PASAL 3 -->
 <p class="section-title text-center">
