@@ -126,246 +126,439 @@ public function invoiceBuild(Project $project, int $termin)
     );
 }
 
-    public function approve(Project $project, InvoiceBuild $invoice)
-    {
-        abort_if($project->project_type != 3, 403);
-        abort_if($invoice->project_id !== $project->id, 404);
+public function approve(Project $project, InvoiceBuild $invoice)
+{
+    abort_if(
+        $project->project_type != 3,
+        403
+    );
 
-        abort_if(
-            $project->customer->user_id !== auth()->id()
-            && auth()->user()->cannot('lihat daftar proyek'),
-            403
+    abort_if(
+        $invoice->project_id !== $project->id,
+        404
+    );
+
+    abort_if(
+        $project->customer->user_id !== auth()->id()
+        && auth()->user()->cannot('lihat daftar proyek'),
+        403
+    );
+
+    if (!$invoice->downloaded_at) {
+
+        return back()->with(
+            'error',
+            'Invoice belum didownload.'
+        );
+    }
+
+    if ($invoice->approved_at) {
+
+        return back()->with(
+            'info',
+            'Invoice sudah disetujui.'
+        );
+    }
+
+    DB::transaction(function () use ($invoice, $project) {
+
+        $invoice->update([
+            'status' => 'approved',
+            'approved_at' => now(),
+            'approve_by_name' =>
+                auth()->user()->fullname ?? 'Customer',
+            'approved_ip' => request()->ip(),
+        ]);
+
+        $project->load([
+            'offer.rab.items',
+        ]);
+
+        $rabProcess = $project->offer?->rab;
+
+        if (!$rabProcess) {
+
+            throw new \Exception(
+                'RAB Process tidak ditemukan.'
+            );
+        }
+
+        $rabItems = $rabProcess->items()
+            ->orderBy('order_no')
+            ->orderBy('id')
+            ->get();
+
+        if ($rabItems->isEmpty()) {
+
+            throw new \Exception(
+                'Item RAB tidak ditemukan.'
+            );
+        }
+
+        $subtotalPekerjaan = $rabItems->sum(
+            fn ($item) => (float) $item->total
         );
 
-        if (!$invoice->downloaded_at) {
-            return back()->with('error','Invoice belum didownload.');
+        $currentRabItemIds = $rabItems
+            ->pluck('id')
+            ->toArray();
+
+        $buildItemsQuery = BuildProcessItem::where(
+            'project_id',
+            $project->id
+        );
+
+        if (!empty($currentRabItemIds)) {
+
+            $buildItemsQuery
+                ->whereNotIn(
+                    'rab_item_id',
+                    $currentRabItemIds
+                );
         }
 
-        if ($invoice->approved_at) {
-            return back()->with('info','Invoice sudah disetujui.');
+        $buildItemsQuery
+            ->whereDoesntHave(
+                'weeklyProgresses'
+            )
+            ->delete();
+
+        foreach ($rabItems as $index => $item) {
+
+            $existing = BuildProcessItem::where([
+                'project_id' => $project->id,
+                'rab_item_id' => $item->id,
+            ])->first();
+
+            $hasProgress =
+                $existing &&
+                $existing
+                    ->weeklyProgresses()
+                    ->exists();
+
+            $itemTotal = (float) $item->total;
+
+            $bobot = $subtotalPekerjaan > 0
+                ? ($itemTotal / $subtotalPekerjaan) * 100
+                : 0;
+
+            $order = $item->order_no !== null
+                ? (int) $item->order_no
+                : ($index + 1);
+
+            $buildProcessItem = BuildProcessItem::updateOrCreate(
+                [
+                    'project_id' => $project->id,
+                    'rab_item_id' => $item->id,
+                ],
+                [
+                    'floor_name' => $item->floor_name,
+                    'category_name' => $item->category_name,
+                    'job_name' => $item->job_name,
+                    'description' => $item->description,
+
+                    'satuan' => $item->satuan,
+                    'volume' => $item->volume,
+
+                    'base_price' => $item->base_price,
+                    'price' => $item->price,
+                    'total' => $item->total,
+
+                    'profit' => $item->profit,
+                    'overhead' => $item->overhead,
+
+                    'bobot_percent' => $bobot,
+
+                    'order_no' => $order,
+                ]
+            );
+
+            BuildPlans::updateOrCreate(
+                [
+                    'project_id' => $project->id,
+                    'build_process_item_id' => $buildProcessItem->id,
+                ],
+                [
+                    'rab_item_id' => $item->id,
+
+                    'floor_name' => $buildProcessItem->floor_name,
+                    'category_name' => $buildProcessItem->category_name,
+                    'item_name' => $buildProcessItem->job_name,
+                    'description' => $buildProcessItem->description,
+
+                    'satuan' => $buildProcessItem->satuan,
+                    'volume' => $buildProcessItem->volume,
+
+                    'base_price' => $buildProcessItem->base_price,
+                    'price' => $buildProcessItem->price,
+                    'total' => $buildProcessItem->total,
+
+                    'profit' => $buildProcessItem->profit,
+                    'overhead' => $buildProcessItem->overhead,
+
+                    'bobot_percent' => $buildProcessItem->bobot_percent,
+
+                    'order_no' => $buildProcessItem->order_no,
+                ]
+            );
         }
 
-        DB::transaction(function () use ($invoice, $project) {
+        $plans = BuildPlans::where(
+            'project_id',
+            $project->id
+        )
+                    ->orderBy('floor_name')
+        ->orderBy('category_name')
+        ->orderBy('order_no')
+            ->get();
 
-            $invoice->update([
-                'status' => 'approved',
-                'approved_at' => now(),
-                'approve_by_name' => auth()->user()->fullname ?? 'Customer',
-                'approved_ip' => request()->ip(),
+
+        $totalBobot = $plans->sum(
+            fn ($plan) =>
+                (float) $plan->bobot_percent
+        );
+
+
+        $selisih = round(
+            100 - $totalBobot,
+            10
+        );
+
+        if (
+            abs($selisih) > 0.0000001
+            && $plans->isNotEmpty()
+        ) {
+
+            $lastPlan = $plans->last();
+
+
+            $lastPlan->update([
+                'bobot_percent' =>
+                    (float) $lastPlan->bobot_percent
+                    + $selisih,
+            ]);
+        }
+
+        $terminSettings = $project
+            ->buildTermins()
+            ->orderBy('termin_no')
+            ->get();
+
+
+        if ($terminSettings->isEmpty()) {
+
+            throw new \Exception(
+                'Setting termin Build belum tersedia.'
+            );
+        }
+
+        $lastTermin = (int) $terminSettings->max(
+            'termin_no'
+        );
+
+        $currentTermin = (int) $invoice->termin;
+
+
+        if (
+            $currentTermin < 1
+            || $currentTermin > $lastTermin
+        ) {
+
+            throw new \Exception(
+                "Termin invoice tidak valid. "
+                . "Setting termin terakhir adalah "
+                . "Termin {$lastTermin}."
+            );
+        }
+
+        if ($currentTermin === 1) {
+
+            ProjectLevel::where([
+                'project_id' =>
+                    $project->id,
+
+                'level_order' =>
+                    7,
+            ])->update([
+                'is_completed' =>
+                    true,
             ]);
 
-            $project->load('offer.rab.categories.uraians.items');
 
-            $subtotalPekerjaan = $project->offer->rab
-                ->categories
-                ->flatMap(fn($c) => $c->uraians)
-                ->flatMap(fn($u) => $u->items)
-                ->sum('total');
+            ProjectLevel::where([
+                'project_id' =>
+                    $project->id,
 
-            $currentRabItemIds = $project->offer->rab
-                ->categories
-                ->flatMap(fn($c) => $c->uraians)
-                ->flatMap(fn($u) => $u->items)
-                ->pluck('id')
-                ->toArray();
-            BuildProcessItem::where('project_id', $project->id)
-                ->whereNotIn('rab_item_id', $currentRabItemIds)
-                ->whereDoesntHave('weeklyProgresses')
-                ->delete();
+                'level_order' =>
+                    8,
+            ])->update([
+                'is_started' =>
+                    true,
+            ]);
 
-            foreach ($project->offer->rab->categories as $cIndex => $category) {
 
-                foreach ($category->uraians as $uIndex => $uraian) {
-
-                    foreach ($uraian->items as $iIndex => $item) {
-
-                        $existing = BuildProcessItem::where([
-                            'project_id' => $project->id,
-                            'rab_item_id' => $item->id,
-                        ])->first();
-
-                        $hasProgress =
-                            $existing &&
-                            $existing->weeklyProgresses()->exists();
-
-                        $bobot = $subtotalPekerjaan > 0
-                            ? ($item->total / $subtotalPekerjaan) * 100
-                            : 0;
-
-                        $buildProcessItem = BuildProcessItem::updateOrCreate(
-
-                            [
-                                'project_id' => $project->id,
-                                'rab_item_id' => $item->id,
-                            ],
-
-                            [
-                                'category_name' => $category->name,
-                                'uraian_name' => $uraian->name,
-
-                                'job_category_id' => $item->job_category_id,
-                                'uraian' => $item->job_name,
-
-                                'price' => $hasProgress
-                                    ? $existing->price
-                                    : $item->price,
-
-                                'volume' => $hasProgress
-                                    ? $existing->volume
-                                    : $item->volume,
-
-                                'total' => $hasProgress
-                                    ? $existing->total
-                                    : ($item->volume * $item->price),
-
-                                'satuan' => $item->satuan,
-
-                                'bobot_percent' => $bobot,
-
-                                'category_order' => $cIndex,
-                                'uraian_order' => $uIndex,
-                                'item_order' => $iIndex,
-                            ]
-                        );
-                        BuildPlans::updateOrCreate(
-
-                            [
-                                'project_id' => $project->id,
-                                'rab_item_id' => $item->id,
-                            ],
-
-                            [
-                                'build_process_item_id' => $buildProcessItem->id,
-
-                                'category_name' => $buildProcessItem->category_name,
-                                'uraian_name' => $buildProcessItem->uraian_name,
-
-                                'job_category_id' => $buildProcessItem->job_category_id,
-                                'item_name' => $buildProcessItem->uraian,
-
-                                'price' => $buildProcessItem->price,
-                                'volume' => $buildProcessItem->volume,
-                                'total' => $buildProcessItem->total,
-
-                                'satuan' => $buildProcessItem->satuan,
-
-                                'bobot_percent' => $buildProcessItem->bobot_percent,
-
-                                'category_order' => $buildProcessItem->category_order,
-                                'uraian_order' => $buildProcessItem->uraian_order,
-                                'item_order' => $buildProcessItem->item_order,
-                            ]
-                        );
-                        $plans = BuildPlans::where('project_id', $project->id)
-                            ->orderBy('id')
-                            ->get();
-
-                        $selisih = round(
-                            100 - $plans->sum('bobot_percent'),
-                            10
-                        );
-
-                        if (abs($selisih) > 0.0000001) {
-
-                            $lastPlan = $plans->last();
-
-                            $lastPlan->update([
-                                'bobot_percent' => $lastPlan->bobot_percent + $selisih
-                            ]);
-                        }
-                    }
-                }
-            }
-
-            $lastTermin = 4;
-
-            if ($invoice->termin == 1) {
-
-                ProjectLevel::where([
-                    'project_id' => $project->id,
-                    'level_order' => 6,
-                ])->update(['is_completed' => true]);
-
-                ProjectLevel::where([
-                    'project_id' => $project->id,
-                    'level_order' => 7,
-                ])->update(['is_started' => true]);
-
-                $project->update([
-                    'active_step' => 7
-                ]);
-            }
-
-            elseif ($invoice->termin == $lastTermin) {
-
-                ProjectLevel::where([
-                    'project_id' => $project->id,
-                    'level_order' => 7,
-                ])->update(['is_completed' => true]);
-
-                ProjectLevel::where([
-                    'project_id' => $project->id,
-                    'level_order' => 8,
-                ])->update(['is_started' => true]);
-
-                $project->update([
-                    'active_step' => 8
-                ]);
-            }
-        });
-
-        $event = 'invoice_build_created';
-        $cfg   = config("project_events.$event");
-
-        $payloadExtra = [
-            'termin'          => $invoice->termin,
-            'amount'          => number_format($invoice->amount, 0, ',', '.'),
-            'progress_start'  => $invoice->progress_start,
-            'progress_end'    => $invoice->progress_end,
-        ];
-
-        if (!$cfg) {
-            throw new \Exception("Config project_events.$event not found");
+            $project->update([
+                'active_step' =>
+                    7,
+            ]);
         }
 
-        ProjectNotifier::notifyUsers(
-            [$project->createdBy ?? auth()->user()],
-            ProjectNotifier::makePayload($project, [
-                'type'    => $event,
-                'role'    => 'Super-Admin',
-                'title'   => ProjectNotifier::parseMessage($cfg['title'], $payloadExtra),
-                'message' => ProjectNotifier::parseMessage(
-                    $cfg['message']['Super-Admin'],
-                    $payloadExtra
-                ),
-                'url'     => route('projects.create', ['project_id' => $project->id]),
-            ])
-        );
+        elseif ($currentTermin === $lastTermin) {
 
-        if ($project->customer?->user) {
-            ProjectNotifier::notifyUsers(
-                [$project->customer->user],
-                ProjectNotifier::makePayload($project, [
-                    'type'    => $event,
-                    'role'    => 'Customer',
-                    'title'   => ProjectNotifier::parseMessage($cfg['title'], $payloadExtra),
-                    'message' => ProjectNotifier::parseMessage(
-                        $cfg['message']['customer'],
+            ProjectLevel::where([
+                'project_id' =>
+                    $project->id,
+
+                'level_order' =>
+                    7,
+            ])->update([
+                'is_completed' =>
+                    true,
+            ]);
+
+
+            ProjectLevel::where([
+                'project_id' =>
+                    $project->id,
+
+                'level_order' =>
+                    8,
+            ])->update([
+                'is_started' =>
+                    true,
+            ]);
+
+
+            $project->update([
+                'active_step' =>
+                    8,
+            ]);
+        }
+    });
+
+    $event = 'invoice_build_created';
+
+    $cfg = config(
+        "project_events.$event"
+    );
+
+
+    $payloadExtra = [
+        'termin' =>
+            $invoice->termin,
+
+        'amount' =>
+            number_format(
+                $invoice->amount,
+                0,
+                ',',
+                '.'
+            ),
+
+        'progress_start' =>
+            $invoice->progress_start,
+
+        'progress_end' =>
+            $invoice->progress_end,
+    ];
+
+
+    if (!$cfg) {
+
+        throw new \Exception(
+            "Config project_events.$event not found"
+        );
+    }
+
+    ProjectNotifier::notifyUsers(
+        [
+            $project->createdBy
+                ?? auth()->user()
+        ],
+        ProjectNotifier::makePayload(
+            $project,
+            [
+                'type' =>
+                    $event,
+
+                'role' =>
+                    'Super-Admin',
+
+                'title' =>
+                    ProjectNotifier::parseMessage(
+                        $cfg['title'],
                         $payloadExtra
                     ),
-                    'url'     => route('projects.create', ['project_id' => $project->id]),
-                ])
-            );
-        }
 
+                'message' =>
+                    ProjectNotifier::parseMessage(
+                        $cfg['message']['Super-Admin'],
+                        $payloadExtra
+                    ),
 
-        return redirect()
-            ->route('projects.create', ['project_id' => $project->id])
-            ->with(
-                'success',
-                "Invoice Termin {$invoice->termin} berhasil disetujui."
-            );
+                'url' =>
+                    route(
+                        'projects.create',
+                        [
+                            'project_id' =>
+                                $project->id
+                        ]
+                    ),
+            ]
+        )
+    );
+
+    if ($project->customer?->user) {
+
+        ProjectNotifier::notifyUsers(
+            [
+                $project->customer->user
+            ],
+            ProjectNotifier::makePayload(
+                $project,
+                [
+                    'type' => $event,
+
+                    'role' => 'Customer',
+
+                    'title' =>
+                        ProjectNotifier::parseMessage(
+                            $cfg['title'],
+                            $payloadExtra
+                        ),
+
+                    'message' =>
+                        ProjectNotifier::parseMessage(
+                            $cfg['message']['customer'],
+                            $payloadExtra
+                        ),
+
+                    'url' =>
+                        route(
+                            'projects.create',
+                            [
+                                'project_id' =>
+                                    $project->id
+                            ]
+                        ),
+                ]
+            )
+        );
     }
+
+    return redirect()
+        ->route(
+            'projects.create',
+            [
+                'project_id' =>
+                    $project->id
+            ]
+        )
+        ->with(
+            'success',
+            "Invoice Termin {$invoice->termin} berhasil disetujui."
+        );
+}
 
 public static function autoGenerate(Project $project, $progress)
 {

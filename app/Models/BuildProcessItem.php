@@ -10,20 +10,18 @@ class BuildProcessItem extends Model
         'project_id',
         'rab_item_id',
         'category_name',
-        'uraian_name',
-        'uraian',
+        'floor_name',
+        'job_name',
         'volume',
-        'job_category_id',
         'satuan',
+        'base_price',
         'bobot_percent',
         'price',
         'total',
         'is_tambahan',
         'parent_id',
         'sumber',
-        'category_order',
-        'uraian_order',
-        'item_order'
+        'order_no',
     ];
 
     protected $casts = [

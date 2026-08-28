@@ -52,7 +52,10 @@ class BuildPlans extends Model
 
     public function rabItem()
     {
-        return $this->belongsTo(RabItem::class, 'rab_item_id');
+        return $this->belongsTo(
+            RabProcessItem::class,
+            'rab_item_id'
+        );
     }
 
     public function jobCategory()

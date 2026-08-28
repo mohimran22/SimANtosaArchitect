@@ -507,13 +507,20 @@
                 </x-collapse-card>
             </div>
             @endif
-
+            @php
+                $level8 = $project->levels
+                    ->firstWhere('level_order', 8);
+            @endphp
             @if(
                 ($project?->project_type == 1 && $activeStep >= 8 && $project->offer->approved_at)
                 ||
                 ($project?->project_type == 2 && $activeStep == 7)
                 ||
-                ($project?->project_type == 3 && $activeStep >= 8 && $project->offer->approved_at)
+                (
+                    $project?->project_type == 3
+                    && $level8?->is_started
+                )
+                // ($project?->project_type == 3 && $activeStep >= 8 && $project->offer->approved_at)
             )
             <div id="work" class="step-section">
                 <x-collapse-card :title="$workTitle" target="work-body" :sticky="false">

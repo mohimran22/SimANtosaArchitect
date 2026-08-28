@@ -319,14 +319,13 @@ private function resolveBuildData($project): array
 {
     $weeks = $project->rab?->job_duration ?? 0;
 
-    // ✅ Pakai relasi yang sudah di-eager-load (bukan query baru)
     $usedDates = $project->dailyReports
         ->pluck('tanggal')
         ->map(fn($d) => Carbon::parse($d)->format('Y-m-d'))
         ->toArray();
 
-    // Hitung next date
     $nextDate = Carbon::parse($project->start_date);
+
     while (
         in_array($nextDate->format('Y-m-d'), $usedDates)
         && $nextDate->lte($project->end_date)
@@ -334,46 +333,69 @@ private function resolveBuildData($project): array
         $nextDate->addDay();
     }
 
-    // ✅ Pakai relasi yang sudah di-eager-load
-    $reports = $project->dailyReports
-        ->sortBy('tanggal')
-        ->groupBy('minggu');
+    $reports = $project->dailyReports->sortBy('tanggal')->groupBy('minggu');
 
-    // ✅ Pakai relasi yang sudah di-eager-load (bukan BuildProcessItem::query())
     $buildItems = $project->buildItems;
+
     $buildItems->each(function ($item) {
-        $item->progress_map = $item->weeklyProgresses->keyBy('week_no');
-        $item->tambahan->each(function ($sub) {
-            $sub->progress_map = $sub->weeklyProgresses->keyBy('week_no');
-        });
+        $item->progress_map = $item->weeklyProgresses
+            ->keyBy('week_no');
+
+        if ($item->relationLoaded('tambahan')) {
+            $item->tambahan->each(function ($sub) {
+
+                $sub->progress_map = $sub->weeklyProgresses
+                    ->keyBy('week_no');
+            });
+        }
     });
 
     $groupedItems = $buildItems
-        ->whereNull('parent_id')
         ->sortBy([
-            ['category_order', 'asc'],
-            ['uraian_order', 'asc'],
-            ['item_order', 'asc'],
+            ['floor_name', 'asc'],
+            ['category_name', 'asc'],
+            ['order_no', 'asc'],
         ])
-        ->groupBy('category_order')
-        ->map(function ($items) {
+        ->groupBy(function ($item) {
+            return $item->floor_name ?: 'Tanpa Lantai';
+        })
+        ->map(function ($floorItems, $floorName) {
+
             return [
-                'category_id'   => $items->first()->category_order,
-                'category_name' => $items->first()->category_name,
-                'uraians'       => $items
-                    ->groupBy('uraian_order')
-                    ->map(function ($rows) {
+                'floor_name' => $floorName,
+
+                'categories' => $floorItems
+                    ->groupBy(function ($item) {
+                        return $item->category_name ?: 'Tanpa Kategori';
+                    })
+                    ->map(function ($items, $categoryName) {
+
                         return [
-                            'uraian_name' => $rows->first()->uraian_name,
-                            'items'       => $rows->sortBy('item_order')->values(),
+                            'category_name' => $categoryName,
+
+                            'items' => $items
+                                ->sortBy('order_no')
+                                ->values(),
                         ];
-                    }),
+                    })
+                    ->values(),
             ];
-        });
+        })
+        ->values();
+
     $weeklyReports = WeeklyReport::where('project_id', $project->id)
         ->get()
         ->keyBy('minggu');
-    return compact('weeks', 'usedDates', 'nextDate', 'reports', 'buildItems', 'groupedItems', 'weeklyReports');
+
+    return compact(
+        'weeks',
+        'usedDates',
+        'nextDate',
+        'reports',
+        'buildItems',
+        'groupedItems',
+        'weeklyReports'
+    );
 }
 
     public function store(ProjectRequest $request)
@@ -756,41 +778,61 @@ public function data(Project $project)
 private function resolveBuildPlanData($project): array
 {
     $canEdit = auth()->user()->can('lihat daftar proyek');
+
     $buildPlans = BuildPlans::query()
         ->where('project_id', $project->id)
         ->with('weeks:id,build_plan_id,week_no,plan_percent')
-        ->orderBy('category_order')
-        ->orderBy('uraian_order')
-        ->orderBy('item_order')
+        ->orderBy('floor_name')
+        ->orderBy('category_name')
+        ->orderBy('order_no')
         ->get();
 
     $buildPlans->each(function ($item) {
-        $item->progress_map = $item->weeks->keyBy('week_no');
+        $item->progress_map = $item->weeks
+            ->keyBy('week_no');
     });
 
     $groupedPlans = $buildPlans
         ->sortBy([
-            ['category_order', 'asc'],
-            ['uraian_order', 'asc'],
-            ['item_order', 'asc'],
+            ['floor_name', 'asc'],
+            ['category_name', 'asc'],
+            ['order_no', 'asc'],
         ])
-        ->groupBy('category_order')
-        ->map(function ($items) {
-            return [
-                'category_name' => $items->first()->category_name,
-                'uraians'       => $items
-                    ->groupBy('uraian_order')
-                    ->map(function ($rows) {
-                        return [
-                            'uraian_name' => $rows->first()->uraian_name,
-                            'items'       => $rows->sortBy('item_order')->values(),
-                        ];
-                    }),
-            ];
-        });
+        ->groupBy(function ($item) {
+            return $item->floor_name ?: 'Tanpa Lantai';
+        })
+        ->map(function ($floorItems, $floorName) {
 
-    return compact('buildPlans', 'groupedPlans', 'canEdit');
+            return [
+                'floor_name' => $floorName,
+
+                'categories' => $floorItems
+                    ->groupBy(function ($item) {
+                        return $item->category_name ?: 'Tanpa Kategori';
+                    })
+                    ->map(function ($items, $categoryName) {
+
+                        return [
+                            'category_name' => $categoryName,
+
+                            'items' => $items
+                                ->sortBy('order_no')
+                                ->values(),
+                        ];
+                    })
+                    ->values(),
+            ];
+        })
+        ->values();
+
+
+    return compact(
+        'buildPlans',
+        'groupedPlans',
+        'canEdit'
+    );
 }
+
 // Route: GET /projects/{project}/build-process-data
 public function buildProcessPartial(Project $project)
 {
