@@ -508,7 +508,7 @@
             </div>
             @endif
             @php
-                $level8 = $project->levels
+                $level8 = $project?->levels
                     ->firstWhere('level_order', 8);
             @endphp
             @if(
