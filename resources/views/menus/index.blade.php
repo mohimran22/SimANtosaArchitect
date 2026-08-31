@@ -50,7 +50,7 @@
                                     <th>URL / Route Name</th>
                                     <th>Parent</th>
                                     <th>Urutan</th>
-                                    <th>Status Aktif?</th>
+                                    <th>Ikon Menu</th>
                                     <th>Permission</th>
                                     <th>Aksi</th>
                                 </tr>
@@ -108,7 +108,7 @@
                     { data: 'url' },
                     { data: 'parent_name' },
                     { data: 'order' },
-                    { data: 'active_badge', orderable:false, searchable:false },
+                    { data: 'icon', orderable:false, searchable:false },
                     { data: 'permission_name' },
                     { data: 'actions', orderable:false, searchable:false },
                 ],

@@ -101,6 +101,10 @@ public function scopeLoyalty($query, $level)
         3 => 'Lainnya',
     ][$this->loyalty_level] ?? 'Tidak diketahui';
     }
+        public function getDisplayNameAttribute()
+    {
+        return $this->user?->fullname;
+    }
 
     use HasFactory, HasUuids;
 
