@@ -23,6 +23,8 @@ class BuildPlans extends Model
         'bobot_percent',
         'planned_progress',
         'status',
+        'order_no',
+        'description'
     ];
 
     protected $casts = [
@@ -31,9 +33,7 @@ class BuildPlans extends Model
         'total' => 'decimal:2',
         'bobot_percent' => 'decimal:6',
         'planned_progress' => 'decimal:6',
-        'category_order' => 'integer',
-        'uraian_order' => 'integer',
-        'item_order' => 'integer',
+        'order_no' => 'integer', // ganti 3 baris lama jadi ini
     ];
 
     public function project()
@@ -63,8 +63,7 @@ class BuildPlans extends Model
     {
         return $query
             ->orderBy('floor_name')
-            ->orderBy('category_name')
-            ->orderBy('item_order');
+            ->orderBy('order_no');
     }
 
     public function getFormattedTotalAttribute()

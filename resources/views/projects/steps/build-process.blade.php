@@ -169,12 +169,10 @@
                             </tr>
                         </thead>
                         <tbody>
-
+                            @php
+                                $categoryCounter = 0; // global, tidak reset per lantai
+                            @endphp
                             @foreach($groupedItems as $floorData)
-
-                                {{-- =====================================================
-                                    FLOOR
-                                ====================================================== --}}
                                 <tr class="row-floor">
 
                                     <td>
@@ -191,14 +189,14 @@
 
                                 </tr>
 
-
-                                {{-- =====================================================
-                                    CATEGORY
-                                ====================================================== --}}
                                 @foreach($floorData['categories'] as $categoryData)
 
                                     @php
-                                        $categoryNo = alphaIndex($loop->index);
+                                        $categoryNo = alphaIndex($categoryCounter);
+                                        $categoryCounter++;
+
+                                        $lastDescription = null; // reset grup deskripsi tiap kategori baru
+                                        $itemNo = 0;
                                     @endphp
 
                                     <tr class="row-category">
@@ -214,26 +212,19 @@
                                         <td colspan="{{ $totalCols - 5 }}"></td>
 
                                     </tr>
-
-
-                                    {{-- =================================================
-                                        ITEMS
-                                    ================================================== --}}
                                     @foreach($categoryData['items'] as $item)
 
                                         @php
-
-                                            $itemNo = $loop->iteration;
-
                                             $volKontrak = (float) $item->volume;
-
-                                            $volTerpakai = (float) $item->weeklyProgresses
-                                                ->sum('volume');
-
+                                            $volTerpakai = (float) $item->weeklyProgresses->sum('volume');
                                             $isFull = $volTerpakai >= $volKontrak;
-
+                                            $showNo = false;
+                                            if (!$item->description || $item->description !== $lastDescription) {
+                                                $itemNo++;
+                                                $showNo = true;
+                                            }
+                                            $lastDescription = $item->description;
                                         @endphp
-
 
                                         <tr
                                             data-item-id="{{ $item->id }}"
@@ -242,17 +233,10 @@
                                             data-full="{{ $isFull ? 1 : 0 }}"
                                         >
 
-                                            {{-- =========================================
-                                                NO
-                                            ========================================== --}}
                                             <td>
-                                                {{ $categoryNo }}.{{ $itemNo }}
+                                                {{ $showNo ? $itemNo : '' }}
                                             </td>
 
-
-                                            {{-- =========================================
-                                                URAIAN PEKERJAAN
-                                            ========================================== --}}
                                             <td class="uraian-pekerjaan">
 
                                                 <div class="d-flex align-items-start">
@@ -268,8 +252,6 @@
                                                         @endif
 
                                                     </div>
-
-
                                                     <button
                                                         type="button"
                                                         class="btn btn-sm btn-light btn-add-tambah flex-shrink-0"
@@ -281,40 +263,19 @@
                                                 </div>
 
                                             </td>
-
-
-                                            {{-- =========================================
-                                                SATUAN
-                                            ========================================== --}}
                                             <td>
                                                 {{ $item->satuan }}
                                             </td>
-
-
-                                            {{-- =========================================
-                                                VOLUME
-                                            ========================================== --}}
                                             <td>
                                                 {{ $item->volume }}
                                             </td>
-
-
-                                            {{-- =========================================
-                                                HARGA
-                                            ========================================== --}}
                                             <td
                                                 class="harga-kontrak"
                                                 data-price="{{ $item->price }}"
                                             >
                                                 Rp {{ number_format($item->price, 0, ',', '.') }}
                                             </td>
-
-
-                                            {{-- =========================================
-                                                BOBOT KONTRAK
-                                            ========================================== --}}
                                             <td width="120">
-
                                                 <input
                                                     type="number"
                                                     step="0.001"
@@ -323,23 +284,12 @@
                                                     value="{{ number_format($item->bobot_percent, 3, '.', '') }}"
                                                     readonly
                                                 >
-
                                             </td>
-
-
-                                            {{-- =================================================
-                                                WEEKLY
-                                            ================================================== --}}
                                             @foreach($project->week_labels as $w)
 
                                                 @php
                                                     $prog = $item->progress_map[$w['week_no']] ?? null;
                                                 @endphp
-
-
-                                                {{-- ==============================
-                                                    VOLUME
-                                                =============================== --}}
                                                 <td class="week-col">
 
                                                     @if(!$isReadOnly)
@@ -364,38 +314,22 @@
                                                     @endif
 
                                                 </td>
-
-
-                                                {{-- ==============================
-                                                    PROGRESS
-                                                =============================== --}}
                                                 <td
                                                     class="week-progress week-col"
                                                     data-week="{{ $w['week_no'] }}"
                                                     id="prog-{{ $item->id }}-{{ $w['week_no'] }}"
                                                 >
                                                 </td>
-
-
-                                                {{-- ==============================
-                                                    BOBOT
-                                                =============================== --}}
                                                 <td
                                                     class="week-bobot week-col"
                                                     data-week="{{ $w['week_no'] }}"
                                                     id="bobot-{{ $item->id }}-{{ $w['week_no'] }}"
                                                 >
                                                 </td>
-
-
-                                                {{-- ==============================
-                                                    JUSTEK KURANG
-                                                =============================== --}}
                                                 <td
                                                     class="just-col"
                                                     data-week="{{ $w['week_no'] }}"
                                                 >
-
                                                     <input
                                                         class="form-control just-kurang"
                                                         data-item="{{ $item->id }}"
@@ -404,16 +338,10 @@
                                                     >
 
                                                 </td>
-
-
-                                                {{-- ==============================
-                                                    JUSTEK TAMBAH
-                                                =============================== --}}
                                                 <td
                                                     class="just-col"
                                                     data-week="{{ $w['week_no'] }}"
                                                 >
-
                                                     <input
                                                         class="form-control just-tambah"
                                                         data-item="{{ $item->id }}"
@@ -422,11 +350,6 @@
                                                     >
 
                                                 </td>
-
-
-                                                {{-- ==============================
-                                                    PEKERJAAN BARU
-                                                =============================== --}}
                                                 <td
                                                     class="just-col"
                                                     data-week="{{ $w['week_no'] }}"
@@ -442,22 +365,12 @@
                                                 </td>
 
                                             @endforeach
-
-
-                                            {{-- =================================================
-                                                TOTAL JUSTEK
-                                            ================================================== --}}
                                             <td
                                                 class="total-justek"
                                                 data-item="{{ $item->id }}"
                                             >
                                                 0
                                             </td>
-
-
-                                            {{-- =================================================
-                                                TOTAL VOLUME PELAKSANAAN
-                                            ================================================== --}}
                                             <td
                                                 class="total-pelaksanaan"
                                                 data-item="{{ $item->id }}"
@@ -465,290 +378,20 @@
                                             >
                                                 {{ number_format($item->volume, 3) }}
                                             </td>
-
-
-                                            {{-- =================================================
-                                                HARGA SATUAN
-                                            ================================================== --}}
                                             <td
                                                 class="harga-kontrak"
                                                 data-price="{{ $item->price }}"
                                             >
                                                 Rp {{ number_format($item->price, 0, ',', '.') }}
                                             </td>
-
-
-                                            {{-- =================================================
-                                                NILAI PELAKSANAAN
-                                            ================================================== --}}
                                             <td class="nilai-pelaksanaan">
                                                 0
                                             </td>
-
                                         </tr>
-
                                     @endforeach
-
                                 @endforeach
-
                             @endforeach
-
                         </tbody>
-                        {{-- <tbody>
-                            @foreach($groupedItems as $categoryData)
-
-                                @php
-                                    $categoryNo = alphaIndex($loop->index);
-                                @endphp
-                                <tr class="row-category"> 
-                                    <td>
-                                        {{ $categoryNo }}
-                                    </td> 
-                                    <td colspan="5">
-                                        {{ strtoupper($categoryData['category_name']) }}
-                                    </td> 
-                                    <td colspan="{{ $totalCols - 5 }}"></td> 
-                                </tr>
-
-                                @foreach($categoryData['uraians'] as $uraianData)
-                                    @php
-                                        $uraianNo = $loop->iteration;
-                                    @endphp
-                                    <tr class="row-uraian">
-                                        <td>
-                                            {{ $uraianNo }}.
-                                        </td>
-                                        <td colspan="5">
-                                            {{ ucwords($uraianData['uraian_name']) }}
-                                        </td> 
-                                        <td colspan="{{ $totalCols - 5 }}"></td> 
-                                    </tr>
-
-                                    @foreach($uraianData['items'] as $item)
-                                                @php
-                                                    $itemNo = $loop->iteration;
-                            
-                                                    $volKontrak = $item->volume;
-
-                                                    $volTerpakai = $item->weeklyProgresses->sum('volume');
-
-                                                    $isFull = $volTerpakai >= $volKontrak;
-                                                @endphp
-                                                <tr
-                                                    data-item-id="{{ $item->id }}"
-                                                    data-item-vol="{{ $item->volume }}"
-                                                    data-item-bobot="{{ $item->bobot_percent }}"
-                                                    data-full="{{ $isFull ? 1 : 0 }}">                              
-                                                    <td>
-                                                        {{ $uraianNo }}.{{ $itemNo }}
-                                                    </td>
-                                                    <td class="uraian-pekerjaan">
-                                                        <div class="d-flex align-items-start">
-
-                                                            <div class="flex-grow-1 me-2 text-break">
-                                                                {{ $item->uraian }}
-                                                            </div>
-
-                                                            <button
-                                                                type="button"
-                                                                class="btn btn-sm btn-light btn-add-tambah flex-shrink-0"
-                                                                data-item="{{ $item->id }}">
-                                                                +
-                                                            </button>
-
-                                                        </div>
-                                                    </td>
-                                                    <td>{{ $item->satuan }}</td>
-                                                    <td>{{ $item->volume }}</td>
-                                                    <td class="harga-kontrak"
-                                                        data-price="{{ $item->price }}">
-                                                        Rp {{ number_format($item->price,0,',','.') }}
-                                                    </td>
-                                                    <td width="120">
-                                                        <input type="number"
-                                                            step="0.001"
-                                                            class="form-control bobot-input"
-                                                            data-id="{{ $item->id }}"
-                                                            value="{{ number_format($item->bobot_percent, 3, '.', '') }}"
-                                                            readonly>
-                                                    </td>
-                                                        @foreach($project->week_labels as $w)
-                                                            @php
-                                                                $prog = $item->progress_map[$w['week_no']] ?? null;
-                                                            @endphp
-                                                            <td class="week-col">
-                                                                @if(!$isReadOnly)
-                                                                <input type="number"
-                                                                    step="0.01"
-                                                                    class="form-control week-vol"
-                                                                    data-item="{{ $item->id }}"
-                                                                    data-week="{{ $w['week_no'] }}"
-                                                                    data-last="{{ $prog->volume ?? 0 }}"
-                                                                    value="{{ $prog->volume ?? '' }}"
-                                                                    {{ $isFull ? 'disabled' : '' }}>
-                                                                @else
-                                                                <div class="form-control bg-light">
-                                                                    {{ $prog->volume ?? '' }}
-                                                                </div>
-                                                                @endif
-                                                            </td>
-                                                            <td class="week-progress week-col"
-                                                                data-week="{{ $w['week_no'] }}"
-                                                                id="prog-{{ $item->id }}-{{ $w['week_no'] }}">
-                                                            </td>
-                                                            <td class="week-bobot week-col"
-                                                                data-week="{{ $w['week_no'] }}"
-                                                                id="bobot-{{ $item->id }}-{{ $w['week_no'] }}">
-                                                            </td>
-                                                            <td class="just-col" data-week="{{ $w['week_no'] }}">
-                                                                <input class="form-control just-kurang"
-                                                                        
-                                                                        data-item="{{ $item->id }}"
-                                                                        data-week="{{ $w['week_no'] }}"
-                                                                        value="{{ $prog->just_kurang ?? 0 }}">
-                                                            </td>
-                                                            <td class="just-col" data-week="{{ $w['week_no'] }}">
-                                                                <input class="form-control just-tambah"
-                                                                        
-                                                                        data-item="{{ $item->id }}"
-                                                                        data-week="{{ $w['week_no'] }}" value="{{ $prog->just_tambah ?? 0 }}"></td>
-                                                            <td class="just-col" data-week="{{ $w['week_no'] }}">
-                                                                <input class="form-control just-baru"
-                                                                    data-item="{{ $item->id }}"
-                                                                    data-week="{{ $w['week_no'] }}"
-                                                                    value="{{ $prog->just_baru ?? 0 }}"
-                                                                    {{ $item->tambahan->count() ? '' : 'readonly' }}>
-                                                            </td>
-                                                        @endforeach
-                                                        <td class="total-justek"
-                                                            data-item="{{ $item->id }}">
-                                                            0
-                                                        </td>
-                                                        <td class="total-pelaksanaan"
-                                                            data-item="{{ $item->id }}"
-                                                            data-vol-kontrak="{{ $item->volume }}">
-                                                            {{ number_format($item->volume, 3) }}
-                                                        </td>
-                                                        <td class="harga-kontrak" data-price="{{ $item->price }}">Rp {{ number_format($item->price,0,',','.') }}</td>
-                                                        <td class="nilai-pelaksanaan">0</td>
-                                                </tr>
-                                                @foreach($item->tambahan as $sub)
-
-                                                    @php
-                                                        $progressMap = $sub->progress_map ?? [];
-                                                    @endphp
-
-                                                    <tr class="table-warning row-tambahan-item"
-                                                        data-parent="{{ $item->id }}"
-                                                        data-item-id="{{ $sub->id }}"
-                                                        data-item-vol="{{ $sub->volume }}"
-                                                        data-item-bobot="{{ $sub->bobot_percent ?? 0 }}">
-
-                                                        <td></td>
-
-                                                        <td>
-                                                            ↳ {{ $sub->uraian }}
-                                                            <span class="badge bg-warning text-dark">
-                                                                Tambahan
-                                                            </span>
-                                                        </td>
-
-                                                        <td>{{ $sub->satuan }}</td>
-
-                                                        <td>{{ $sub->volume }}</td>
-
-                                                        <td class="harga-kontrak"
-                                                            data-price="{{ $sub->price }}">
-
-                                                            Rp {{ number_format($sub->price,0,',','.') }}
-                                                        </td>
-
-                                                        <td></td>
-
-                                                        @foreach($project->week_labels as $w)
-
-                                                            @php
-                                                                $prog =
-                                                                    $progressMap[$w['week_no']] ?? null;
-                                                            @endphp
-
-                                                            <td class="week-col">
-
-                                                                <input type="number"
-                                                                    step="0.01"
-                                                                    class="form-control week-vol"
-                                                                    data-item="{{ $sub->id }}"
-                                                                    data-week="{{ $w['week_no'] }}"
-                                                                    value="{{ $prog->volume ?? '' }}">
-                                                            </td>
-
-                                                            <td class="week-progress"
-                                                                data-week="{{ $w['week_no'] }}"
-                                                                id="prog-{{ $sub->id }}-{{ $w['week_no'] }}">
-                                                            </td>
-
-                                                            <td class="week-bobot"
-                                                                data-week="{{ $w['week_no'] }}"
-                                                                id="bobot-{{ $sub->id }}-{{ $w['week_no'] }}">
-                                                            </td>
-
-                                                            <td class="just-col"
-                                                                data-week="{{ $w['week_no'] }}">
-
-                                                                <input class="form-control just-kurang"
-                                                                    data-item="{{ $sub->id }}"
-                                                                    data-week="{{ $w['week_no'] }}"
-                                                                    value="{{ $prog->just_kurang ?? 0 }}">
-                                                            </td>
-
-                                                            <td class="just-col"
-                                                                data-week="{{ $w['week_no'] }}">
-
-                                                                <input class="form-control just-tambah"
-                                                                    data-item="{{ $sub->id }}"
-                                                                    data-week="{{ $w['week_no'] }}"
-                                                                    value="{{ $prog->just_tambah ?? 0 }}">
-                                                            </td>
-
-                                                            <td class="just-col"
-                                                                data-week="{{ $w['week_no'] }}">
-
-                                                                <input class="form-control just-baru"
-                                                                    data-item="{{ $sub->id }}"
-                                                                    data-week="{{ $w['week_no'] }}"
-                                                                    value="{{ $prog->just_baru ?? 0 }}">
-                                                            </td>
-
-                                                        @endforeach
-
-                                                        <td class="total-justek"
-                                                            data-item="{{ $sub->id }}">
-                                                            0
-                                                        </td>
-
-                                                        <td class="total-pelaksanaan"
-                                                            data-item="{{ $sub->id }}"
-                                                            data-vol-kontrak="{{ $sub->volume }}">
-                                                            {{ number_format($sub->volume,3) }}
-                                                        </td>
-
-                                                        <td class="harga-kontrak"
-                                                            data-price="{{ $sub->price }}">
-
-                                                            Rp {{ number_format($sub->price,0,',','.') }}
-                                                        </td>
-
-                                                        <td class="nilai-pelaksanaan">
-                                                            0
-                                                        </td>
-
-                                                    </tr>
-
-                                                @endforeach
-                                    @endforeach
-                                @endforeach
-                            @endforeach
-                        </tbody> --}}
                         <tfoot>
                             <tr>
                                 <th colspan="4" class="text-end">
@@ -782,9 +425,9 @@
                 <canvas id="kurvaSChart"></canvas>
             </div>
         </x-collapse-card>
-    <div id="invoice-panel">
+    {{-- <div id="invoice-panel">
         @include('projects.partials.invoice_panel')
-    </div>
+    </div> --}}
     <div id="daily-reports">
         @include('projects.partials.daily_reports')
     </div>

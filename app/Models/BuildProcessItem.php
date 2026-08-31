@@ -22,6 +22,7 @@ class BuildProcessItem extends Model
         'parent_id',
         'sumber',
         'order_no',
+        'description'
     ];
 
     protected $casts = [

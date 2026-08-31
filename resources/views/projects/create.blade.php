@@ -445,9 +445,6 @@
                                             $prevInv = $index > 0
                                                 ? $project->invoicebuilds->where('termin', $termins[$index - 1]->termin_no)->first()
                                                 : null;
-
-                                            // termin pertama selalu bisa didownload,
-                                            // termin berikutnya baru bisa kalau termin sebelumnya sudah didownload
                                             $canDownload = $index == 0 || ($prevInv && $prevInv->downloaded_at);
                                         @endphp
 
@@ -469,7 +466,7 @@
                                                         <a href="{{ route('projects.invoice.build', ['project' => $project->id, 'termin' => $t]) }}"
                                                         class="btn btn-dark btn-sm mb-2" target="_blank">
                                                             <i class="ti ti-download"></i>
-                                                            Download Invoice Termin
+                                                            {{ $inv && $inv->downloaded_at ? 'Lihat Invoice' : 'Download Invoice Termin' }}
                                                         </a>
 
                                                         @if(
@@ -525,7 +522,11 @@
                                     </button>
                                 </form>
                             @endif
-                            @if($project->project_type == 3 && $firstInvoice && $firstInvoice->downloaded_at && $activeStep < 7)
+                            @if(
+                                $project->project_type == 3 &&
+                                $activeStep < 7 &&
+                                $firstInvoice && $firstInvoice->downloaded_at
+                            )
                             <form action="{{ route('projects.invoice.build.approve', [$project->id, $firstInvoice->id]) }}" method="POST"
                                 class="approve-form"
                                 data-title="Lanjut ke Tahap Berikutnya?"

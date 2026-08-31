@@ -255,7 +255,7 @@
 
     </div>
 
-    <div class="d-flex justify-content-end mt-4">
+    <div class="d-flex justify-content-end mt-4 gap-2">
 
         <button type="submit" class="btn btn-dark" id="btn-update-termin">
             <i class="ti ti-device-floppy"></i>

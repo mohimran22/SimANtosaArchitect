@@ -349,39 +349,65 @@ private function resolveBuildData($project): array
             });
         }
     });
-
     $groupedItems = $buildItems
-        ->sortBy([
-            ['floor_name', 'asc'],
-            ['category_name', 'asc'],
-            ['order_no', 'asc'],
-        ])
-        ->groupBy(function ($item) {
-            return $item->floor_name ?: 'Tanpa Lantai';
-        })
-        ->map(function ($floorItems, $floorName) {
+    ->sortBy('order_no')          // urutkan dulu berdasarkan order_no murni
+    ->groupBy(function ($item) {
+        return $item->floor_name ?: 'Tanpa Lantai';
+    })                             // urutan floor mengikuti order_no terkecil di tiap floor
+    ->map(function ($floorItems, $floorName) {
 
-            return [
-                'floor_name' => $floorName,
+        return [
+            'floor_name' => $floorName,
 
-                'categories' => $floorItems
-                    ->groupBy(function ($item) {
-                        return $item->category_name ?: 'Tanpa Kategori';
-                    })
-                    ->map(function ($items, $categoryName) {
+            'categories' => $floorItems
+                ->groupBy(function ($item) {
+                    return $item->category_name ?: 'Tanpa Kategori';
+                })
+                ->map(function ($items, $categoryName) {
 
-                        return [
-                            'category_name' => $categoryName,
+                    return [
+                        'category_name' => $categoryName,
 
-                            'items' => $items
-                                ->sortBy('order_no')
-                                ->values(),
-                        ];
-                    })
-                    ->values(),
-            ];
-        })
-        ->values();
+                        'items' => $items
+                            ->sortBy('order_no')
+                            ->values(),
+                    ];
+                })
+                ->values(),
+        ];
+    })
+    ->values();
+    // $groupedItems = $buildItems
+    //     ->sortBy([
+    //         ['floor_name', 'asc'],
+    //         ['order_no', 'asc'],
+    //     ])
+    //     ->groupBy(function ($item) {
+    //         return $item->floor_name ?: 'Tanpa Lantai';
+    //     })
+    //     ->map(function ($floorItems, $floorName) {
+
+    //         return [
+    //             'floor_name' => $floorName,
+
+    //             'categories' => $floorItems
+    //                 ->groupBy(function ($item) {
+    //                     return $item->category_name ?: 'Tanpa Kategori';
+    //                 })
+    //                 ->map(function ($items, $categoryName) {
+
+    //                     return [
+    //                         'category_name' => $categoryName,
+
+    //                         'items' => $items
+    //                             ->sortBy('order_no')
+    //                             ->values(),
+    //                     ];
+    //                 })
+    //                 ->values(),
+    //         ];
+    //     })
+    //     ->values();
 
     $weeklyReports = WeeklyReport::where('project_id', $project->id)
         ->get()

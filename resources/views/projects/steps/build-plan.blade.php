@@ -679,21 +679,33 @@
             let data = api.rows({ page: 'current' }).data();
             let rows = api.rows({ page: 'current' }).nodes();
 
+            let lastFloor = null;
             let lastCategory = null;
-            let lastUraian = null;
+            let lastDescription = null;
 
             let categoryIndex = 0;
-            let uraianIndex = 0;
             let itemIndex = 0;
 
             data.each(function (row, i) {
 
-                // CATEGORY ROW (SAFE: ONLY INSERT OUTSIDE TABLE BODY LOGIC)
+                // FLOOR ROW
+                if (row.floor_name !== lastFloor) {
+                    $(rows[i]).before(`
+                        <tr class="table-secondary fw-bold row-floor">
+                            <td colspan="${columns.length}" style="background:#343a40; color:#000;">
+                                ${row.floor_name ?? '-'}
+                            </td>
+                        </tr>
+                    `);
+                    lastFloor = row.floor_name;
+                    lastCategory = null;   // reset kategori tiap ganti lantai
+                    lastDescription = null;
+                }
+
+                // CATEGORY ROW
                 if (row.category_name !== lastCategory) {
                     categoryIndex++;
-                    uraianIndex = 0;
                     itemIndex = 0;
-                    lastUraian = null;
 
                     $(rows[i]).before(`
                         <tr class="table-secondary fw-bold row-category">
@@ -704,29 +716,17 @@
                     `);
 
                     lastCategory = row.category_name;
+                    lastDescription = null;  // reset grup deskripsi tiap ganti kategori
                 }
 
-                // URAIAN ROW
-                if (row.uraian_name !== lastUraian) {
-                    uraianIndex++;
-                    itemIndex = 0;
-
-                    $(rows[i]).before(`
-                        <tr class="table-light row-uraian"> 
-                            <td colspan="${columns.length}">
-                                ${uraianIndex}. ${row.uraian_name}
-                            </td>
-                        </tr>
-                    `);
-
-                    lastUraian = row.uraian_name;
+                // NOMOR: hanya increment & tampil kalau description beda dari baris sebelumnya
+                let noCell = '';
+                if (!row.description || row.description !== lastDescription) {
+                    itemIndex++;
+                    noCell = itemIndex;
                 }
-
-                itemIndex++;
-
-                $('td:eq(0)', rows[i]).html(
-                    uraianIndex + '.' + itemIndex
-                );
+                lastDescription = row.description;
+                $('td:eq(0)', rows[i]).html(noCell);
             });
 
             Object.entries(window.weekTotal || {}).forEach(([week, total]) => {
@@ -742,9 +742,8 @@
                 window.chartInitialized = true;
             }
             setTimeout(() => {
-                applyFreeze(); // cukup ini saja, width sudah di-handle di dalam applyFreeze()
+                applyFreeze();
 
-                // Sync scrollbar atas tetap di sini
                 const cols = document.querySelectorAll('#buildPlanTable colgroup:first-of-type col');
                 const totalWidth = Array.from(cols).reduce((sum, col) => {
                     return sum + (parseFloat(col.style.width) || 0);
@@ -767,7 +766,6 @@
                     attributeFilter: ['style']
                 });
 
-                // Stop setelah 2 detik
                 setTimeout(() => observer.disconnect(), 2000);
             }, 200);
         }
