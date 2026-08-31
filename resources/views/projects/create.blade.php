@@ -44,7 +44,7 @@
                                     ? '6. Invoice Pembayaran Desain (DP)'
                                     : ($project?->project_type == 2
                                         ? '5. Invoice Jasa Pembuatan RAB'
-                                        : '6. Invoice Pembayaran Tahap 1');
+                                        : '6. Invoice Termin');
                             $workTitle =
                                 $project?->project_type == 1
                                     ? '7. Form Pengerjaan'
@@ -62,6 +62,9 @@
                             $invoiceFinal = $project?->invoices
                                 ->where('invoice_type', 'final')
                                 ->first();
+                            $level8 = $project?->levels->firstWhere('level_order', 8);
+                            $level9 = $project?->levels->firstWhere('level_order', 9);
+
                 @endphp
             @if($activeStep == 1)
             <div id="project" class="step-section">
@@ -395,6 +398,7 @@
                 </x-collapse-card>
             </div>    
             @endif
+            {{-- ini blade section 6. Invoice Termin --}}
             @if(
                 ($project?->project_type == 1 && $activeStep >= 7 && $project->offer->approved_at)
                 ||
@@ -405,32 +409,11 @@
             <div id="invoice" class="step-section">
                 <x-collapse-card :title="$invoiceTitle" target="invoice-body">
                         @php
-                            $termins = $project->buildTermins
-                                ->sortBy('termin_no')
-                                ->values();
+                            $termins = $project->buildTermins->sortBy('termin_no')->values();
 
-                            $termin = null;
-                            $cumulativePercentage = 0;
-
-                            foreach ($termins as $buildTermin) {
-                                $cumulativePercentage += (float) $buildTermin->percentage;
-
-                                if ((float) $project->build_progress < $cumulativePercentage) {
-                                    $termin = $buildTermin->termin_no;
-                                    break;
-                                }
-                            }
-
-                            if ($termin === null && $termins->isNotEmpty()) {
-                                $termin = $termins->last()->termin_no;
-                            }
-
-                            $invoice = $termin
-                                ? $project->invoicebuilds()
-                                    ->where('termin', $termin)
-                                    ->whereNotNull('downloaded_at')
-                                    ->whereNull('approved_at')
-                                    ->first()
+                            $firstTermin  = $termins->first();
+                            $firstInvoice = $firstTermin
+                                ? $project->invoicebuilds->where('termin', $firstTermin->termin_no)->first()
                                 : null;
                         @endphp
                         <div class="d-flex gap-2">
@@ -452,17 +435,68 @@
                                     Download Invoice
                                 </a>
                             @endif
-
                             @if($project->project_type == 3)
-                                <a href="{{ route('projects.invoice.build', [
-                                    'project' => $project->id,
-                                    'termin'  => $termin
-                                ]) }}"
-                                class="btn btn-dark"
-                                target="_blank">
-                                    <i class="ti ti-download"></i>
-                                    Download Invoice Tahap {{ $termin }}
-                                </a>
+                                <div class="row">
+                                    @foreach($termins as $index => $buildTermin)
+                                        @php
+                                            $t = $buildTermin->termin_no;
+                                            $inv = $project->invoicebuilds->where('termin', $t)->first();
+
+                                            $prevInv = $index > 0
+                                                ? $project->invoicebuilds->where('termin', $termins[$index - 1]->termin_no)->first()
+                                                : null;
+
+                                            // termin pertama selalu bisa didownload,
+                                            // termin berikutnya baru bisa kalau termin sebelumnya sudah didownload
+                                            $canDownload = $index == 0 || ($prevInv && $prevInv->downloaded_at);
+                                        @endphp
+
+                                        <div class="col-md-3 mb-3">
+                                            <div class="card border-0 shadow-sm h-100">
+                                                <div class="card-body text-center">
+                                                    <h5>Termin {{ $t }}</h5>
+
+                                                    @if($inv)
+                                                        <span class="badge
+                                                            @if($inv->status == 'approved') bg-success @else bg-warning @endif
+                                                            text-white mb-2">
+                                                            {{ strtoupper($inv->status) }}
+                                                        </span>
+                                                        <br>
+                                                    @endif
+
+                                                    @if($canDownload)
+                                                        <a href="{{ route('projects.invoice.build', ['project' => $project->id, 'termin' => $t]) }}"
+                                                        class="btn btn-dark btn-sm mb-2" target="_blank">
+                                                            <i class="ti ti-download"></i>
+                                                            Download Invoice Termin
+                                                        </a>
+
+                                                        @if(
+                                                            $inv && $inv->downloaded_at &&
+                                                            !$inv->approved_at &&
+                                                            ($index == 0 || optional($prevInv)->approved_at)
+                                                        )
+                                                            <br>
+                                                            <form action="{{ route('projects.invoice.build.approve', [$project->id, $inv->id]) }}"
+                                                                method="POST"
+                                                                class="approve-form"
+                                                                data-title="Approve Termin {{ $t }}?"
+                                                                data-text="Invoice termin {{ $t }} akan disetujui.">
+                                                                @csrf
+                                                                <button class="btn btn-success btn-sm">
+                                                                    Approve Termin {{ $t }}
+                                                                </button>
+                                                            </form>
+                                                        @endif
+                                                    @else
+                                                        <span class="text-muted">Belum tersedia</span>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
                             @endif
                             @if(
                                 $invoiceDp?->invoice_dp_downloaded_at &&
@@ -491,11 +525,11 @@
                                     </button>
                                 </form>
                             @endif
-                            @if($invoice && $termin && $termin < $termins->count())
-                            <form action="{{ route('projects.invoice.build.approve', [$project->id, $invoice->id]) }}" method="POST"
+                            @if($project->project_type == 3 && $firstInvoice && $firstInvoice->downloaded_at && $activeStep < 7)
+                            <form action="{{ route('projects.invoice.build.approve', [$project->id, $firstInvoice->id]) }}" method="POST"
                                 class="approve-form"
                                 data-title="Lanjut ke Tahap Berikutnya?"
-                                data-text="Invoice termin I akan disetujui dan progres proyek dilanjutkan.">
+                                data-text="Invoice termin akan disetujui dan progres proyek dilanjutkan.">
                                 @csrf
                                 <button class="btn btn-dark">
                                     <i class="ti ti-arrow-right"></i>
@@ -507,10 +541,6 @@
                 </x-collapse-card>
             </div>
             @endif
-            @php
-                $level8 = $project?->levels
-                    ->firstWhere('level_order', 8);
-            @endphp
             @if(
                 ($project?->project_type == 1 && $activeStep >= 8 && $project->offer->approved_at)
                 ||
@@ -633,13 +663,11 @@
             
             @if(
                 (
-                    $project?->levels->firstWhere('level_order', 9)?->is_started 
-                    && !$ReadOnly
+                    $project?->project_type == 1 && $level9?->is_started && !$ReadOnly
                 )
                 ||
                 (
-                    $project?->project_type == 3 
-                    && $activeStep >= 9
+                    $project?->project_type == 3 && $level9?->is_started
                 )
             )
             <div id="final" class="step-section">

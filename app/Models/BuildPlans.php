@@ -14,12 +14,8 @@ class BuildPlans extends Model
         'build_process_item_id',
         'rab_item_id',
         'category_name',
-        'category_order',
-        'uraian_name',
-        'uraian_order',
-        'job_category_id',
         'item_name',
-        'item_order',
+        'floor_name',
         'volume',
         'price',
         'total',
@@ -66,8 +62,8 @@ class BuildPlans extends Model
     public function scopeOrdered($query)
     {
         return $query
-            ->orderBy('category_order')
-            ->orderBy('uraian_order')
+            ->orderBy('floor_name')
+            ->orderBy('category_name')
             ->orderBy('item_order');
     }
 

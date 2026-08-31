@@ -208,8 +208,47 @@ p {
 <p class="bold">
     Keterangan :
 </p>
-
 <p>
+    Mekanisme Pembayaran sebagai berikut :
+</p>
+
+<ul>
+
+@php
+    $cumulativeProgress = 0;
+@endphp
+
+@foreach($project->buildTermins->sortBy('termin_no') as $buildTerminItem)
+
+    @php
+        $progressStart = $cumulativeProgress;
+        $cumulativeProgress += (float) $buildTerminItem->percentage;
+        $progressEnd = $cumulativeProgress;
+
+        $itemAmount = $grandTotal * ((float) $buildTerminItem->percentage / 100);
+    @endphp
+
+    {{-- Opsi B: tampilkan termin 1 s.d. termin yang sedang diinvoice (kumulatif) --}}
+    @if($buildTerminItem->termin_no <= $invoice->termin)
+        <li>
+            Pembayaran Termin {{ $buildTerminItem->termin_no }}
+            sebesar
+            {{ number_format((float) $buildTerminItem->percentage, 2, ',', '.') }}%
+            x
+            Rp {{ number_format($grandTotal, 0, ',', '.') }}
+            =
+            Rp {{ number_format($itemAmount, 0, ',', '.') }}
+
+            @if($buildTerminItem->description)
+                — {{ $buildTerminItem->description }}
+            @endif
+        </li>
+    @endif
+
+@endforeach
+
+</ul>
+{{-- <p>
     Mekanisme Pembayaran sebagai berikut :
 </p>
 
@@ -245,7 +284,7 @@ $cumulativeProgress = 0;
 
 @endforeach
 
-</ul>
+</ul> --}}
 
 <div style="
     page-break-inside: avoid;
