@@ -254,7 +254,17 @@
         </div>
 
     </div>
+    <div class="d-flex align-items-center justify-content-between mb-3 mt-4">
+        <div>
+            <h3 class="mb-1 fw-bold">
+                Setting Masa Pemelihraan
+            </h3>
 
+            <div class="text-muted">
+                Atur pembagian pembayaran berdasarkan persentase termin.
+            </div>
+        </div>
+    </div>
     <div class="d-flex justify-content-end mt-4 gap-2">
 
         <button type="submit" class="btn btn-dark" id="btn-update-termin">

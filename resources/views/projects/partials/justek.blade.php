@@ -78,9 +78,7 @@
                     </tr>
                 </thead>
 
-                <tbody id="rab_offerItemsBody">
-                    {{-- Item RAB dibuat oleh JavaScript --}}
-                </tbody>
+                <tbody id="justekItemsBody"></tbody>
 
                 <tfoot>
                     <tr>
@@ -384,11 +382,11 @@
 
                         <div>
                             <h5 class="modal-title fw-bold">
-                                Import RAB dari Excel
+                                Import Justek dari Excel
                             </h5>
 
                             <small class="text-muted">
-                                Import item RAB menggunakan file Excel
+                                Import item Justek menggunakan file Excel
                             </small>
                         </div>
 
@@ -441,7 +439,7 @@
                                 class="btn btn-dark"
                                 onclick="importRabFromExcel()"
                                 disabled>
-                            Import RAB
+                            Import Justek
                         </button>
 
                     </div>
@@ -461,6 +459,11 @@
     <h4 class="fw-bold mb-3">Keterangan</h4>
 
     <textarea name="notes" rows="3" class="form-control"></textarea>
+    <div class="text-end mt-5">
+        <button type="submit" class="btn btn-dark px-4">
+            <i class="ti ti-device-floppy me-1"></i> Simpan Justifikasi Teknis
+        </button>
+    </div>
 </form>
 @push('js')
 <script>
@@ -1739,7 +1742,7 @@
     function renderRabItems() {
 
         const tbody =
-            document.getElementById('rab_offerItemsBody');
+            document.getElementById('justekItemsBody');
 
         if (!tbody) return;
 
@@ -1967,11 +1970,8 @@
  
                             </td>
  
- 
                             <td>
- 
                                 ${escapeHtml(item.satuan)}
- 
                             </td>
  
  
@@ -1989,9 +1989,7 @@
  
                             </td>
  
- 
                             <td>
- 
                                 <input type="text"
                                     class="form-control harga"
                                     value="${formatRupiah(item.price)}"
@@ -1999,11 +1997,11 @@
                                         '${item.temp_id}',
                                         this
                                     )">
- 
+
                             </td>
  
                             <td>
- 
+
                                 <input type="text"
                                     class="form-control total"
                                     value="${formatRupiah(item.total)}"
@@ -2011,21 +2009,15 @@
  
                             </td>
  
- 
                             <td>
- 
                                 <button type="button"
                                         class="btn btn-sm btn-danger"
                                         onclick="removeRabItem(
                                             '${item.temp_id}'
                                         )">
- 
                                     −
- 
                                 </button>
- 
                             </td>
- 
                         </tr>
                         `
                     );
@@ -2117,8 +2109,7 @@
 
         while (num > 0) {
 
-            const rem =
-                (num - 1) % 26;
+            const rem = (num - 1) % 26;
 
             letters =
                 String.fromCharCode(
@@ -2283,11 +2274,10 @@
         }
 
         const tbody = document.getElementById(
-                'rab_offerItemsBody'
+                'justekItemsBody'
             );
 
         if (!tbody) return;
-
 
         sortableInstance =
             new Sortable(tbody, {
@@ -2305,9 +2295,7 @@
                             '.job-row'
                         );
 
-
                     const newOrder = [];
-
 
                     rows.forEach(row => {
 
@@ -2342,17 +2330,9 @@
 
         currentMode = mode;
 
+        const btnEdit = document.getElementById('tombolUbah');
 
-        const btnEdit =
-            document.getElementById(
-                'tombolUbah'
-            );
-
-        const btnDrag =
-            document.getElementById(
-                'tombolGeser'
-            );
-
+        const btnDrag = document.getElementById('tombolGeser');
 
         if (btnEdit) {
 
@@ -2367,7 +2347,6 @@
             );
 
         }
-
 
         if (btnDrag) {
 
@@ -2416,8 +2395,7 @@
                 const div =
         document.createElement('div');
 
-    div.textContent =
-        value ?? '';
+    div.textContent = value ?? '';
 
     return div.innerHTML;
 
@@ -2468,28 +2446,13 @@
                 Object.entries(fields)
                     .forEach(
                         ([key, value]) => {
-
-                            const input =
-                                document.createElement(
-                                    'input'
-                                );
-
-                            input.type =
-                                'hidden';
-
-                            input.name =
-                                `items[${index}][${key}]`;
-
-                            input.value =
-                                value ?? '';
-
-                            container.appendChild(
-                                input
-                            );
-
+                            const input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = `items[${index}][${key}]`;
+                            input.value = value ?? '';
+                            container.appendChild(input);
                         }
                     );
-
             }
         );
 

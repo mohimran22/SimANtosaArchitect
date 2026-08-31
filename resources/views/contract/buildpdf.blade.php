@@ -9,7 +9,6 @@
     margin: 140px 30px 110px 30px;
 }
 
-/* ================= BODY ================= */
 body {
     font-family: DejaVu Sans, sans-serif;
     font-size: 12px;
@@ -18,7 +17,6 @@ body {
     padding: 0;
 }
 
-/* ================= HEADER & FOOTER ================= */
 .header {
     position: fixed;
     top: -110px;
@@ -33,6 +31,20 @@ body {
     left: 0;
     right: 0;
     width: 100%;
+}
+
+.content {
+    width: 100%;
+    text-align: justify;
+}
+
+/* Semua paragraf isi kontrak */
+.content p {
+    text-align: justify;
+    margin-top: 0;
+    margin-bottom: 12px;
+    margin-left: 1cm;
+    margin-right: 1cm;
 }
     .title {
         text-align: center;
@@ -104,7 +116,7 @@ table.pekerjaan-list {
 
 table.pekerjaan-list td {
     vertical-align: top;
-    padding-bottom: 3px; /* jarak antar baris, ganti .item-name margin-bottom lama */
+    padding-bottom: 3px;
 }
 
 </style>
@@ -145,7 +157,7 @@ table.pekerjaan-list td {
     </div>
 </div>
 
-<table class="no-border" width="100%">
+<table class="no-border" style="margin-left:1cm" width="100%">
     <tr>
         <!-- KIRI -->
         <td width="60%">
@@ -162,34 +174,34 @@ table.pekerjaan-list td {
         </td>
     </tr>
 </table>
-
+<div class="content">
 <p>
     Pada hari ini, {{ $hari }}, tanggal {{ $tanggal_terbilang }},
     bulan {{ $bulan }}, tahun {{ $tahun_terbilang }},
     kami yang bertanda tangan di bawah ini:
 </p>
+</div>
 
-
-<table>
+<table style="margin-left:1cm">
 <tr><td width="120">Nama</td><td>: {{ $offer->project->customer->display_name_with_title }}</td></tr>
 <tr><td>NIK</td><td>: {{ $project->customer->user->identity_number ?? '..................' }}</td></tr>
 <tr><td>Alamat</td><td>: {{ $project->customer->user->address }}</td></tr>
 <tr><td>Telepon</td><td>: {{ $project->customer->user->phone }}</td></tr>
 </table>
-
+<div class="content">
 <p >
 Dalam hal ini bertindak sebagai Pemilik Rumah dan Pemberi Tugas, 
 selanjutnya disebut sebagai <strong>Pihak Pertama</strong>.
 </p>
+</div>
 
-
-<table>
+<table style="margin-left:1cm">
 <tr><td width="120">Nama</td><td>: Ir. Ar. DWIANTOSA AHMAD FATHONY, IAI., IPP.</td></tr>
 <tr><td>NIK</td><td>: 3509190306920005</td></tr>
 <tr><td>Alamat</td><td>: JL. Kertajaya II / 155, Jember Kidul, Jember</td></tr>
 <tr><td>Telepon</td><td>: 0852 3687 3007</td></tr>
 </table>
-
+<div class="content">
 <p >
 Dalam hal ini bertindak sebagai Pelaksana Pekerjaan Desain Rumah Hunian milik {{ $offer->project->customer->display_name_with_title }} di {{ strtoupper($offer->project->city?->name ?? '-') }}
  dan selanjutnya disebut sebagai <strong>Pihak Kedua</strong>.
@@ -202,18 +214,20 @@ Kedua belah pihak telah sepakat untuk mengadakan ikatan Kontrak PELAKSANAAN PEKE
 {{ $offer->project->subDistrict->name }}, {{ $offer->project->district->name }}, {{ $offer->project->city->name }}, {{ $offer->project->province->name }}.
 </p>
 
+
 <p>
 <strong>Pihak Pertama</strong> bersedia membayar seluruh biaya pelaksanaan pekerjaan, 
 sedangkan <strong>Pihak Kedua</strong> bersedia untuk melaksanakan pekerjaan {{ strtoupper($offer->project->project_name ?? '-') }} 
 tersebut sesuai dengan  gambar dan perencanaan teknik yang telah disepakati kedua belah pihak. 
 Dengan ketentuan yang disebutkan dalam pasal-pasal sebagai berikut :
 </p>
+</div>
 <!-- PASAL 1 -->
 <p class="section-title text-center">
     Pasal 1<br>
     Tujuan Kontrak
 </p>
-
+<div class="content">
 <p >
 Tujuan kontrak ini adalah sebagai ikatan kesepakatan kedua belah pihak yang tertuang dalam dokumen kontrak,
 sebagai dasar dalam Pelaksanaan Pekerjaan {{ strtoupper($offer->project->project_name) }} 
@@ -221,14 +235,14 @@ yang terletak di
 <strong>{{ $offer->project->project_location }}</strong>
 {{ $offer->project->subDistrict->name }}, {{ $offer->project->district->name }}, {{ $offer->project->city->name }}, {{ $offer->project->province->name }}.
 </p>
-
+</div>
 
 {{-- PASAL 2 --}}
 <p class="section-title text-center">
     Pasal 2<br>
     Bentuk Pekerjaan
 </p>
-
+<div class="content">
 <p >
 Bentuk pekerjaan yang akan dilaksanakan oleh <strong>Pihak Kedua</strong>
 adalah sebagai berikut:
@@ -252,12 +266,12 @@ adalah sebagai berikut:
         jangka waktu pelaksanaan yang telah disepakati oleh kedua belah pihak.
     </li>
 
-    <li >
+    {{-- <li >
         Adapun Rincian Anggaran Biaya yang dilaksanakan adalah sebagai berikut:
-    </li>
+    </li> --}}
 </ol>
-
-@php
+</div>
+{{-- @php
     $categoryIndex = 0;
 @endphp
 
@@ -315,13 +329,14 @@ adalah sebagai berikut:
         @php $categoryIndex++; @endphp
     @endforeach
 
-@endforeach
+@endforeach --}}
 
 <!-- PASAL 3 -->
 <p class="section-title text-center">
     Pasal 3<br>
     Sistem Pekerjaan
 </p>
+<div class="content">
 <p >
 <p>Sistem pekerjaan yang disepakati oleh kedua belah pihak adalah sebagai berikut :</p>
 
@@ -335,13 +350,13 @@ adalah sebagai berikut:
         biaya yang ditimbulkan sepenuhnya menjadi tanggung jawab <strong>Pihak Kedua</strong>.</li>
 </ol>
 </p>
-
+</div>
 <!-- PASAL 4 – BIAYA -->
 <p class="section-title text-center">
     Pasal 4<br>
     Biaya
 </p>
-
+<div class="content">
 <p >
 Biaya Pelaksanaan Pekerjaan {{ strtoupper($offer->project->project_name) }}  
 {{ strtoupper($offer->project->customer->display_name_with_title) }} yang telah disepakati kedua belah pihak adalah senilai
@@ -359,13 +374,13 @@ sesuai desain gambar dan spesifikasi yang telah ditetapkan.
     <li>Pajak – pajak yang di timbulkan atas pelaksanaan {{ strtoupper($offer->project->project_name) }} termasuk pajak pelaksanaan, pajak pribadi, pajak membangun sendiri dan lain-lain.</li>
     <li>Persetujuan Bangunan Gedung  ( PBG ) mulai dari, lurah / kepala desa, camat dan pihak ciptakarya {{ $offer->project->city->name }}.</li>
 </ol>
-
+</div>
 <!-- PASAL 5 – PEMBAYARAN -->
 <p class="section-title text-center">
     Pasal 5<br>
     Sistem Pembayaran
 </p>
-
+<div class="content">
 <p>
 Pembayaran atas pekerjaan pembangunan dilakukan dengan sistem bertahap yaitu:
 </p>
@@ -406,7 +421,7 @@ Pekerjaan {{ strtoupper($offer->project->project_name) }} tersebut.
 <strong>Pembayaran dilakukan melalui transfer ke rekening: </strong>
 </p>
 
-<table class="no-border" style="margin-left:30px;">
+<table class="no-border" style="margin-left:1cm;">
     <tr>
         <td width="120">Penerima</td>
         <td>: <strong>DWIANTOSA AHMAD FATHONY</strong></td>
@@ -420,14 +435,12 @@ Pekerjaan {{ strtoupper($offer->project->project_name) }} tersebut.
         <td>: 0241575429</td>
     </tr>
 </table>
-
-
-<!-- PASAL 6 – WAKTU PELAKSANAAN -->
+</div>
 <p class="section-title text-center">
     Pasal 6<br>
     Jangka Waktu Pelaksanaan
 </p>
-
+<div class="content">
 <p>
 Jangka waktu pelaksanaan pekerjaan {{ strtoupper($offer->project->project_name) }}
 estimasi maksimal adalah <strong>{{ $job_duration }}</strong> hari kerja
@@ -437,41 +450,56 @@ terhitung sejak disepakati awal mulai pekerjaan yaitu pada tanggal
 dan estimasi selesai pada
 {{ \Carbon\Carbon::parse($project->end_date ?? now())->translatedFormat('d F Y') }}.
 </p>
+@php
+    $contractValue = $offer->grand_total ?? 0;
+
+    $dailyPenalty = $contractValue * 0.0005; // 0,05%
+    $maxPenalty = $contractValue * 0.002;    // 0,2%
+@endphp
 
 <p>
-Apabila terjadi keterlambatan pengerjaan dari waktu yang telah ditentukan, maka <strong>Pihak Kedua</strong> wajib membayar denda kepada <strong>Pihak Pertama</strong> sebesar 0,05 per mil dari nilai kontrak untuk setiap hari 
-keterlambatan atau Rp. 1.000.000 ( satu juta rupiah ) perhari. Maksimum 0,2% atau Rp. 4.000.000 ( empat juta rupiah ).
+    Apabila terjadi keterlambatan pengerjaan dari waktu yang telah ditentukan, maka
+    <strong>Pihak Kedua</strong> wajib membayar denda kepada
+    <strong>Pihak Pertama</strong> sebesar 0,05% dari nilai kontrak untuk setiap hari
+    keterlambatan atau sebesar
+    Rp {{ number_format($dailyPenalty, 0, ',', '.') }}
+    ({{ terbilang($dailyPenalty) }} rupiah) per hari.
+    Maksimum 0,2% atau sebesar
+    Rp {{ number_format($maxPenalty, 0, ',', '.') }}
+    ({{ terbilang($maxPenalty) }} rupiah).
 </p>
+
 <p>
 Sedangkan apabila terjadi keterlambatan pembayaran <strong>Pihak Pertama</strong> terhadap termin atau tahapan pembayaran yang diajukan oleh <strong>Pihak Kedua</strong>, 
 maka <strong>Pihak Pertama</strong> wajib membayar denda pada <strong>Pihak Kedua</strong> sebesar 0.05% dari besarnya jumlah termin yang diajukan untuk setiap hari keterlambatan, 
 terhitung 3 ( Tiga ) hari sejak tanggal tanda terima pengajuan berkas termin. Maksimum 0,2% dari jumlah termin yang diajukan.
 </p>
+</div>
 
-<!-- PASAL 7 – REVISI -->
-<p class="section-title text-center">
-    Pasal 7<br>
-    Perubahan
-</p>
-
-<p>
-Apabila pada waktu pengerjaan pelaksanaan konstruksi terdapat perubahan-perubahan terhadap
-luasan, posisi dan bentuk serta penambahan material bangunan diluar dari perjanjian yang telah
-disepakati oleh kedua belah pihak, maka <strong>Pihak Pertama</strong> wajib membayar setiap perubahan
-pembongkaran dan pemasangan kembali yang besarnya disesuaikan dengan kondisi dan situasi yang
-ada, serta harus dilakukan negosiasi terlebih dahulu oleh kedua belah pihak.
-</p>
-<p>
-Sebaliknya apabila terjadi perubahan pengurangan volume bangunan atau pengurangan material
-maka, dapat dilakukan addendum kontrak atau dikompensasi pekerjaan lain yang disepakati oleh
-kedua belah pihak.
-</p>
+    <p class="section-title text-center">
+        Pasal 7<br>
+        Perubahan
+    </p>
+<div class="content">
+    <p>
+        Apabila pada waktu pengerjaan pelaksanaan konstruksi terdapat perubahan-perubahan terhadap
+        luasan, posisi dan bentuk serta penambahan material bangunan diluar dari perjanjian yang telah
+        disepakati oleh kedua belah pihak, maka <strong>Pihak Pertama</strong> wajib membayar setiap perubahan
+        pembongkaran dan pemasangan kembali yang besarnya disesuaikan dengan kondisi dan situasi yang
+        ada, serta harus dilakukan negosiasi terlebih dahulu oleh kedua belah pihak.
+    </p>
+    <p>
+        Sebaliknya apabila terjadi perubahan pengurangan volume bangunan atau pengurangan material
+        maka, dapat dilakukan addendum kontrak atau dikompensasi pekerjaan lain yang disepakati oleh
+        kedua belah pihak.
+    </p>
+</div>
 
 <p class="section-title text-center">
     Pasal 8<br>
     Masa Pemeliharaan
 </p>
-
+<div class="content">
 <p >
     <ol>
         <li>Masa pemeliharaan berlaku selama 90 ( sembilan puluh ) hari, setelah selesai pekerjaan/serah
@@ -501,7 +529,7 @@ Namun apabila terjadi Force Majeure atau bencana alam yang diluar kemampuan Para
 <p>
     Demikian Kontrak Kerja ini telah di sepakati dan di tanda tangani diatas materai yang cukup, untuk dilaksanakan dengan penuh rasa tanggung jawab tanpa adanya campur tangan dari pihak lain. 
 </p>
-
+</div>
 <table width="100%" style="margin-top:20px;">
 <tr>
 
