@@ -194,7 +194,7 @@
 <tr style="font-weight:bold;">
     <th colspan="5" align="right">DIBULATKAN</th>
     <th align="right">
-        Rp {{ number_format(floor($rab->grand_total / 1000000) * 1000000,0,',','.') }}
+        Rp {{ number_format(floor($rab->grand_total / 10000) * 10000,0,',','.') }}
     </th>
 </tr>
 </tfoot>

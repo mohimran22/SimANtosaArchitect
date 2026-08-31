@@ -305,8 +305,8 @@ function numberToLetters($num) {
 
                 $roundedTotal =
                     floor(
-                        $grandTotal / 1000000
-                    ) * 1000000;
+                        $grandTotal / 10000
+                    ) * 10000;
 
                 $extraDiscount = $offer->extra_discount ?? 0;
 

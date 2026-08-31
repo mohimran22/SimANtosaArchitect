@@ -127,11 +127,11 @@
                                             <small class="text-muted">
                                                 {{ $w['start'] }} - {{ $w['end'] }}
                                             </small>
-                                        <button type="button"
+                                        {{-- <button type="button"
                                             class="btn btn-sm btn-outline-dark ms-1 btn-just-toggle"
                                             data-week="{{ $w['week_no'] }}">
                                             +
-                                        </button>
+                                        </button> --}}
                                     </th>
 
                                     <th colspan="3"
@@ -143,7 +143,6 @@
                                         </small>
                                     </th>
                                 @endforeach
-
                                 <th colspan="4" class="align-middle text-center">Perubahan Volume</th>
                             </tr>
 
@@ -252,13 +251,13 @@
                                                         @endif
 
                                                     </div>
-                                                    <button
+                                                    {{-- <button
                                                         type="button"
                                                         class="btn btn-sm btn-light btn-add-tambah flex-shrink-0"
                                                         data-item="{{ $item->id }}"
                                                     >
                                                         +
-                                                    </button>
+                                                    </button> --}}
 
                                                 </div>
 
@@ -425,9 +424,9 @@
                 <canvas id="kurvaSChart"></canvas>
             </div>
         </x-collapse-card>
-    {{-- <div id="invoice-panel">
-        @include('projects.partials.invoice_panel')
-    </div> --}}
+    <div id="invoice-panel">
+        @include('projects.partials.justek')
+    </div>
     <div id="daily-reports">
         @include('projects.partials.daily_reports')
     </div>

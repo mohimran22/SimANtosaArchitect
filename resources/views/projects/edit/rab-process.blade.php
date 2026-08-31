@@ -64,7 +64,7 @@
                 <button type="button"
                         class="btn btn-dark btn-sm"
                             onclick="openEditRabItemModal()">
-                    + Add Item
+                    + Tambah Item
                 </button>
             </div>
 

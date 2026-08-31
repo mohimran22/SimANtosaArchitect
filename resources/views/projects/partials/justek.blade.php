@@ -1,5 +1,5 @@
-@can('lihat daftar proyek')
-<form id="rabForm" action="{{ route('projects.rab.store') }}" method="POST" enctype="multipart/form-data">
+<x-collapse-card title="Justifikasi Teknis" target="tambah-justek-body">
+<form id="justekForm" action="{{ route('projects.rab.store') }}" method="POST" enctype="multipart/form-data">
     @csrf
                         @if ($errors->any())
                                         <div class="alert alert-danger">
@@ -13,49 +13,7 @@
 
     <input type="hidden" name="project_id" value="{{ $project->id }}">
 
-    <h4 class="fw-bold mb-3">Informasi Pembuatan Rab</h4>
-
-    <div class="row g-3">
-        <div class="col-md-4">
-            <label class="form-label">Nama Customer</label>
-            <input type="text" name="contact_name" value="{{ old('contact_name', $project->customer->user->fullname ?? '') }}" class="form-control">
-        </div>
-        <div class="col-md-4">
-            <label class="form-label">Lokasi Pekerjaan</label>
-            <input type="text" name="job_location" value="{{ old('job_location', $project->city->name ?? '-') }}" class="form-control">
-        </div>
-        <div class="col-md-4">
-            <label class="form-label">Durasi Pekerjaan</label>
-            <input type="text" name="job_duration" class="form-control" value="{{ old('job_duration') }}" placeholder="Total rencana pengerjaan berdasarkan hari kerja">
-        </div>
-        <div class="col-md-2">
-            <label class="form-label">Profit (%)</label>
-
-            <div class="input-group">
-                <input type="number"
-                    class="form-control"
-                    id="rab_profit_display"
-                    name="profit"
-                    min="0"
-                    step="0.01"
-                    value="{{ old('profit', 0) }}">
-            </div>
-        </div>
-
-        <div class="col-md-2">
-            <label class="form-label">Overhead (%)</label>
-
-            <div class="input-group">
-                <input type="number"
-                    class="form-control"
-                    id="rab_overhead_display"
-                    name="overhead"
-                    min="0"
-                    step="0.01"
-                    value="{{ old('overhead', 0) }}">
-            </div>
-        </div>
-    </div>
+    <h4 class="fw-bold mb-3">Tambah / Impor Excel Justifikasi Teknis</h4>
   
     <div class="row mb-4 mt-3">
 
@@ -67,7 +25,7 @@
 
             <div class="rab-action-buttons">
 
-                <button type="button"
+                {{-- <button type="button"
                         id="tombolUbah"
                         class="btn btn-dark btn-sm">
                     ✏️ Mode Edit
@@ -77,12 +35,12 @@
                         id="tombolGeser"
                         class="btn btn-outline-secondary btn-sm">
                     🔀 Urutkan Daftar Pekerjaan
-                </button>
+                </button> --}}
 
                 <button type="button"
                         class="btn btn-dark btn-sm"
                         onclick="openAddRabItemModal()">
-                    + Tambah Item
+                    + Tambah Item Justek
                 </button>
                 <button type="button"
                         class="btn btn-dark btn-sm"
@@ -225,35 +183,6 @@
 
         </div>
 
-    </div>
-    <div class="modal fade" id="uraianGalleryModal">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content gambar-modal">
-
-                <div class="modal-header border-0">
-                    <div>
-                    <h5 class="modal-title fw-semibold" id="modalTitle"></h5>
-                    <small class="text-muted">Upload dokumentasi pekerjaan</small>
-                    </div>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-
-                <div class="modal-body">
-                    <div class= "upload-area mb-3">
-                    <input type="file"
-                        multiple
-                        accept="image/*"
-                        class="form-control mb-3"
-                        id="uraianImageInput">
-                    </div>
-
-                    <div id="uraianGallery" class="gambar-preview">
-                    </div>
-
-                </div>
-
-            </div>
-        </div>
     </div>
         <div class="modal fade" id="addRabItemModal" tabindex="-1" aria-hidden="true">
 
@@ -533,8 +462,6 @@
 
     <textarea name="notes" rows="3" class="form-control"></textarea>
 </form>
-@endcan
-
 @push('js')
 <script>
 
@@ -1277,75 +1204,6 @@
             ? number
             : 0;
     }
-
-// function renderRabImportPreview(items) {
-
-//     const container =
-//         document.getElementById('rabImportPreview');
-
-//     if (!items.length) {
-//         container.innerHTML =
-//             '<div class="alert alert-warning">' +
-//             'Tidak ada item yang dapat diimport.' +
-//             '</div>';
-
-//         return;
-//     }
-
-//     let html = `
-//         <div class="mb-2">
-//             <strong>${items.length}</strong>
-//             item siap diimport.
-//         </div>
-
-//         <table class="table table-sm table-bordered align-middle">
-
-//             <thead>
-//                 <tr>
-//                     <th>No</th>
-//                     <th>Lantai</th>
-//                     <th>Kategori</th>
-//                     <th>Tipe Pekerjaan</th>
-//                     <th>Pekerjaan</th>
-//                     <th>Volume</th>
-//                     <th>Satuan</th>
-//                     <th class="text-end">
-//                         Harga Satuan
-//                     </th>
-//                 </tr>
-//             </thead>
-
-//             <tbody>
-//     `;
-
-//     items.forEach((item, index) => {
-
-//         html += `
-//             <tr>
-//                 <td>${index + 1}</td>
-//                 <td>${escapeHtml(item.floor_name)}</td>
-//                 <td>${escapeHtml(item.category_name)}</td>
-//                 <td>${escapeHtml(item.description || '-')}</td>
-//                 <td>${escapeHtml(item.job_name)}</td>
-//                 <td>${item.volume}</td>
-//                 <td>${escapeHtml(item.satuan)}</td>
-//                 <td class="text-end">
-//                     ${formatRupiah(item.base_price)}
-//                 </td>
-//             </tr>
-//         `;
-
-//     });
-
-//     html += `
-//             </tbody>
-
-//         </table>
-//     `;
-
-//     container.innerHTML = html;
-// }
-
     function importRabFromExcel() {
 
         if (!importedRabItems.length) {
@@ -1370,11 +1228,9 @@
 
         calculateSummary();
 
-        const modalElement =
-            document.getElementById('importRabItemModal');
+        const modalElement = document.getElementById('importRabItemModal');
 
-        const modal =
-            bootstrap.Modal.getInstance(modalElement);
+        const modal = bootstrap.Modal.getInstance(modalElement);
 
         if (modal) {
             modal.hide();
@@ -2770,3 +2626,4 @@
     });
 </script>
 @endpush
+</x-collapse-card>

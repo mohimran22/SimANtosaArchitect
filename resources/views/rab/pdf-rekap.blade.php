@@ -217,7 +217,7 @@
 
             <th align="right">
                 Rp {{ number_format(
-                    floor($rab->grand_total / 1000000) * 1000000,
+                    floor($rab->grand_total / 10000) * 10000,
                     0,
                     ',',
                     '.'

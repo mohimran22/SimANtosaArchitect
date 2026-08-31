@@ -222,7 +222,7 @@ function numberToLetters($num) {
                     <tr>
                         <th colspan="5" class="text-end fw-bold">DIBULATKAN</th>
                         <th class="fw-bold">
-                            Rp {{ number_format(floor($rab->grand_total / 1000000) * 1000000,0,',','.') }}
+                            Rp {{ number_format(floor($rab->grand_total / 10000) * 10000,0,',','.') }}
                         </th>
                     </tr>
                 </tfoot>

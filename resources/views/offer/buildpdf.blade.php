@@ -378,8 +378,8 @@ berikut kami sampaikan penawaran harga untuk pelaksanaan pekerjaan:
 
         $dibulatkan =
             floor(
-                $grandTotal / 1000000
-            ) * 1000000;
+                $grandTotal / 10000
+            ) * 10000;
 
         $extraDiscount = $offer->extra_discount ?? 0;
         $grandTotalPenawaran =max(0,$dibulatkan - $extraDiscount);

@@ -493,7 +493,7 @@
 
         const grandTotalRab = subtotalAfterDiscount + taxTotal + shipping;
 
-        const roundedTotal = Math.floor(grandTotalRab / 1000000) * 1000000;
+        const roundedTotal = Math.floor(grandTotalRab / 10000) * 10000;
 
         const grandTotalOffer = Math.max(0,roundedTotal - extraDiscount);
         $('#subAfterDiscountDisplay').text(formatRupiah(subtotalAfterDiscount));
