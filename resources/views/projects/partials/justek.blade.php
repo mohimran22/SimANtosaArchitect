@@ -1,5 +1,5 @@
 <x-collapse-card title="Justifikasi Teknis" target="tambah-justek-body">
-<form id="justekForm" action="{{ route('projects.rab.store') }}" method="POST" enctype="multipart/form-data">
+<form id="justekForm" action="{{ route('projects.justek.store') }}" method="POST" enctype="multipart/form-data">
     @csrf
                         @if ($errors->any())
                                         <div class="alert alert-danger">

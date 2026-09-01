@@ -34,7 +34,8 @@ class Project extends Model
         'start_date',
         'project_status',
         'bobot_locked',
-        'description'
+        'description',
+        'masa_pemeliharaan'
     ];
 
     public const TYPE_DESIGN = 1;

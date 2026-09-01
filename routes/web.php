@@ -532,6 +532,11 @@ Route::post('projects/rab', [\App\Http\Controllers\RabProcessController::class, 
 Route::put('/projects/{project}/rab/{rab}', [\App\Http\Controllers\RabProcessController::class, 'update'])
     ->name('projects.rab.update');
 
+Route::post('projects/justek', [\App\Http\Controllers\RabProcessController::class, 'store'])
+    ->name('projects.justek.store');
+Route::put('/projects/{project}/justek/{justek}', [\App\Http\Controllers\RabProcessController::class, 'update'])
+    ->name('projects.justek.update');
+
 Route::post('/projects/rab/{rab}/refresh-from-master', [\App\Http\Controllers\RabProcessController::class, 'refreshFromMaster'])
     ->name('rab.refreshFromMaster');
 

@@ -58,6 +58,11 @@ class BuildTerminController extends Controller
                 'string',
                 'max:255',
             ],
+            'masa_pemeliharaan' => [
+                'required',
+                'integer',
+                'min:0',
+            ],
 
         ]);
 
@@ -91,7 +96,9 @@ class BuildTerminController extends Controller
         try {
 
             $offerTotal = (float) $project->offer->grand_total;
-
+            $project->create([
+                'masa_pemeliharaan' => $validated['masa_pemeliharaan'],
+            ]);
             foreach ($validated['percentage'] as $index => $percentage) {
 
                 $percentage = (float) $percentage;
@@ -213,6 +220,11 @@ class BuildTerminController extends Controller
             'string',
             'max:255',
         ],
+        'masa_pemeliharaan' => [
+            'required',
+            'integer',
+            'min:0',
+        ],
 
     ]);
 
@@ -237,7 +249,9 @@ class BuildTerminController extends Controller
     try {
 
         $offerTotal = (float) $project->offer->grand_total;
-
+        $project->update([
+            'masa_pemeliharaan' => $validated['masa_pemeliharaan'],
+        ]);
         BuildTermin::where(
             'project_id',
             $project->id
