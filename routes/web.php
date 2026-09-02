@@ -532,11 +532,19 @@ Route::post('projects/rab', [\App\Http\Controllers\RabProcessController::class, 
 Route::put('/projects/{project}/rab/{rab}', [\App\Http\Controllers\RabProcessController::class, 'update'])
     ->name('projects.rab.update');
 
-Route::post('projects/justek', [\App\Http\Controllers\RabProcessController::class, 'store'])
+Route::post('projects/justek', [\App\Http\Controllers\JustekController::class, 'store'])
     ->name('projects.justek.store');
-Route::put('/projects/{project}/justek/{justek}', [\App\Http\Controllers\RabProcessController::class, 'update'])
+Route::put('/projects/{project}/justek/{justek}', [\App\Http\Controllers\JustekController::class, 'update'])
     ->name('projects.justek.update');
-
+Route::get(
+    'projects/justek/{technicalJustification}/pdf',
+    [\App\Http\Controllers\JustekController::class, 'pdf']
+)->name('projects.justek.pdf');
+// routes/web.php
+Route::get('/projects/justek/{id}/detail', [\App\Http\Controllers\JustekController::class, 'justekDetail'])
+    ->name('projects.justek.detail');
+Route::get('/projects/justek/{id}', [\App\Http\Controllers\JustekController::class, 'justekDestroy'])
+    ->name('projects.justek.destroy');
 Route::post('/projects/rab/{rab}/refresh-from-master', [\App\Http\Controllers\RabProcessController::class, 'refreshFromMaster'])
     ->name('rab.refreshFromMaster');
 

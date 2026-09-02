@@ -146,14 +146,7 @@
     <div id="build-process">
         @include('projects.steps.build-process')
     </div>
-    {{-- <x-collapse-card
-    title="Tahap Pelaksanaan Proyek"
-    target="proyek-build-body">
-
-    <div id="build-process-container">
-    </div>
-
-    </x-collapse-card> --}}
+    {{-- @vite('resources/js/pages/justekrab.js') --}}
 @push('js')
 <script>
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\GeneralHelper;
 use App\Http\Requests\OfferRequest;
 use App\Models\Offer;
 use App\Models\OfferItem;
@@ -140,38 +141,6 @@ public function store(OfferRequest $request)
     }
 }
 
-// protected function generateOfferNumber(): string
-// {
-//     return DB::transaction(function () {
-
-//         $now = now();
-//         $yearFull = $now->format('Y'); // 2026
-//         $yearShort = $now->format('y'); // 26
-//         $bulanRomawi = \App\Helpers\GeneralHelper::bulanRomawi($now->month);
-
-//         $counter = OfferCounter::where('year', $yearFull)
-//             ->lockForUpdate()
-//             ->first();
-
-//         if (!$counter) {
-//             $counter = OfferCounter::create([
-//                 'year' => $yearFull,
-//                 'last_number' => 0,
-//             ]);
-//         }
-
-//         $next = $counter->last_number + 1;
-
-//         $counter->update([
-//             'last_number' => $next,
-//         ]);
-
-//         $nomorUrut = str_pad($next, 3, '0', STR_PAD_LEFT);
-
-//         return "PH/DSN/$yearShort/$bulanRomawi/$nomorUrut";
-//     });
-// }
-
 protected function generateOfferNumber(string $type): string
 {
     return DB::transaction(function () use ($type) {
@@ -179,7 +148,7 @@ protected function generateOfferNumber(string $type): string
         $now = now();
         $yearFull  = $now->format('Y'); // 2026
         $yearShort = $now->format('y'); // 26
-        $bulanRomawi = \App\Helpers\GeneralHelper::bulanRomawi($now->month);
+        $bulanRomawi = GeneralHelper::bulanRomawi($now->month);
 
         $counter = OfferCounter::where('type', $type)
             ->where('year', $yearFull)

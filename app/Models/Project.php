@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Project extends Model
 {
@@ -172,6 +173,14 @@ public function buildTermins()
 {
     return $this->hasMany(BuildTermin::class)
         ->orderBy('termin_no');
+}
+
+public function technicalJustifications(): HasMany
+{
+    return $this->hasMany(
+        TechnicalJustification::class,
+        'project_id'
+    );
 }
 
     public function getCurrentLevelAttribute()

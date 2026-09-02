@@ -23,8 +23,10 @@ use App\Models\RabProcessCategory;
 use App\Models\BuildDailyReport;
 use App\Models\BuildProcessItem;
 use App\Models\BuildPlans;
+use App\Models\RabProcessItem;
 use App\Models\WeeklyReport;
 use App\Models\User;
+use App\Models\TechnicalJustification;
 use App\Services\ProjectNotifier;
 use App\Services\BuildPlanSyncService;
 use App\Services\BuildProcessSyncService;
@@ -175,10 +177,23 @@ public function create(Request $request)
             $project->load($extra);
         }
     }
-    // ━━━ Phase 3: Siapkan data view — conditional per section ━━━
     $canEdit = auth()->user()->can('lihat daftar proyek');
-    // Default values untuk variabel yang dipakai di Blade
-    // Ini mencegah "undefined variable" di view
+    $justekId = request('justek_id');
+
+    // List semua justek milik project ini (untuk tabel Riwayat)
+    $technicalJustifications = $project
+        ? TechnicalJustification::where('project_id', $project->id)->get()
+        : collect();
+
+    // Detail justek yang lagi dibuka (untuk tabel Detail)
+    $technicalJustification = $justekId
+        ? $technicalJustifications->firstWhere('id', (int) $justekId)
+        : null;
+
+    // Kalau item-nya belum ke-load di collection di atas, load relasi 'items'-nya
+    if ($technicalJustification) {
+        $technicalJustification->load('items');
+    }
     $defaults = [
         'surveyInvoice'  => null,
         'surveyApproved' => false,
@@ -196,20 +211,21 @@ public function create(Request $request)
         'groupedItems'   => collect(),
         'buildPlans'     => collect(),
         'groupedPlans'   => collect(),
+        'rabItems'       => collect(),
     ];
     $viewData = array_merge($defaults, compact(
-        'project', 'activeStep', 'canEdit'
+        'project', 'activeStep', 'canEdit', 'technicalJustification', 'technicalJustifications'
     ));
-    // ── Survey data (step >= 3) ──
+
     if ($activeStep >= 3 && $project) {
         $surveyData = $this->resolveSurveyData($project, $activeStep);
         $viewData   = array_merge($viewData, $surveyData);
         // Mungkin activeStep berubah jadi 4
         $activeStep = $viewData['activeStep'];
     }
-    // ── Timeline (butuh activeStep final) ──
+
     $viewData['timelineSteps'] = $this->buildTimelineSteps($project, $activeStep);
-    // ── Invoice data (step >= 6) ──
+
     if ($activeStep >= 6 && $project) {
         $viewData = array_merge($viewData, $this->resolveInvoiceData($project));
     }
@@ -217,7 +233,7 @@ public function create(Request $request)
     if ($projectType == 3 && $activeStep >= 8 && $project) {
         $viewData = array_merge($viewData, $this->resolveBuildData($project));
     }
-    // ── Build plans (type 3, step >= 8) ──
+
     if ($projectType == 3 && $activeStep >= 8 && $project) {
         $viewData = array_merge($viewData, $this->resolveBuildPlanData($project));
     }
@@ -377,38 +393,14 @@ private function resolveBuildData($project): array
         ];
     })
     ->values();
-    // $groupedItems = $buildItems
-    //     ->sortBy([
-    //         ['floor_name', 'asc'],
-    //         ['order_no', 'asc'],
-    //     ])
-    //     ->groupBy(function ($item) {
-    //         return $item->floor_name ?: 'Tanpa Lantai';
-    //     })
-    //     ->map(function ($floorItems, $floorName) {
-
-    //         return [
-    //             'floor_name' => $floorName,
-
-    //             'categories' => $floorItems
-    //                 ->groupBy(function ($item) {
-    //                     return $item->category_name ?: 'Tanpa Kategori';
-    //                 })
-    //                 ->map(function ($items, $categoryName) {
-
-    //                     return [
-    //                         'category_name' => $categoryName,
-
-    //                         'items' => $items
-    //                             ->sortBy('order_no')
-    //                             ->values(),
-    //                     ];
-    //                 })
-    //                 ->values(),
-    //         ];
-    //     })
-    //     ->values();
-
+    $rabItems = $groupedItems
+    ->flatMap(function ($floor) {
+        return collect($floor['categories'])
+            ->flatMap(function ($category) {
+                return $category['items'];
+            });
+    })
+    ->values();
     $weeklyReports = WeeklyReport::where('project_id', $project->id)
         ->get()
         ->keyBy('minggu');
@@ -420,7 +412,8 @@ private function resolveBuildData($project): array
         'reports',
         'buildItems',
         'groupedItems',
-        'weeklyReports'
+        'weeklyReports',
+        'rabItems'
     );
 }
 

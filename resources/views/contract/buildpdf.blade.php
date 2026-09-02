@@ -502,7 +502,7 @@ terhitung 3 ( Tiga ) hari sejak tanggal tanda terima pengajuan berkas termin. Ma
 <div class="content">
 <p >
     <ol>
-        <li>Masa pemeliharaan berlaku selama 90 ( sembilan puluh ) hari, setelah selesai pekerjaan/serah
+        <li>Masa pemeliharaan berlaku selama {{ $project->masa_pemeliharaan }} ({{ terbilang($project->masa_pemeliharaan)}}) hari, setelah selesai pekerjaan/serah
             terima hasil pekerjaan yang diikuti dengan penandatanganan berita acara penyerahan bangunan.</li>
         <li>Apabila dalam masa pemeliharaan tersebut terdapat kerusakan yang disebabkan bukan dari
             pekerjaan <strong>Pihak Kedua</strong>, maka <strong>Pihak Pertama</strong> tidak berhak menuntut <strong>Pihak Kedua</strong> untuk
@@ -514,12 +514,12 @@ Namun, <strong>Pihak Kedua</strong> dapat memperbaiki kerusakan tersebut sesuai 
 dengan biaya yang ditanggung oleh <strong>Pihak Pertama</strong> sebesar Rp. 50.000/m2 ( tidak termasuk
 biaya material yang diganti/rusak).
 </p>
-<!-- PASAL 8 – LAIN-LAIN -->
+</div>
 <p class="section-title text-center">
     Pasal 9<br>
     Lain - Lain
 </p>
-
+<div class="content">
 <p>
 <strong>Pihak Pertama</strong> dan <strong>Pihak Kedua</strong> akan bersama- sama mematuhi dengan baik dan bertanggung jawab terhadap seluruh kesepakatan kerja yang telah disepakati.
 </p>

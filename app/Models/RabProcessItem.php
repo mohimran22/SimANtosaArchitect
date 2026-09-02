@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class RabProcessItem extends Model
 {
@@ -45,6 +46,14 @@ class RabProcessItem extends Model
     {
         return $this->job_name;
     }
+
+    public function technicalJustificationItems(): HasMany
+{
+    return $this->hasMany(
+        TechnicalJustificationItem::class,
+        'rab_process_item_id'
+    );
+}
 }
 // class RabProcessItem extends Model
 // {
