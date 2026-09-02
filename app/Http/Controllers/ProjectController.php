@@ -653,15 +653,12 @@ private function formData($project = null, int $activeStep = 1, ?int $projectTyp
         $data['rabProcesses'] = RabProcess::whereHas('project', function ($q) use ($project) {
             $q->where('customer_id', $project->customer_id);
         })->get();
-
-        $data['categories'] = RabProcessCategory::with([
-            'uraians.items.rab'
-        ])
-        ->whereHas('rabProcess.project', function ($q) use ($project) {
-            $q->where('customer_id', $project->customer_id);
-        })
-        ->orderBy('order_no')
-        ->get();
+        $data['rabItemsGrouped'] = RabProcessItem::whereHas('rab.project', function ($q) use ($project) {
+                $q->where('customer_id', $project->customer_id);
+            })
+            ->orderBy('order_no')
+            ->get()
+            ->groupBy(['floor_name', 'category_name']);
     }
     return array_merge($data, $merge);
 }

@@ -43,27 +43,27 @@ class TechnicalJustification extends Model
         'updated_by',
     ];
 
-protected $casts = [
-    'justek_sequence' => 'integer',
+    protected $casts = [
+        'justek_sequence' => 'integer',
 
-    'offer_date' => 'date',
+        'offer_date' => 'date',
 
-    'subtotal' => 'decimal:2',
-    'discount' => 'decimal:10',
-    'subtotal_after_discount' => 'decimal:2',
+        'subtotal' => 'decimal:2',
+        'discount' => 'decimal:10',
+        'subtotal_after_discount' => 'decimal:2',
 
-    'tax_rate' => 'decimal:2',
-    'tax_total' => 'decimal:2',
+        'tax_rate' => 'decimal:2',
+        'tax_total' => 'decimal:2',
 
-    'shipping' => 'decimal:2',
-    'profit' => 'decimal:2',
-    'overhead' => 'decimal:2',
+        'shipping' => 'decimal:2',
+        'profit' => 'decimal:2',
+        'overhead' => 'decimal:2',
 
-    'grand_total' => 'decimal:2',
-    'base_subtotal' => 'decimal:2',
+        'grand_total' => 'decimal:2',
+        'base_subtotal' => 'decimal:2',
 
-    'analisa_version' => 'integer',
-];
+        'analisa_version' => 'integer',
+    ];
 
     public function project(): BelongsTo
     {
@@ -93,4 +93,12 @@ protected $casts = [
             'updated_by'
         );
     }
+
+    public function invoice(): BelongsTo
+{
+    return $this->belongsTo(
+        Invoice::class,
+        'invoice_id'
+    );
+}
 }

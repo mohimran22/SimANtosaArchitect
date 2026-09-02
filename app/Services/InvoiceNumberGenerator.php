@@ -33,6 +33,10 @@ class InvoiceNumberGenerator
                     $prefix = "INV/RAB/$tahun/$bulanRomawi";
                     break;
 
+                case Invoice::TYPE_JUSTEK:
+                    $prefix = "INV/JST/$tahun/$bulanRomawi";
+                    break;
+
                 default:
                     throw new \Exception("Tipe invoice tidak dikenal");
             }

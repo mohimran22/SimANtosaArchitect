@@ -135,10 +135,21 @@
     @endif
 
     <div class="d-flex align-items-center gap-2 mt-4">
+
         <a href="{{ route('projects.justek.pdf', $technicalJustification->id) }}"
-           target="_blank" class="btn btn-dark">
-            <i class="ti ti-file-type-pdf me-1"></i> Download PDF
+        target="_blank"
+        class="btn btn-dark">
+            <i class="ti ti-file-type-pdf me-1"></i>
+            Download PDF
         </a>
+
+        <a href="{{ route('projects.justek.invoice', $technicalJustification->id) }}"
+        target="_blank"
+        class="btn btn-secondary">
+            <i class="ti ti-file-invoice me-1"></i>
+            Download Invoice
+        </a>
+
     </div>
 
     @if(!($ReadOnly ?? false))

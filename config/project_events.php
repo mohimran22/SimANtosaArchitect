@@ -170,5 +170,11 @@ return [
         'customer'    => 'Invoice pembayaran pembangunan tahap :termin senilai :amount telah tersedia. Silakan lakukan pembayaran.',
     ],
 ],
-
+'justek_created' => [
+    'title' => 'Justifikasi Teknis Baru',
+    'message' => [
+        'created_self' => 'Justifikasi Teknis berhasil dibuat.',
+        'customer'     => 'Justifikasi Teknis baru telah dibuat untuk proyek Anda.',
+    ],
+],
 ];

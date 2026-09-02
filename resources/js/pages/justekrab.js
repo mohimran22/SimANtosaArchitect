@@ -1928,67 +1928,71 @@
     }
 
     function prepareRabItemsForSubmit() {
-        const profitDisplay = document.getElementById('justek_profit_display');
 
-        const overheadDisplay = document.getElementById('justek_overhead_display');
-
-        document.getElementById('justek_profit').value = Number(profitDisplay?.value || 0);
-
-        document.getElementById('justek_overhead').value = Number(overheadDisplay?.value || 0);
         const container =
-            document.getElementById(
-                'justekItemsContainer'
-            );
+            document.getElementById('justekItemsContainer');
 
-        if (!container) return;
-
+        if (!container) {
+            console.error('#justekItemsContainer tidak ditemukan.');
+            return false;
+        }
 
         container.innerHTML = '';
 
+        if (!Array.isArray(rabItems) || rabItems.length === 0) {
 
-        rabItems.forEach(
-            (item, index) => {
-                const fields = {
-                    floor_name: item.floor_name,
-                    category_name: item.category_name,
-                    job_name: item.job_name,
-                    description: item.description || '',
-                    satuan: item.satuan,
-                    volume: item.volume,
-                    base_price: item.base_price,
-                    price: item.price,
-                    total: item.total,
-                    order_no: index + 1
-                };
+            alert(
+                'Belum ada item pekerjaan. Silakan tambahkan atau import item RAB terlebih dahulu.'
+            );
 
-                Object.entries(fields)
-                    .forEach(
-                        ([key, value]) => {
+            return false;
+        }
 
-                            const input =
-                                document.createElement(
-                                    'input'
-                                );
+        rabItems.forEach((item, index) => {
 
-                            input.type =
-                                'hidden';
+            const fields = {
+                floor_name: item.floor_name ?? '',
+                category_name: item.category_name ?? '',
+                job_name: item.job_name ?? '',
+                description: item.description ?? '',
+                satuan: item.satuan ?? '',
+                volume: item.volume ?? 0,
+                base_price: item.base_price ?? 0,
+                price: item.price ?? 0,
+                total: item.total ?? 0,
+                order_no: index + 1
+            };
 
-                            input.name =
-                                `items[${index}][${key}]`;
+            Object.entries(fields).forEach(([key, value]) => {
 
-                            input.value =
-                                value ?? '';
+                const input =
+                    document.createElement('input');
 
-                            container.appendChild(
-                                input
-                            );
+                input.type = 'hidden';
 
-                        }
-                    );
+                input.name =
+                    `items[${index}][${key}]`;
 
-            }
+                input.value =
+                    value ?? '';
+
+                container.appendChild(input);
+
+            });
+
+        });
+
+        console.log(
+            'rabItems:',
+            rabItems
         );
 
+        console.log(
+            'Generated inputs:',
+            container.querySelectorAll('input[name^="items["]').length
+        );
+
+        return true;
     }
 
     document.addEventListener('DOMContentLoaded', function () {
@@ -2079,14 +2083,16 @@
 
         if (form) {
 
-            form.addEventListener(
-                'submit',
-                function () {
+            form.addEventListener('submit', function (event) {
 
-                    prepareRabItemsForSubmit();
+                const prepared = prepareRabItemsForSubmit();
 
+                if (!prepared) {
+                    event.preventDefault();
+                    return;
                 }
-            );
+
+            });
 
         }
         const floorSelect = document.getElementById('justek_item_floor');

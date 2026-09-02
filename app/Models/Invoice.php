@@ -14,6 +14,7 @@ class Invoice extends Model
     const TYPE_FINAL = 'final';
     const TYPE_RAB = 'rab';
     const TYPE_BUILD = 'build';
+    const TYPE_JUSTEK = 'justek';
 
     const STATUS_DRAFT = 'draft';
     const STATUS_WAITING = 'waiting_approval';

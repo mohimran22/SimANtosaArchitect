@@ -225,25 +225,39 @@
                                 @foreach($rabOld as $i => $rabId)
                                     <tr>
                                         <td>
-                                            {{-- <select name="rab_process_item_id[]" 
-                                                    class="form-select select2 rab-select">
+                                            <select name="rab_process_item_id[]" class="form-select select2 rab-select">
                                                 <option value="">-- Pilih Dari RAB --</option>
 
-                                                @foreach($rabs as $rab)
-                                                    <option value="{{ $rab->id }}"
-                                                        data-volume="{{ $rab->volume }}"
-                                                        data-satuan="{{ $rab->satuan }}"
-                                                        {{ $rabId == $rab->id ? 'selected' : '' }}>
-                                                        {{ $rab->job_name }} ({{ $rab->rab->job_location }})
+                                                @foreach($rabItemsGrouped as $floorName => $categories)
+
+                                                    <option disabled style="font-weight:bold;">
+                                                        === {{ strtoupper($floorName) }} ===
                                                     </option>
+
+                                                    @foreach($categories as $categoryName => $items)
+
+                                                        <option disabled style="font-weight:bold;">
+                                                            &nbsp;&nbsp;{{ strtoupper($categoryName) }}
+                                                        </option>
+
+                                                        @foreach($items as $rab)
+                                                            <option value="{{ $rab->id }}"
+                                                                    data-volume="{{ $rab->volume }}"
+                                                                    data-satuan="{{ $rab->satuan }}"
+                                                                    {{ $rabId == $rab->id ? 'selected' : '' }}>
+                                                                &nbsp;&nbsp;&nbsp;&nbsp;{{ $loop->iteration }}. {{ $rab->job_name }}
+                                                            </option>
+                                                        @endforeach
+
+                                                    @endforeach
+
                                                 @endforeach
 
-                                                <option value="manual"
-                                                    {{ $rabId == 'manual' ? 'selected' : '' }}>
+                                                <option value="manual" {{ $rabId == 'manual' ? 'selected' : '' }}>
                                                     + Manual Input
                                                 </option>
-                                            </select> --}}
-                                            <select name="rab_process_item_id[]" class="form-select select2 rab-select">
+                                            </select>
+                                            {{-- <select name="rab_process_item_id[]" class="form-select select2 rab-select">
 
                                                 <option value="">-- Pilih Dari RAB --</option>
 
@@ -278,7 +292,7 @@
                                                     + Manual Input
                                                 </option>
 
-                                            </select>
+                                            </select> --}}
                                             <input
                                                 type="text"
                                                 name="uraian_manual[]"
@@ -319,34 +333,34 @@
                         <tr>
                             <td>
                                 <select name="rab_process_item_id[]" class="form-select select2 rab-select">
-
                                     <option value="">-- Pilih Dari RAB --</option>
 
-                                    @foreach($categories as $category)
+                                    @foreach($rabItemsGrouped as $floorName => $categories)
 
                                         <option disabled style="font-weight:bold;">
-                                            {{ number_to_letters($category->order_no) }}. {{ strtoupper($category->name) }}
+                                            === {{ strtoupper($floorName) }} ===
                                         </option>
 
-                                        @foreach($category->uraians as $uraian)
+                                        @foreach($categories as $categoryName => $items)
 
-                                            <option disabled>
-                                                &nbsp;&nbsp;{{ $loop->iteration }}. {{ $uraian->name }}
+                                            <option disabled style="font-weight:bold;">
+                                                &nbsp;&nbsp;{{ strtoupper($categoryName) }}
                                             </option>
-                                            @foreach($uraian->items as $rab)
+
+                                            @foreach($items as $rab)
                                                 <option value="{{ $rab->id }}"
                                                         data-volume="{{ $rab->volume }}"
                                                         data-satuan="{{ $rab->satuan }}"
                                                         {{ $rabId == $rab->id ? 'selected' : '' }}>
-                                                    &nbsp;&nbsp;&nbsp;&nbsp;
-                                                    {{ $loop->parent->iteration }}.{{ $loop->iteration }}
-                                                    {{ $rab->job_name }}
+                                                    &nbsp;&nbsp;&nbsp;&nbsp;{{ $loop->iteration }}. {{ $rab->job_name }}
                                                 </option>
                                             @endforeach
+
                                         @endforeach
+
                                     @endforeach
-                                    <option value="manual"
-                                        {{ $rabId == 'manual' ? 'selected' : '' }}>
+
+                                    <option value="manual" {{ $rabId == 'manual' ? 'selected' : '' }}>
                                         + Manual Input
                                     </option>
                                 </select>

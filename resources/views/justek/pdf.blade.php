@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>Penawaran {{ $technicalJustification->offer_number }}</title>
+<title>Penawaran {{ $technicalJustification->justek_number }}</title>
 
 <style>
 /* ================= PAGE ================= */
@@ -78,7 +78,7 @@ th {
 .text-right { text-align: right; }
 .bold { font-weight: bold; }
 
-p { margin: 10px 0; }
+p { margin: 5px 0; }
 .closing-block {
     page-break-inside: avoid;
     margin-top: 20px;
@@ -117,7 +117,7 @@ p { margin: 10px 0; }
             <table class="no-border">
                 <tr>
                     <td width="30%">Nomor</td>
-                    <td>: {{ $technicalJustification->offer_number }}</td>
+                    <td>: {{ $technicalJustification->justek_number }}</td>
                 </tr>
                 <tr>
                     <td>Lampiran</td>
@@ -148,9 +148,8 @@ p { margin: 10px 0; }
 <br>
 <p>Dengan hormat,</p>
 <p>
-Sebagai tindak lanjut dari hasil diskusi pada tanggal
-{{ \Carbon\Carbon::parse($technicalJustification->offer_date)->subDays(2)->translatedFormat('d F Y') }},
-berikut kami sampaikan penawaran harga untuk pelaksanaan pekerjaan:
+Sebagai tindak lanjut dari penyesuaian pekerjaan bangun rumah sebelumnya,
+berikut kami sampaikan penawaran biaya tambahan untuk pelaksanaan pekerjaan:
 </p>
 
 <table class="no-border">
@@ -375,15 +374,6 @@ berikut kami sampaikan penawaran harga untuk pelaksanaan pekerjaan:
         $shipping = $technicalJustification->shipping ?? 0;
 
         $grandTotal = $technicalJustification->grand_total ?? 0;
-
-        $dibulatkan =
-            floor(
-                $grandTotal / 100000
-            ) * 100000;
-
-        $extraDiscount = $technicalJustification->extra_discount ?? 0;
-        $grandTotalPenawaran =max(0,$dibulatkan - $extraDiscount);
-
     @endphp
 
     <tfoot>
@@ -506,71 +496,11 @@ berikut kami sampaikan penawaran harga untuk pelaksanaan pekerjaan:
 
         </tr>
 
-        <tr style="font-weight:bold;">
-
-            <th colspan="5" align="right">
-                DIBULATKAN
-            </th>
-
-            <th align="right">
-
-                Rp
-                {{ number_format(
-                    $dibulatkan,
-                    0,
-                    ',',
-                    '.'
-                ) }}
-
-            </th>
-
-        </tr>
-
-        <tr>
-
-            <th colspan="5" align="right">
-                EXTRA DISCOUNT
-            </th>
-
-            <th align="right">
-
-                Rp
-                {{ number_format(
-                    $extraDiscount,
-                    0,
-                    ',',
-                    '.'
-                ) }}
-
-            </th>
-
-        </tr>
-
-        <tr style="font-weight:bold;">
-
-            <th colspan="5" align="right">
-                GRAND TOTAL PENAWARAN
-            </th>
-
-            <th align="right">
-
-                Rp
-                {{ number_format(
-                    $grandTotalPenawaran,
-                    0,
-                    ',',
-                    '.'
-                ) }}
-
-            </th>
-
-        </tr>
-
     </tfoot>
 
 </table>
 
-<p><strong>TERBILANG :</strong> {{ strtoupper(terbilang($dibulatkan)) }} RUPIAH</p>
+<p><strong>TERBILANG :</strong> {{ strtoupper(terbilang($grandTotal)) }} RUPIAH</p>
 
 <div class="closing-block">
     <h4>Keterangan:</h4>

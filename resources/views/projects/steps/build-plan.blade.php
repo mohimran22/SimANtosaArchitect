@@ -146,7 +146,7 @@
     <div id="build-process">
         @include('projects.steps.build-process')
     </div>
-    {{-- @vite('resources/js/pages/justekrab.js') --}}
+    @vite('resources/js/pages/justekrab.js')
 @push('js')
 <script>
 

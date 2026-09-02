@@ -543,8 +543,12 @@ Route::get(
 // routes/web.php
 Route::get('/projects/justek/{id}/detail', [\App\Http\Controllers\JustekController::class, 'justekDetail'])
     ->name('projects.justek.detail');
-Route::get('/projects/justek/{id}', [\App\Http\Controllers\JustekController::class, 'justekDestroy'])
+Route::delete('/projects/justek/{id}', [\App\Http\Controllers\JustekController::class, 'justekDestroy'])
     ->name('projects.justek.destroy');
+Route::get(
+    '/projects/justek/{technicalJustification}/invoice',
+    [\App\Http\Controllers\JustekController::class, 'invoiceJustek']
+)->name('projects.justek.invoice');
 Route::post('/projects/rab/{rab}/refresh-from-master', [\App\Http\Controllers\RabProcessController::class, 'refreshFromMaster'])
     ->name('rab.refreshFromMaster');
 
