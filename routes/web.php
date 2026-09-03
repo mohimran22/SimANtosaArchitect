@@ -675,7 +675,8 @@ Route::post('/build-weekly/update',
 Route::post('/build-week-plan/update', 
     [BuildWeeklyPlanController::class,'update']
 )->name('build-week-plan.update');
-
+Route::post('/projects/{project}/build-plan/import', [BuildWeeklyPlanController::class, 'import'])
+    ->name('build-plan.import');
 Route::post('/build-daily/store',
     [BuildDailyController::class,'store']
 )->name('build.daily.store');

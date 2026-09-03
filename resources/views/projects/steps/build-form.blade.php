@@ -206,7 +206,7 @@
 
                     <tr>
                         <th colspan="5" class="text-end fw-bold">
-                            GRAND TOTAL PENAWARAN
+                            TOTAL AKHIR
                         </th>
 
                         <th

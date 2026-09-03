@@ -234,8 +234,9 @@
                                    id="justekEditDiscountDisplay">
 
                             <input type="hidden"
-                                   name="discount"
-                                   id="justekEditDiscount">
+                                name="discount"
+                                id="justekEditDiscount"
+                                value="{{ $technicalJustification->discount ?? 0 }}">
 
                         </th>
 
@@ -294,10 +295,10 @@
                             <input type="text"
                                    class="form-control"
                                    id="justekEditShippingDisplay">
-
                             <input type="hidden"
-                                   name="shipping"
-                                   id="justekEditShipping">
+                                name="shipping"
+                                id="justekEditShipping"
+                                value="{{ $technicalJustification->shipping ?? 0 }}">
                         </th>
                         <th></th>
                     </tr>
@@ -606,3 +607,63 @@
     </div>
 
 </div>
+
+    
+<script type="application/json" id="justekEditItemsData">
+{!! json_encode(
+    $technicalJustification->items->map(function ($item) {
+        return [
+            'category_name' => $item->category_name,
+            'job_name'      => $item->job_name,
+            'description'   => $item->description,
+            'satuan'        => $item->satuan,
+            'volume'        => $item->volume,
+            'base_price'    => $item->base_price,
+            'price'         => $item->price,
+            'total'         => $item->total,
+            'order_no'      => $item->order_no,
+        ];
+    })->values()
+) !!}
+</script>
+
+<script data-justek-edit-script>
+(function () {
+    if (typeof window.initJustekEditForm === 'function') {
+        window.initJustekEditForm();
+    }
+    const itemsData = JSON.parse(
+        document.getElementById('justekEditItemsData').textContent
+    );
+
+    const form = document.getElementById('editJustekForm');
+
+    form.addEventListener('submit', function (event) {
+        event.preventDefault();
+
+        const formData = new FormData(form);
+
+        fetch(form.action, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN':
+                    document.querySelector('meta[name="csrf-token"]')
+                        ?.getAttribute('content') ?? ''
+            },
+            body: formData
+        })
+        .then(async res => {
+            const data = await res.json();
+            if (!res.ok) throw { validation: true, data };
+            return data;
+        })
+
+        .then(data => {
+            if (data.success && typeof window.loadJustekDetailAfterEdit === 'function') {
+                window.loadJustekDetailAfterEdit();
+            }
+        })
+        .catch(err => console.error(err));
+    });
+})();
+</script>

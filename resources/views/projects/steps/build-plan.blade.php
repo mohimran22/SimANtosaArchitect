@@ -40,7 +40,7 @@
 
                     <div class="col-md-3 d-flex gap-2">
                         @if(!$isReadOnly)
-                            <form action="{{ route('projects.sync-build-plan', $project->id) }}"
+                            {{-- <form action="{{ route('projects.sync-build-plan', $project->id) }}"
                                 method="POST"
                                 class="d-inline"
                                 onsubmit="return confirm('Update form kemajuan pekerjaan dengan RAB terbaru?')">
@@ -49,10 +49,21 @@
 
                                 <button type="submit" class="btn btn-secondary">
                                     <i class="ti ti-refresh"></i>
-                                    Update Form
+                                    Impor dari Excel
                                 </button>
 
-                            </form>
+                            </form> --}}
+                                <form action="{{ route('build-plan.import', $project->id) }}"
+                                    method="POST"
+                                    enctype="multipart/form-data"
+                                    id="importPlanForm"
+                                    class="d-inline d-flex align-items-center gap-2">
+                                    @csrf
+                                    <input type="file" name="file" accept=".xlsx,.xls" class="form-control form-control-sm" required style="max-width:220px">
+                                    <button type="submit" class="btn btn-primary btn-sm">
+                                        <i class="ti ti-upload"></i> Import Excel
+                                    </button>
+                                </form>
                         @endif
                     </div>
                     <div class="table-scroll-top">
@@ -147,6 +158,7 @@
         @include('projects.steps.build-process')
     </div>
     @vite('resources/js/pages/justekrab.js')
+    @vite('resources/js/pages/justek-edit.js')
 @push('js')
 <script>
 
@@ -631,6 +643,30 @@
         });
         bottomScroll.addEventListener('scroll', () => {
             topScroll.scrollLeft = bottomScroll.scrollLeft;
+        });
+    });
+    document.getElementById('importPlanForm')?.addEventListener('submit', function(e){
+        e.preventDefault();
+        const formData = new FormData(this);
+
+        fetch(this.action, {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content },
+            body: formData
+        })
+        .then(r => r.json())
+        .then(res => {
+            if(res.success){
+                alert(`Berhasil import ${res.imported} item.` +
+                    (res.skipped.length ? `\n\nDilewati:\n- ${res.skipped.join('\n- ')}` : ''));
+                $('#buildPlanTable').DataTable().ajax.reload();
+            } else {
+                alert('Gagal: ' + res.message);
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Terjadi kesalahan saat import.');
         });
     });
     $('#buildPlanTable').DataTable({

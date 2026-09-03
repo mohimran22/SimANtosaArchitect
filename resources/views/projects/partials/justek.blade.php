@@ -663,7 +663,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 });
 
-                bindEditForm(id);
+                // bindEditForm(id);
                 bindCancelEdit(id);
                         window.loadJustekDetailAfterEdit =
                 function () {
