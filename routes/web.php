@@ -534,8 +534,7 @@ Route::put('/projects/{project}/rab/{rab}', [\App\Http\Controllers\RabProcessCon
 
 Route::post('projects/justek', [\App\Http\Controllers\JustekController::class, 'store'])
     ->name('projects.justek.store');
-Route::put('/projects/{project}/justek/{justek}', [\App\Http\Controllers\JustekController::class, 'update'])
-    ->name('projects.justek.update');
+
 Route::get(
     'projects/justek/{technicalJustification}/pdf',
     [\App\Http\Controllers\JustekController::class, 'pdf']
