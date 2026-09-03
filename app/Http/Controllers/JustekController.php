@@ -725,6 +725,17 @@ class JustekController extends Controller
             'ReadOnly' => true, // opsional, biar modal cuma nampilin, gak ada info dibuat/diubah oleh
         ])->render();
     }
+    public function edit(TechnicalJustification $technicalJustification)
+{
+    $technicalJustification->load([
+        'items'
+    ]);
+
+    return view(
+        'projects.partials.justek-edit',
+        compact('technicalJustification')
+    );
+}
     public function invoiceJustek(TechnicalJustification $technicalJustification)
     {
         Carbon::setLocale('id');
@@ -772,7 +783,6 @@ class JustekController extends Controller
 
         $technicalJustification->load([
             'project',
-            'items',
             'invoice',
         ]);
 

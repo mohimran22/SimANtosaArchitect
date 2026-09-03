@@ -321,9 +321,9 @@
 </p>
 
 
-<div style="height:90px;">
+<div style="height:120px;">
     <img src="{{ public_path('images/ttd-dwiantosa.png') }}"
-         style="height:90px;">
+         style="height:140px;">
 </div>
 
 <p>

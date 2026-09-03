@@ -258,10 +258,6 @@ class InvoiceController extends Controller
                 }
             }
 
-            // ===============================
-            // UPDATE LEVEL
-            // ===============================
-
             ProjectLevel::where([
                 'project_id'  => $project->id,
                 'level_order' => 6,

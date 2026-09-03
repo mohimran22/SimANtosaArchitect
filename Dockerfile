@@ -49,6 +49,10 @@ COPY . .
 RUN composer dump-autoload --optimize
 
 RUN npm run build \
+    && echo "=== HASIL VITE BUILD ===" \
+    && ls -lah public \
+    && ls -lah public/build \
+    && ls -lah public/build/assets \
     && rm -rf node_modules
 
 RUN chown -R www-data:www-data storage bootstrap/cache \

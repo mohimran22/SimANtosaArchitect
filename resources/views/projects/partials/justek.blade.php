@@ -509,6 +509,8 @@
                             <td class="text-end">Rp {{ number_format($justek->grand_total, 2, ',', '.') }}</td>
                             <td class="text-center">
                                 <div class="d-flex justify-content-center gap-1">
+
+                                    {{-- Lihat --}}
                                     <button type="button"
                                             class="btn btn-icon btn-sm btn-dark btn-lihat-justek"
                                             data-id="{{ $justek->id }}"
@@ -516,17 +518,30 @@
                                         <i class="ti ti-eye"></i>
                                     </button>
 
+                                    {{-- Edit --}}
                                     @if(!$ReadOnly)
+                                        <button type="button"
+                                                class="btn btn-icon btn-sm btn-dark btn-edit-justek"
+                                                data-id="{{ $justek->id }}"
+                                                title="Edit Justifikasi Teknis">
+                                            <i class="ti ti-edit"></i>
+                                        </button>
+
+                                        {{-- Hapus --}}
                                         <form action="{{ route('projects.justek.destroy', $justek->id) }}"
-                                              method="POST"
-                                              onsubmit="return confirm('Hapus justek {{ $justek->justek_number }}?')">
+                                            method="POST"
+                                            onsubmit="return confirm('Hapus justek {{ $justek->justek_number }}?')">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="btn btn-icon btn-sm btn-dark" title="Hapus">
+
+                                            <button type="submit"
+                                                    class="btn btn-icon btn-sm btn-dark"
+                                                    title="Hapus">
                                                 <i class="ti ti-trash"></i>
                                             </button>
                                         </form>
                                     @endif
+
                                 </div>
                             </td>
                         </tr>
@@ -542,7 +557,6 @@
 </x-collapse-card>
 @endif
 
-{{-- Modal Detail Justek --}}
 <div class="modal fade" id="modalDetailJustek" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-scrollable">
         <div class="modal-content">
@@ -564,36 +578,279 @@
 @push('js')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+
     const modalEl   = document.getElementById('modalDetailJustek');
     const modalBody = document.getElementById('modalDetailJustekBody');
     const modal     = new bootstrap.Modal(modalEl);
 
-    document.querySelectorAll('.btn-lihat-justek').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            const id = this.dataset.id;
+    function showLoading() {
 
-            modalBody.innerHTML = `
-                <div class="text-center py-5">
-                    <div class="spinner-border" role="status">
-                        <span class="visually-hidden">Loading...</span>
+        modalBody.innerHTML = `
+            <div class="text-center py-5">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden">
+                        Loading...
+                    </span>
+                </div>
+            </div>
+        `;
+    }
+
+    function loadDetail(id) {
+
+        showLoading();
+
+        modal.show();
+
+        fetch(`/projects/justek/${id}/detail`)
+            .then(res => {
+
+                if (!res.ok) {
+                    throw new Error('Gagal memuat detail');
+                }
+
+                return res.text();
+            })
+            .then(html => {
+
+                modalBody.innerHTML = html;
+
+                bindDetailActions(id);
+            })
+            .catch(error => {
+
+                console.error(error);
+
+                modalBody.innerHTML = `
+                    <div class="alert alert-danger mb-0">
+                        Gagal memuat detail justifikasi teknis.
                     </div>
-                </div>`;
-            modal.show();
+                `;
+            });
+    }
 
-            fetch(`/projects/justek/${id}/detail`)
-                .then(res => {
-                    if (!res.ok) throw new Error('Gagal memuat detail');
-                    return res.text();
-                })
-                .then(html => {
-                    modalBody.innerHTML = html;
-                })
-                .catch(() => {
-                    modalBody.innerHTML =
-                        `<div class="alert alert-danger mb-0">Gagal memuat detail justifikasi teknis.</div>`;
+    function loadEdit(id) {
+
+        showLoading();
+
+        modal.show();
+
+        fetch(`/projects/justek/${id}/edit`)
+            .then(res => {
+
+                if (!res.ok) {
+                    throw new Error('Gagal memuat form edit');
+                }
+
+                return res.text();
+            })
+            .then(html => {
+
+                modalBody.innerHTML = html;
+
+                const scripts = modalBody.querySelectorAll('script[data-justek-edit-script]');
+
+                scripts.forEach(function (oldScript) {
+
+                    const newScript = document.createElement('script');
+
+                    newScript.textContent =
+                        oldScript.textContent;
+
+                    document.body.appendChild(newScript);
+
+                    oldScript.remove();
+
                 });
+
+                bindEditForm(id);
+                bindCancelEdit(id);
+                        window.loadJustekDetailAfterEdit =
+                function () {
+
+                    loadDetail(id);
+
+                };
+
+            })
+            .catch(error => {
+
+                console.error(error);
+
+                modalBody.innerHTML = `
+                    <div class="alert alert-danger mb-0">
+                        Gagal memuat form edit justifikasi teknis.
+                    </div>
+                `;
+
+            });
+    }
+
+    function bindDetailActions(id) {
+
+        const btnEdit = modalBody.querySelector('.btn-modal-edit-justek');
+
+        if (btnEdit) {
+
+            btnEdit.addEventListener('click', function () {
+
+                loadEdit(id);
+
+            });
+        }
+    }
+    function bindCancelEdit(id) {
+
+        const btnCancel = modalBody.querySelector('.btn-modal-cancel-edit');
+
+        if (btnCancel) {
+
+            btnCancel.addEventListener('click', function () {
+
+                loadDetail(id);
+
+            });
+        }
+    }
+
+    // function bindEditForm(id) {
+
+    //     const form = modalBody.querySelector('#editJustekForm');
+
+    //     if (!form) {
+    //         return;
+    //     }
+
+    //     form.addEventListener('submit', function (event) {
+
+    //         event.preventDefault();
+
+    //         const submitButton =
+    //             form.querySelector('[type="submit"]');
+
+    //         if (submitButton) {
+
+    //             submitButton.disabled = true;
+
+    //             submitButton.innerHTML = `
+    //                 <span class="spinner-border spinner-border-sm me-1"></span>
+    //                 Menyimpan...
+    //             `;
+    //         }
+
+    //         const formData = new FormData(form);
+
+    //         fetch(form.action, {
+
+    //             method: 'POST',
+
+    //             headers: {
+    //                 'X-CSRF-TOKEN':
+    //                     document.querySelector('meta[name="csrf-token"]')
+    //                     ?.getAttribute('content') ?? ''
+    //             },
+
+    //             body: formData
+
+    //         })
+    //         .then(async response => {
+
+    //             const data = await response.json();
+
+    //             if (!response.ok) {
+
+    //                 throw {
+    //                     validation: true,
+    //                     data: data
+    //                 };
+    //             }
+
+    //             return data;
+    //         })
+    //         .then(data => {
+
+    //             if (data.success) {
+
+    //                 // Setelah berhasil update,
+    //                 // langsung kembali ke DETAIL modal.
+    //                 loadDetail(id);
+
+    //                 // Optional: refresh halaman jika ingin
+    //                 // tabel riwayat langsung mengambil data baru.
+    //                 //
+    //                 // location.reload();
+    //             }
+
+    //         })
+    //         .catch(error => {
+
+    //             console.error(error);
+
+    //             if (submitButton) {
+
+    //                 submitButton.disabled = false;
+
+    //                 submitButton.innerHTML = `
+    //                     <i class="ti ti-device-floppy me-1"></i>
+    //                     Simpan Perubahan
+    //                 `;
+    //             }
+
+    //             let message =
+    //                 'Gagal menyimpan perubahan justifikasi teknis.';
+
+    //             if (
+    //                 error.validation &&
+    //                 error.data &&
+    //                 error.data.errors
+    //             ) {
+
+    //                 message = Object.values(error.data.errors)
+    //                     .flat()
+    //                     .join('<br>');
+    //             }
+
+    //             const errorBox =
+    //                 form.querySelector('#editJustekError');
+
+    //             if (errorBox) {
+
+    //                 errorBox.innerHTML = message;
+
+    //                 errorBox.classList.remove('d-none');
+    //             }
+    //         });
+    //     });
+    // }
+
+    document
+        .querySelectorAll('.btn-lihat-justek')
+        .forEach(function (btn) {
+
+            btn.addEventListener('click', function () {
+
+                const id = this.dataset.id;
+
+                loadDetail(id);
+
+            });
+
         });
-    });
+
+    document
+        .querySelectorAll('.btn-edit-justek')
+        .forEach(function (btn) {
+
+            btn.addEventListener('click', function () {
+
+                const id = this.dataset.id;
+
+                loadEdit(id);
+
+            });
+
+        });
+
 });
 </script>
 @endpush
