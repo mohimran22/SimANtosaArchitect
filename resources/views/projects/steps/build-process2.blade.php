@@ -1,6 +1,6 @@
 @php
     $weekCount = count($project->week_labels);
-    $colsFixed = 7; // +1 untuk kolom "Total s.d. Minggu Sebelumnya"
+    $colsFixed = 6;
     $colsPerWeek = 1;
     $colsTotal = 3;
     $totalCols = $colsFixed + ($weekCount * $colsPerWeek) + $colsTotal;
@@ -99,11 +99,6 @@
                             <col style="width:140px;">
                             <col style="width:100px;">
 
-                            <col
-                                class="cumulative-col col-hidden"
-                                style="width:140px;"
-                            >
-
                             @foreach($project->week_labels as $w)
                                 <col
                                     class="week-col"
@@ -133,16 +128,6 @@
 
                                 <th colspan="4" class="align-middle text-center">
                                     TERKONTRAK
-                                </th>
-
-                                <th
-                                    rowspan="2"
-                                    class="align-middle text-center cumulative-col col-hidden"
-                                    id="th-cumulative-prev"
-                                >
-                                    <div id="cumulative-prev-label">
-                                        Total s.d<br>Minggu Lalu
-                                    </div>
                                 </th>
 
                                 @foreach($project->week_labels as $w)
@@ -360,14 +345,6 @@
                                                 >
 
                                             </td>
-
-                                            <td
-                                                class="cumulative-col col-hidden text-end"
-                                                data-item="{{ $item->id }}"
-                                            >
-                                                0
-                                            </td>
-
                                                 @foreach($project->week_labels as $w)
 
                                                     @php
@@ -382,7 +359,6 @@
                                                     <td
                                                         class="week-col"
                                                         data-week="{{ $w['week_no'] }}"
-                                                        data-vol="{{ $weeklyVol }}"
                                                     >
                                                         @if(!$isReadOnly)
 
@@ -475,13 +451,6 @@
                                 </th>
 
                                 <th class="totalBobotKontrak">
-                                    0
-                                </th>
-
-                                <th
-                                    class="cumulative-col col-hidden"
-                                    id="sum-cumulative-prev"
-                                >
                                     0
                                 </th>
 
@@ -692,55 +661,6 @@
             const weekCells = [...table.querySelectorAll('[data-week]')];
             const weekCols = [...colgroup].filter(col => col.dataset.week);
 
-            // ==== Kolom "Total s.d. Minggu Sebelumnya" ====
-            const cumulativeCol   = table.querySelector('col.cumulative-col');
-            const cumulativeHead  = document.getElementById('th-cumulative-prev');
-            const cumulativeLabel = document.getElementById('cumulative-prev-label');
-            const cumulativeFoot  = document.getElementById('sum-cumulative-prev');
-
-            function formatVol(n) {
-                return Number(n || 0).toLocaleString('id-ID', {
-                    minimumFractionDigits: 3,
-                    maximumFractionDigits: 3
-                });
-            }
-
-            // Hitung total volume tiap item untuk minggu-minggu SEBELUM weekNo
-            function calcCumulativePrev(weekNo) {
-
-                let grandTotal = 0;
-
-                document.querySelectorAll('tr[data-item-id]').forEach(row => {
-
-                    let sum = 0;
-
-                    row.querySelectorAll('td.week-col').forEach(td => {
-
-                        const w = parseInt(td.dataset.week, 10);
-
-                        if (w < weekNo) {
-                            sum += parseFloat(td.dataset.vol || 0);
-                        }
-
-                    });
-
-                    const cell = row.querySelector('td.cumulative-col');
-
-                    if (cell) {
-                        cell.textContent = formatVol(sum);
-                        cell.dataset.value = sum;
-                    }
-
-                    grandTotal += sum;
-
-                });
-
-                if (cumulativeFoot) {
-                    cumulativeFoot.textContent = formatVol(grandTotal);
-                }
-
-            }
-
             function filterWeek(weekNo) {
 
                 weekCols.forEach(col => {
@@ -757,51 +677,7 @@
                     );
                 });
 
-                const weekNoInt = weekNo ? parseInt(weekNo, 10) : null;
-
-                // hanya tampil kalau minggu yg difilter bukan minggu pertama
-                activeWeek = (weekNoInt && weekNoInt > 1) ? weekNoInt : null;
-
-                const showCumulative = !!activeWeek;
-
-                if (cumulativeCol) {
-                    cumulativeCol.classList.toggle('col-hidden', !showCumulative);
-                }
-
-                if (cumulativeHead) {
-                    cumulativeHead.classList.toggle('col-hidden', !showCumulative);
-                }
-
-                document.querySelectorAll('td.cumulative-col').forEach(cell => {
-                    cell.classList.toggle('col-hidden', !showCumulative);
-                });
-
-                if (cumulativeFoot) {
-                    const footTh = cumulativeFoot.closest('th');
-                    if (footTh) {
-                        footTh.classList.toggle('col-hidden', !showCumulative);
-                    }
-                }
-
-                if (showCumulative) {
-
-                    if (cumulativeLabel) {
-                        cumulativeLabel.innerHTML =
-                            `Total s.d<br>M${activeWeek - 1}`;
-                    }
-
-                    calcCumulativePrev(activeWeek);
-                }
-
             }
-
-            // expose supaya bisa dipanggil ulang dari listener input minggu
-            // (yang berada di blok script terpisah) tiap kali volume diedit
-            window.__recalcCumulativePrevIfActive = function () {
-                if (activeWeek) {
-                    calcCumulativePrev(activeWeek);
-                }
-            };
 
             const weekSelect = document.getElementById('filter-week');
             if (weekSelect) {
@@ -1011,13 +887,6 @@
                 const itemVol = tr.dataset.itemVol || 0;
                 const itemBobot = tr.dataset.itemBobot || 0;
 
-                // sinkronkan data-vol di <td> supaya kolom "Total s.d.
-                // Minggu Sebelumnya" ikut ter-update saat volume diedit
-                const weekTd = e.target.closest('td.week-col');
-                if (weekTd) {
-                    weekTd.dataset.vol = e.target.value || 0;
-                }
-
                 recalcWeek(
                     item,
                     week,
@@ -1028,10 +897,6 @@
                 autosaveWeek(item, week);
                 hitungRealisasiItem(item);
                 hitungFooter();
-
-                if (window.__recalcCumulativePrevIfActive) {
-                    window.__recalcCumulativePrevIfActive();
-                }
 
                 updateKurvaChartRealtime();
             });
@@ -1476,7 +1341,6 @@
                         <td
                             class="week-col"
                             data-week="${w.week_no}"
-                            data-vol="0"
                         >
                             <input
                                 type="number"
@@ -1567,7 +1431,6 @@
                             Rp ${rupiah.format(data.price)}
                         </td>
                         <td></td>
-                        <td class="cumulative-col col-hidden text-end" data-item="${data.id}">0</td>
                         ${weekCols}
                         <td class="total-justek" data-item="${data.id}">0</td>
                         <td class="total-pelaksanaan"
@@ -1601,24 +1464,6 @@
                     });
                     hitungTotalPelaksanaan();
                     setupJustekAccess();
-
-                    // samakan status tampil/sembunyi kolom "Total s.d.
-                    // Minggu Sebelumnya" pada baris baru dengan filter aktif
-                    const currentWeekVal =
-                        document.getElementById('filter-week')?.value;
-                    const currentWeekInt = currentWeekVal
-                        ? parseInt(currentWeekVal, 10)
-                        : null;
-                    const cumCell = newRow.querySelector('td.cumulative-col');
-                    if (cumCell) {
-                        cumCell.classList.toggle(
-                            'col-hidden',
-                            !(currentWeekInt && currentWeekInt > 1)
-                        );
-                    }
-                    if (window.__recalcCumulativePrevIfActive) {
-                        window.__recalcCumulativePrevIfActive();
-                    }
 
                     $(select).val(null).trigger('change');
                 });

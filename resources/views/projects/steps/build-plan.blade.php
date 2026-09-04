@@ -380,7 +380,7 @@
                 return sum + (parseFloat(col.style.width) || 0);
             }, 0);
 
-            buildPlanTable.style.width = "";
+            buildPlanTable.style.width = totalColWidth + "px";
             buildPlanTable.style.minWidth = totalColWidth + "px";
 
             buildPlanTable.querySelectorAll(".sticky-col").forEach(cell => {
