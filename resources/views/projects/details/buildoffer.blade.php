@@ -457,26 +457,6 @@ function numberToLetters($num) {
 
                 <tr>
 
-                    <th colspan="5" class="text-end fw-bold">
-                        DIBULATKAN
-                    </th>
-
-                    <th class="text-end fw-bold">
-
-                        Rp
-                        {{ number_format(
-                            $roundedTotal,
-                            0,
-                            ',',
-                            '.'
-                        ) }}
-
-                    </th>
-
-                </tr>
-
-                <tr>
-
                     <th colspan="5" class="text-end">
                         EXTRA DISCOUNT
                     </th>
@@ -498,7 +478,7 @@ function numberToLetters($num) {
                 <tr>
 
                     <th colspan="5" class="text-end fw-bold">
-                        GRAND TOTAL PENAWARAN
+                        TOTAL AKHIR
                     </th>
 
                     <th class="text-end fw-bold">
@@ -514,7 +494,25 @@ function numberToLetters($num) {
                     </th>
 
                 </tr>
+                <tr>
 
+                    <th colspan="5" class="text-end fw-bold">
+                        DIBULATKAN
+                    </th>
+
+                    <th class="text-end fw-bold">
+
+                        Rp
+                        {{ number_format(
+                            $roundedTotal,
+                            0,
+                            ',',
+                            '.'
+                        ) }}
+
+                    </th>
+
+                </tr>
             </tfoot>
 
         </table>

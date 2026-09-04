@@ -4,7 +4,15 @@
     id="build-termin-form"
 >
     @csrf
-
+                            @if ($errors->any())
+                                        <div class="alert alert-danger">
+                                            <ul class="mb-0">
+                                                @foreach ($errors->all() as $error)
+                                                    <li>{{ $error }}</li>
+                                                @endforeach
+                                            </ul>
+                                        </div>
+                                    @endif
     @php
         $offerTotal = (float) ($project->offer?->grand_total ?? 0);
     @endphp

@@ -53,6 +53,7 @@
         "datatables.net-fixedcolumns-bs5": "^5.0.5",
         "flatpickr": "^4.6.13",
         "select2": "^4.1.0-rc.0",
-        "sweetalert2": "^11.22.0"
+        "sweetalert2": "^11.22.0",
+        "xlsx": "^0.18.5"
     }
 }

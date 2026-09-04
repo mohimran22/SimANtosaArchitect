@@ -96,7 +96,7 @@ class BuildTerminController extends Controller
         try {
 
             $offerTotal = (float) $project->offer->grand_total;
-            $project->create([
+            $project->update([
                 'masa_pemeliharaan' => $validated['masa_pemeliharaan'],
             ]);
             foreach ($validated['percentage'] as $index => $percentage) {

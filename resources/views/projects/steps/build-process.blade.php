@@ -1,15 +1,10 @@
 @php
     $weekCount = count($project->week_labels);
-    $colsFixed   = 6;
-    $colsNormal  = 3;
-    $colsJustek  = 3;
-    $colsPerWeek = $colsNormal + $colsJustek;
-    $colsTotal   = 4;
-
+    $colsFixed = 6;
+    $colsPerWeek = 1;
+    $colsTotal = 3;
     $totalCols = $colsFixed + ($weekCount * $colsPerWeek) + $colsTotal;
-
-    $plans = $project->weeklyPlans
-        ->keyBy('week_no');
+    $plans = $project->weeklyPlans->keyBy('week_no');
 @endphp
 
         <x-collapse-card title="Tahap Pelaksanaan Proyek" target="proyek-build-body">
@@ -94,84 +89,115 @@
                 </div>
                 <div class="table-real">
                     <table class="table table-bordered progress-table">
-                            <colgroup>
-                                <col style="width:50px;">   
-                                <col style="width:260px;">  
-                                <col style="width:80px;">   
-                                <col style="width:80px;">   
-                                <col style="width:140px;">  
-                                <col style="width:100px;">  
-                                @foreach($project->week_labels as $w)
-                                    <col class="week-col" data-week="{{ $w['week_no'] }}" style="width:130px;">
-                                    <col class="week-col" data-week="{{ $w['week_no'] }}" style="width:110px;">
-                                    <col class="week-col" data-week="{{ $w['week_no'] }}" style="width:110px;">
-                                    <col class="week-col just-col" data-week="{{ $w['week_no'] }}" style="width:110px;">
-                                    <col class="week-col just-col" data-week="{{ $w['week_no'] }}" style="width:110px;">
-                                    <col class="week-col just-col" data-week="{{ $w['week_no'] }}" style="width:120px;">
-                                @endforeach
-                                <col style="width:140px;">
-                                <col style="width:140px;">
-                                <col style="width:140px;">
-                                <col style="width:140px;">
-                            </colgroup>
+
+                        <colgroup>
+
+                            <col style="width:50px;">
+                            <col style="width:260px;">
+                            <col style="width:80px;">
+                            <col style="width:80px;">
+                            <col style="width:140px;">
+                            <col style="width:100px;">
+
+                            @foreach($project->week_labels as $w)
+                                <col
+                                    class="week-col"
+                                    data-week="{{ $w['week_no'] }}"
+                                    style="width:130px;"
+                                >
+                            @endforeach
+
+                            {{-- Perubahan Volume --}}
+                            <col style="width:140px;">
+                            <col style="width:140px;">
+                            <col style="width:140px;">
+
+                        </colgroup>
+
                         <thead class="table-light">
-                            <tr>
-                                <th rowspan="2" class="align-middle text-center">No</th>
-                                <th rowspan="2" class="align-middle text-center">Uraian Pekerjaan</th>
 
-                                <th colspan="4" class="align-middle text-center">TERKONTRAK</th>
+                            <tr>
+
+                                <th rowspan="2" class="align-middle text-center">
+                                    No
+                                </th>
+
+                                <th rowspan="2" class="align-middle text-center">
+                                    Uraian Pekerjaan
+                                </th>
+
+                                <th colspan="4" class="align-middle text-center">
+                                    TERKONTRAK
+                                </th>
 
                                 @foreach($project->week_labels as $w)
-                                    <th colspan="3" class="text-center week-head" data-week="{{ $w['week_no'] }}">
-                                            <div>M{{ $w['week_no'] }}</div>
-                                            <small class="text-muted">
-                                                {{ $w['start'] }} - {{ $w['end'] }}
-                                            </small>
-                                        {{-- <button type="button"
-                                            class="btn btn-sm btn-outline-dark ms-1 btn-just-toggle"
-                                            data-week="{{ $w['week_no'] }}">
-                                            +
-                                        </button> --}}
+
+                                    <th
+                                        rowspan="2"
+                                        class="text-center align-middle week-head"
+                                        data-week="{{ $w['week_no'] }}"
+                                    >
+                                        <div>
+                                            M{{ $w['week_no'] }}
+                                        </div>
+
+                                        {{-- <small class="text-muted">
+                                            {{ $w['start'] }} - {{ $w['end'] }}
+                                        </small> --}}
                                     </th>
 
-                                    <th colspan="3"
-                                        class="text-center bg-warning-subtle just-head"
-                                        data-week="{{ $w['week_no'] }}">
-                                        <div>Justek Volume M{{ $w['week_no'] }}</div>
-                                        <small class="text-muted">
-                                                {{ $w['start'] }} - {{ $w['end'] }}
-                                        </small>
-                                    </th>
                                 @endforeach
-                                <th colspan="4" class="align-middle text-center">Perubahan Volume</th>
+
+
+                                {{-- PERUBAHAN VOLUME --}}
+                                <th colspan="3" class="align-middle text-center">
+                                    Realisasi
+                                </th>
+
                             </tr>
 
                             <tr>
-                                <th class="align-middle">Sat</th>
-                                <th class="align-middle text-center">Vol</th>
-                                <th class="align-middle">Jumlah<br>Harga</th>
-                                <th class="align-middle text-center">Bobot<br>(%)</th>
 
-                                @foreach($project->week_labels as $w)
-                                    <th class="align-middle text-center">Vol</th>
-                                    <th class="align-middle text-center">Progres<br>(%)</th>
-                                    <th class="align-middle text-center">Bobot<br>(%)</th>
+                                <th class="align-middle text-center">
+                                    Sat
+                                </th>
 
-                                    <th class="just-col" data-week="{{ $w['week_no'] }}">Kurang</th>
-                                    <th class="just-col" data-week="{{ $w['week_no'] }}">Tambah</th>
-                                    <th class="just-col" data-week="{{ $w['week_no'] }}">Pek.Baru</th>
-                                @endforeach
-                                <th class="text-center">Total<br>Justek</th>
-                                <th class="text-center">Total<br>Vol</th>
-                                <th class="text-center">Harga<br>Satuan</th>
-                                <th class="text-center">Harga<br>Total</th>
+                                <th class="align-middle text-center">
+                                    Vol
+                                </th>
+
+                                <th class="align-middle text-center">
+                                    Jumlah<br>Harga
+                                </th>
+
+                                <th class="align-middle text-center">
+                                    Bobot<br>(%)
+                                </th>
+                                <th class="text-center">
+                                    Total<br>Vol
+                                </th>
+
+                                <th class="text-center">
+                                    Prestasi<br>%
+                                </th>
+
+                                <th class="text-center">
+                                    Bobot<br>%
+                                </th>
+
                             </tr>
+
                         </thead>
+
                         <tbody>
+
                             @php
-                                $categoryCounter = 0; // global, tidak reset per lantai
+                                $categoryCounter = 0;
                             @endphp
+
+
                             @foreach($groupedItems as $floorData)
+
                                 <tr class="row-floor">
 
                                     <td>
@@ -184,18 +210,23 @@
                                         </strong>
                                     </td>
 
-                                    <td colspan="{{ $totalCols - 5 }}"></td>
+                                    <td colspan="{{ $totalCols - 1 }}"></td>
 
                                 </tr>
+
 
                                 @foreach($floorData['categories'] as $categoryData)
 
                                     @php
+
                                         $categoryNo = alphaIndex($categoryCounter);
+
                                         $categoryCounter++;
 
-                                        $lastDescription = null; // reset grup deskripsi tiap kategori baru
+                                        $lastDescription = null;
+
                                         $itemNo = 0;
+
                                     @endphp
 
                                     <tr class="row-category">
@@ -208,22 +239,32 @@
                                             {{ strtoupper($categoryData['category_name']) }}
                                         </td>
 
-                                        <td colspan="{{ $totalCols - 5 }}"></td>
+                                        <td colspan="{{ $totalCols - 1 }}"></td>
 
                                     </tr>
+
                                     @foreach($categoryData['items'] as $item)
 
                                         @php
+
                                             $volKontrak = (float) $item->volume;
                                             $volTerpakai = (float) $item->weeklyProgresses->sum('volume');
                                             $isFull = $volTerpakai >= $volKontrak;
                                             $showNo = false;
-                                            if (!$item->description || $item->description !== $lastDescription) {
+
+                                            if (
+                                                !$item->description ||
+                                                $item->description !== $lastDescription
+                                            ) {
                                                 $itemNo++;
+
                                                 $showNo = true;
                                             }
+
                                             $lastDescription = $item->description;
+
                                         @endphp
+
 
                                         <tr
                                             data-item-id="{{ $item->id }}"
@@ -232,8 +273,10 @@
                                             data-full="{{ $isFull ? 1 : 0 }}"
                                         >
 
-                                            <td>
+                                            <td class="text-center">
+
                                                 {{ $showNo ? $itemNo : '' }}
+
                                             </td>
 
                                             <td class="uraian-pekerjaan">
@@ -245,51 +288,77 @@
                                                         {{ $item->job_name }}
 
                                                         @if($item->description)
+
                                                             <div class="text-muted small">
                                                                 {{ $item->description }}
                                                             </div>
+
                                                         @endif
 
                                                     </div>
-                                                    {{-- <button
-                                                        type="button"
-                                                        class="btn btn-sm btn-light btn-add-tambah flex-shrink-0"
-                                                        data-item="{{ $item->id }}"
-                                                    >
-                                                        +
-                                                    </button> --}}
 
                                                 </div>
 
                                             </td>
-                                            <td>
+
+                                            <td class="text-center">
+
                                                 {{ $item->satuan }}
+
                                             </td>
-                                            <td>
+
+                                            <td class="text-end">
+
                                                 {{ $item->volume }}
+
                                             </td>
+
                                             <td
-                                                class="harga-kontrak"
+                                                class="harga-kontrak text-end"
                                                 data-price="{{ $item->price }}"
                                             >
-                                                Rp {{ number_format($item->price, 0, ',', '.') }}
+
+                                                Rp
+                                                {{ number_format(
+                                                    $item->price,
+                                                    0,
+                                                    ',',
+                                                    '.'
+                                                ) }}
+
                                             </td>
-                                            <td width="120">
+
+                                            <td>
+
                                                 <input
                                                     type="number"
                                                     step="0.001"
                                                     class="form-control bobot-input"
                                                     data-id="{{ $item->id }}"
-                                                    value="{{ number_format($item->bobot_percent, 3, '.', '') }}"
+                                                    value="{{ number_format(
+                                                        $item->bobot_percent,
+                                                        3,
+                                                        '.',
+                                                        ''
+                                                    ) }}"
                                                     readonly
                                                 >
+
                                             </td>
+
                                             @foreach($project->week_labels as $w)
 
                                                 @php
-                                                    $prog = $item->progress_map[$w['week_no']] ?? null;
+                                                    $prog =
+                                                        $item->progress_map[$w['week_no']]
+                                                        ?? null;
                                                 @endphp
-                                                <td class="week-col">
+
+
+                                                <td
+                                                    class="week-col"
+                                                    data-week="{{ $w['week_no'] }}"
+                                                >
 
                                                     @if(!$isReadOnly)
 
@@ -307,114 +376,103 @@
                                                     @else
 
                                                         <div class="form-control bg-light">
+
                                                             {{ $prog->volume ?? '' }}
+
                                                         </div>
 
                                                     @endif
 
                                                 </td>
-                                                <td
-                                                    class="week-progress week-col"
-                                                    data-week="{{ $w['week_no'] }}"
-                                                    id="prog-{{ $item->id }}-{{ $w['week_no'] }}"
-                                                >
-                                                </td>
-                                                <td
-                                                    class="week-bobot week-col"
-                                                    data-week="{{ $w['week_no'] }}"
-                                                    id="bobot-{{ $item->id }}-{{ $w['week_no'] }}"
-                                                >
-                                                </td>
-                                                <td
-                                                    class="just-col"
-                                                    data-week="{{ $w['week_no'] }}"
-                                                >
-                                                    <input
-                                                        class="form-control just-kurang"
-                                                        data-item="{{ $item->id }}"
-                                                        data-week="{{ $w['week_no'] }}"
-                                                        value="{{ $prog->just_kurang ?? 0 }}"
-                                                    >
-
-                                                </td>
-                                                <td
-                                                    class="just-col"
-                                                    data-week="{{ $w['week_no'] }}"
-                                                >
-                                                    <input
-                                                        class="form-control just-tambah"
-                                                        data-item="{{ $item->id }}"
-                                                        data-week="{{ $w['week_no'] }}"
-                                                        value="{{ $prog->just_tambah ?? 0 }}"
-                                                    >
-
-                                                </td>
-                                                <td
-                                                    class="just-col"
-                                                    data-week="{{ $w['week_no'] }}"
-                                                >
-
-                                                    <input
-                                                        class="form-control just-baru"
-                                                        data-item="{{ $item->id }}"
-                                                        data-week="{{ $w['week_no'] }}"
-                                                        value="{{ $prog->just_baru ?? 0 }}"
-                                                    >
-
-                                                </td>
 
                                             @endforeach
+
                                             <td
-                                                class="total-justek"
-                                                data-item="{{ $item->id }}"
-                                            >
-                                                0
-                                            </td>
-                                            <td
-                                                class="total-pelaksanaan"
+                                                class="total-pelaksanaan text-end"
                                                 data-item="{{ $item->id }}"
                                                 data-vol-kontrak="{{ $item->volume }}"
                                             >
-                                                {{ number_format($item->volume, 3) }}
+
+                                                {{ number_format(
+                                                    $item->volume,
+                                                    3
+                                                ) }}
+
                                             </td>
                                             <td
-                                                class="harga-kontrak"
+                                                class="harga-kontrak text-end"
                                                 data-price="{{ $item->price }}"
                                             >
-                                                Rp {{ number_format($item->price, 0, ',', '.') }}
+
+                                                Rp
+                                                {{ number_format(
+                                                    $item->price,
+                                                    0,
+                                                    ',',
+                                                    '.'
+                                                ) }}
+
                                             </td>
-                                            <td class="nilai-pelaksanaan">
+                                            <td class="nilai-pelaksanaan text-end">
                                                 0
                                             </td>
                                         </tr>
+
                                     @endforeach
+
                                 @endforeach
+
                             @endforeach
+
                         </tbody>
                         <tfoot>
                             <tr>
+
                                 <th colspan="4" class="text-end">
                                     Realisasi kumulatif kemajuan Pekerjaan
                                 </th>
+
                                 <th>
-                                    {{ $isReadOnly ? '' : 'Rp '.number_format($buildItems->sum('total'),0,',','.') }}
+                                    {{ $isReadOnly
+                                        ? ''
+                                        : 'Rp '.number_format(
+                                            $buildItems->sum('total'),
+                                            0,
+                                            ',',
+                                            '.'
+                                        )
+                                    }}
                                 </th>
-                                <th class="totalBobotKontrak">0</th>
+
+                                <th class="totalBobotKontrak">
+                                    0
+                                </th>
 
                                 @foreach($project->week_labels as $w)
-                                    <th class="week-foot" data-week="{{ $w['week_no'] }}"></th>
-                                    <th class="week-foot" data-week="{{ $w['week_no'] }}"></th>
-                                    <th class="week-foot" data-week="{{ $w['week_no'] }}" id="sum-bobot-{{ $w['week_no'] }}">0</th>
-                                    <th class="week-foot" data-week="{{ $w['week_no'] }}"></th>
-                                    <th class="week-foot" data-week="{{ $w['week_no'] }}"></th>
-                                    <th class="week-foot" data-week="{{ $w['week_no'] }}"></th>
+
+                                    <th
+                                        class="week-foot"
+                                        data-week="{{ $w['week_no'] }}"
+                                        id="sum-bobot-{{ $w['week_no'] }}"
+                                    >
+                                        0
+                                    </th>
+
                                 @endforeach
+
+                                <th id="grand-total-pelaksanaan">
+                                    0
+                                </th>
+
                                 <th></th>
-                                <th id="grand-total-pelaksanaan">0</th>
-                                <th></th>
-                                <th id="grand-total-pelaksanaan-nilai">0</th>
+
+                                <th id="grand-total-pelaksanaan-nilai">
+                                    0
+                                </th>
+
                             </tr>
                         </tfoot>
+
                     </table>
                 </div>
             </div>
@@ -777,166 +835,228 @@
         });
     </script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            function recalcWeek(itemId, weekNo, itemVol, itemBobot)
-            {
-                itemVol = parseFloat(itemVol || 0);
-                itemBobot = parseFloat(itemBobot || 0);
 
-                const el = document.querySelector(
-                    `.week-vol[data-item="${itemId}"][data-week="${weekNo}"]`
-                );
+document.addEventListener('DOMContentLoaded', function () {
 
-                if (!el) return;
-                const row = el.closest('tr');
-                const vol = parseFloat(el.value || 0);
+    function recalcWeek(itemId, weekNo, itemVol, itemBobot) {
 
-                const progress = itemVol > 0
-                    ? (vol / itemVol) * 100
-                    : 0;
+        itemVol = parseFloat(itemVol || 0);
+        itemBobot = parseFloat(itemBobot || 0);
 
-                const bobot = progress * itemBobot / 100;
-                row.querySelector(`.week-progress[data-week="${weekNo}"]`)
-                    .innerText = progress.toFixed(2);
+        const el = document.querySelector(
+            `.week-vol[data-item="${itemId}"][data-week="${weekNo}"]`
+        );
 
-                row.querySelector(`.week-bobot[data-week="${weekNo}"]`)
-                    .innerText = bobot.toFixed(3);
-            }
+        if (!el) return;
 
-            document.addEventListener('input', function(e) {
+        const vol = parseFloat(el.value || 0);
+        const progress = itemVol > 0
+            ? (vol / itemVol) * 100
+            : 0;
+        const bobot = progress * itemBobot / 100;
 
-                if (!e.target.classList.contains('week-vol')) return;
+        el.dataset.progress = progress.toFixed(2);
+        el.dataset.bobot = bobot.toFixed(3);
+    }
 
-                const tr = e.target.closest('tr');
+    document.addEventListener('input', function (e) {
 
-                const item = e.target.dataset.item;
-                const week = e.target.dataset.week;
+        if (!e.target.classList.contains('week-vol')) {
+            return;
+        }
 
-                const itemVol = tr.dataset.itemVol || 0;
-                const itemBobot = tr.dataset.itemBobot || 0;
+        const tr = e.target.closest('tr');
 
-                recalcWeek(item, week, itemVol, itemBobot);
-                autosaveWeek(item, week);
-                hitungFooter();
-                updateKurvaChartRealtime();
-            });
+        if (!tr) return;
 
-            document.querySelectorAll('.week-vol').forEach(el => {
+        const item = e.target.dataset.item;
+        const week = e.target.dataset.week;
 
-                const tr = el.closest('tr');
+        const itemVol = tr.dataset.itemVol || 0;
+        const itemBobot = tr.dataset.itemBobot || 0;
 
-                recalcWeek(
-                    el.dataset.item,
-                    el.dataset.week,
-                    tr.dataset.itemVol || 0,
-                    tr.dataset.itemBobot || 0
-                );
-            });
+        recalcWeek(
+            item,
+            week,
+            itemVol,
+            itemBobot
+        );
 
-            hitungFooter();
+        autosaveWeek(
+            item,
+            week
+        );
 
-            let autosaveTimer = {};
+        hitungFooter();
 
-            function autosaveWeek(item, week) {
+        updateKurvaChartRealtime();
+    });
+    document.querySelectorAll('.week-vol').forEach(el => {
 
-                const key = item + '-' + week;
+        const tr = el.closest('tr');
 
-                clearTimeout(autosaveTimer[key]);
+        if (!tr) return;
 
-                autosaveTimer[key] = setTimeout(() => {
+        recalcWeek(
+            el.dataset.item,
+            el.dataset.week,
+            tr.dataset.itemVol || 0,
+            tr.dataset.itemBobot || 0
+        );
 
-                    const input = document.querySelector(
-                        `.week-vol[data-item="${item}"][data-week="${week}"]`
+    });
+
+    let autosaveTimer = {};
+
+    function autosaveWeek(item, week) {
+
+        const key = item + '-' + week;
+
+        clearTimeout(autosaveTimer[key]);
+
+        autosaveTimer[key] = setTimeout(() => {
+
+            const input = document.querySelector(
+                `.week-vol[data-item="${item}"][data-week="${week}"]`
+            );
+
+            if (!input) return;
+
+            const oldVal = input.dataset.last || 0;
+            const vol = parseFloat(input.value) || 0;
+
+            fetch("{{ route('build-weekly.update') }}", {
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN":
+                        document.querySelector(
+                            'meta[name=csrf-token]'
+                        ).content
+                },
+
+                body: JSON.stringify({
+                    item_id: item,
+                    week_no: week,
+                    volume: vol,
+                })
+            })
+            .then(async r => {
+
+                const data = await r.json();
+
+                if (!r.ok) {
+
+                    input.value = oldVal;
+
+                    showToast(
+                        data.error ||
+                        'Volume melebihi kontrak'
                     );
 
-                    const oldVal = input.dataset.last || 0;
-                    const vol = parseFloat(input.value) || 0;
-
-                    fetch("{{ route('build-weekly.update') }}", {
-                        method:"POST",
-                        headers:{
-                            "Content-Type":"application/json",
-                            "X-CSRF-TOKEN": document.querySelector('meta[name=csrf-token]').content
-                        },
-                        body: JSON.stringify({
-                            item_id: item,
-                            week_no: week,
-                            volume: vol,
-                        })
-                    })
-                    .then(async r => {
-
-                        const data = await r.json();
-
-                        if (!r.ok) {
-                            input.value = oldVal;
-                            showToast(data.error || 'Volume melebihi kontrak');
-                            throw new Error("422");
-                        }
-                        recalcWeek(item, week, 
-                            input.closest('tr').dataset.itemVol,
-                            input.closest('tr').dataset.itemBobot
-                        );
-
-                        hitungFooter();
-                        updateKurvaChartRealtime();
-
-                        return data;
-                    })
-                    .then(res => {
-
-                        input.dataset.last = vol;
-
-                        if (res.full) {
-                            lockItemRow(item);
-                        }
-                        refreshInvoicePanel();
-                    })
-                    .catch(e => {
-                        console.log("autosave rejected:", e.message);
-                    });
-
-                }, 400);
-            }
-
-            function hitungFooter() {
-
-                let weekCount = {{ $weekCount }};
-
-                for (let w=1; w<=weekCount; w++) {
-
-                    let sumBobot = 0;
-
-                    document.querySelectorAll(`.week-bobot[data-week="${w}"]`)
-                        .forEach(el => {
-                            sumBobot += parseFloat(el.innerText || 0);
-                        });
-
-                    const bobotCell = document.getElementById(`sum-bobot-${w}`);
-                    if (bobotCell) {
-                        bobotCell.innerText = sumBobot.toFixed(2);
-                    }
+                    throw new Error("422");
                 }
-            }
-            function lockItemRow(itemId) {
 
-                document.querySelectorAll(
-                    `.week-vol[data-item="${itemId}"]`
-                ).forEach(el => {
-                    el.disabled = true;
-                    el.classList.add('bg-light');
-                });
-            }
-            function showToast(msg) {
-                if (typeof toastr !== 'undefined') {
-                    toastr.error(msg);
-                } else {
-                    alert(msg);
+                const row = input.closest('tr');
+
+                recalcWeek(
+                    item,
+                    week,
+                    row.dataset.itemVol,
+                    row.dataset.itemBobot
+                );
+
+                hitungFooter();
+
+                updateKurvaChartRealtime();
+
+                return data;
+            })
+            .then(res => {
+
+                input.dataset.last = vol;
+
+                if (res.full) {
+                    lockItemRow(item);
                 }
+
+            })
+            .catch(e => {
+
+                console.log(
+                    "autosave rejected:",
+                    e.message
+                );
+
+            });
+
+        }, 400);
+    }
+
+    function hitungFooter() {
+
+        const weekCount = {{ $weekCount }};
+
+        for (let w = 1; w <= weekCount; w++) {
+
+            let sumBobot = 0;
+
+            document.querySelectorAll(
+                `.week-vol[data-week="${w}"]`
+            ).forEach(el => {
+
+                const bobot = parseFloat(
+                    el.dataset.bobot || 0
+                );
+
+                sumBobot += bobot;
+            });
+
+            const bobotCell =
+                document.getElementById(
+                    `sum-bobot-${w}`
+                );
+
+            if (bobotCell) {
+
+                bobotCell.innerText =
+                    sumBobot.toFixed(2);
+
             }
-            hitungFooter();
-            updateKurvaChartRealtime();
+
+        }
+    }
+
+    function lockItemRow(itemId) {
+
+        document.querySelectorAll(
+            `.week-vol[data-item="${itemId}"]`
+        ).forEach(el => {
+
+            el.disabled = true;
+
+            el.classList.add('bg-light');
+
         });
+
+    }
+    function showToast(msg) {
+
+        if (typeof toastr !== 'undefined') {
+
+            toastr.error(msg);
+
+        } else {
+
+            alert(msg);
+
+        }
+
+    }
+    hitungFooter();
+    updateKurvaChartRealtime();
+});
         function hitungTotalPelaksanaan() {
 
             let grandTotalVolume = 0;
@@ -1048,54 +1168,6 @@
                     grandTotalJustek.toFixed(3);
             }
         }
-        function autosaveJustek(item, week) {
-
-            const kurang = document.querySelector(
-                `.just-kurang[data-item="${item}"][data-week="${week}"]`
-            )?.value || 0;
-
-            const tambah = document.querySelector(
-                `.just-tambah[data-item="${item}"][data-week="${week}"]`
-            )?.value || 0;
-
-            const baru = document.querySelector(
-                `.just-baru[data-item="${item}"][data-week="${week}"]`
-            )?.value || 0;
-
-            fetch("{{ route('build-weekly.update') }}", {
-                method: "POST",
-                headers:{
-                    "Content-Type":"application/json",
-                    "X-CSRF-TOKEN": document.querySelector('meta[name=csrf-token]').content
-                },
-                body: JSON.stringify({
-                    item_id: item,
-                    week_no: week,
-                    just_kurang: kurang,
-                    just_tambah: tambah,
-                    just_baru: baru
-                })
-            })
-            .then(r=>r.json())
-            .then(res=>{
-
-                fetch("{{ route('projects.invoice.justek.auto',$project->id) }}",{
-                    method:"POST",
-                    headers:{
-                    "X-CSRF-TOKEN": document.querySelector('meta[name=csrf-token]').content
-                    }
-                })
-                .then(()=>{
-
-                    refreshInvoicePanel();
-
-                });
-
-            })
-            .catch(e=>{
-            console.log("Justek autosave gagal");
-            });
-        }
 
         document.addEventListener('input', e => {
 
@@ -1194,51 +1266,30 @@
             });
 
             function buildWeekColumns(itemId) {
+
                 let cols = '';
 
                 WEEK_LABELS.forEach(w => {
-                    cols +=
-                    `
-                        <td>
-                            <input type="number"
+
+                    cols += `
+                        <td
+                            class="week-col"
+                            data-week="${w.week_no}"
+                        >
+                            <input
+                                type="number"
                                 step="0.01"
                                 class="form-control week-vol"
                                 data-item="${itemId}"
                                 data-week="${w.week_no}"
-                                value="">
-                        </td>
-
-                        <td class="week-progress"
-                            data-week="${w.week_no}"
-                            id="prog-${itemId}-${w.week_no}">
-                        </td>
-
-                        <td class="week-bobot"
-                            data-week="${w.week_no}"
-                            id="bobot-${itemId}-${w.week_no}">
-                        </td>
-
-                        <td class="just-col" data-week="${w.week_no}">
-                            <input class="form-control just-kurang"
-                                data-item="${itemId}"
-                                data-week="${w.week_no}"
-                                value="0">
-                        </td>
-
-                        <td class="just-col" data-week="${w.week_no}">
-                            <input class="form-control just-tambah"
-                                data-item="${itemId}"
-                                data-week="${w.week_no}"
-                                value="0">
-                        </td>
-
-                        <td class="just-col" data-week="${w.week_no}">
-                            <input class="form-control just-baru"
-                                data-item="${itemId}"
-                                data-week="${w.week_no}"
-                                value="0">
+                                data-last="0"
+                                data-progress="0"
+                                data-bobot="0"
+                                value=""
+                            >
                         </td>
                     `;
+
                 });
 
                 return cols;
@@ -1409,18 +1460,7 @@
             setupJustekAccess();
         });
     </script>
-    <script>
 
-    function refreshInvoicePanel() {
-
-        fetch("{{ route('projects.invoice.panel',$project->id) }}")
-        .then(res=>res.text())
-        .then(html=>{
-            document.getElementById('invoice-panel').innerHTML = html;
-        });
-
-    }
-    </script>
     <script>
 
         document.getElementById('btn-export-pdf').addEventListener('click', function(e){

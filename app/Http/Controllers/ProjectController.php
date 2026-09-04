@@ -722,19 +722,12 @@ public function data(Project $project)
     $weeks = $project->week_labels;
     $query = BuildPlans::query()
         ->with('weeks')
-        ->where('project_id',$project->id)
+        ->where('project_id', $project->id)
         ->ordered();
+
     $dataTable = DataTables::eloquent($query)
         ->addIndexColumn()
-        ->addColumn('total_format',function($row){
-            return 'Rp '.number_format(
-                $row->total,
-                0,
-                ',',
-                '.'
-            );
-        })
-        ->addColumn('bobot_format',function($row){
+        ->addColumn('bobot_format', function ($row) {
             return number_format(
                 $row->bobot_percent,
                 3,
@@ -742,53 +735,41 @@ public function data(Project $project)
                 ''
             );
         })
-        ->addColumn('week_values',function($row) use($weeks){
-            $values=[];
-            foreach($weeks as $week){
-                $progress=$row->weeks
-                    ->firstWhere(
-                        'week_no',
-                        $week['week_no']
-                    );
+        ->addColumn('week_values', function ($row) use ($weeks) {
+            $values = [];
+            foreach ($weeks as $week) {
+                $progress = $row->weeks
+                    ->firstWhere('week_no', $week['week_no']);
                 $values[$week['week_no']] = $progress?->plan_percent ?? 0;
             }
             return $values;
         });
-    $response=$dataTable->make(true);
 
     $plans = BuildPlans::with('weeks')
-        ->where('project_id',$project->id)
+        ->where('project_id', $project->id)
         ->get();
 
-    $weekTotal=[];
-
-    foreach($weeks as $week){
-        $weekTotal[$week['week_no']] =
-            $plans->sum(function($plan) use($week){
-                $weekPlan = $plan->weeks
-                    ->firstWhere('week_no', $week['week_no']);
-                
-                $planPersen = $weekPlan?->plan_percent ?? 0;
-                $bobot = $plan->bobot_percent ?? 0;
-                
-                return ($planPersen / 100) * $bobot;
-            });
+    $weekTotal = [];
+    foreach ($weeks as $week) {
+        $weekTotal[$week['week_no']] = $plans->sum(function ($plan) use ($week) {
+            $weekPlan = $plan->weeks->firstWhere('week_no', $week['week_no']);
+            return $weekPlan?->plan_percent ?? 0;
+        });
     }
 
-    $kumulatif=[];
-    $running=0;
-    foreach($weekTotal as $week=>$total){
+    $kumulatif = [];
+    $running = 0;
+    foreach ($weekTotal as $week => $total) {
         $running += $total;
-        $kumulatif[$week]=$running;
+        $kumulatif[$week] = $running;
     }
 
     return $dataTable
         ->with([
-            'week_total'=>$weekTotal,
-            'week_kumulatif'=>$kumulatif
+            'week_total' => $weekTotal,
+            'week_kumulatif' => $kumulatif,
         ])
         ->make(true);
-
 }
 
 private function resolveBuildPlanData($project): array

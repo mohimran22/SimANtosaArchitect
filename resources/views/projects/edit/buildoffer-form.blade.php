@@ -191,20 +191,6 @@
                             </th>
                         </tr>
 
-                        {{-- PEMBULATAN --}}
-                        <tr>
-                            <th colspan="5" class="text-end fw-bold">
-                                DIBULATKAN
-                            </th>
-
-                            <th
-                                id="roundedTotalDisplayBuild"
-                                class="fw-bold"
-                            >
-                                Rp 0
-                            </th>
-                        </tr>
-
                         {{-- EXTRA DISCOUNT --}}
                         <tr>
                             <th colspan="5" class="text-end">
@@ -231,7 +217,7 @@
                         {{-- GRAND TOTAL PENAWARAN --}}
                         <tr>
                             <th colspan="5" class="text-end fw-bold">
-                                GRAND TOTAL PENAWARAN
+                                TOTAL AKHIR
                             </th>
 
                             <th
@@ -241,7 +227,18 @@
                                 Rp 0
                             </th>
                         </tr>
+                        <tr>
+                            <th colspan="5" class="text-end fw-bold">
+                                DIBULATKAN
+                            </th>
 
+                            <th
+                                id="roundedTotalDisplayBuild"
+                                class="fw-bold"
+                            >
+                                Rp 0
+                            </th>
+                        </tr>
                     </tfoot>
 
                 </table>

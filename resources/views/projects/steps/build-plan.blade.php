@@ -53,7 +53,7 @@
                                 </button>
 
                             </form> --}}
-                                <form action="{{ route('build-plan.import', $project->id) }}"
+                                 <form action="{{ route('build-plan.import', $project->id) }}"
                                     method="POST"
                                     enctype="multipart/form-data"
                                     id="importPlanForm"
@@ -72,12 +72,9 @@
                     <div class="table-plan">
                         <table id="buildPlanTable" class="table card-table table-vcenter text-nowrap">
                             <colgroup>
-                                <col style="width:50px">
-                                <col style="width:2600px">
-                                <col style="width:80px">
-                                <col style="width:80px">
-                                <col style="width:140px">
-                                <col style="width:80px">
+                                <col style="width:50px"> 
+                                <col style="width:260px"> 
+                                <col style="width:80px">  
 
                                 @foreach($project->week_labels as $w)
                                     <col style="width:95px">
@@ -88,21 +85,14 @@
                                     <th rowspan="2" class="align-middle text-center">No</th>
                                     <th rowspan="2" class="align-middle text-center">Uraian Pekerjaan</th>
 
-                                    <th colspan="4" class="align-middle text-center">TERKONTRAK</th>
+                                    <th rowspan="2" class="align-middle text-center">BOBOT</th>
                                     @foreach($project->week_labels as $w)
                                         <th class="text-center" data-week="{{ $w['week_no'] }}">
-                                                <div>M{{ $w['week_no'] }}</div>
-                                                {{-- <small class="text-muted d-block text-nowrap">
-                                                    {{ $w['start'] }} - {{ $w['end'] }}
-                                                </small> --}}
+                                            <div>M{{ $w['week_no'] }}</div>
                                         </th>
                                     @endforeach
                                 </tr>
                                 <tr>
-                                    <th class="align-middle">Sat</th>
-                                    <th class="align-middle text-center">Vol</th>
-                                    <th class="align-middle">Jumlah<br>Harga</th>
-                                    <th class="align-middle text-center">Bobot<br>(%)</th>
 
                                     @foreach($project->week_labels as $w)
                                         <th class="align-middle text-center">Bobot<br>(%)</th>
@@ -112,11 +102,8 @@
                             <tbody></tbody>
                             <tfoot>
                                 <tr>
-                                    <th colspan="4" class="text-end">
+                                    <th colspan="2" class="text-end">
                                         Total Pekerjaan (%)
-                                    </th>
-                                    <th>
-                                        {{ $isReadOnly ? '' : 'Rp '.number_format($buildPlans->sum('total'),0,',','.') }}
                                     </th>
                                     <th class="text-center">
                                         {{ number_format($buildPlans->sum('bobot_percent'),2) }}
@@ -131,11 +118,8 @@
                                     @endforeach
                                 </tr>
                                 <tr>
-                                    <th colspan="4" class="text-end">
+                                    <th colspan="2" class="text-end">
                                         Kumulatif (%)
-                                    </th>
-                                    <th>
-                                        {{ $isReadOnly ? '' : 'Rp '.number_format($buildPlans->sum('total'),0,',','.') }}
                                     </th>
                                     <th class="text-center">
                                         {{ number_format($buildPlans->sum('bobot_percent'),2) }}
@@ -143,15 +127,220 @@
                                     @foreach($project->week_labels as $w)
                                         <th class="week-foot text-center fw-bold"
                                             id="kumulatif-plan-{{ $w['week_no'] }}">
-
                                             0
                                         </th>
                                     @endforeach
                                 </tr>
-                            
                             </tfoot>
                         </table>
                     </div>
+
+                    @if(!$isReadOnly)
+                    <div class="modal fade"
+                        id="importPlanModal"
+                        tabindex="-1"
+                        aria-labelledby="importPlanModalLabel"
+                        aria-hidden="true">
+
+                        <div class="modal-dialog modal-xl modal-dialog-centered">
+                            <div class="modal-content">
+
+                                <form action="{{ route('build-plan.import', $project->id) }}"
+                                    method="POST"
+                                    enctype="multipart/form-data"
+                                    id="importPlanForm">
+
+                                    @csrf
+
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="importPlanModalLabel">
+                                            <i class="ti ti-file-spreadsheet me-1"></i>
+                                            Import Build Plan dari Excel
+                                        </h5>
+
+                                        <button type="button"
+                                                class="btn-close"
+                                                data-bs-dismiss="modal">
+                                        </button>
+                                    </div>
+
+                                    <div class="modal-body">
+
+                                        {{-- FILE --}}
+                                        <div class="row mb-3">
+                                            <div class="col-md-8">
+                                                <label class="form-label">
+                                                    File Excel
+                                                </label>
+
+                                                <input type="file"
+                                                    name="file"
+                                                    id="importPlanFile"
+                                                    class="form-control"
+                                                    accept=".xlsx,.xls"
+                                                    required>
+                                            </div>
+
+                                            <div class="col-md-4 d-flex align-items-end">
+                                                <div id="importFileInfo"
+                                                    class="text-muted small d-none">
+                                                    <i class="ti ti-file-spreadsheet"></i>
+                                                    <span id="importFileName"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {{-- LOADING --}}
+                                        <div id="importPreviewLoading"
+                                            class="text-center py-5 d-none">
+
+                                            <div class="spinner-border mb-3"
+                                                role="status">
+                                            </div>
+
+                                            <div>
+                                                Membaca file Excel...
+                                            </div>
+                                        </div>
+
+                                        {{-- ERROR --}}
+                                        <div id="importPreviewError"
+                                            class="alert alert-danger d-none">
+                                        </div>
+
+                                        {{-- SUMMARY --}}
+                                        <div id="importPreviewSummary"
+                                            class="row g-2 mb-3 d-none">
+
+                                            <div class="col-md-3">
+                                                <div class="card card-sm">
+                                                    <div class="card-body">
+                                                        <div class="text-muted">
+                                                            Lantai
+                                                        </div>
+                                                        <div class="h3 mb-0"
+                                                            id="previewFloorCount">
+                                                            0
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-3">
+                                                <div class="card card-sm">
+                                                    <div class="card-body">
+                                                        <div class="text-muted">
+                                                            Kategori
+                                                        </div>
+                                                        <div class="h3 mb-0"
+                                                            id="previewCategoryCount">
+                                                            0
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-3">
+                                                <div class="card card-sm">
+                                                    <div class="card-body">
+                                                        <div class="text-muted">
+                                                            Pekerjaan
+                                                        </div>
+                                                        <div class="h3 mb-0"
+                                                            id="previewItemCount">
+                                                            0
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-3">
+                                                <div class="card card-sm">
+                                                    <div class="card-body">
+                                                        <div class="text-muted">
+                                                            Total Bobot
+                                                        </div>
+                                                        <div class="h3 mb-0"
+                                                            id="previewTotalWeight">
+                                                            0%
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                        </div>
+
+                                        {{-- PREVIEW TABLE --}}
+                                        <div id="importPreviewWrapper"
+                                            class="d-none">
+
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <h5 class="mb-0">
+                                                    Preview Data
+                                                </h5>
+
+                                                <span class="text-muted small">
+                                                    Data belum disimpan ke database
+                                                </span>
+                                            </div>
+
+                                            <div class="table-responsive"
+                                                style="max-height:500px; overflow:auto;">
+
+                                                <table class="table table-sm table-bordered table-vcenter"
+                                                    id="importPreviewTable">
+
+                                                    <thead class="table-light">
+                                                        <tr>
+                                                            <th class="text-center">No</th>
+                                                            <th>Uraian Pekerjaan</th>
+                                                            <th>Floor</th>
+                                                            <th>Kategori</th>
+                                                            <th class="text-end">Bobot</th>
+
+                                                            @for($i = 1; $i <= 25; $i++)
+                                                                <th class="text-center">
+                                                                    M{{ $i }}
+                                                                </th>
+                                                            @endfor
+                                                        </tr>
+                                                    </thead>
+
+                                                    <tbody id="importPreviewBody">
+                                                    </tbody>
+
+                                                </table>
+
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+                                    <div class="modal-footer">
+
+                                        <button type="button"
+                                                class="btn btn-secondary"
+                                                data-bs-dismiss="modal">
+                                            Batal
+                                        </button>
+
+                                        <button type="submit"
+                                                class="btn btn-primary"
+                                                id="btnImportPlan"
+                                                disabled>
+                                            <i class="ti ti-upload me-1"></i>
+                                            Import Data
+                                        </button>
+
+                                    </div>
+
+                                </form>
+
+                            </div>
+                        </div>
+                    </div>
+                    @endif
             </div>
     </x-collapse-card>
     <div id="build-process">
@@ -164,7 +353,7 @@
 
     const buildPlanTable = document.querySelector("#buildPlanTable");
 
-    const freezeCounts = 6;
+    const freezeCounts = 3;
     function applyFreeze() {
         if (!buildPlanTable) return;
             const firstColgroup = buildPlanTable.querySelector('colgroup:first-of-type');
@@ -295,25 +484,28 @@
         });
 
         $(document).on('input', '.week-plan', function(){
+
             const target = this;
+
             const itemId = target.dataset.item;
             const week = target.dataset.week;
-            const bobot = parseFloat(target.dataset.bobot) || 0;
+
             const persen = parseFloat(target.value) || 0;
 
-            // Tampilkan nilai hasil kalkulasi langsung
-            const nilaiHasil = (persen / 100) * bobot;
-            const nilaiEl = document.querySelector(`.week-plan-nilai[data-item="${itemId}"][data-week="${week}"]`);
-            if(nilaiEl) nilaiEl.innerText = `= ${nilaiHasil.toFixed(3)}`;
-
             const isValid = validateItemPlan(itemId);
-            if(!isValid){
+
+            if (!isValid) {
                 target.value = target.dataset.old || '';
                 return;
             }
 
-            autosavePlan(itemId, week, persen);  // kirim nilai persen ke server
+            // Simpan nilai plan APA ADANYA
+            autosavePlan(itemId, week, persen);
+
+            // Hitung total plan berdasarkan nilai plan langsung
             calculateFooterPlan();
+
+            // Update kurva berdasarkan nilai plan langsung
             updateKurvaPlanRealtime();
         });
     });
@@ -385,13 +577,18 @@
         });
     }
     function getWeeklyPlanTotal(week) {
+
         let total = 0;
-        document.querySelectorAll(`.week-plan[data-week="${week}"]`).forEach(el => {
-            const val = el.tagName === 'INPUT' ? el.value : el.innerText;
-            const persen = parseFloat(val) || 0;
-            const bobot = parseFloat(el.dataset.bobot) || 0;
-            total += (persen / 100) * bobot;  // <-- konversi persen ke nilai bobot
-        });
+
+        document
+            .querySelectorAll(`.week-plan[data-week="${week}"]`)
+            .forEach(el => {
+
+                const persen = parseFloat(el.value) || 0;
+
+                total += persen;
+            });
+
         return total;
     }
 
@@ -453,31 +650,34 @@
 
     }
 
-    function updateKurvaPlanRealtime(){
+function updateKurvaPlanRealtime(){
 
-        if(!window.kurvaChart) return;
+    if(!window.kurvaChart) return;
 
-        window.kurvaChart.data.datasets[1].data =
-            getPlanKumulatif();
+    window.kurvaChart.data.datasets[1].data =
+        rebuildKurvaPlanFromTable();
 
-        window.kurvaChart.update();
+    window.kurvaChart.update();
+}
+function rebuildKurvaPlanFromTable(){
+
+    let weekCount = {{ $weekCount }};
+
+    let kumulatif = [];
+
+    let jalan = 0;
+
+    for(let w = 1; w <= weekCount; w++){
+
+        const total = getWeeklyPlanTotal(w);
+
+        jalan += total;
+
+        kumulatif.push(jalan);
     }
-    function rebuildKurvaFromTable(){
-        let weekCount = {{ $weekCount }};
-        let kumulatif = [];
-        let jalan = 0;
-        for(let w = 1; w <= weekCount; w++){
-            let sumBobot = 0;
-            document.querySelectorAll(
-                `.week-bobot[data-week="${w}"]`
-            ).forEach(el => {
-                sumBobot += parseFloat(el.innerText) || 0;
-            });
-            jalan += sumBobot;
-            kumulatif.push(jalan);
-        }
-        return kumulatif;
-    }
+
+    return kumulatif;
+}
     function updateKurvaChartRealtime(){
         if(!window.kurvaChart) return;
         window.kurvaChart.data.datasets[0].data = rebuildKurvaFromTable();
@@ -548,15 +748,20 @@
     function validateItemPlan(itemId)
     {
         let totalPersen = 0;
+        let bobotItem = 0;
 
         document.querySelectorAll(`.week-plan[data-item="${itemId}"]`)
-        .forEach(el => {
-            totalPersen += parseFloat(el.value) || 0;
-        });
+            .forEach(el => {
+                totalPersen += parseFloat(el.value) || 0;
+                bobotItem = parseFloat(el.dataset.bobot) || 0; // sama utk semua baris item ini
+            });
 
-        // Total persen semua minggu tidak boleh melebihi 100%
-        if(totalPersen > 100.001){
-            alert(`Total plan item melebihi 100% (sekarang: ${totalPersen.toFixed(3)}%)`);
+        // Total plan mingguan untuk 1 item tidak boleh melebihi bobot item itu sendiri
+        if (totalPersen > bobotItem + 0.001) {
+            alert(
+                `Total plan item melebihi bobot maksimal (${bobotItem.toFixed(3)}%). ` +
+                `Sekarang: ${totalPersen.toFixed(3)}%`
+            );
             return false;
         }
 
@@ -578,18 +783,6 @@
             name:'item_name',
         },
         {
-            data:'satuan',
-            name:'satuan',
-        },
-        {
-            data:'volume',
-            name:'volume',
-        },
-        {
-            data:'total_format',
-            name:'total_format',
-        },
-        {
             data:'bobot_format',
             name:'bobot_format',
         }
@@ -603,20 +796,16 @@
             defaultContent:'',
             orderable:false,
             render:function(data,type,row){
-                const persen = data ?? 0;
-                const nilaiBobot = ((parseFloat(persen) || 0) / 100) * parseFloat(row.bobot_percent || 0);
+                const persen = parseFloat(data) || 0;
                 return `
                 <div class="week-plan-wrapper">
-                    <input type="number" step="0.001" class="form-control week-plan"
+                    <input type="text" step="any" class="form-control week-plan"
                         data-item="${row.id}"
                         data-week="${w.week_no}"
                         data-bobot="${row.bobot_percent}"
                         value="${persen}"
                         placeholder="%"
                     >
-                    <small class="text-muted week-plan-nilai" data-item="${row.id}" data-week="${w.week_no}">
-                        = ${nilaiBobot.toFixed(3)}
-                    </small>
                 </div>
                 `;
             }
@@ -684,9 +873,6 @@
             { targets: 0, width: '50px' },
             { targets: 1, width: '260px' },
             { targets: 2, width: '80px' },
-            { targets: 3, width: '80px' },
-            { targets: 4, width: '140px' },
-            { targets: 5, width: '80px' },
         ],
         ajax:{
             url:"{{ route('build-plan.data',$project->id) }}",

@@ -170,20 +170,7 @@
                     </tr>
 
                     <tr>
-                        <th colspan="5" class="text-end fw-bold">
-                            DIBULATKAN
-                        </th>
-
-                        <th
-                            id="roundedTotalDisplay"
-                            class="fw-bold"
-                        >
-                            Rp 0
-                        </th>
-                    </tr>
-
-                    <tr>
-                        <th colspan="5" class="text-end">
+                        <th colspan="5" class="required text-end">
                             EXTRA DISCOUNT
                         </th>
 
@@ -216,7 +203,18 @@
                             Rp 0
                         </th>
                     </tr>
+                    <tr>
+                        <th colspan="5" class="text-end fw-bold">
+                            DIBULATKAN
+                        </th>
 
+                        <th
+                            id="roundedTotalDisplay"
+                            class="fw-bold"
+                        >
+                            Rp 0
+                        </th>
+                    </tr>
                 </tfoot>
             </table>
         </div>
