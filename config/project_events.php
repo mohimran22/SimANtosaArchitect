@@ -177,4 +177,11 @@ return [
         'customer'     => 'Justifikasi Teknis baru telah dibuat untuk proyek Anda.',
     ],
 ],
+'justek_updated' => [
+    'title' => 'Justifikasi Teknis Diperbarui',
+    'message' => [
+        'updated_self' => 'Justifikasi Teknis berhasil diperbarui.',
+        'customer'    => 'Justifikasi Teknis proyek Anda telah diperbarui.',
+    ],
+],
 ];

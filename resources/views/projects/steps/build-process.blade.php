@@ -1,6 +1,6 @@
 @php
     $weekCount = count($project->week_labels);
-    $colsFixed = 7; // +1 untuk kolom "Total s.d. Minggu Sebelumnya"
+    $colsFixed = 7;
     $colsPerWeek = 1;
     $colsTotal = 3;
     $totalCols = $colsFixed + ($weekCount * $colsPerWeek) + $colsTotal;
@@ -497,7 +497,7 @@
 
                                 @endforeach
 
-                                <th id="grand-total-pelaksanaan">
+                                {{-- <th id="grand-total-pelaksanaan">
                                     0
                                 </th>
 
@@ -505,7 +505,7 @@
 
                                 <th id="grand-total-bobot-kumulatif">
                                     0
-                                </th>
+                                </th> --}}
 
                             </tr>
                         </tfoot>
