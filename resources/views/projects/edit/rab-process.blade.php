@@ -26,7 +26,7 @@
             <input type="text" name="job_location" value="{{ old('job_location', $rab->job_location) }}" class="form-control">
         </div>
         <div class="col-md-4">
-            <label class="form-label required">Durasi Pekerjaan</label>
+            <label class="form-label">Durasi Pekerjaan</label>
             <input type="text" name="job_duration" class="form-control" value="{{ old('job_duration', $rab->job_duration) }}" placeholder="175 Hari Kerja">
         </div>
         <div class="col-md-2">
@@ -237,8 +237,8 @@
                     <div class="modal-body">
                         <input type="hidden" id="rab_item_id_edit">
                         <div class="mb-3">
-                            <label class="form-label fw-semibold">
-                                Lantai <span class="text-danger">*</span>
+                            <label class="form-label required fw-semibold">
+                                Lantai
                             </label>
                             <div id="floorSelectWrapperEdit">
                                 <select id="rab_item_floor_edit" class="form-select" onchange="handleFloorChangeEdit()">
@@ -269,8 +269,8 @@
 
                         <div class="mb-3">
 
-                            <label class="form-label fw-semibold">
-                                Kategori <span class="text-danger">*</span>
+                            <label class="form-label required fw-semibold">
+                                Kategori
                             </label>
 
                             <div id="categorySelectWrapperEdit">
@@ -300,8 +300,8 @@
 
                         </div>
                         <div class="mb-3">
-                            <label class="form-label fw-semibold">
-                                Nama Pekerjaan <span class="text-danger">*</span>
+                            <label class="form-label required fw-semibold">
+                                Nama Pekerjaan
                             </label>
                             <input type="text"
                                 id="rab_item_job_name_edit"
@@ -313,7 +313,7 @@
                         <div class="mb-3">
 
                             <label class="form-label fw-semibold">
-                                Deskripsi Pekerjaan
+                                Sub Kategori
                             </label>
 
                             <textarea id="rab_item_description_edit"
@@ -327,8 +327,8 @@
 
                             <div class="col-md-7">
 
-                                <label class="form-label fw-semibold">
-                                    Volume <span class="text-danger">*</span>
+                                <label class="form-label required fw-semibold">
+                                    Volume
                                 </label>
 
                                 <input type="text"
@@ -341,8 +341,8 @@
 
                             <div class="col-md-5">
 
-                                <label class="form-label fw-semibold">
-                                    Satuan <span class="text-danger">*</span>
+                                <label class="form-label required fw-semibold">
+                                    Satuan
                                 </label>
 
                                 <input type="text"
@@ -356,9 +356,8 @@
 
                         <div class="mb-3">
 
-                            <label class="form-label fw-semibold">
+                            <label class="form-label required fw-semibold">
                                 Harga Satuan Dasar
-                                <span class="text-danger">*</span>
                             </label>
 
                             <input type="text"
@@ -373,8 +372,6 @@
                         </div>
 
                     </div>
-
-
                     <div class="modal-footer border-0">
 
                         <button type="button"

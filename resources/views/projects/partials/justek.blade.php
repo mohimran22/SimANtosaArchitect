@@ -225,7 +225,7 @@
 
                     <div class="modal-body">
                         <div class="mb-3">
-                            <label class="form-label fw-semibold">
+                            <label class="form-label required fw-semibold">
                                 Lantai
                             </label>
                             <div id="floorSelectWrapper">
@@ -301,14 +301,13 @@
                         <div class="mb-3">
 
                             <label class="form-label fw-semibold">
-                                Deskripsi Pekerjaan
+                                Sub Kategori
                             </label>
 
                             <textarea id="justek_item_description"
                                     class="form-control"
                                     rows="2"
-                                    placeholder="Keterangan pekerjaan (opsional)"></textarea>
-
+                                    placeholder="Contoh: Pekerjaan Pondasi Footplate"></textarea>
                         </div>
 
                         <div class="row g-3 mb-3">
@@ -577,280 +576,280 @@
 
 @push('js')
 <script>
-document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function () {
 
-    const modalEl   = document.getElementById('modalDetailJustek');
-    const modalBody = document.getElementById('modalDetailJustekBody');
-    const modal     = new bootstrap.Modal(modalEl);
+        const modalEl   = document.getElementById('modalDetailJustek');
+        const modalBody = document.getElementById('modalDetailJustekBody');
+        const modal     = new bootstrap.Modal(modalEl);
 
-    function showLoading() {
+        function showLoading() {
 
-        modalBody.innerHTML = `
-            <div class="text-center py-5">
-                <div class="spinner-border" role="status">
-                    <span class="visually-hidden">
-                        Loading...
-                    </span>
-                </div>
-            </div>
-        `;
-    }
-
-    function loadDetail(id) {
-
-        showLoading();
-
-        modal.show();
-
-        fetch(`/projects/justek/${id}/detail`)
-            .then(res => {
-
-                if (!res.ok) {
-                    throw new Error('Gagal memuat detail');
-                }
-
-                return res.text();
-            })
-            .then(html => {
-
-                modalBody.innerHTML = html;
-
-                bindDetailActions(id);
-            })
-            .catch(error => {
-
-                console.error(error);
-
-                modalBody.innerHTML = `
-                    <div class="alert alert-danger mb-0">
-                        Gagal memuat detail justifikasi teknis.
+            modalBody.innerHTML = `
+                <div class="text-center py-5">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">
+                            Loading...
+                        </span>
                     </div>
-                `;
-            });
-    }
+                </div>
+            `;
+        }
 
-    function loadEdit(id) {
+        function loadDetail(id) {
 
-        showLoading();
+            showLoading();
 
-        modal.show();
+            modal.show();
 
-        fetch(`/projects/justek/${id}/edit`)
-            .then(res => {
+            fetch(`/projects/justek/${id}/detail`)
+                .then(res => {
 
-                if (!res.ok) {
-                    throw new Error('Gagal memuat form edit');
-                }
+                    if (!res.ok) {
+                        throw new Error('Gagal memuat detail');
+                    }
 
-                return res.text();
-            })
-            .then(html => {
+                    return res.text();
+                })
+                .then(html => {
 
-                modalBody.innerHTML = html;
+                    modalBody.innerHTML = html;
 
-                const scripts = modalBody.querySelectorAll('script[data-justek-edit-script]');
+                    bindDetailActions(id);
+                })
+                .catch(error => {
 
-                scripts.forEach(function (oldScript) {
+                    console.error(error);
 
-                    const newScript = document.createElement('script');
+                    modalBody.innerHTML = `
+                        <div class="alert alert-danger mb-0">
+                            Gagal memuat detail justifikasi teknis.
+                        </div>
+                    `;
+                });
+        }
 
-                    newScript.textContent =
-                        oldScript.textContent;
+        function loadEdit(id) {
 
-                    document.body.appendChild(newScript);
+            showLoading();
 
-                    oldScript.remove();
+            modal.show();
+
+            fetch(`/projects/justek/${id}/edit`)
+                .then(res => {
+
+                    if (!res.ok) {
+                        throw new Error('Gagal memuat form edit');
+                    }
+
+                    return res.text();
+                })
+                .then(html => {
+
+                    modalBody.innerHTML = html;
+
+                    const scripts = modalBody.querySelectorAll('script[data-justek-edit-script]');
+
+                    scripts.forEach(function (oldScript) {
+
+                        const newScript = document.createElement('script');
+
+                        newScript.textContent =
+                            oldScript.textContent;
+
+                        document.body.appendChild(newScript);
+
+                        oldScript.remove();
+
+                    });
+
+                    // bindEditForm(id);
+                    bindCancelEdit(id);
+                            window.loadJustekDetailAfterEdit =
+                    function () {
+
+                        loadDetail(id);
+
+                    };
+
+                })
+                .catch(error => {
+
+                    console.error(error);
+
+                    modalBody.innerHTML = `
+                        <div class="alert alert-danger mb-0">
+                            Gagal memuat form edit justifikasi teknis.
+                        </div>
+                    `;
 
                 });
+        }
 
-                // bindEditForm(id);
-                bindCancelEdit(id);
-                        window.loadJustekDetailAfterEdit =
-                function () {
+        function bindDetailActions(id) {
+
+            const btnEdit = modalBody.querySelector('.btn-modal-edit-justek');
+
+            if (btnEdit) {
+
+                btnEdit.addEventListener('click', function () {
+
+                    loadEdit(id);
+
+                });
+            }
+        }
+        function bindCancelEdit(id) {
+
+            const btnCancel = modalBody.querySelector('.btn-modal-cancel-edit');
+
+            if (btnCancel) {
+
+                btnCancel.addEventListener('click', function () {
 
                     loadDetail(id);
 
-                };
-
-            })
-            .catch(error => {
-
-                console.error(error);
-
-                modalBody.innerHTML = `
-                    <div class="alert alert-danger mb-0">
-                        Gagal memuat form edit justifikasi teknis.
-                    </div>
-                `;
-
-            });
-    }
-
-    function bindDetailActions(id) {
-
-        const btnEdit = modalBody.querySelector('.btn-modal-edit-justek');
-
-        if (btnEdit) {
-
-            btnEdit.addEventListener('click', function () {
-
-                loadEdit(id);
-
-            });
+                });
+            }
         }
-    }
-    function bindCancelEdit(id) {
 
-        const btnCancel = modalBody.querySelector('.btn-modal-cancel-edit');
+        // function bindEditForm(id) {
 
-        if (btnCancel) {
+        //     const form = modalBody.querySelector('#editJustekForm');
 
-            btnCancel.addEventListener('click', function () {
+        //     if (!form) {
+        //         return;
+        //     }
 
-                loadDetail(id);
+        //     form.addEventListener('submit', function (event) {
 
-            });
-        }
-    }
+        //         event.preventDefault();
 
-    // function bindEditForm(id) {
+        //         const submitButton =
+        //             form.querySelector('[type="submit"]');
 
-    //     const form = modalBody.querySelector('#editJustekForm');
+        //         if (submitButton) {
 
-    //     if (!form) {
-    //         return;
-    //     }
+        //             submitButton.disabled = true;
 
-    //     form.addEventListener('submit', function (event) {
+        //             submitButton.innerHTML = `
+        //                 <span class="spinner-border spinner-border-sm me-1"></span>
+        //                 Menyimpan...
+        //             `;
+        //         }
 
-    //         event.preventDefault();
+        //         const formData = new FormData(form);
 
-    //         const submitButton =
-    //             form.querySelector('[type="submit"]');
+        //         fetch(form.action, {
 
-    //         if (submitButton) {
+        //             method: 'POST',
 
-    //             submitButton.disabled = true;
+        //             headers: {
+        //                 'X-CSRF-TOKEN':
+        //                     document.querySelector('meta[name="csrf-token"]')
+        //                     ?.getAttribute('content') ?? ''
+        //             },
 
-    //             submitButton.innerHTML = `
-    //                 <span class="spinner-border spinner-border-sm me-1"></span>
-    //                 Menyimpan...
-    //             `;
-    //         }
+        //             body: formData
 
-    //         const formData = new FormData(form);
+        //         })
+        //         .then(async response => {
 
-    //         fetch(form.action, {
+        //             const data = await response.json();
 
-    //             method: 'POST',
+        //             if (!response.ok) {
 
-    //             headers: {
-    //                 'X-CSRF-TOKEN':
-    //                     document.querySelector('meta[name="csrf-token"]')
-    //                     ?.getAttribute('content') ?? ''
-    //             },
+        //                 throw {
+        //                     validation: true,
+        //                     data: data
+        //                 };
+        //             }
 
-    //             body: formData
+        //             return data;
+        //         })
+        //         .then(data => {
 
-    //         })
-    //         .then(async response => {
+        //             if (data.success) {
 
-    //             const data = await response.json();
+        //                 // Setelah berhasil update,
+        //                 // langsung kembali ke DETAIL modal.
+        //                 loadDetail(id);
 
-    //             if (!response.ok) {
+        //                 // Optional: refresh halaman jika ingin
+        //                 // tabel riwayat langsung mengambil data baru.
+        //                 //
+        //                 // location.reload();
+        //             }
 
-    //                 throw {
-    //                     validation: true,
-    //                     data: data
-    //                 };
-    //             }
+        //         })
+        //         .catch(error => {
 
-    //             return data;
-    //         })
-    //         .then(data => {
+        //             console.error(error);
 
-    //             if (data.success) {
+        //             if (submitButton) {
 
-    //                 // Setelah berhasil update,
-    //                 // langsung kembali ke DETAIL modal.
-    //                 loadDetail(id);
+        //                 submitButton.disabled = false;
 
-    //                 // Optional: refresh halaman jika ingin
-    //                 // tabel riwayat langsung mengambil data baru.
-    //                 //
-    //                 // location.reload();
-    //             }
+        //                 submitButton.innerHTML = `
+        //                     <i class="ti ti-device-floppy me-1"></i>
+        //                     Simpan Perubahan
+        //                 `;
+        //             }
 
-    //         })
-    //         .catch(error => {
+        //             let message =
+        //                 'Gagal menyimpan perubahan justifikasi teknis.';
 
-    //             console.error(error);
+        //             if (
+        //                 error.validation &&
+        //                 error.data &&
+        //                 error.data.errors
+        //             ) {
 
-    //             if (submitButton) {
+        //                 message = Object.values(error.data.errors)
+        //                     .flat()
+        //                     .join('<br>');
+        //             }
 
-    //                 submitButton.disabled = false;
+        //             const errorBox =
+        //                 form.querySelector('#editJustekError');
 
-    //                 submitButton.innerHTML = `
-    //                     <i class="ti ti-device-floppy me-1"></i>
-    //                     Simpan Perubahan
-    //                 `;
-    //             }
+        //             if (errorBox) {
 
-    //             let message =
-    //                 'Gagal menyimpan perubahan justifikasi teknis.';
+        //                 errorBox.innerHTML = message;
 
-    //             if (
-    //                 error.validation &&
-    //                 error.data &&
-    //                 error.data.errors
-    //             ) {
+        //                 errorBox.classList.remove('d-none');
+        //             }
+        //         });
+        //     });
+        // }
 
-    //                 message = Object.values(error.data.errors)
-    //                     .flat()
-    //                     .join('<br>');
-    //             }
+        document
+            .querySelectorAll('.btn-lihat-justek')
+            .forEach(function (btn) {
 
-    //             const errorBox =
-    //                 form.querySelector('#editJustekError');
+                btn.addEventListener('click', function () {
 
-    //             if (errorBox) {
+                    const id = this.dataset.id;
 
-    //                 errorBox.innerHTML = message;
+                    loadDetail(id);
 
-    //                 errorBox.classList.remove('d-none');
-    //             }
-    //         });
-    //     });
-    // }
-
-    document
-        .querySelectorAll('.btn-lihat-justek')
-        .forEach(function (btn) {
-
-            btn.addEventListener('click', function () {
-
-                const id = this.dataset.id;
-
-                loadDetail(id);
+                });
 
             });
 
-        });
+        document
+            .querySelectorAll('.btn-edit-justek')
+            .forEach(function (btn) {
 
-    document
-        .querySelectorAll('.btn-edit-justek')
-        .forEach(function (btn) {
+                btn.addEventListener('click', function () {
 
-            btn.addEventListener('click', function () {
+                    const id = this.dataset.id;
 
-                const id = this.dataset.id;
+                    loadEdit(id);
 
-                loadEdit(id);
+                });
 
             });
 
-        });
-
-});
+    });
 </script>
 @endpush

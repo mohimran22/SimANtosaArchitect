@@ -15,240 +15,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Log;
 
 class JustekController extends Controller
 {
-    // public function store(Request $request)
-    // {
-    //     $validated = $request->validate([
-    //         'project_id' => [
-    //             'required',
-    //             'uuid',
-    //             'exists:projects,id',
-    //         ],
-    //         'contact_name' => [
-    //             'required',
-    //             'string',
-    //             'max:255',
-    //         ],
-    //         'offer_date' => [
-    //             'required',
-    //             'date',
-    //         ],
-    //         'job_duration' => [
-    //             'nullable',
-    //             'string',
-    //             'max:255',
-    //         ],
-
-    //         'discount' => [
-    //             'nullable',
-    //             'numeric',
-    //         ],
-
-    //         'tax_rate' => [
-    //             'nullable',
-    //             'numeric',
-    //             'min:0',
-    //             'max:100',
-    //         ],
-
-    //         'shipping' => [
-    //             'nullable',
-    //             'numeric',
-    //             'min:0',
-    //         ],
-
-    //         'profit' => [
-    //             'nullable',
-    //             'numeric',
-    //             'min:0',
-    //             'max:100',
-    //         ],
-
-    //         'overhead' => [
-    //             'nullable',
-    //             'numeric',
-    //             'min:0',
-    //             'max:100',
-    //         ],
-
-    //         'notes' => [
-    //             'nullable',
-    //             'string',
-    //         ],
-
-    //         'analisa_version' => [
-    //             'nullable',
-    //             'integer',
-    //         ],
-
-    //         'items' => [
-    //             'required',
-    //             'array',
-    //         ],
-
-    //         'items.*.floor_name' => [
-    //             'nullable',
-    //             'string',
-    //             'max:255',
-    //         ],
-
-    //         'items.*.category_name' => [
-    //             'nullable',
-    //             'string',
-    //             'max:255',
-    //         ],
-
-    //         'items.*.job_name' => [
-    //             'required',
-    //             'string',
-    //             'max:255',
-    //         ],
-
-    //         'items.*.description' => [
-    //             'nullable',
-    //             'string',
-    //         ],
-
-    //         'items.*.volume' => [
-    //             'required',
-    //             'numeric',
-    //         ],
-
-    //         'items.*.satuan' => [
-    //             'required',
-    //             'string',
-    //             'max:255',
-    //         ],
-
-    //         'items.*.price' => [
-    //             'required',
-    //             'numeric',
-    //             'min:0',
-    //         ],
-
-    //         'items.*.total' => [
-    //             'required',
-    //             'numeric',
-    //             'min:0',
-    //         ],
-
-    //         'items.*.profit' => [
-    //             'nullable',
-    //             'numeric',
-    //             'min:0',
-    //             'max:100',
-    //         ],
-
-    //         'items.*.overhead' => [
-    //             'nullable',
-    //             'numeric',
-    //             'min:0',
-    //             'max:100',
-    //         ],
-
-    //         'items.*.base_price' => [
-    //             'nullable',
-    //             'numeric',
-    //         ],
-
-    //         'items.*.volume1' => [
-    //             'nullable',
-    //             'numeric',
-    //         ],
-
-    //         'items.*.volume2' => [
-    //             'nullable',
-    //             'numeric',
-    //         ],
-    //     ]);
-    //     $project = Project::findOrFail(
-    //         $validated['project_id']
-    //     );
-    //     return DB::transaction(function () use ($validated, $project) {
-
-    //         $offerDate = Carbon::parse($validated['offer_date']);
-
-    //         $number = $this->generateJustekNumber($offerDate);
-
-    //         $justek = TechnicalJustification::create([
-    //             'project_id' => $project->id,
-
-    //             'justek_sequence' => $number['sequence'],
-    //             'justek_number' => $number['number'],
-    //             'justek_period' => $number['period'],
-
-    //             'offer_date' => $offerDate->toDateString(),
-
-    //             'contact_name' => $validated['contact_name'],
-    //             'job_duration' => $validated['job_duration'] ?? null,
-
-    //             'discount' => $validated['discount'] ?? 0,
-
-    //             'tax_rate' => $validated['tax_rate'] ?? 0,
-
-    //             'shipping' => $validated['shipping'] ?? 0,
-
-    //             'profit' => $validated['profit'] ?? 0,
-    //             'overhead' => $validated['overhead'] ?? 0,
-
-    //             'notes' => $validated['notes'] ?? null,
-
-    //             'analisa_version' =>
-    //                 $validated['analisa_version'] ?? null,
-
-    //             'created_by' => Auth::id(),
-    //         ]);
-
-    //         foreach ($validated['items'] as $index => $item) {
-
-    //             $justek->items()->create([
-    //                 'floor_name' => $item['floor_name'] ?? null,
-    //                 'category_name' => $item['category_name'] ?? null,
-    //                 'job_name' => $item['job_name'],
-    //                 'description' => $item['description'] ?? null,
-    //                 'volume' => $item['volume'],
-    //                 'satuan' => $item['satuan'],
-    //                 'price' => $item['price'],
-    //                 'total' => $item['total'],
-    //                 'profit' => $item['profit'] ?? 0,
-    //                 'overhead' => $item['overhead'] ?? 0,
-    //                 'base_price' => $item['base_price'] ?? null,
-    //                 'volume1' => $item['volume1'] ?? null,
-    //                 'volume2' => $item['volume2'] ?? null,
-    //                 'is_draft' => false,
-    //                 'order_no' => $index + 1,
-    //             ]);
-    //         }
-
-    //         $subtotal = $justek->items()->sum('total');
-    //         $discount = (float) $justek->discount;
-    //         $subtotalAfterDiscount = $subtotal - $discount;
-    //         $taxTotal = $subtotalAfterDiscount * ((float) $justek->tax_rate / 100);
-    //         $grandTotal = $subtotalAfterDiscount + $taxTotal + (float) $justek->shipping;
-
-    //         $justek->update([
-    //             'subtotal' => $subtotal,
-    //             'subtotal_after_discount' => $subtotalAfterDiscount,
-    //             'tax_total' => $taxTotal,
-    //             'grand_total' => $grandTotal,
-    //             'base_subtotal' => $subtotal,
-    //             'updated_by' => Auth::id(),
-    //         ]);
-
-    //         return redirect()
-    //             ->route('projects.create', [
-    //                 'project_id' => $justek->project_id,
-    //                 'step' => 9,
-    //                 'justek_id' => $justek->id,
-    //             ])
-    //             ->with(
-    //                 'success',
-    //                 "Justifikasi Teknis {$justek->justek_number} berhasil dibuat."
-    //             );
-    //     });
-    // }
     public function store(Request $request)
 {
     $validated = $request->validate([
@@ -814,5 +584,383 @@ class JustekController extends Controller
             'step' => 9,
         ])
         ->with('success', 'Justifikasi Teknis berhasil dihapus.');
+}
+public function update(Request $request, $id)
+{
+    $validated = $request->validate([
+
+        'project_id' => [
+            'required',
+            'uuid',
+            'exists:projects,id',
+        ],
+
+        'contact_name' => [
+            'required',
+            'string',
+            'max:255',
+        ],
+
+        'offer_date' => [
+            'required',
+            'date',
+        ],
+
+        'job_duration' => [
+            'nullable',
+            'string',
+            'max:255',
+        ],
+
+        'discount' => [
+            'nullable',
+            'numeric',
+            'min:0',
+        ],
+
+        'tax_rate' => [
+            'nullable',
+            'numeric',
+            'min:0',
+            'max:100',
+        ],
+
+        'shipping' => [
+            'nullable',
+            'numeric',
+            'min:0',
+        ],
+
+        'profit' => [
+            'nullable',
+            'numeric',
+            'min:0',
+            'max:100',
+        ],
+
+        'overhead' => [
+            'nullable',
+            'numeric',
+            'min:0',
+            'max:100',
+        ],
+
+        'notes' => [
+            'nullable',
+            'string',
+        ],
+
+        'analisa_version' => [
+            'nullable',
+            'integer',
+        ],
+
+        'items' => [
+            'required',
+            'array',
+            'min:1',
+        ],
+
+        'items.*.floor_name' => [
+            'nullable',
+            'string',
+            'max:255',
+        ],
+
+        'items.*.category_name' => [
+            'nullable',
+            'string',
+            'max:255',
+        ],
+
+        'items.*.job_name' => [
+            'required',
+            'string',
+            'max:255',
+        ],
+
+        'items.*.description' => [
+            'nullable',
+            'string',
+        ],
+
+        'items.*.volume' => [
+            'required',
+            'numeric',
+        ],
+
+        'items.*.satuan' => [
+            'required',
+            'string',
+            'max:255',
+        ],
+
+        'items.*.base_price' => [
+            'nullable',
+            'numeric',
+            'min:0',
+        ],
+
+        'items.*.price' => [
+            'required',
+            'numeric',
+            'min:0',
+        ],
+
+        'items.*.total' => [
+            'required',
+            'numeric',
+            'min:0',
+        ],
+
+        'items.*.profit' => [
+            'nullable',
+            'numeric',
+            'min:0',
+            'max:100',
+        ],
+
+        'items.*.overhead' => [
+            'nullable',
+            'numeric',
+            'min:0',
+            'max:100',
+        ],
+
+        'items.*.volume1' => [
+            'nullable',
+            'numeric',
+        ],
+
+        'items.*.volume2' => [
+            'nullable',
+            'numeric',
+        ],
+
+        'items.*.order_no' => [
+            'nullable',
+            'integer',
+            'min:1',
+        ],
+    ]);
+
+    $justek = TechnicalJustification::findOrFail($id);
+
+    if (
+        (string) $justek->project_id !==
+        (string) $validated['project_id']
+    ) {
+        abort(404);
+    }
+
+
+    $project = Project::findOrFail(
+        $justek->project_id
+    );
+
+    DB::beginTransaction();
+
+    try {
+
+        $offerDate = Carbon::parse(
+            $validated['offer_date']
+        );
+
+        $justek->update([
+            'offer_date' => $offerDate->toDateString(),
+            'contact_name' => $validated['contact_name'],
+            'job_duration' => $validated['job_duration'] ?? null,
+            'discount' => $validated['discount'] ?? 0,
+            'tax_rate' => $validated['tax_rate'] ?? 0,
+            'shipping' => $validated['shipping'] ?? 0,
+            'profit' => $validated['profit'] ?? 0,
+            'overhead' => $validated['overhead'] ?? 0,
+            'notes' => $validated['notes'] ?? null,
+            'analisa_version' => $validated['analisa_version'] ?? null,
+            'updated_by' => Auth::id(),
+        ]);
+
+        $justek->items()->delete();
+
+        foreach (
+            $validated['items']
+            as $index => $item
+        ) {
+
+            $justek->items()->create([
+                'floor_name' => $item['floor_name'] ?? null,
+                'category_name' => $item['category_name'] ?? null,
+                'job_name' => $item['job_name'],
+                'description' => $item['description'] ?? null,
+                'volume' => $item['volume'],
+                'satuan' => $item['satuan'],
+                'base_price' => $item['base_price'] ?? null,
+                'price' => $item['price'],
+                'total' => $item['total'],
+                'profit' => $item['profit'] ?? 0,
+                'overhead' => $item['overhead'] ?? 0,
+                'volume1' => $item['volume1'] ?? null,
+                'volume2' => $item['volume2'] ?? null,
+                'is_draft' => false,
+                'order_no' => $index + 1,
+            ]);
+        }
+
+        $subtotal = (float) $justek->items()->sum('total');
+        $discount = (float) ($justek->discount ?? 0);
+        $subtotalAfterDiscount = max( 0, $subtotal - $discount);
+        $taxRate = (float) ($justek->tax_rate ?? 0);
+        $taxTotal = $subtotalAfterDiscount * ($taxRate / 100);
+        $shipping = (float) ($justek->shipping ?? 0);
+        $grandTotal = $subtotalAfterDiscount + $taxTotal + $shipping;
+
+        $justek->update([
+            'subtotal' => $subtotal,
+            'subtotal_after_discount' => $subtotalAfterDiscount,
+            'tax_total' => $taxTotal,
+            'grand_total' => $grandTotal,
+            'base_subtotal' => $subtotal,
+            'updated_by' => Auth::id(),
+        ]);
+
+        DB::commit();
+
+        $creatorUser = auth()->user();
+
+        $event = 'justek_updated';
+
+        $cfg = config(
+            "project_events.justek_updated"
+        );
+
+        if ($cfg) {
+
+            $targets = [
+                'updated_self' => $creatorUser,
+            ];
+
+
+            if ($project->customer?->user) {
+
+                $targets['customer'] =
+                    $project->customer->user;
+            }
+
+
+            foreach (
+                $targets as $key => $user
+            ) {
+
+                if (!$user) {
+                    continue;
+                }
+
+                if (
+                    $user->id ===
+                    $creatorUser->id
+                ) {
+
+                    $role = 'updated_self';
+
+                } elseif (
+                    $project->customer?->user &&
+                    $user->id ===
+                    $project->customer->user->id
+                ) {
+
+                    $role = 'customer';
+
+                } else {
+
+                    continue;
+                }
+
+                if (
+                    !isset(
+                        $cfg['message'][$role]
+                    )
+                ) {
+                    continue;
+                }
+
+                ProjectNotifier::notifyUsers(
+
+                    [$user],
+
+                    ProjectNotifier::makePayload(
+
+                        $project,
+
+                        [
+                            'type' => $event,
+                            'role' => $role,
+                            'title' => $cfg['title'],
+                            'message' => $cfg['message'][$role],
+                            'url' =>
+                                route(
+                                    'projects.create',
+                                    [
+                                        'project_id' => $project->id,
+                                        'step' => 9,
+                                        'justek_id' => $justek->id,
+                                    ]
+                                ),
+                        ]
+                    )
+                );
+            }
+        }
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Justifikasi Teknis berhasil diperbarui.',
+                'justek_id' => $justek->id,
+            ]);
+        }
+
+        return redirect()
+            ->route(
+                'projects.create',
+                [
+
+                    'project_id' =>
+                        $justek->project_id,
+
+                    'step' =>
+                        9,
+
+                    'justek_id' =>
+                        $justek->id,
+                ]
+            )
+            ->with(
+                'success',
+                "Justifikasi Teknis {$justek->justek_number} berhasil diperbarui."
+            );
+
+
+    } 
+    catch (\Throwable $e) {
+        DB::rollBack();
+
+        Log::error('Gagal memperbarui Justifikasi Teknis', [
+            'justek_id' => $justek->id ?? $id,
+            'error' => $e->getMessage(),
+        ]);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memperbarui Justifikasi Teknis.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+
+        return back()
+            ->withInput()
+            ->withErrors([
+                'error' => 'Gagal memperbarui Justifikasi Teknis.',
+            ]);
+    }
 }
 }

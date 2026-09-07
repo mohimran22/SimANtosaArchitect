@@ -18,27 +18,18 @@
 
     </div>
 
-
-    {{-- Error --}}
     <div id="editJustekError"
          class="alert alert-danger d-none">
     </div>
 
 
-    <form id="editJustekForm"
-          action="{{ route(
-              'projects.justek.update',
-              $technicalJustification->id
-          ) }}"
-          method="POST">
-
+    <form id="editJustekForm" action="{{ route('projects.justek.update', $technicalJustification->id) }}" method="POST">
         @csrf
         @method('PUT')
 
-        {{-- ====================================================
-            INFORMASI JUSTEK
-        ==================================================== --}}
-
+    <input type="hidden"
+           name="project_id"
+           value="{{ $technicalJustification->project_id }}">
         <h4 class="fw-bold mb-3">
             Informasi Justifikasi Teknis
         </h4>
@@ -82,7 +73,7 @@
                     Nama Customer
                 </label>
 
-                <input type="text"
+                <input type="text" name="contact_name"
                        class="form-control"
                        value="{{ $technicalJustification->contact_name }}"
                        readonly>
@@ -90,11 +81,6 @@
             </div>
 
         </div>
-
-
-        {{-- ====================================================
-            RINCIAN PEKERJAAN
-        ==================================================== --}}
 
         <div class="rab-detail-header mb-3">
 
@@ -608,11 +594,11 @@
 
 </div>
 
-    
 <script type="application/json" id="justekEditItemsData">
 {!! json_encode(
     $technicalJustification->items->map(function ($item) {
         return [
+            'floor_name'    => $item->floor_name,
             'category_name' => $item->category_name,
             'job_name'      => $item->job_name,
             'description'   => $item->description,
@@ -621,6 +607,10 @@
             'base_price'    => $item->base_price,
             'price'         => $item->price,
             'total'         => $item->total,
+            'profit'        => $item->profit,
+            'overhead'      => $item->overhead,
+            'volume1'       => $item->volume1,
+            'volume2'       => $item->volume2,
             'order_no'      => $item->order_no,
         ];
     })->values()
@@ -629,41 +619,12 @@
 
 <script data-justek-edit-script>
 (function () {
-    if (typeof window.initJustekEditForm === 'function') {
+
+    if (
+        typeof window.initJustekEditForm === 'function'
+    ) {
         window.initJustekEditForm();
     }
-    const itemsData = JSON.parse(
-        document.getElementById('justekEditItemsData').textContent
-    );
 
-    const form = document.getElementById('editJustekForm');
-
-    form.addEventListener('submit', function (event) {
-        event.preventDefault();
-
-        const formData = new FormData(form);
-
-        fetch(form.action, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN':
-                    document.querySelector('meta[name="csrf-token"]')
-                        ?.getAttribute('content') ?? ''
-            },
-            body: formData
-        })
-        .then(async res => {
-            const data = await res.json();
-            if (!res.ok) throw { validation: true, data };
-            return data;
-        })
-
-        .then(data => {
-            if (data.success && typeof window.loadJustekDetailAfterEdit === 'function') {
-                window.loadJustekDetailAfterEdit();
-            }
-        })
-        .catch(err => console.error(err));
-    });
 })();
 </script>

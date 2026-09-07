@@ -347,7 +347,7 @@
         @include('projects.steps.build-process')
     </div>
     @vite('resources/js/pages/justekrab.js')
-    @vite('resources/js/pages/justek-edit.js')
+    @vite('resources/js/pages/justekedit.js')
 @push('js')
 <script>
 

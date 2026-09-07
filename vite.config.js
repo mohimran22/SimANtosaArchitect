@@ -9,7 +9,7 @@ export default defineConfig({
                 'resources/css/app.css', 
                 'resources/js/app.js',
                 'resources/js/pages/justekrab.js',
-                'resources/js/pages/justek-edit.js'
+                'resources/js/pages/justekedit.js'
             ],
             refresh: true,
         }),

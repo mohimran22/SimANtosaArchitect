@@ -283,8 +283,8 @@
 
                     <div class="modal-body">
                         <div class="mb-3">
-                            <label class="form-label fw-semibold">
-                                Lantai <span class="text-danger">*</span>
+                            <label class="form-label required fw-semibold">
+                                Lantai
                             </label>
                             <div id="floorSelectWrapper">
                                 <select id="rab_item_floor" class="form-select">
@@ -315,8 +315,8 @@
 
                         <div class="mb-3">
 
-                            <label class="form-label fw-semibold">
-                                Kategori <span class="text-danger">*</span>
+                            <label class="form-label required fw-semibold">
+                                Kategori
                             </label>
 
                             <div id="categorySelectWrapper">
@@ -346,8 +346,8 @@
 
                         </div>
                         <div class="mb-3">
-                            <label class="form-label fw-semibold">
-                                Nama Pekerjaan <span class="text-danger">*</span>
+                            <label class="form-label required fw-semibold">
+                                Nama Pekerjaan
                             </label>
                             <input type="text"
                                 id="rab_item_job_name"
@@ -359,13 +359,13 @@
                         <div class="mb-3">
 
                             <label class="form-label fw-semibold">
-                                Deskripsi Pekerjaan
+                                Sub Kategori
                             </label>
 
                             <textarea id="rab_item_description"
                                     class="form-control"
                                     rows="2"
-                                    placeholder="Keterangan pekerjaan (opsional)"></textarea>
+                                    placeholder="Contoh: Pekerjaan Kolom K1"></textarea>
 
                         </div>
 
@@ -373,8 +373,8 @@
 
                             <div class="col-md-7">
 
-                                <label class="form-label fw-semibold">
-                                    Volume <span class="text-danger">*</span>
+                                <label class="form-label required fw-semibold">
+                                    Volume
                                 </label>
 
                                 <input type="text"
@@ -387,8 +387,8 @@
 
                             <div class="col-md-5">
 
-                                <label class="form-label fw-semibold">
-                                    Satuan <span class="text-danger">*</span>
+                                <label class="form-label required fw-semibold">
+                                    Satuan
                                 </label>
 
                                 <input type="text"
@@ -419,8 +419,6 @@
                         </div>
 
                     </div>
-
-
                     <div class="modal-footer border-0">
 
                         <button type="button"

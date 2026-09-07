@@ -17,14 +17,45 @@ window.initJustekEditForm = function () {
     const container = document.getElementById('justekEditItemsContainer');
 
     const itemModalEl = document.getElementById('editJustekItemModal');
-    if (itemModalEl) {
-        itemModalEl.addEventListener('hidden.bs.modal', function () {
-            const parentModalEl = document.getElementById('modalDetailJustek');
-            if (parentModalEl && parentModalEl.classList.contains('show')) {
-                document.body.classList.add('modal-open');
+    if (itemModalEl && !document.getElementById('justekEditItemModalZIndexFix')) {
+
+        const style = document.createElement('style');
+
+        style.id = 'justekEditItemModalZIndexFix';
+
+        style.textContent = `
+            #editJustekItemModal {
+                z-index: 1060;
             }
-        });
+            .modal-backdrop:nth-of-type(2) {
+                z-index: 1055;
+            }
+        `;
+
+        document.head.appendChild(style);
+
     }
+
+    if (itemModalEl) {
+
+        itemModalEl.addEventListener('hidden.bs.modal', function () {
+
+            const parentModalEl =
+                document.getElementById('modalDetailJustek');
+
+            if (
+                parentModalEl &&
+                parentModalEl.classList.contains('show')
+            ) {
+
+                document.body.classList.add('modal-open');
+
+            }
+
+        });
+
+    }
+
     if (!body || !container) {
         return;
     }
@@ -35,8 +66,7 @@ window.initJustekEditForm = function () {
 
     try {
 
-        justekEditItems =
-            JSON.parse(dataEl?.textContent || '[]');
+        justekEditItems = JSON.parse(dataEl?.textContent || '[]');
 
     } catch (error) {
 
@@ -58,33 +88,23 @@ window.initJustekEditForm = function () {
 
             return {
 
-                id:
-                    item.id ?? null,
+                id: item.id ?? null,
 
-                temp_id:
-                    item.temp_id ??
-                    ('item_' + Date.now() + '_' + index),
+                temp_id: item.temp_id ?? ('item_' + Date.now() + '_' + index),
 
-                floor_name:
-                    item.floor_name ?? '',
+                floor_name: item.floor_name ?? '',
 
-                category_name:
-                    item.category_name ?? '',
+                category_name: item.category_name ?? '',
 
-                job_name:
-                    item.job_name ?? '',
+                job_name: item.job_name ?? '',
 
-                description:
-                    item.description ?? '',
+                description: item.description ?? '',
 
-                satuan:
-                    item.satuan ?? '',
+                satuan: item.satuan ?? '',
 
-                volume:
-                    parseDecimal(item.volume),
+                volume: parseDecimal(item.volume),
 
-                base_price:
-                    parseRupiah(item.base_price),
+                base_price: parseRupiah(item.base_price),
 
                 price:
                     parseRupiah(
@@ -92,11 +112,9 @@ window.initJustekEditForm = function () {
                         item.base_price
                     ),
 
-                total:
-                    parseRupiah(item.total),
+                total: parseRupiah(item.total),
 
-                order_no:
-                    item.order_no ?? index + 1
+                order_no: item.order_no ?? index + 1
 
             };
 
@@ -117,7 +135,6 @@ window.initJustekEditForm = function () {
             return value;
         }
 
-
         let str =
             String(value)
                 .trim()
@@ -134,10 +151,10 @@ window.initJustekEditForm = function () {
                     .replace(',', '.');
 
         } else if (str.includes(',')) {
-
             str = str.replace(',', '.');
 
         } else {
+
             const parts =
                 str.split('.');
 
@@ -157,12 +174,12 @@ window.initJustekEditForm = function () {
             }
 
         }
+
         const number = parseFloat(str);
         return Number.isFinite(number)
             ? number
             : 0;
     }
-
 
     function formatRupiah(value) {
 
@@ -273,7 +290,6 @@ window.initJustekEditForm = function () {
         if (!select) {
             return;
         }
-
 
         const currentValue = select.value;
 
@@ -930,10 +946,6 @@ window.initJustekEditForm = function () {
             tr.dataset.index =
                 originalIndex;
 
-
-            /*
-             * Mode sorting.
-             */
             if (justekEditSortMode) {
 
                 tr.draggable = true;
@@ -1555,11 +1567,6 @@ window.initJustekEditForm = function () {
 
     }
 
-
-    /* ============================================================
-        INPUT FORMAT RUPIAH
-    ============================================================ */
-
     function bindCurrencyInput(
         displayId,
         hiddenId
@@ -1585,26 +1592,10 @@ window.initJustekEditForm = function () {
         display.addEventListener(
             'input',
             function () {
-
-                const raw =
-                    this.value;
-
-
-                const value =
-                    parseRupiah(raw);
-
-
-                hidden.value =
-                    value;
-
-
-                /*
-                 * Jangan langsung format ketika
-                 * user sedang mengetik agar cursor
-                 * tidak lompat.
-                 */
+                const raw = this.value;
+                const value = parseRupiah(raw);
+                hidden.value = value;
                 recalculateJustekEditAll();
-
             }
         );
 
@@ -1636,11 +1627,6 @@ window.initJustekEditForm = function () {
 
     }
 
-
-    /* ============================================================
-        INPUT CHANGE
-    ============================================================ */
-
     const taxRate =
         document.getElementById(
             'justekEditTaxRate'
@@ -1656,28 +1642,15 @@ window.initJustekEditForm = function () {
 
     }
 
-
-    /*
-     * Discount
-     */
     bindCurrencyInput(
         'justekEditDiscountDisplay',
         'justekEditDiscount'
     );
 
-
-    /*
-     * Shipping
-     */
     bindCurrencyInput(
         'justekEditShippingDisplay',
         'justekEditShipping'
     );
-
-
-    /* ============================================================
-        FLOOR CHANGE
-    ============================================================ */
 
     const floorSelect =
         document.getElementById(
@@ -1713,11 +1686,6 @@ window.initJustekEditForm = function () {
 
     }
 
-
-    /* ============================================================
-        CATEGORY CHANGE
-    ============================================================ */
-
     const categorySelect =
         document.getElementById(
             'edit_justek_item_category'
@@ -1743,11 +1711,6 @@ window.initJustekEditForm = function () {
 
     }
 
-
-    /* ============================================================
-        NEW FLOOR / CATEGORY
-    ============================================================ */
-
     document
         .getElementById(
             'editCancelNewFloor'
@@ -1767,11 +1730,6 @@ window.initJustekEditForm = function () {
             cancelNewCategory
         );
 
-
-    /* ============================================================
-        ADD ITEM BUTTON
-    ============================================================ */
-
     document
         .getElementById(
             'justekEditAddItemButton'
@@ -1790,11 +1748,6 @@ window.initJustekEditForm = function () {
             'click',
             saveJustekEditItem
         );
-
-
-    /* ============================================================
-        PRICE DISPLAY
-    ============================================================ */
 
     const priceDisplay =
         document.getElementById(
@@ -1859,8 +1812,6 @@ window.initJustekEditForm = function () {
 
     const initialDiscount = parseRupiah(discountHidden ? discountHidden.value : 0);
     const initialShipping = parseRupiah(shippingHidden ? shippingHidden.value : 0);
-
-
 
     const discountDisplay =
         document.getElementById(
@@ -2033,9 +1984,6 @@ window.initJustekEditForm = function () {
                         );
 
                     }
-
-                    justekEditModal?.hide();
-
                     if (
                         typeof window.onJustekEditSuccess === 'function'
                     ) {

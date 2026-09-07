@@ -503,7 +503,7 @@
 
                                 <th></th>
 
-                                <th id="grand-total-pelaksanaan-nilai">
+                                <th id="grand-total-bobot-kumulatif">
                                     0
                                 </th>
 
@@ -1263,6 +1263,7 @@
             let grandTotalVolume = 0;
             let grandTotalHarga = 0;
             let grandTotalJustek = 0;
+            let grandTotalBobotKumulatif = 0;
 
             document.querySelectorAll('tr[data-item-id]').forEach(row => {
 
@@ -1337,7 +1338,12 @@
                         Math.round(hargaPelaksanaan)
                             .toLocaleString('id-ID');
                 }
-
+                if (bobotKumulatifCell) {
+                    grandTotalBobotKumulatif +=
+                        parseFloat(
+                            bobotKumulatifCell.textContent.replace('%', '').trim()
+                        ) || 0;
+                }
                 grandTotalJustek += totalJustek;
                 grandTotalVolume += volPelaksanaan;
                 grandTotalHarga += hargaPelaksanaan;
@@ -1360,7 +1366,13 @@
                     Math.round(grandTotalHarga)
                         .toLocaleString('id-ID');
             }
+            const grandBobot =
+                document.getElementById('grand-total-bobot-kumulatif');
 
+            if (grandBobot) {
+                grandBobot.textContent =
+                    grandTotalBobotKumulatif.toFixed(2) + '%';
+            }
             const footerJustek =
                 document.getElementById('grand-total-justek');
 
