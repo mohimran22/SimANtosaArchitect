@@ -825,90 +825,105 @@ public function update(Request $request, $id)
 
         DB::commit();
 
-        $creatorUser = auth()->user();
+        try {
 
-        $event = 'justek_updated';
+            $creatorUser = auth()->user();
 
-        $cfg = config(
-            "project_events.justek_updated"
-        );
+            $event = 'justek_updated';
 
-        if ($cfg) {
+            $cfg = config(
+                "project_events.$event"
+            );
 
-            $targets = [
-                'updated_self' => $creatorUser,
-            ];
+            if ($cfg) {
 
+                $targets = [
+                    'updated_self' => $creatorUser,
+                ];
 
-            if ($project->customer?->user) {
+                if ($project->customer?->user) {
+                    $targets['customer'] =
+                        $project->customer->user;
+                }
 
-                $targets['customer'] =
-                    $project->customer->user;
+                foreach ($targets as $user) {
+
+                    if (!$user) {
+                        continue;
+                    }
+
+                    if (
+                        $creatorUser &&
+                        $user->id === $creatorUser->id
+                    ) {
+
+                        $role = 'updated_self';
+
+                    } elseif (
+                        $project->customer?->user &&
+                        $user->id ===
+                            $project->customer->user->id
+                    ) {
+
+                        $role = 'customer';
+
+                    } else {
+
+                        continue;
+                    }
+
+                    if (
+                        !isset(
+                            $cfg['message'][$role]
+                        )
+                    ) {
+                        continue;
+                    }
+
+                    ProjectNotifier::notifyUsers(
+                        [$user],
+                        ProjectNotifier::makePayload(
+                            $project,
+                            [
+                                'type' => $event,
+
+                                'role' => $role,
+
+                                'title' =>
+                                    $cfg['title'],
+
+                                'message' =>
+                                    $cfg['message'][$role],
+
+                                'url' =>
+                                    route(
+                                        'projects.create',
+                                        [
+                                            'project_id' =>
+                                                $project->id,
+
+                                            'step' => 9,
+
+                                            'justek_id' =>
+                                                $justek->id,
+                                        ]
+                                    ),
+                            ]
+                        )
+                    );
+                }
             }
 
-
-            foreach (
-                $targets as $key => $user
-            ) {
-
-                if (!$user) {
-                    continue;
-                }
-
-                if (
-                    $user->id ===
-                    $creatorUser->id
-                ) {
-
-                    $role = 'updated_self';
-
-                } elseif (
-                    $project->customer?->user &&
-                    $user->id ===
-                    $project->customer->user->id
-                ) {
-
-                    $role = 'customer';
-
-                } else {
-
-                    continue;
-                }
-
-                if (
-                    !isset(
-                        $cfg['message'][$role]
-                    )
-                ) {
-                    continue;
-                }
-
-                ProjectNotifier::notifyUsers(
-
-                    [$user],
-
-                    ProjectNotifier::makePayload(
-
-                        $project,
-
-                        [
-                            'type' => $event,
-                            'role' => $role,
-                            'title' => $cfg['title'],
-                            'message' => $cfg['message'][$role],
-                            'url' =>
-                                route(
-                                    'projects.create',
-                                    [
-                                        'project_id' => $project->id,
-                                        'step' => 9,
-                                        'justek_id' => $justek->id,
-                                    ]
-                                ),
-                        ]
-                    )
-                );
-            }
+        } catch (\Throwable $notificationError) {
+            Log::warning(
+                'Gagal mengirim notifikasi Justek Updated',
+                [
+                    'justek_id' => $justek->id,
+                    'project_id' => $project->id,
+                    'error' =>
+                        $notificationError->getMessage(),
+                ]
+            );
         }
         if ($request->expectsJson()) {
             return response()->json([
