@@ -103,12 +103,12 @@
                                         <td>
                                             <select name="worker_id[]" class="form-select select2 worker-select">
                                                 <option value="">-- Pilih Tenaga Kerja --</option>
-                                                    @foreach($workers as $worker)
+                                                    {{-- @foreach($workers as $worker)
                                                         <option value="{{ $worker->id }}"
                                                             {{ $workerId == $worker->id ? 'selected' : '' }}>
                                                             {{ $worker->user->fullname }}
                                                         </option>
-                                                    @endforeach
+                                                    @endforeach --}}
                                                 <option value="manual"
                                                     {{ $workerId == 'manual' ? 'selected' : '' }}>
                                                     + Manual Input
@@ -146,11 +146,11 @@
                                 <select name="worker_id[]" class="form-select select2 worker-select">
                                     <option value="">-- Pilih Tenaga Kerja --</option>
 
-                                    @foreach($workers as $worker)
+                                    {{-- @foreach($workers as $worker)
                                         <option value="{{ $worker->id }}">
                                             {{ $worker->user->fullname }}
                                         </option>
-                                    @endforeach
+                                    @endforeach --}}
 
                                     <option value="manual">+ Manual Input</option>
                                 </select>

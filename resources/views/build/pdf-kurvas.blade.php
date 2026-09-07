@@ -13,67 +13,74 @@
             </tr>
         </thead>
         <tbody>
-            @foreach($groupedItems as $category)
+            @php $letterIndex = 0; @endphp
 
-                @php
+            @foreach($groupedItems as $floor)
 
-                    $items = collect($category['uraians'])
-                        ->flatMap(fn($u) => $u['items']);
-
-                    $subtotalBobot = $items->sum('bobot_percent');
-
-                @endphp
-                <tr style="height:8mm;font-weight:bold;">
-                    <td align="center">
-                    {{ \PhpOffice\PhpSpreadsheet\Cell\Coordinate
-                        ::stringFromColumnIndex($loop->iteration) }}
+                <tr style="height:7mm;font-weight:bold;background:#eee;">
+                    <td colspan="{{ 3 + count($weeks) }}">
+                        {{ strtoupper($floor['category_name']) }}
                     </td>
-
-                    <td>
-                        {{ strtoupper($category['category_name']) }}
-                    </td>
-
-                    <td align="right">
-                        {{ number_format($subtotalBobot,2) }}%
-                    </td>
-
-                    @foreach($weeks as $w)
-
-                        @php
-
-                            $categoryId =
-                                collect($category['uraians'])
-                                ->flatMap(fn($u) => $u['items'])
-                                ->first()
-                                ?->category_order;
-
-                            $nilai = collect($planMap[$categoryId] ?? [])
-                                ->where('week_no', $w['week_no'])
-                                ->sum(function ($week) {
-
-                                    $bobot =
-                                        $week->buildPlan->bobot_percent ?? 0;
-
-                                    return (
-                                        ($week->plan_percent ?? 0) / 100
-                                    ) * $bobot;
-
-                                });
-
-
-                        @endphp
-
-                        <td align="center">
-
-                            @if($nilai)
-
-                                {{ number_format($nilai, 2) }}%
-
-                            @endif
-                        </td>                   
-                    @endforeach
                 </tr>
+
+                @foreach($floor['uraians'] as $cat)
+
+                    @php
+
+                        $items = collect($cat['items']);
+                        $subtotalBobot = $items->sum('bobot_percent');
+
+                        $letterIndex++;
+                        $planKey = $floor['category_name'].'|'.$cat['uraian_name'];
+
+                    @endphp
+
+                    <tr style="height:8mm;">
+                        <td align="center">
+                            {{ \PhpOffice\PhpSpreadsheet\Cell\Coordinate
+                                ::stringFromColumnIndex($letterIndex) }}
+                        </td>
+
+                        <td>
+                            {{ strtoupper($cat['uraian_name']) }}
+                        </td>
+
+                        <td align="right">
+                            {{ number_format($subtotalBobot,2) }}%
+                        </td>
+
+                        @foreach($weeks as $w)
+
+                            @php
+
+                                $nilai = collect($planMap[$planKey] ?? [])
+                                    ->where('week_no', $w['week_no'])
+                                    ->sum(function ($week) {
+
+                                        $bobot = $week->buildPlan->bobot_percent ?? 0;
+
+                                        return (
+                                            ($week->plan_percent ?? 0) / 100
+                                        ) * $bobot;
+
+                                    });
+
+                            @endphp
+
+                            <td align="center">
+
+                                @if($nilai)
+                                    {{ number_format($nilai, 2) }}%
+                                @endif
+
+                            </td>
+                        @endforeach
+                    </tr>
+
+                @endforeach
+
             @endforeach
+
         </tbody>
         <tfoot>
             <tr style="font-weight:bold; background:#f5f5f5;">

@@ -99,77 +99,79 @@
 
     <tbody>
 
-        @foreach($groupedItems as $category)
+        @php
+            $categoryCounter = 0;
+            $totalCols = 5 + ($weeks->count() * 9);
+        @endphp
 
-            @php
+        @foreach($groupedItems as $floorData)
 
-                $items = collect($category['uraians'])->flatMap(fn($u) => $u['items']);
-
-                $subtotalBobot =$items->sum('bobot_percent');
-
-            @endphp
-
-            <tr class="category">
-
-                {{-- NO --}}
-                <td align="center">
-                    {{ \PhpOffice\PhpSpreadsheet\Cell\Coordinate
-                        ::stringFromColumnIndex($loop->iteration) }}
+            {{-- BARIS LANTAI: tanpa nomor, 1 baris full merge --}}
+            <tr class="floor">
+                <td colspan="{{ $totalCols }}">
+                    <strong>{{ strtoupper($floorData['category_name']) }}</strong>
                 </td>
-
-                {{-- NAMA CATEGORY --}}
-                <td>
-                    {{ strtoupper($category['category_name']) }}
-                </td>
-
-                {{-- SAT --}}
-                <td></td>
-
-                {{-- VOL --}}
-                <td></td>
-
-                {{-- BOBOT --}}
-                <td align="right">
-                    {{ number_format($subtotalBobot,2) }}%
-                </td>
-
-                {{-- SISA KOLOM --}}
-                @for($i = 0; $i < ($weeks->count() * 9); $i++)
-                    <td></td>
-                @endfor
-
             </tr>
-            @php $no = 1; @endphp
 
-            @foreach($category['uraians'] as $uraian)
+            @foreach($floorData['uraians'] as $category)
 
-                <tr class="uraian">
+                @php
+                    $categoryNo = \PhpOffice\PhpSpreadsheet\Cell\Coordinate
+                        ::stringFromColumnIndex(++$categoryCounter);
 
+                    $items = collect($category['items']);
+                    $subtotalBobot = $items->sum('bobot_percent');
+                @endphp
+
+                <tr class="category">
                     <td align="center">
-                        {{ $no }}
+                        {{ $categoryNo }}
                     </td>
-
                     <td>
-                        {{ ucwords($uraian['uraian_name']) }}
+                        {{ strtoupper($category['uraian_name']) }}
                     </td>
-
-                    @for($i = 0; $i < ($totalCols - 2); $i++)
+                    <td></td>
+                    <td></td>
+                    {{-- <td align="right">
+                        {{ number_format($subtotalBobot,2) }}%
+                    </td> --}}
+                    @for($i = 0; $i < ($weeks->count() * 9); $i++)
                         <td></td>
                     @endfor
-
                 </tr>
-                @php $itemNo = 1; @endphp
 
-                @foreach($uraian['items'] as $item)
+                @php
+                    $itemNo = 0;
+                    $lastDescription = null;
+                @endphp
+
+                @foreach($category['items'] as $item)
+
+                    @php
+
+                        $showNo = false;
+
+                        if (!$item->description || $item->description !== $lastDescription) {
+                            $itemNo++;
+                            $showNo = true;
+                        }
+
+                        $lastDescription = $item->description;
+
+                    @endphp
 
                     <tr>
 
                         <td align="center">
-                            {{ $no }}.{{ $itemNo }}
+                            {{ $showNo ? $itemNo : '' }}
                         </td>
 
                         <td style="white-space:normal">
-                            {{ $item->uraian }}
+                            {{ $item->job_name }}
+
+                            @if($item->description)
+                                <br><small>{{ $item->description }}</small>
+                            @endif
                         </td>
 
                         <td align="center">
@@ -189,112 +191,59 @@
 
                                 $volMingguLalu = 0;
 
-                                for($i = 1; $i < $w['week_no']; $i++){
-
-                                    $p =
-                                        $item->progress_map[$i]
-                                        ?? null;
-
-                                    $volMingguLalu +=
-                                        $p->volume ?? 0;
-
+                                for ($i = 1; $i < $w['week_no']; $i++) {
+                                    $p = $item->progress_map[$i] ?? null;
+                                    $volMingguLalu += $p->volume ?? 0;
                                 }
 
                                 $progressMingguLalu = $item->volume > 0
-
                                     ? ($volMingguLalu / $item->volume) * 100
-
                                     : 0;
 
                                 $bobotMingguLalu = $item->volume > 0
-
-                                    ? ($volMingguLalu / $item->volume)
-                                        * $item->bobot_percent
-
+                                    ? ($volMingguLalu / $item->volume) * $item->bobot_percent
                                     : 0;
 
-                                $prog =
-                                    $item->progress_map[$w['week_no']]
-                                    ?? null;
-
-                                $volMinggu =
-                                    $prog->volume ?? 0;
+                                $prog = $item->progress_map[$w['week_no']] ?? null;
+                                $volMinggu = $prog->volume ?? 0;
 
                                 $progressMinggu = $item->volume > 0
-
                                     ? ($volMinggu / $item->volume) * 100
-
                                     : 0;
 
                                 $bobotMinggu = $item->volume > 0
-
-                                    ? ($volMinggu / $item->volume)
-                                        * $item->bobot_percent
-
+                                    ? ($volMinggu / $item->volume) * $item->bobot_percent
                                     : 0;
 
-                                $volKumulatif =
-                                    $volMingguLalu + $volMinggu;
+                                $volKumulatif = $volMingguLalu + $volMinggu;
 
                                 $progressKumulatif = $item->volume > 0
-
                                     ? ($volKumulatif / $item->volume) * 100
-
                                     : 0;
 
                                 $bobotKumulatif = $item->volume > 0
-
-                                    ? ($volKumulatif / $item->volume)
-                                        * $item->bobot_percent
-
+                                    ? ($volKumulatif / $item->volume) * $item->bobot_percent
                                     : 0;
 
                             @endphp
 
-                            <td align="right">
-                                {{ number_format($volMingguLalu,2) }}
-                            </td>
+                            <td align="right">{{ number_format($volMingguLalu,2) }}</td>
+                            <td align="right">{{ number_format($progressMingguLalu,2) }}%</td>
+                            <td align="right">{{ number_format($bobotMingguLalu,2) }}%</td>
 
-                            <td align="right">
-                                {{ number_format($progressMingguLalu,2) }}%
-                            </td>
+                            <td align="right">{{ number_format($volMinggu,2) }}</td>
+                            <td align="right">{{ number_format($progressMinggu,2) }}%</td>
+                            <td align="right">{{ number_format($bobotMinggu,2) }}%</td>
 
-                            <td align="right">
-                                {{ number_format($bobotMingguLalu,2) }}%
-                            </td>
-
-                            <td align="right">
-                                {{ number_format($volMinggu,2) }}
-                            </td>
-
-                            <td align="right">
-                                {{ number_format($progressMinggu,2) }}%
-                            </td>
-
-                            <td align="right">
-                                {{ number_format($bobotMinggu,2) }}%
-                            </td>
-
-                            <td align="right">
-                                {{ number_format($volKumulatif,2) }}
-                            </td>
-
-                            <td align="right">
-                                {{ number_format($progressKumulatif,2) }}%
-                            </td>
-
-                            <td align="right">
-                                {{ number_format($bobotKumulatif,2) }}%
-                            </td>
+                            <td align="right">{{ number_format($volKumulatif,2) }}</td>
+                            <td align="right">{{ number_format($progressKumulatif,2) }}%</td>
+                            <td align="right">{{ number_format($bobotKumulatif,2) }}%</td>
 
                         @endforeach
+
                     </tr>
 
-                    @php $itemNo++; @endphp
-
                 @endforeach
-
-                @php $no++; @endphp
 
             @endforeach
 

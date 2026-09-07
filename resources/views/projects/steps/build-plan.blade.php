@@ -60,7 +60,7 @@
                                     class="d-inline d-flex align-items-center gap-2">
                                     @csrf
                                     <input type="file" name="file" accept=".xlsx,.xls" class="form-control form-control-sm" required style="max-width:220px">
-                                    <button type="submit" class="btn btn-primary btn-sm">
+                                    <button type="submit" class="btn btn-dark btn-sm">
                                         <i class="ti ti-upload"></i> Import Excel
                                     </button>
                                 </form>

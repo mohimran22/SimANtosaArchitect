@@ -140,9 +140,7 @@ public function exportPdf(Request $request, Project $project) {
         'tambahan',
     ])
     ->where('project_id', $project->id)
-    ->orderBy('category_order')
-    ->orderBy('uraian_order')
-    ->orderBy('item_order')
+    ->orderBy('order_no')
     ->get();
 
     $buildItems->each(function ($item) { $item->progress_map = $item->weeklyProgresses ->keyBy('week_no'); });
@@ -175,137 +173,202 @@ public function exportPdf(Request $request, Project $project) {
     $weeklyReport = $project->weeklyReports()
         ->where('minggu', $weekNo)
         ->first();
-    $rekap = collect($groupedItems)->map(function ($cat) use ($filteredWeeks, $project, $week) {
+    // $rekap = collect($groupedItems)->map(function ($cat) use ($filteredWeeks, $project, $week) {
 
-        $items = collect($cat['uraians'])->flatMap(fn($u) => $u['items']);
+    //     $items = collect($cat['uraians'])->flatMap(fn($u) => $u['items']);
+    //     $bobot = $items->sum('bobot_percent');
+    //     $categoryId = $items->first()->category_name;
+    //     $weekNow = $filteredWeeks->max('week_no');
+    //     $weekPrev = max($weekNow - 1, 0);
+    //     $rencana = BuildPlans::with('weeks')
+    //         ->where('project_id', $project->id)
+    //         ->where('floor_name', $categoryId)
+    //         ->get()
+    //         ->sum(function ($plan) use ($weekNow) {
+
+    //             $persenKumulatif = $plan->weeks
+    //                 ->where('week_no', '<=', $weekNow)
+    //                 ->sum('plan_percent');
+
+    //             return (
+    //                 $persenKumulatif / 100
+    //             ) * $plan->bobot_percent;
+
+    //         });
+
+    //         $prestasiLalu = $items->avg(function ($item) use ($weekPrev) {
+    //                 $vol = 0;
+    //                 for($w = 1; $w <= $weekPrev; $w++){
+
+    //                     $prog =
+    //                         $item->progress_map[$w]
+    //                         ?? null;
+
+    //                     $vol +=
+    //                         $prog->volume ?? 0;
+
+    //                 }
+    //                 return $item->volume > 0
+
+    //                     ? ($vol / $item->volume) * 100
+
+    //                     : 0;
+    //         });
+
+    //     $bobotLalu = $items->sum(function ($item) use ($weekPrev) {
+
+    //         $sum = 0;
+
+    //         for($w = 1; $w <= $weekPrev; $w++){
+
+    //             $prog =
+    //                 $item->progress_map[$w]
+    //                 ?? null;
+
+    //             $vol =
+    //                 $prog->volume ?? 0;
+
+    //             $sum += $item->volume > 0
+
+    //                 ? ($vol / $item->volume)
+    //                     * $item->bobot_percent
+
+    //                 : 0;
+
+    //         }
+
+    //         return $sum;
+    //     });
+
+    //     $bobotMingguIni = $items->sum(function ($item) use ($weekNow) {
+
+    //         $prog = $item->progress_map[$weekNow] ?? null;
+
+    //         $vol = $prog->volume ?? 0;
+
+    //         return $item->volume > 0
+
+    //             ? ($vol / $item->volume)
+    //                 * $item->bobot_percent
+
+    //             : 0;
+
+    //     });
+    //     $prestasiMingguIni =
+    //         $bobot > 0
+    //     ? ($bobotMingguIni / $bobot) * 100
+    //     : 0;
+
+    //     $realisasiKumulatif = $bobotLalu + $bobotMingguIni;
+    //     $prestasiKumulatif =
+    //         $bobot > 0
+    //     ? ($realisasiKumulatif / $bobot) * 100
+    //     : 0;
+    //     $status = match (true) {
+    //         $prestasiKumulatif >= 100 => 'Selesai',
+    //         $prestasiKumulatif > 0    => 'Sedang Berlangsung',
+    //         default                   => 'Belum Dimulai',
+    //     };
+    //     return [
+    //         'category' => $cat['category_name'],
+    //         'bobot' => $bobot,
+    //         'rencana' => $rencana,
+    //         'prestasi_lalu' => $prestasiLalu,
+    //         'bobot_lalu' => $bobotLalu,
+    //         'prestasi_minggu_ini' => $prestasiMingguIni,
+    //         'bobot_minggu_ini' => $bobotMingguIni,
+    //         'prestasi_sd_minggu_ini' => $prestasiKumulatif,
+    //         'realisasi_sd_minggu_ini' => $realisasiKumulatif,
+    //         'status' => $status
+    //     ];
+    // });
+    $rekap = collect($groupedItems)
+    ->flatMap(function ($floor) {
+        return collect($floor['uraians'])->map(function ($cat) use ($floor) {
+            $cat['floor_name'] = $floor['category_name']; // floor_name asli
+            return $cat;
+        });
+
+    })
+    ->map(function ($cat) use ($filteredWeeks, $project, $week) {
+
+        $items = collect($cat['items']);
         $bobot = $items->sum('bobot_percent');
-        $categoryId = $items->first()->category_order;
-        $weekNow = $filteredWeeks->max('week_no');
+        $categoryName = $cat['uraian_name'];
+        $floorName    = $cat['floor_name'];
+        $weekNow  = $filteredWeeks->max('week_no');
         $weekPrev = max($weekNow - 1, 0);
         $rencana = BuildPlans::with('weeks')
             ->where('project_id', $project->id)
-            ->where('category_order', $categoryId)
+            ->where('floor_name', $floorName)
+            ->where('category_name', $categoryName)
             ->get()
             ->sum(function ($plan) use ($weekNow) {
-
                 $persenKumulatif = $plan->weeks
                     ->where('week_no', '<=', $weekNow)
                     ->sum('plan_percent');
-
                 return (
                     $persenKumulatif / 100
                 ) * $plan->bobot_percent;
-
             });
 
-            $prestasiLalu = $items->avg(function ($item) use ($weekPrev) {
-                    $vol = 0;
-                    for($w = 1; $w <= $weekPrev; $w++){
-
-                        $prog =
-                            $item->progress_map[$w]
-                            ?? null;
-
-                        $vol +=
-                            $prog->volume ?? 0;
-
-                    }
-                    return $item->volume > 0
-
-                        ? ($vol / $item->volume) * 100
-
-                        : 0;
-            });
-        // $status = 'Belum Dimulai';
-
-        // if ($realisasiKumulatif >= $bobot) {
-        //     $status = 'Selesai';
-        // } elseif ($realisasiKumulatif > 0) {
-        //     $status = 'Sedang Berlangsung';
-        // }
-        $bobotLalu = $items->sum(function ($item) use ($weekPrev) {
-
-            $sum = 0;
-
-            for($w = 1; $w <= $weekPrev; $w++){
-
-                $prog =
-                    $item->progress_map[$w]
-                    ?? null;
-
-                $vol =
-                    $prog->volume ?? 0;
-
-                $sum += $item->volume > 0
-
-                    ? ($vol / $item->volume)
-                        * $item->bobot_percent
-
-                    : 0;
-
+        $prestasiLalu = $items->avg(function ($item) use ($weekPrev) {
+            $vol = 0;
+            for ($w = 1; $w <= $weekPrev; $w++) {
+                $prog = $item->progress_map[$w] ?? null;
+                $vol += $prog->volume ?? 0;
             }
+            return $item->volume > 0
+                ? ($vol / $item->volume) * 100
+                : 0;
+        });
 
+        $bobotLalu = $items->sum(function ($item) use ($weekPrev) {
+            $sum = 0;
+            for ($w = 1; $w <= $weekPrev; $w++) {
+                $prog = $item->progress_map[$w] ?? null;
+                $vol  = $prog->volume ?? 0;
+                $sum += $item->volume > 0
+                    ? ($vol / $item->volume) * $item->bobot_percent
+                    : 0;
+            }
             return $sum;
         });
-        
-        // $prestasiMingguIni = $items->avg(function ($item) use ($weekNow) {
-
-        //     $prog =
-        //         $item->progress_map[$weekNow]
-        //         ?? null;
-
-        //     $vol =
-        //         $prog->volume ?? 0;
-
-        //     return $item->volume > 0
-
-        //         ? ($vol / $item->volume) * 100
-
-        //         : 0;
-
-        // });
 
         $bobotMingguIni = $items->sum(function ($item) use ($weekNow) {
-
             $prog = $item->progress_map[$weekNow] ?? null;
-
-            $vol = $prog->volume ?? 0;
-
+            $vol  = $prog->volume ?? 0;
             return $item->volume > 0
-
-                ? ($vol / $item->volume)
-                    * $item->bobot_percent
-
+                ? ($vol / $item->volume) * $item->bobot_percent
                 : 0;
-
         });
-        $prestasiMingguIni =
-            $bobot > 0
-        ? ($bobotMingguIni / $bobot) * 100
-        : 0;
-        // $prestasiKumulatif = $prestasiLalu + $prestasiMingguIni;
+
+        $prestasiMingguIni = $bobot > 0
+            ? ($bobotMingguIni / $bobot) * 100
+            : 0;
 
         $realisasiKumulatif = $bobotLalu + $bobotMingguIni;
-        $prestasiKumulatif =
-            $bobot > 0
-        ? ($realisasiKumulatif / $bobot) * 100
-        : 0;
+        $prestasiKumulatif  = $bobot > 0
+            ? ($realisasiKumulatif / $bobot) * 100
+            : 0;
+
         $status = match (true) {
             $prestasiKumulatif >= 100 => 'Selesai',
             $prestasiKumulatif > 0    => 'Sedang Berlangsung',
             default                   => 'Belum Dimulai',
         };
+
         return [
-            'category' => $cat['category_name'],
-            'bobot' => $bobot,
-            'rencana' => $rencana,
-            'prestasi_lalu' => $prestasiLalu,
-            'bobot_lalu' => $bobotLalu,
-            'prestasi_minggu_ini' => $prestasiMingguIni,
-            'bobot_minggu_ini' => $bobotMingguIni,
-            'prestasi_sd_minggu_ini' => $prestasiKumulatif,
-            'realisasi_sd_minggu_ini' => $realisasiKumulatif,
-            'status' => $status
+            'category'                 => $categoryName,
+            'bobot'                    => $bobot,
+            'rencana'                  => $rencana,
+            'prestasi_lalu'            => $prestasiLalu,
+            'bobot_lalu'               => $bobotLalu,
+            'prestasi_minggu_ini'      => $prestasiMingguIni,
+            'bobot_minggu_ini'         => $bobotMingguIni,
+            'prestasi_sd_minggu_ini'   => $prestasiKumulatif,
+            'realisasi_sd_minggu_ini'  => $realisasiKumulatif,
+            'status'                   => $status,
         ];
     });
     $kurvaS = $project->getKurvaSData() ?? [];
@@ -360,9 +423,9 @@ public function exportPdf(Request $request, Project $project) {
             $q->where('project_id', $project->id);
         })
         ->get()
-        ->groupBy(function ($item) {
-            return $item->buildPlan->category_order;
-        });
+    ->groupBy(function ($item) {
+        return $item->buildPlan->floor_name . '|' . $item->buildPlan->category_name;
+    });
         $startWeek = Carbon::parse($project->start_date)
             ->addWeeks($weekNow - 1)
             ->startOfDay();
@@ -688,34 +751,34 @@ public function exportPdf(Request $request, Project $project) {
 private function groupItems($buildItems)
 {
     return $buildItems
-        ->groupBy('category_order')
-        ->map(function ($categoryItems) {
+        ->sortBy('order_no')
+        ->groupBy('floor_name')
+        ->map(function ($floorItems) {
 
-            $firstCategory = $categoryItems->first();
+            $firstFloor = $floorItems->first();
 
             return [
+                'category_name'  => $firstFloor->floor_name,
+                'category_order' => $firstFloor->order_no,
 
-                'category_name' => $firstCategory->category_name,
-                'category_order' => $firstCategory->category_order,
+                'uraians' => $floorItems
+                    ->groupBy('category_name')
+                    ->map(function ($categoryItems) {
 
-                'uraians' => $categoryItems
-                    ->groupBy('uraian_order')
-                    ->map(function ($uraianItems) {
-
-                        $firstUraian = $uraianItems->first();
+                        $firstCategory = $categoryItems->first();
 
                         return [
 
-                            'uraian_name' => $firstUraian->uraian_name,
-                            'uraian_order' => $firstUraian->uraian_order,
+                            'uraian_name'  => $firstCategory->category_name,
+                            'uraian_order' => $firstCategory->order_no,
 
-                            'items' => $uraianItems
-                                ->sortBy('item_order')
+                            'items' => $categoryItems
+                                ->sortBy('order_no')
                                 ->values(),
 
                         ];
 
-                    })->values()
+                    })->values(),
 
             ];
 
