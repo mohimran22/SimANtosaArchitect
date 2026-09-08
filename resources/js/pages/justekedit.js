@@ -1984,14 +1984,8 @@ window.initJustekEditForm = function () {
                         );
 
                     }
-                    if (
-                        typeof window.onJustekEditSuccess === 'function'
-                    ) {
-
-                        window.onJustekEditSuccess(
-                            data
-                        );
-
+                    if (typeof window.onJustekEditSuccess === 'function') {
+                        window.onJustekEditSuccess(data);
                     }
 
                 } catch (error) {

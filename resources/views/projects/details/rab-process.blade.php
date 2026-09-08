@@ -77,8 +77,7 @@ function numberToLetters($num) {
                             @php
                                 $categoryLetter = numberToLetters($categoryIndex);
                                 $categoryTotal = $categoryItems->sum('total');
-                                $displayNo = 0;
-                                $previousDescription = null;
+                                $itemNo = 1;
                             @endphp
 
                             <tr class="table-secondary fw-bold">
@@ -98,27 +97,38 @@ function numberToLetters($num) {
                                         '.'
                                     ) }}
                                 </td>
-                            </tr>
+                            </tr>   
+                            @php
+                                $itemNo = 1;
+                                $lastDescription = null;
+                            @endphp
 
                             @foreach($categoryItems as $item)
 
                                 @php
-                                    $currentDescription = $item->description ?? '';
+                                    $description = trim((string) $item->description);
+                                    $showNumber = false;
 
-                                    $isNewGroup =
-                                        empty($currentDescription) ||
-                                        $currentDescription !== $previousDescription;
-
-                                    if ($isNewGroup) {
-                                        $displayNo++;
+                                    if ($description === '') {
+                                        $showNumber = true;
+                                    } elseif ($description !== $lastDescription) {
+                                        $showNumber = true;
                                     }
 
-                                    $previousDescription = $currentDescription;
+                                    $currentNo = $itemNo;
+
+                                    if ($showNumber) {
+                                        $itemNo++;
+                                    }
+
+                                    $lastDescription = $description;
                                 @endphp
 
                                 <tr>
-                                    <td>
-                                        {{ $displayNo }}
+                                    <td align="center">
+                                        @if($showNumber)
+                                            {{ $currentNo }}
+                                        @endif
                                     </td>
                                     <td>
                                         {{ $item->job_name }}

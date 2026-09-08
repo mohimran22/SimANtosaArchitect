@@ -391,14 +391,11 @@
 
                 </div>
 
-
                 <div class="modal-body">
 
-
-                    {{-- LANTAI --}}
                     <div class="mb-3">
 
-                        <label class="form-label fw-semibold">
+                        <label class="form-label required fw-semibold">
                             Lantai
                         </label>
 
@@ -494,23 +491,19 @@
 
                     </div>
 
-
-                    {{-- DESKRIPSI --}}
                     <div class="mb-3">
 
                         <label class="form-label fw-semibold">
-                            Deskripsi Pekerjaan
+                            Sub Kategori
                         </label>
 
                         <textarea id="edit_justek_item_description"
                                   class="form-control"
                                   rows="2"
-                                  placeholder="Keterangan pekerjaan (opsional)"></textarea>
+                                  placeholder="Contoh: Pekerjaan Kolom K1"></textarea>
 
                     </div>
 
-
-                    {{-- VOLUME + SATUAN --}}
                     <div class="row g-3 mb-3">
 
                         <div class="col-md-7">

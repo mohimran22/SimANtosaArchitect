@@ -631,23 +631,22 @@ private function formData($project = null, int $activeStep = 1, ?int $projectTyp
     if ($projectType == 3 && $activeStep >= 8) {
         $data['workers'] = Worker::with('user:id,fullname')->get(['id', 'user_id']);
     }
-    // ── Design packages — hanya type 1, saat step penawaran ──
+
     if ($projectType == 1 && $activeStep >= 5) {
         $data['designPackages'] = \App\Models\DesignPackage::orderBy('name')
             ->orderBy('price_meter')->get();
     }
-    // ── RAB packages — hanya type 2, saat step penawaran ──
+
     if ($projectType == 2 && $activeStep >= 5) {
         $data['rabPackages'] = \App\Models\RabPackage::orderBy('name')
             ->orderBy('price_meter')->get();
     }
-    // ── Job categories — hanya type 3, saat step penawaran/build ──
+
     if (in_array($projectType, [2, 3]) && $activeStep >= 5) {
         $data['jobCategories'] = JobCategory::orderBy('kode_urut')
             ->orderBy('nama_pekerjaan')->get();
     }
-    // ── RAB processes & items — hanya jika edit form offer aktif ──
-    // Ini bisa di-lazy-load via AJAX di masa depan
+
     if ($activeStep >= 5 && $project?->customer_id) {
 
         $data['rabProcesses'] = RabProcess::whereHas('project', function ($q) use ($project) {
@@ -658,7 +657,10 @@ private function formData($project = null, int $activeStep = 1, ?int $projectTyp
             })
             ->orderBy('order_no')
             ->get()
-            ->groupBy(['floor_name', 'category_name']);
+            ->unique(function ($item) {
+                return $item->floor_name.'|'.$item->category_name.'|'.$item->description.'|'.$item->job_name.'|'.$item->volume.'|'.$item->satuan;
+            })
+            ->groupBy(['floor_name', 'category_name', 'description']);
     }
     return array_merge($data, $merge);
 }

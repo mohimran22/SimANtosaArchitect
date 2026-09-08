@@ -234,19 +234,30 @@
                                                         === {{ strtoupper($floorName) }} ===
                                                     </option>
 
-                                                    @foreach($categories as $categoryName => $items)
+                                                    @foreach($categories as $categoryName => $descriptions)
 
                                                         <option disabled style="font-weight:bold;">
                                                             &nbsp;&nbsp;{{ strtoupper($categoryName) }}
                                                         </option>
 
-                                                        @foreach($items as $rab)
-                                                            <option value="{{ $rab->id }}"
-                                                                    data-volume="{{ $rab->volume }}"
-                                                                    data-satuan="{{ $rab->satuan }}"
-                                                                    {{ $rabId == $rab->id ? 'selected' : '' }}>
-                                                                &nbsp;&nbsp;&nbsp;&nbsp;{{ $loop->iteration }}. {{ $rab->job_name }}
-                                                            </option>
+                                                        @php $descIndex = 0; @endphp
+                                                        @foreach($descriptions as $descriptionName => $items)
+
+                                                            @if(trim($descriptionName) !== '')
+                                                                @php $descIndex++; @endphp
+                                                                <option disabled>
+                                                                    &nbsp;&nbsp;&nbsp;&nbsp;{{ $descIndex }}. {{ $descriptionName }}
+                                                                </option>
+                                                            @endif
+                                                                @foreach($items as $rab)
+                                                                    <option value="{{ $rab->id }}"
+                                                                            data-volume="{{ $rab->volume }}"
+                                                                            data-satuan="{{ $rab->satuan }}"
+                                                                            {{ $rabId == $rab->id ? 'selected' : '' }}>
+                                                                        &nbsp;&nbsp;&nbsp;&nbsp;{!! trim($descriptionName) !== '' ? '&nbsp;&nbsp;' : '' !!}{{ $rab->job_name }}
+                                                                    </option>
+                                                                @endforeach
+
                                                         @endforeach
 
                                                     @endforeach
@@ -341,19 +352,31 @@
                                             === {{ strtoupper($floorName) }} ===
                                         </option>
 
-                                        @foreach($categories as $categoryName => $items)
+                                        @foreach($categories as $categoryName => $descriptions)
 
                                             <option disabled style="font-weight:bold;">
                                                 &nbsp;&nbsp;{{ strtoupper($categoryName) }}
                                             </option>
 
-                                            @foreach($items as $rab)
-                                                <option value="{{ $rab->id }}"
-                                                        data-volume="{{ $rab->volume }}"
-                                                        data-satuan="{{ $rab->satuan }}"
-                                                        {{ $rabId == $rab->id ? 'selected' : '' }}>
-                                                    &nbsp;&nbsp;&nbsp;&nbsp;{{ $loop->iteration }}. {{ $rab->job_name }}
-                                                </option>
+                                            @php $descIndex = 0; @endphp
+                                            @foreach($descriptions as $descriptionName => $items)
+
+                                                @if(trim($descriptionName) !== '')
+                                                    @php $descIndex++; @endphp
+                                                    <option disabled>
+                                                        &nbsp;&nbsp;&nbsp;&nbsp;{{ $descIndex }}. {{ $descriptionName }}
+                                                    </option>
+                                                @endif
+
+                                                @foreach($items as $rab)
+                                                    <option value="{{ $rab->id }}"
+                                                            data-volume="{{ $rab->volume }}"
+                                                            data-satuan="{{ $rab->satuan }}"
+                                                            {{ $rabId == $rab->id ? 'selected' : '' }}>
+                                                        &nbsp;&nbsp;&nbsp;&nbsp;{!! trim($descriptionName) !== '' ? '&nbsp;&nbsp;' : '' !!}{{ $rab->job_name }}
+                                                    </option>
+                                                @endforeach
+
                                             @endforeach
 
                                         @endforeach
