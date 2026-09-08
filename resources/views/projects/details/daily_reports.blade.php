@@ -178,7 +178,7 @@
         let workerIndex = 0;
         let materialIndex = 0;
         let workTimeIndex = 0;
-        let categories = [];
+        let rabItems = []; 
         let workerOptions = [];
         function addWorkRow(){
             
@@ -445,29 +445,44 @@
                     }
                 });
         }
+        function groupBy(arr, key) {
+            return arr.reduce((acc, item) => {
+                const k = item[key] || '';
+                (acc[k] = acc[k] || []).push(item);
+                return acc;
+            }, {});
+        }
+
         function buildRabOptions(selectedId = null) {
 
-            let html = `
-                <option value="">-- Pilih Dari RAB --</option>
-            `;
+            let html = `<option value="">-- Pilih Dari RAB --</option>`;
 
-            categories.forEach(category => {
+            const floorGroups = groupBy(rabItems, 'floor_name');
 
-                html += `
-                    <option disabled>
-                        ${numberToLetters(category.order_no)}. ${category.name.toUpperCase()}
-                    </option>
-                `;
+            Object.entries(floorGroups).forEach(([floorName, floorItems]) => {
 
-                category.uraians.forEach((uraian, u) => {
+                html += `<option disabled>=== ${(floorName || 'TANPA LANTAI').toUpperCase()} ===</option>`;
 
-                    html += `
-                        <option disabled>
-                            &nbsp;&nbsp;${u + 1}. ${uraian.name}
-                        </option>
-                    `;
+                const categoryGroups = groupBy(floorItems, 'category_name');
 
-                    uraian.items.forEach((item, i) => {
+                Object.entries(categoryGroups).forEach(([categoryName, categoryItems]) => {
+
+                    html += `<option disabled>&nbsp;&nbsp;${(categoryName || 'TANPA KATEGORI').toUpperCase()}</option>`;
+
+                    let itemNo = 0;
+                    let lastDescription = null;
+
+                    categoryItems.forEach(item => {
+                        const currentDescription = (item.description || '').trim();
+                        const showNumber = currentDescription === '' || currentDescription !== lastDescription;
+
+                        if (showNumber) itemNo++;
+
+                        if (showNumber && currentDescription !== '') {
+                            html += `<option disabled>&nbsp;&nbsp;&nbsp;&nbsp;${itemNo}. ${currentDescription}</option>`;
+                        }
+
+                        lastDescription = currentDescription;
 
                         html += `
                             <option
@@ -476,9 +491,7 @@
                                 data-satuan="${item.satuan}"
                                 ${item.id == selectedId ? 'selected' : ''}
                             >
-                                &nbsp;&nbsp;&nbsp;&nbsp;
-                                ${u + 1}.${i + 1}
-                                ${item.job_name}
+                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${item.job_name}
                             </option>
                         `;
                     });
@@ -488,8 +501,7 @@
             });
 
             html += `
-                <option value="manual"
-                    ${selectedId == 'manual' ? 'selected' : ''}>
+                <option value="manual" ${selectedId == 'manual' ? 'selected' : ''}>
                     + Manual Input
                 </option>
             `;
@@ -537,7 +549,7 @@
                 .then(response => {
                     const data = response.daily;
                     workerOptions = response.worker_options;
-                    categories = response.categories;
+                    rabItems = response.rab_items;
                     document.getElementById('badgeWeek').textContent =
                         `Minggu ${data.minggu}`;
 

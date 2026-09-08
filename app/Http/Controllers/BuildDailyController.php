@@ -11,7 +11,7 @@ use App\Models\BuildDailyMaterial;
 use App\Models\BuildProcessItem;
 use App\Models\DailyDocumentation;
 use App\Models\Project;
-use App\Models\RabProcessCategory;
+use App\Models\RabProcessItem;
 use App\Models\Worker;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
@@ -316,15 +316,21 @@ public function detail($id)
         ->get();
 
     $project = $daily->project;
-
-    $categories = RabProcessCategory::with([
-        'uraians.items.rab'
-    ])
-    ->whereHas('rabProcess.project', function ($q) use ($project) {
-        $q->where('customer_id', $project->customer_id);
-    })
-    ->orderBy('order_no')
-    ->get();
+    $rabItems = RabProcessItem::whereHas('rab.project', function ($q) use ($project) {
+            $q->where('customer_id', $project->customer_id);
+        })
+        ->orderBy('order_no')
+        ->get()
+        ->values();
+    // $rabItems = RabProcessItem::whereHas('rab.project', function ($q) use ($project) {
+    //         $q->where('customer_id', $project->customer_id);
+    //     })
+    //     ->orderBy('order_no')
+    //     ->get()
+    //     ->unique(function ($item) {
+    //         return $item->floor_name.'|'.$item->category_name.'|'.trim((string) $item->description).'|'.$item->job_name.'|'.$item->volume.'|'.$item->satuan;
+    //     })
+    //     ->values();
     $usedDates = BuildDailyReport::where('project_id', $daily->project_id)
         ->where('id', '!=', $daily->id) // jangan disable tanggal laporan yang sedang diedit
         ->pluck('tanggal')
@@ -333,7 +339,7 @@ public function detail($id)
     return response()->json([
         'daily' => $daily,
         'worker_options' => $workerOptions,
-        'categories'     => $categories,
+        'rab_items'     => $rabItems,
         'used_dates'     => $usedDates,
         'start_date' => Carbon::parse($project->start_date)->format('Y-m-d'),
         'end_date'   => Carbon::parse($project->end_date)->format('Y-m-d'),
