@@ -386,19 +386,47 @@ public function items($id)
         }
     ])->findOrFail($id);
 
-    $subtotal = $rab->items->sum(function ($item) {
-        return (float) $item->total;
-    });
+    $subtotal = $rab->items->reduce(function ($carry, $item) {
+        return bcadd(
+            $carry,
+            (string) $item->total,
+            3
+        );
+    }, '0.000');
 
-    $discount = (float) ($rab->discount ?? 0);
-    $shipping = (float) ($rab->shipping ?? 0);
-    $taxRate = (float) ($rab->tax_rate ?? 0);
+    $discount = (string) ($rab->discount ?? '0.000');
+    $shipping = (string) ($rab->shipping ?? '0.000');
+    $taxRate = (string) ($rab->tax_rate ?? '0.000');
 
-    $subtotalAfterDiscount = $subtotal - $discount;
+    $subtotalAfterDiscount = bcsub(
+        $subtotal,
+        $discount,
+        3
+    );
 
-    $taxTotal = $subtotalAfterDiscount * ($taxRate / 100);
+    $taxMultiplier = bcdiv(
+        $taxRate,
+        '100',
+        6
+    );
 
-    $grandTotal = $subtotalAfterDiscount + $taxTotal + $shipping;
+    $taxTotal = bcmul(
+        $subtotalAfterDiscount,
+        $taxMultiplier,
+        3
+    );
+
+    $grandTotal = bcadd(
+        $subtotalAfterDiscount,
+        $taxTotal,
+        3
+    );
+
+    $grandTotal = bcadd(
+        $grandTotal,
+        $shipping,
+        3
+    );
 
     return response()->json([
         'items' => $rab->items,
@@ -412,11 +440,51 @@ public function items($id)
             'subtotal_after_discount' => $subtotalAfterDiscount,
             'tax_total' => $taxTotal,
             'grand_total' => $grandTotal,
-            'extra_discount' => $offer->extra_discount ?? 0,
+
+            'extra_discount' => '0.000',
             'notes' => $rab->notes,
         ],
     ]);
 }
+// public function items($id)
+// {
+//     $rab = RabProcess::with([
+//         'items' => function ($query) {
+//             $query->orderBy('order_no');
+//         }
+//     ])->findOrFail($id);
+
+//     $subtotal = $rab->items->sum(function ($item) {
+//         return (float) $item->total;
+//     });
+
+//     $discount = (float) ($rab->discount ?? 0);
+//     $shipping = (float) ($rab->shipping ?? 0);
+//     $taxRate = (float) ($rab->tax_rate ?? 0);
+
+//     $subtotalAfterDiscount = $subtotal - $discount;
+
+//     $taxTotal = $subtotalAfterDiscount * ($taxRate / 100);
+
+//     $grandTotal = $subtotalAfterDiscount + $taxTotal + $shipping;
+
+//     return response()->json([
+//         'items' => $rab->items,
+
+//         'header' => [
+//             'tax_rate' => $taxRate,
+//             'discount' => $discount,
+//             'shipping' => $shipping,
+
+//             'subtotal' => $subtotal,
+//             'subtotal_after_discount' => $subtotalAfterDiscount,
+//             'tax_total' => $taxTotal,
+//             'grand_total' => $grandTotal,
+//             'extra_discount' => 0,
+//             'notes' => $rab->notes,
+//         ],
+//     ]);
+// }
 
 public function upload(Request $request)
 {
