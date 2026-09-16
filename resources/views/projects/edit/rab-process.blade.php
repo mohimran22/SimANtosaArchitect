@@ -600,14 +600,11 @@ function initRabEdit(){
     }
 
     function formatRupiah(value) {
-
         value = Number(value) || 0;
 
-        return new Intl.NumberFormat('id-ID', {
-            style: 'currency',
-            currency: 'IDR',
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
+        return 'Rp ' + new Intl.NumberFormat('id-ID', {
+            minimumFractionDigits: 3,
+            maximumFractionDigits: 3
         }).format(value);
     }
 
