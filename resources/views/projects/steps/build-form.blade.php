@@ -235,8 +235,13 @@
 @push('js')
 <script>
 
-    function formatRupiah(n){
-        return 'Rp ' + Number(n || 0).toLocaleString('id-ID')
+    function formatRupiah(value) {
+        value = Number(value) || 0;
+
+        return 'Rp ' + value.toLocaleString('id-ID', {
+            minimumFractionDigits: 3,
+            maximumFractionDigits: 3
+        });
     }
     function parseRupiah(value) {
 
