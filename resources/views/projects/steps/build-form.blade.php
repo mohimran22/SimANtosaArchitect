@@ -281,6 +281,29 @@
         return letters
     }
 
+    function toScaled(value) {
+        const str = String(value ?? '0').trim();
+
+        if (!str) return 0;
+
+        const negative = str.startsWith('-');
+        const clean = str.replace('-', '');
+
+        const [integerPart, decimalPart = ''] = clean.split('.');
+
+        const decimals = (decimalPart + '000').slice(0, 3);
+
+        const result =
+            (parseInt(integerPart || '0', 10) * 1000) +
+            parseInt(decimals, 10);
+
+        return negative ? -result : result;
+    }
+
+    function fromScaled(value) {
+        return value / 1000;
+    }
+
     function loadRabItems() {
 
         let rabId = $('#rab_process_id').val();
@@ -444,7 +467,7 @@
             $('#shipping').val(res.header.shipping);
 
             $('#subtotalDisplay')
-                .data('value', parseFloat(res.header.subtotal) || 0)
+                .data('value', res.header.subtotal)
                 .text(formatRupiah(res.header.subtotal));
 
             $('#subAfterDiscountDisplay')
@@ -475,34 +498,49 @@
     setRupiah('#extra_discount_display', 0);
     function calculateOfferTotal() {
 
-        const subtotal = parseFloat($('#subtotalDisplay').data('value')) || 0;
-
-        const discount = parseFloat($('#discount').val()) || 0;
-
-        const extraDiscount = parseFloat($('#extra_discount').val()) || 0;
-
-        const taxRate = parseFloat($('#tax_rate').val()) || 0;
-
-        const shipping = parseFloat($('#shipping').val()) || 0;
+        const subtotal = toScaled($('#subtotalDisplay').data('value'));
+        const discount = toScaled($('#discount').val());
+        const extraDiscount = toScaled($('#extra_discount').val());
+        const taxRate = toScaled($('#tax_rate').val());
+        const shipping = toScaled($('#shipping').val());
 
         const subtotalAfterDiscount = subtotal - discount;
 
-        const taxTotal = subtotalAfterDiscount * (taxRate / 100);
+        const taxTotal =
+            Math.round(
+                subtotalAfterDiscount * taxRate / 100000
+            );
 
-        const grandTotalRab = subtotalAfterDiscount + taxTotal + shipping;
+        const grandTotalRab =
+            subtotalAfterDiscount +
+            taxTotal +
+            shipping;
 
-        const roundedTotal = Math.floor(grandTotalRab / 100000) * 100000;
+        const roundedTotal =
+            Math.floor(
+                grandTotalRab / toScaled(100000)
+            ) * toScaled(100000);
 
-        const grandTotalOffer = Math.max(0,roundedTotal - extraDiscount);
-        $('#subAfterDiscountDisplay').text(formatRupiah(subtotalAfterDiscount));
+        const grandTotalOffer =
+            Math.max(
+                0,
+                roundedTotal - extraDiscount
+            );
 
-        $('#totalTaxDisplay').text(formatRupiah(taxTotal));
+        $('#subAfterDiscountDisplay')
+            .text(formatRupiah(fromScaled(subtotalAfterDiscount)));
 
-        $('#rabGrandTotalDisplay').text(formatRupiah(grandTotalRab));
+        $('#totalTaxDisplay')
+            .text(formatRupiah(fromScaled(taxTotal)));
 
-        $('#roundedTotalDisplay').text(formatRupiah(roundedTotal));
+        $('#rabGrandTotalDisplay')
+            .text(formatRupiah(fromScaled(grandTotalRab)));
 
-        $('#grandTotalDisplay').text(formatRupiah(grandTotalOffer));
+        $('#roundedTotalDisplay')
+            .text(formatRupiah(fromScaled(roundedTotal)));
+
+        $('#grandTotalDisplay')
+            .text(formatRupiah(fromScaled(grandTotalOffer)));
     }
 
     $('#extra_discount_display').on('input', function () {
