@@ -105,7 +105,13 @@ function numberToLetters($num) {
 
                             $categoryLetter = numberToLetters($categoryIndex);
 
-                            $categoryTotal = $categoryItems->sum('total');
+                            $categoryTotal = $categoryItems->reduce(function ($carry, $item) {
+                                return bcadd(
+                                    $carry,
+                                    (string) ($item->total ?? '0'),
+                                    3
+                                );
+                            }, '0.000');
 
                             $itemNo = 1;
 
@@ -279,45 +285,77 @@ function numberToLetters($num) {
 
             @php
 
-                $subtotal =
-                    $rab->items->sum('total');
-
-                $discount =
-                    $offer->discount ?? 0;
-
-                $subtotalAfterDiscount =
-                    $subtotal - $discount;
-
-                $taxRate =
-                    $offer->tax_rate ?? 0;
-
-                $totalTax =
-                    $subtotalAfterDiscount *
-                    ($taxRate / 100);
-
-                $shipping =
-                    $offer->shipping ?? 0;
-
-                $grandTotal =
-                    $subtotalAfterDiscount +
-                    $totalTax +
-                    $shipping;
-
-                $roundedTotal =
-                    floor(
-                        $grandTotal / 100000
-                    ) * 100000;
-
-                $extraDiscount = $offer->extra_discount ?? 0;
-
-                $grandTotalOffer =
-                    max(
-                        0,
-                        $roundedTotal - $extraDiscount
+                $subtotal = $rab->items->reduce(function ($carry, $item) {
+                    return bcadd(
+                        $carry,
+                        (string) ($item->total ?? '0'),
+                        3
                     );
+                }, '0.000');
 
+                $discount = (string) ($offer->discount ?? '0.000');
+                $taxRate = (string) ($offer->tax_rate ?? '0.000');
+                $shipping = (string) ($offer->shipping ?? '0.000');
+                $extraDiscount = (string) ($offer->extra_discount ?? '0.000');
+
+                $subtotalAfterDiscount = bcsub(
+                    $subtotal,
+                    $discount,
+                    3
+                );
+
+                $taxMultiplier = bcdiv(
+                    $taxRate,
+                    '100',
+                    6
+                );
+
+                $totalTax = bcmul(
+                    $subtotalAfterDiscount,
+                    $taxMultiplier,
+                    3
+                );
+
+                $grandTotal = bcadd(
+                    $subtotalAfterDiscount,
+                    $totalTax,
+                    3
+                );
+
+                $grandTotal = bcadd(
+                    $grandTotal,
+                    $shipping,
+                    3
+                );
+
+                $grandTotalInteger = bcdiv(
+                    $grandTotal,
+                    '1',
+                    0
+                );
+
+                $roundedBase = bcdiv(
+                    $grandTotalInteger,
+                    '100000',
+                    0
+                );
+
+                $roundedTotal = bcmul(
+                    $roundedBase,
+                    '100000',
+                    3
+                );
+
+                $grandTotalOffer = bcsub(
+                    $roundedTotal,
+                    $extraDiscount,
+                    3
+                );
+
+                if (bccomp($grandTotalOffer, '0.000', 3) < 0) {
+                    $grandTotalOffer = '0.000';
+                }
             @endphp
-
 
             <tfoot>
 

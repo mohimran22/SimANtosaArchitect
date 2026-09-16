@@ -42,7 +42,7 @@ public function store(OfferBuildRequest $request)
         $totalTax = $subtotalAfterDiscount * ($taxRate / 100);
         $shipping = (float) ($rab->shipping ?? 0);
         $grandTotalRab = $subtotalAfterDiscount + $totalTax + $shipping;
-        $roundedTotal = floor($grandTotalRab / 1000000) * 1000000;
+        $roundedTotal = floor($grandTotalRab / 100000) * 100000;
         $extraDiscount = (float) ($data['extra_discount'] ?? 0);
         $grandTotal = max(0, $roundedTotal - $extraDiscount);
         $offer = Offer::create([
