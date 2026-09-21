@@ -87,6 +87,7 @@ $(function () {
         processing: true,
         serverSide: true,
         ajax: '{{ route("journals.index") }}',
+        order: [[2, 'desc']],
         columns: [
             { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
             // { data: 'license_type', name: 'licenses.license_type' },
@@ -96,7 +97,7 @@ $(function () {
             { data: 'creator_name', name: 'users.fullname' },
             { data: 'action', name: 'action', orderable: false, searchable: false },
         ],
-                    language: {
+            language: {
                 search: "",
                 searchPlaceholder: "Cari jurnal...",
                 lengthMenu: "Tampilkan _MENU_ data",

@@ -166,8 +166,10 @@
                                     @enderror
                                 </div>
                                 
-                                <div class="text-end">
-                                    <button type="submit" class="btn btn-dark text-white">Simpan</button>
+                                <div class="text-end mt-5">
+                                    <button type="submit" class="btn btn-dark px-4">
+                                        <i class="ti ti-device-floppy me-1"></i> Simpan Data
+                                    </button>
                                 </div>
 
                                 {{-- @if(!auth()->user()->hasRole('Super-Admin'))

@@ -74,7 +74,6 @@ if ($request->filled('type')) {
 }
 
     if ($request->ajax()) {
-        $projects = $query->get();
 
         $statusLabel = [
             1 => 'Proses',
