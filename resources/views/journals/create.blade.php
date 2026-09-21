@@ -144,10 +144,25 @@
                                 </div>
 
                                 <div class="col-md-4 mb-3">
-                                    <label for="enclosure" class="form-label">Lampiran</label>
-                                    <input type="file" name="enclosure" class="form-control">
+                                    <label class="form-label">Lampiran</label>
+
+                                    <input
+                                        type="file"
+                                        name="enclosure[]"
+                                        id="enclosure"
+                                        class="form-control"
+                                        multiple
+                                        accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.doc,.docx,.xls,.xlsx"
+                                    >
+
+                                    <div id="previewContainer" class="row mt-3"></div>
+
                                     @error('enclosure')
                                         <small class="text-danger">{{ $message }}</small>
+                                    @enderror
+
+                                    @error('enclosure.*')
+                                        <small class="text-danger d-block">{{ $message }}</small>
                                     @enderror
                                 </div>
                                 
@@ -451,6 +466,102 @@ $('#transaction_date').on('change', function () {
             $('#period-warning').addClass('d-none');
             $('button[type="submit"]').prop('disabled', false);
         }
+
+    });
+
+});
+</script>
+<script>
+document.getElementById('enclosure').addEventListener('change', function(e){
+
+    const container = document.getElementById('previewContainer');
+    container.innerHTML = '';
+
+    [...e.target.files].forEach(file => {
+
+        const ext = file.name.split('.').pop().toLowerCase();
+
+        const col = document.createElement('div');
+        col.className = 'col-md-4 mb-3';
+
+        let html = '';
+
+        // Image
+        if (file.type.startsWith('image/')) {
+
+            html = `
+                <div class="card">
+                    <img src="${URL.createObjectURL(file)}"
+                        class="card-img-top"
+                        style="height:180px;object-fit:cover">
+
+                    <div class="card-body p-2">
+                        <small>${file.name}</small>
+                    </div>
+                </div>
+            `;
+
+        }
+
+        // PDF
+        else if(ext === 'pdf'){
+
+            html = `
+                <div class="card">
+                    <embed
+                        src="${URL.createObjectURL(file)}"
+                        type="application/pdf"
+                        width="100%"
+                        height="180px">
+
+                    <div class="card-body p-2">
+                        <small>${file.name}</small>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Word
+        else if(['doc','docx'].includes(ext)){
+
+            html = `
+                <div class="card text-center p-4">
+                    <i class="ti ti-file-word text-primary"
+                       style="font-size:60px"></i>
+
+                    <small class="mt-2">${file.name}</small>
+                </div>
+            `;
+        }
+
+        // Excel
+        else if(['xls','xlsx'].includes(ext)){
+
+            html = `
+                <div class="card text-center p-4">
+                    <i class="ti ti-file-spreadsheet text-success"
+                       style="font-size:60px"></i>
+
+                    <small class="mt-2">${file.name}</small>
+                </div>
+            `;
+        }
+
+        // lainnya
+        else{
+
+            html = `
+                <div class="card text-center p-4">
+                    <i class="ti ti-file"
+                       style="font-size:60px"></i>
+
+                    <small class="mt-2">${file.name}</small>
+                </div>
+            `;
+        }
+
+        col.innerHTML = html;
+        container.appendChild(col);
 
     });
 

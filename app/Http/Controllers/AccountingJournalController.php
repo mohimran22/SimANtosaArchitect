@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreAccountingJournalRequest;
 use App\Http\Requests\UpdateAccountingJournalRequest;
 use App\Models\AccountingJournal;
+use App\Models\AccountingJournalEnclosure;
 use App\Models\AccountingJournalDetail;
 use App\Models\AccountingAccount;
 use App\Models\AccountingPeriod;
@@ -185,30 +186,32 @@ public function store(StoreAccountingJournalRequest $request)
         return back()->withErrors('Debit dan Credit harus balance.');
     }
 
-    // Upload file
-    $enclosurePath = null;
-    if ($request->hasFile('enclosure')) {
-        $file = $request->file('enclosure');
-        $enclosurePath = $file->storeAs(
-            'attachments',
-            Str::uuid().'.'.$file->getClientOriginalExtension(),
-            'public'
-        );
-    }
-
     // ✅ Pakai auto generate (tidak dari request)
     $journalCode = $this->generateNextJournalCode();
 
-    // Simpan jurnal
+DB::transaction(function () use ($request, $licenseId, $user, $journalCode) {
     $journal = AccountingJournal::create([
         'license_id'       => $licenseId,
         'journal_code'     => $journalCode,
         'transaction_date' => $request->transaction_date,
         'description'      => $request->description,
         'created_by'       => $user->id,
-        'enclosure'        => $enclosurePath,
     ]);
+    if ($request->hasFile('enclosure')) {
+        foreach ($request->file('enclosure') as $file) {
 
+            $path = $file->storeAs(
+                'attachments',
+                Str::uuid().'.'.$file->getClientOriginalExtension(),
+                'public'
+            );
+
+            AccountingJournalEnclosure::create([
+                'journal_id' => $journal->id,
+                'file_name'  => $path,
+            ]);
+        }
+    }
     foreach ($request->details as $detail) {
         AccountingJournalDetail::create([
             'journal_id'  => $journal->id,
@@ -219,7 +222,7 @@ public function store(StoreAccountingJournalRequest $request)
             'description' => $detail['description'] ?? null,
         ]);
     }
-
+});
     return redirect()->route('journals.index')
         ->with('success', 'Jurnal berhasil dibuat.');
 }
@@ -301,33 +304,32 @@ public function update(UpdateAccountingJournalRequest $request, AccountingJourna
         ]);
     }
 
-    $enclosurePath = $journal->enclosure;
-    if ($request->remove_enclosure == '1') {
-
-        if ($journal->enclosure && Storage::disk('public')->exists($journal->enclosure)) {
-            Storage::disk('public')->delete($journal->enclosure);
+    if ($request->filled('remove_enclosures')) {
+        $files = AccountingJournalEnclosure::whereIn(
+            'id',
+            $request->remove_enclosures
+        )->get();
+        foreach ($files as $file) {
+            Storage::disk('public')->delete($file->file_name);
+            $file->delete();
         }
-
-        $enclosurePath = null;
     }
     if ($request->hasFile('enclosure')) {
-        if ($journal->enclosure && Storage::disk('public')->exists($journal->enclosure)) {
-            Storage::disk('public')->delete($journal->enclosure);
+        foreach ($request->file('enclosure') as $file) {
+            $path = $file->storeAs(
+                'attachments',
+                Str::uuid().'.'.$file->getClientOriginalExtension(),
+                'public'
+            );
+            $journal->enclosures()->create([
+                'file_name' => $path,
+            ]);
         }
-
-        $file = $request->file('enclosure');
-
-        $enclosurePath = $file->storeAs(
-            'attachments',
-            Str::uuid().'.'.$file->getClientOriginalExtension(),
-            'public'
-        );
     }
 
     $journal->update([
         'transaction_date' => $request->transaction_date,
         'description' => $request->description,
-        'enclosure' => $enclosurePath,
     ]);
 
     // 🔹 Reset detail
@@ -874,6 +876,3 @@ public function balanceSheet(Request $request)
 }
 
 }
-
-
-
