@@ -155,7 +155,6 @@
             </tfoot>
         </table>
 
-        {{-- Notes --}}
         @if($offer->notes)
         <div class="mt-4">
             <h5 class="fw-bold">Keterangan</h5>

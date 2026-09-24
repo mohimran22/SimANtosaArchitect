@@ -549,7 +549,7 @@ berikut kami sampaikan penawaran harga untuk pelaksanaan pekerjaan:
         <tr style="font-weight:bold;">
 
             <th colspan="5" align="right">
-                GRAND TOTAL PENAWARAN
+                TOTAL AKHIR
             </th>
 
             <th align="right">
