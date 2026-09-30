@@ -10,7 +10,6 @@ use App\Services\ProjectNotifier;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
-use Illuminate\Http\Request;
 
 class ContractController extends Controller
 {
@@ -22,7 +21,7 @@ class ContractController extends Controller
         
         Carbon::setLocale('id');
 
-        $tanggal = Carbon::parse($offer->contract_date ?? now());
+        $tanggal = Carbon::parse($offer->offer_date ?? now());
         $items = $offer->package
             ->items
             ->where('is_optional', false)
@@ -44,47 +43,10 @@ class ContractController extends Controller
         $pdf = Pdf::loadView('contract.pdf', $data)
             ->setPaper('A4', 'portrait');
 
-        return $pdf->stream('Kontrak-' . $project->project_name . '.pdf');
+        return $pdf->stream('Draft-Kontrak-' . $project->project_name . '.pdf');
     }
 
-    public function updateDate(Request $request, Project $project)
-    {
-        abort_if(auth()->user()->cannot('ubah data proyek'), 403);
-
-        abort_if(
-            !in_array((int) $project->project_type, [1, 3], true),
-            404,
-            'Jenis proyek ini tidak memiliki kontrak'
-        );
-
-        $offer = $project->offer;
-
-        abort_if(!$offer, 404, 'Penawaran belum tersedia');
-
-        $validated = $request->validate([
-            'contract_date' => ['required', 'date'],
-        ]);
-
-        $date   = Carbon::parse($validated['contract_date']);
-        $prefix = (int) $project->project_type === 3 ? 'BLD' : 'DSN';
-
-        // Setelah kontrak dilanjutkan (approved_at terisi), nomor dibekukan
-        // karena mungkin sudah dipakai di dokumen lain; hanya tanggal yang berubah.
-        $numberLocked = (bool) $offer->approved_at;
-
-        DB::transaction(function () use ($offer, $date, $prefix, $numberLocked) {
-            $offer->update([
-                'contract_number' => $numberLocked
-                    ? $offer->contract_number
-                    : $this->resolveContractNumber($offer->contract_number, $date, $prefix),
-                'contract_date'   => $date,
-            ]);
-        });
-
-        return back()->with('success', 'Tanggal kontrak disimpan.');
-    }
-
-    public function next(Project $project)
+        public function approve(Project $project)
     {
         abort_if(
             $project->customer->user_id !== auth()->id()
@@ -92,27 +54,17 @@ class ContractController extends Controller
             403
         );
 
-        $offer = $project->offer;
+        DB::transaction(function () use ($project) {
+            $offer = $project->offer;
 
-        if (!$offer) {
-            return back()->with('error', 'Offer belum dibuat.');
-        }
-
-        if ($offer->approved_at) {
-            return back()->with('info', 'Tahap kontrak sudah dilanjutkan.');
-        }
-
-        if (!$offer->contract_date || !$offer->contract_number) {
-            return back()->with('error', 'Simpan tanggal kontrak terlebih dahulu.');
-        }
-
-        DB::transaction(function () use ($project, $offer) {
-            // approved_at/approved_by tetap diisi sebagai penanda kontrak sudah final,
-            // karena bagian lain (invoice, form pengerjaan) masih membacanya.
-            $offer->update([
-                'approved_at' => now(),
-                'approved_by' => auth()->id(),
-            ]);
+            if (!$offer->contract_number) {
+                $offer->update([
+                    'contract_number' => $this->generateContractNumber(),
+                    'contract_date'   => now(),
+                    'approved_at'   => now(),
+                    'approved_by'   => auth()->id(),
+                ]);
+            }
 
             ProjectLevel::where([
                 'project_id'  => $project->id,
@@ -162,35 +114,44 @@ class ContractController extends Controller
 
         return redirect()
             ->route('projects.create', ['project_id' => $project->id])
-            ->with('success', 'Kontrak disimpan. Tahap Invoice DP dimulai.');
-    }
-/**
- * Nomor kontrak dibuat saat tanggal pertama kali disimpan.
- * Jika tanggal diubah kemudian: tahun sama -> hanya bulan romawi yang disesuaikan
- * (nomor urut tetap); tahun berbeda -> ambil nomor baru dari counter tahun tersebut.
- */
-protected function resolveContractNumber(?string $current, Carbon $date, string $prefix): string
-{
-    if ($current) {
-        $parts = explode('/', $current); // SPK/DSN/26/IX/048
-
-        if (count($parts) === 5 && $parts[2] === $date->format('y')) {
-            $parts[3] = GeneralHelper::bulanRomawi($date->month);
-
-            return implode('/', $parts);
-        }
+            ->with('success', 'Kontrak disetujui. Tahap Invoice DP dimulai.');
     }
 
-    return $this->generateContractNumber($date, $prefix);
-}
+// protected function generateContractNumber()
+// {
+//     $tahunFull = date('Y');   // 2026
+//     $tahun = date('y');       // 26
+//     $bulan = date('n');       // 1-12
+//     $romawiBulan = \App\Helpers\GeneralHelper::bulanRomawi($bulan);
 
-protected function generateContractNumber(Carbon $date, string $prefix): string
+//     // Ambil nomor terakhir di tahun ini
+//     $last = \App\Models\Offer::whereYear('contract_date', $tahunFull)
+//         ->whereNotNull('contract_number')
+//         ->lockForUpdate() 
+//         ->orderByDesc('id')
+//         ->first();
+
+//     if ($last) {
+//         // SPK/DSN/26/I/001 → ambil 001
+//         $explode = explode('/', $last->contract_number);
+//         $lastNumber = (int) end($explode) + 1;
+//     } else {
+//         $lastNumber = 1;
+//     }
+
+//     // Format 3 digit: 1 → 001
+//     $nomorUrut = str_pad($lastNumber, 3, '0', STR_PAD_LEFT);
+
+//     return "SPK/DSN/$tahun/$romawiBulan/$nomorUrut";
+// }
+protected function generateContractNumber(): string
 {
-    return DB::transaction(function () use ($date, $prefix) {
+    return DB::transaction(function () {
 
-        $yearFull = $date->format('Y'); // 2026
-        $yearShort = $date->format('y'); // 26
-        $bulanRomawi = GeneralHelper::bulanRomawi($date->month);
+        $now = now();
+        $yearFull = $now->format('Y'); // 2026
+        $yearShort = $now->format('y'); // 26
+        $bulanRomawi = \App\Helpers\GeneralHelper::bulanRomawi($now->month);
 
         $counter = ContractCounter::where('year', $yearFull)
             ->lockForUpdate()
@@ -211,7 +172,7 @@ protected function generateContractNumber(Carbon $date, string $prefix): string
 
         $nomorUrut = str_pad($next, 3, '0', STR_PAD_LEFT);
 
-        return "SPK/$prefix/$yearShort/$bulanRomawi/$nomorUrut";
+        return "SPK/DSN/$yearShort/$bulanRomawi/$nomorUrut";
     });
 }
 }

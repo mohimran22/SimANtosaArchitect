@@ -160,7 +160,6 @@ class CustomersController extends Controller
         'account_holder' => 'nullable|string|max:50',
         'photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
 
-        // --- data Customer ---
         'nic' => 'required|unique:customers,nic',
         'shipping_name' => 'nullable|string|max:255',
         'shipping_phone' => 'nullable|string|max:20',
@@ -223,6 +222,7 @@ if ($request->hasFile('photo')) {
                 'sub_district_id' => $validated['user_sub_district_id'],
                 'postal_code_id' => $validated['user_postal_code_id'],
                 'email' => $validated['email'],
+                'email_verified_at' => now(),
                 'password' => Hash::make($password),
                 'phone' => $validated['phone'] ?? null,
                 'gender' => $validated['gender'] ?? null,

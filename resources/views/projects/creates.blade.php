@@ -37,8 +37,8 @@
                                     : '4. Penawaran Jasa Build');
 
                         $contractTitle = $project?->project_type == 1
-                                ? '5. Kontrak Pelaksanaan Pekerjaan'
-                                : '6. Kontrak Pelaksanaan Pekerjaan';
+                                ? '5. Draft Kontrak Pelaksanaan Pekerjaan'
+                                : '6. Draft Kontrak Pelaksanaan Pekerjaan';
                             $invoiceTitle =
                                 $project?->project_type == 1
                                     ? '6. Invoice Pembayaran Desain (DP)'
@@ -351,54 +351,6 @@
             )
             <div id="kontrak" class="step-section">
                 <x-collapse-card :title="$contractTitle" target="kontrak-body">
-                        @php
-                            $contractOffer   = $project->offer;
-                            $contractLocked  = (bool) $contractOffer?->approved_at;
-                            $contractDateVal = $contractOffer?->contract_date
-                                ? \Carbon\Carbon::parse($contractOffer->contract_date)->format('Y-m-d')
-                                : now()->format('Y-m-d');
-                        @endphp
-
-                        @if($contractOffer?->contract_number)
-                            <p class="mb-3 text-muted">
-                                Nomor Kontrak: <strong>{{ $contractOffer->contract_number }}</strong>
-                            </p>
-                        @endif
-
-                        @can('ubah data proyek')
-                                <form action="{{ route('projects.contract.date', $project->id) }}"
-                                    method="POST"
-                                    class="row g-2 align-items-end mb-3">
-                                    @csrf
-                                    <div class="col-md-4">
-                                        <label class="form-label" for="contract_date">Tanggal Kontrak</label>
-                                        <input type="date"
-                                            id="contract_date"
-                                            name="contract_date"
-                                            class="form-control @error('contract_date') is-invalid @enderror"
-                                            value="{{ old('contract_date', $contractDateVal) }}"
-                                            required>
-                                        @error('contract_date')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-                                    <div class="col-auto">
-                                        <button type="submit" class="btn btn-dark">
-                                            <i class="ti ti-device-floppy"></i> Simpan Tanggal
-                                        </button>
-                                    </div>
-                                    <div class="col-12">
-                                        <small class="text-muted">
-                                            @if($contractLocked)
-                                                Tanggal masih bisa diubah, nomor kontrak tetap.
-                                            @else
-                                                Simpan tanggal dulu sebelum download atau lanjut. Nomor kontrak dibuat saat tanggal pertama kali disimpan.
-                                            @endif
-                                        </small>
-                                    </div>
-                                </form>
-                        @endcan
-
                         <div class="d-flex gap-2">
 
                             @if($project->project_type == 1)
@@ -406,42 +358,45 @@
                                 class="btn btn-dark"
                                 target="_blank">
                                     <i class="ti ti-download"></i>
-                                    Download Kontrak Desain
+                                    {{ $project->offer?->approved_at ? 'Download Kontrak Desain' : 'Download Draft Kontrak Desain' }}
                                 </a>
+
                             @elseif($project->project_type == 3)
                                 <a href="{{ route('projects.contract.buildpdf', $project->id) }}"
                                 class="btn btn-dark"
                                 target="_blank">
                                     <i class="ti ti-download"></i>
-                                    Download Kontrak Build
+                                    {{ $project->offer?->approved_at ? 'Download Kontrak Build' : 'Download Draft Kontrak Build' }}
                                 </a>
                             @endif
 
-                            @if(!$contractLocked)
-                                <form action="{{ $project->project_type == 1
-                                        ? route('projects.contract.next', $project->id)
-                                        : route('projects.contract.build.next', $project->id) }}"
-                                    method="POST"
-                                    class="approve-form"
-                                    data-title="Lanjut ke Tahap Berikutnya?"
-                                    data-text="Tanggal kontrak akan dikunci dan proses berlanjut.">
-                                    @csrf
-                                    <button type="submit"
-                                            class="btn btn-dark"
-                                            {{ $contractOffer?->contract_date ? '' : 'disabled' }}
-                                            title="{{ $contractOffer?->contract_date ? '' : 'Simpan tanggal kontrak terlebih dahulu' }}">
-                                        <i class="ti ti-arrow-right"></i> Lanjut ke Tahap Berikutnya
-                                    </button>
-                                </form>
+                            @if(!$project->offer?->approved_at)
+                                    @if($project->project_type == 1)
+                                        <form action="{{ route('projects.contract.approve', $project->id) }}"
+                                            method="POST" class="approve-form">
+                                            @csrf
+                                            <button type="submit" class="btn btn-dark">
+                                                <i class="ti ti-check"></i> Approve Kontrak
+                                            </button>
+                                        </form>
+                                    @elseif($project->project_type == 3)
+                                        <form action="{{ route('projects.contract.build.approve', $project->id) }}"
+                                            method="POST" class="approve-form">
+                                            @csrf
+                                            <button type="submit" class="btn btn-dark">
+                                                <i class="ti ti-check"></i> Approve Kontrak Build
+                                            </button>
+                                        </form>
+                                    @endif
                             @else
                                 <span class="text-muted fst-italic d-flex align-items-center gap-1">
                                     <i class="ti ti-check"></i>
-                                    Tahap kontrak sudah dilanjutkan
+                                    Disetujui {{ $project->offer->approved_at->format('d M Y') }}
                                 </span>
                             @endif
                         </div>
                 </x-collapse-card>
-            </div>
+            </div>    
             @endif
             {{-- ini blade section 6. Invoice Termin --}}
             @if(

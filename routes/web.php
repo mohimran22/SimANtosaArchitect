@@ -428,15 +428,20 @@ Route::get(
     'projects/{project}/invoice/invoice-rab',
     [\App\Http\Controllers\InvoiceController::class, 'invoiceRab']
 )->name('projects.invoice.rab');
-Route::post(
-    '/projects/{project}/contract/approve',
-    [\App\Http\Controllers\ContractController::class, 'approve']
-)->name('projects.contract.approve');
-Route::post(
-    '/projects/{project}/contract/approvebuild',
-    [\App\Http\Controllers\ContractBuildController::class, 'approve']
-)->name('projects.contract.build.approve');
-
+// Route::post(
+//     '/projects/{project}/contract/approve',
+//     [\App\Http\Controllers\ContractController::class, 'approve']
+// )->name('projects.contract.approve');
+// Route::post(
+//     '/projects/{project}/contract/approvebuild',
+//     [\App\Http\Controllers\ContractBuildController::class, 'approve']
+// )->name('projects.contract.build.approve');
+Route::post('/projects/{project}/contract/next', [\App\Http\Controllers\ContractController::class, 'next'])
+    ->name('projects.contract.next');
+Route::post('/projects/{project}/contract/build/next', [\App\Http\Controllers\ContractBuildController::class, 'next'])
+    ->name('projects.contract.build.next');
+Route::post('/projects/{project}/contract/date', [\App\Http\Controllers\ContractController::class, 'updateDate'])
+    ->name('projects.contract.date');
 Route::post(
     '/projects/{project}/invoice/approve',
     [\App\Http\Controllers\InvoiceController::class, 'approve']

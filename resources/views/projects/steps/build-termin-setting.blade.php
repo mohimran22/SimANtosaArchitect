@@ -4,15 +4,15 @@
     id="build-termin-form"
 >
     @csrf
-                            @if ($errors->any())
-                                        <div class="alert alert-danger">
-                                            <ul class="mb-0">
-                                                @foreach ($errors->all() as $error)
-                                                    <li>{{ $error }}</li>
-                                                @endforeach
-                                            </ul>
-                                        </div>
-                                    @endif
+    @if ($errors->any())
+        <div class="alert alert-danger">
+            <ul class="mb-0">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
     @php
         $offerTotal = (float) ($project->offer?->grand_total ?? 0);
     @endphp
@@ -232,7 +232,7 @@
         </div>
 
     </div>
-        <div class="d-flex align-items-center justify-content-between mb-3 mt-4">
+    <div class="d-flex align-items-center justify-content-between mb-3 mt-4">
         <div>
             <h3 class="mb-1 fw-bold">
                 Setting Masa Pemeliharaan
@@ -539,7 +539,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                         <button
                             type="button"
-                            class="btn btn-dark btn-icon w-100 btn-remove-termin"
+                            class="btn btn-dark btn-icon btn-remove-termin"
                             title="Hapus Termin"
                         >
                             <i class="ti ti-trash"></i>

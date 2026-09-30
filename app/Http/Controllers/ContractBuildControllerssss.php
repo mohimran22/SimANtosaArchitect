@@ -44,7 +44,7 @@ public function buildpdf(Project $project)
     Carbon::setLocale('id');
 
     $tanggal = Carbon::parse(
-        $offer->contract_date ?? now()
+        $offer->offer_date ?? now()
     );
 
     $jobDuration = (int) ($rab->job_duration ?? 0);
@@ -94,13 +94,13 @@ public function buildpdf(Project $project)
     );
 
     return $pdf->stream(
-        'Kontrak-' .
+        'Draft-Kontrak-' .
         $project->project_name .
         '.pdf'
     );
 }
 
-    public function next(Project $project)
+        public function approve(Project $project)
     {
         abort_if(
             $project->customer->user_id !== auth()->id()
@@ -109,26 +109,28 @@ public function buildpdf(Project $project)
         );
 
         $offer = $project->offer;
+            if (!$offer) {
+                return back()->with('error','Offer belum dibuat.');
+            }
 
-        if (!$offer) {
-            return back()->with('error', 'Offer belum dibuat.');
-        }
+            // if (!$offer->downloaded_at) {
+            //     return back()->with('error','Kontrak belum didownload.');
+            // }
 
-        if ($offer->approved_at) {
-            return back()->with('info', 'Tahap kontrak sudah dilanjutkan.');
-        }
-
-        if (!$offer->contract_date || !$offer->contract_number) {
-            return back()->with('error', 'Simpan tanggal kontrak terlebih dahulu.');
-        }
+            if ($offer->approved_at) {
+                return back()->with('info','Kontrak sudah disetujui.');
+            }
 
         DB::transaction(function () use ($project, $offer) {
-            // approved_at/approved_by tetap diisi sebagai penanda kontrak sudah final,
-            // karena bagian lain (invoice, form pengerjaan) masih membacanya.
-            $offer->update([
-                'approved_at' => now(),
-                'approved_by' => auth()->id(),
-            ]);
+            
+            if (!$offer->contract_number) {
+                $offer->update([
+                    'contract_number' => $this->generateContractNumber(),
+                    'contract_date'   => now(),
+                    'approved_at'   => now(),
+                    'approved_by'   => auth()->id(),
+                ]);
+            }
 
             ProjectLevel::where([
                 'project_id'  => $project->id,
@@ -178,6 +180,41 @@ public function buildpdf(Project $project)
 
         return redirect()
             ->route('projects.create', ['project_id' => $project->id])
-            ->with('success', 'Kontrak disimpan. Tahap Invoice Termin dimulai.');
+            ->with('success', 'Kontrak disetujui. Tahap Invoice DP dimulai.');
     }
+
+protected function generateContractNumber(): string
+{
+    return DB::transaction(function () {
+
+        $now = now();
+        $yearFull = $now->format('Y'); // 2026
+        $yearShort = $now->format('y'); // 26
+        $bulanRomawi = \App\Helpers\GeneralHelper::bulanRomawi($now->month);
+
+        $counter = ContractCounter::where('year', $yearFull)
+            ->lockForUpdate()
+            ->first();
+
+        if (!$counter) {
+            $counter = ContractCounter::create([
+                'year' => $yearFull,
+                'last_number' => 0,
+            ]);
+        }
+
+        $next = $counter->last_number + 1;
+
+        $counter->update([
+            'last_number' => $next,
+        ]);
+
+        $nomorUrut = str_pad($next, 3, '0', STR_PAD_LEFT);
+
+        return "SPK/BLD/$yearShort/$bulanRomawi/$nomorUrut";
+    });
 }
+}
+
+
+

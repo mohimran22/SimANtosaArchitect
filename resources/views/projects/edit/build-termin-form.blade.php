@@ -557,7 +557,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                         <button
                             type="button"
-                            class="btn btn-dark btn-icon w-100 btn-remove-termin"
+                            class="btn btn-dark btn-icon btn-remove-termin"
                             title="Hapus Termin"
                         >
                             <i class="ti ti-trash"></i>

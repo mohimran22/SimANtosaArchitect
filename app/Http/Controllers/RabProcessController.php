@@ -555,29 +555,14 @@ public function structure($id)
         'items' => $rab->items
     ]);
 }
-public function update(
-    Request $request,
-    Project $project,
-    RabProcess $rab
-) {
-    /*
-    |--------------------------------------------------------------------------
-    | Pastikan RAB memang milik project dari route
-    |--------------------------------------------------------------------------
-    */
+public function update(Request $request, Project $project, RabProcess $ra) {
+
 
     if ($rab->project_id !== $project->id) {
 
         abort(404);
 
     }
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | VALIDATION
-    |--------------------------------------------------------------------------
-    */
 
     $validator = Validator::make($request->all(), [
 

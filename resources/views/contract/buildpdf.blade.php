@@ -545,13 +545,16 @@ Namun apabila terjadi Force Majeure atau bencana alam yang diluar kemampuan Para
 
     <td width="50%" style="text-align:center; vertical-align:top;">PT. Tosa Ahmad Jaya<br>
         <strong>Antosa Architect</strong>
-
         <div style="height:120px;">
+                <img src="{{ public_path('images/ttd-dwiantosa.png') }}"
+                     style="height:140px;">
+        </div>
+        {{-- <div style="height:120px;">
             @if($offer->approved_at)
                 <img src="{{ public_path('images/ttd-dwiantosa.png') }}"
                      style="height:140px;">
             @endif
-        </div>
+        </div> --}}
 
         <u>Ir. Ar. Dwiantosa Ahmad F., IAI., IPP</u>
     </td>
