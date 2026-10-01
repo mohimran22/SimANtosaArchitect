@@ -122,10 +122,26 @@ table.dataTable .badge {
     font-size: 16px !important;
 }
 
-/* ===== Header Table ===== */
 table.dataTable thead th {
+    padding: 12px 14px !important;
     font-weight: 600 !important;
     font-size: 13px !important;
+    white-space: nowrap;
+}
+
+table.dataTable thead th.dt-orderable-asc,
+table.dataTable thead th.dt-orderable-desc {
+    padding-right: 26px !important;
+}
+
+/* header ikut rata sesuai isi kolom */
+table.dataTable thead th.text-center,
+table.dataTable thead th.dt-center { text-align: center; }
+
+.dt-scroll-head table,
+.dt-scroll-body table {
+    width: 100% !important;
+    margin: 0 !important;
 }
 
 /* ===== Row Padding ===== */
