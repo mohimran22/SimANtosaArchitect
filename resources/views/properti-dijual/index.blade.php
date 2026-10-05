@@ -100,7 +100,7 @@
                     { data: 'judul' },
                     { data: 'kota' },
                     { data: 'harga' },
-                    { data: 'status' },
+                    { data: 'status'},
                     { data: 'is_published', orderable: false, searchable: false },
                     { data: 'aksi', orderable: false, searchable: false}
                 ],
