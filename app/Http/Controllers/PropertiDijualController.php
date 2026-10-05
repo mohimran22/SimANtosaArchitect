@@ -5,16 +5,31 @@ namespace App\Http\Controllers;
 use App\Models\PropertiDijual;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Yajra\DataTables\Facades\DataTables;
 
 class PropertiDijualController extends Controller
 {
     public function index(Request $request)
     {
-        $items = PropertiDijual::query()
-            ->when($request->q, fn ($q, $s) => $q->where('judul', 'like', "%{$s}%")->orWhere('kota', 'like', "%{$s}%"))
-            ->latest()->paginate(15)->withQueryString();
-
-        return view('properti-dijual.index', compact('items'));
+        if ($request->ajax()) {
+            return DataTables::of(PropertiDijual::query()->latest())
+                ->addIndexColumn()
+                ->editColumn('foto', fn ($r) => $r->foto
+                    ? '<img src="' . asset('storage/' . $r->foto) . '" width="64" class="rounded" alt="">'
+                    : '')
+                ->editColumn('judul', fn ($r) => e($r->judul) . '<div class="text-muted small">' . e(ucfirst($r->tipe)) . '</div>')
+                ->editColumn('harga', fn ($r) => 'Rp ' . number_format($r->harga, 0, ',', '.'))
+                ->editColumn('status', function ($r) {
+                    $c = $r->status === 'dijual' ? 'green' : ($r->status === 'disewa' ? 'blue' : 'secondary');
+                    return '<span class="badge bg-' . $c . '-lt">' . e(ucfirst($r->status)) . '</span>';
+                })
+                ->editColumn('is_published', fn ($r) => $r->is_published ? 'Ya' : 'Draft')
+                ->addColumn('aksi', fn ($r) => view('properti-dijual._aksi', ['row' => $r])->render())
+                ->rawColumns(['foto', 'judul', 'status', 'aksi'])
+                ->make(true);
+        }
+ 
+        return view('properti-dijual.index');
     }
 
     public function create()
