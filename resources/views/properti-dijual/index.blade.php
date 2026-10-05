@@ -40,10 +40,10 @@
                     <div class="table-responsive">
                         <table id="tableProperties" class="table table-vcenter card-table">
                             <thead>
-                                <tr><th>Foto</th><th>Judul</th><th>Kota</th><th>Harga</th><th>Status</th><th>Tayang</th><th></th></tr>
+                                <tr><th>No</th><th>Foto</th><th>Judul</th><th>Kota</th><th>Harga</th><th>Status</th><th>Tayang</th><th>Aksi</th></tr>
                             </thead>
                             <tbody>
-                            @forelse ($items as $it)
+                            {{-- @forelse ($items as $it)
                                 <tr>
                                     <td>@if($it->foto)<img src="{{ asset('storage/'.$it->foto) }}" width="64" class="rounded">@endif</td>
                                     <td>{{ $it->judul }}<div class="text-muted small">{{ ucfirst($it->tipe) }}</div></td>
@@ -61,18 +61,18 @@
                                 </tr>
                             @empty
                                 <tr><td colspan="7" class="text-center text-muted py-4">Belum ada data.</td></tr>
-                            @endforelse
+                            @endforelse --}}
                             </tbody>
                         </table>
                     </div>
                 </div>
-                <div class="mt-3">{{ $items->links() }}</div>
+                {{-- <div class="mt-3">{{ $items->links() }}</div> --}}
             </div>
         </div>
     </div>
 </div>
 @endsection
-@push()
+@push('js')
         <script>
         $(function() {
             const isMobile = window.innerWidth < 576;
@@ -88,30 +88,21 @@
                 processing: true,
                 responsive: false,
                 ajax: {
-                    url: '{{ route("projects.index") }}',
+                    url: '{{ route("jual.index") }}',
                     data: function (d) {
                         d.type = projectType;
                     }
                 },
-                order: [[5, 'desc']],
+                order: [],
                 columns: [
-                    { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
-                    // { data: 'project_code', name: 'project_code' },
-                    { data: 'project_name', name: 'project_name' },
-                    { data: 'project_type', name: 'project_type' },
-                    { data: 'customer', name: 'customer.user.fullname' },
-                    { data: 'employee', name: 'employee.user.fullname' },
-                    // { data: 'affiliator', name: 'affiliator.user.fullname' },
-                    { data: 'start_date', name: 'start_date' },
-                    { data: 'project_location', name: 'project_location' },
-                    // { data: 'province_name', name: 'province.name' },
-                    // { data: 'city_name', name: 'city.name'},
-                    // { data: 'district_name', name: 'district.name' },
-                    // { data: 'sub_district_name', name: 'sub_district_name' },
-                    // { data: 'postal_code', name: 'postal_code' },
-                    { data: 'current_level', name: 'current_level' },
-                    // { data: 'project_status', name: 'project_status' },
-                    { data: 'action', name: 'action', orderable: false, searchable: false }
+                    { data: 'DT_RowIndex', orderable: false, searchable: false },
+                    { data: 'foto',  orderable: false, searchable: false },
+                    { data: 'judul' },
+                    { data: 'kota' },
+                    { data: 'harga' },
+                    { data: 'status' },
+                    { data: 'is_published', orderable: false, searchable: false },
+                    { data: 'aksi', orderable: false, searchable: false}
                 ],
                 language: {
                     search: "",

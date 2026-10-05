@@ -24,7 +24,26 @@ class PropertiDijualController extends Controller
                     return '<span class="badge bg-' . $c . '-lt">' . e(ucfirst($r->status)) . '</span>';
                 })
                 ->editColumn('is_published', fn ($r) => $r->is_published ? 'Ya' : 'Draft')
-                ->addColumn('aksi', fn ($r) => view('properti-dijual._aksi', ['row' => $r])->render())
+                ->addColumn('aksi', function ($row) {
+                    $buttons = '';
+                    if (auth()->user()->can('ubah data customer')) {
+                        $buttons .= '<a href="' . route('jual.edit', $row->id) . '" class="btn btn-icon btn-sm btn-dark me-1" title="Ubah">
+                                        <i class="ti ti-edit"></i>
+                                    </a>';
+                    }
+                    // if (auth()->user()->can('lihat data customer')) {
+                    //     $buttons .= '<a href="' . route('jual.show', $row->id) . '" class="btn btn-icon btn-sm btn-dark me-1" title="Lihat">
+                    //                     <i class="ti ti-eye"></i>
+                    //                 </a>';
+
+                    // }
+                    if (auth()->user()->can('hapus data customer')) {
+                        $buttons .= '<button data-id="' . $row->id . '" class="btn btn-icon btn-sm btn-dark delete-properties" title="Hapus">
+                                        <i class="ti ti-trash"></i>
+                                    </button>';
+                    }
+                    return $buttons;
+                })
                 ->rawColumns(['foto', 'judul', 'status', 'aksi'])
                 ->make(true);
         }
