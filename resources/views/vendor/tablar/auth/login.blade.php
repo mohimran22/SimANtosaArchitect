@@ -72,6 +72,14 @@
         padding: 0.75rem;
         font-weight: 600;
     }
+    .website-menu{
+        display:flex;
+        align-items:center;
+        gap:38px;
+    }
+    .website-icons{
+        display:none;
+    }
     @media (max-width: 1200px) {
         body {
             background-attachment: scroll;

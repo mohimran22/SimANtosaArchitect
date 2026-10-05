@@ -12,11 +12,19 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
-                    'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
-                    'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
-                    'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
-                    'activerole'  => \App\Http\Middleware\ActiveRoleMiddleware::class,
-                ]);
+            'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
+            'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
+            'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
+            'activerole'  => \App\Http\Middleware\ActiveRoleMiddleware::class,
+        ]);
+
+        // Domain utama hanya boleh menampilkan homepage
+        $middleware->web(append: [
+            \App\Http\Middleware\HomepageOnly::class,
+        ]);
+
+        // Wajib di Railway agar URL yang dihasilkan memakai https
+        $middleware->trustProxies(at: '*');
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

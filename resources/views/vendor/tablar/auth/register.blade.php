@@ -121,6 +121,14 @@
         box-shadow:
             0 10px 25px rgba(0,0,0,0.18);
     }
+    .website-menu{
+        display:flex;
+        align-items:center;
+        gap:38px;
+    }
+    .website-icons{
+        display:none;
+    }
     @media (max-width: 1200px) {
         body {
             background-attachment: scroll;

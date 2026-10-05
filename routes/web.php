@@ -47,8 +47,23 @@ use App\Http\Controllers\AjaxController;
 use App\Http\Controllers\Api\JournalApiController;
 use App\Http\Controllers\JournalExportController;
 use App\Http\Controllers\KasController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\JualController;
+use App\Http\Controllers\EventController;
 
+$homeDomain = config('app.home_domain');
+$simDomain  = config('app.sim_domain');
 
+// Homepage (didaftarkan paling awal supaya menang untuk domain utama)
+Route::domain($homeDomain)->group(function () {
+    Route::get('/', [HomeController::class, 'index'])->name('landing');
+    // rute homepage lain: tentang, portofolio, kontak, dll.
+});
+
+// si.antosaarchitect.com langsung diarahkan ke login/dashboard
+Route::domain($simDomain)->get('/', function () {
+    return redirect()->route('dashboard');
+});
 Route::get('/', function () {
     return view('welcome');
 });
@@ -737,8 +752,22 @@ Route::middleware(['auth', 'permission:kelola akun'])->group(function () {
     Route::post('/accounts/update-role', [AccountController::class, 'updateRole'])->name('accounts.update-role');
 });
 
+Route::middleware(['auth', 'permission:lihat daftar event|lihat data event'])->group(function () {
+    Route::resource('/events', EventController::class)->except(['show']);
+    Route::get('/events/{event}/manage', [EventController::class, 'show'])->name('events.manage');
+    Route::get('events/{event}/pdf', [EventController::class, 'pdf'])
+    ->name('events.pdf');
+    Route::get('/events/{event}/participants/lookup', [EventController::class, 'lookupParticipant'])
+        ->name('events.participants.lookup')
+        ->middleware(['auth', 'role:Tim|Super-Admin']);
+
+    Route::post('/events/{event}/participants/checkin-scan', [EventController::class, 'checkinScan'])
+        ->name('events.participants.checkinScan')
+        ->middleware(['auth', 'role:Tim|Super-Admin']);
+});
+
 Route::middleware(['auth', 'permission:lihat daftar dokumen'])->group(function () {
-    route::resource('/documents', DocumentController::class);
+    route::resource('/jual', JualController::class);
 });
 
 Route::middleware(['auth', 'permission:lihat data absensi'])->group(function () {

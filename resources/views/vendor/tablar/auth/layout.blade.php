@@ -23,6 +23,7 @@
 
 </head>
 <body class=" border-top-wide border-primary d-flex flex-column">
+    {{-- @include('partials.navbar') --}}
 <div class="page page-center">
     @yield('content')
 </div>
