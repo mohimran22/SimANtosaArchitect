@@ -346,12 +346,12 @@
 .vm-photo{
     margin-top:65px;
     aspect-ratio:3.05/1;
-    background:url('{{ asset('images/Jasa-Arsitek-Jember-Visi-Perusahaan.webp') }}') center bottom/cover no-repeat;
+    background:url('{{ asset('images/visi-rumah.webp') }}') center bottom/cover no-repeat;
 }
 
 /* denah 3D = background selebar layar, "Misi" ada di atasnya */
 .vm-plan-wrap{
-    background:url('{{ asset('images/Jasa-Arsitek-Jember-Misi-Perusahaan.webp') }}') 50% -2.8vw/100% auto no-repeat, #fff;
+    background:url('{{ asset('images/denah-3d.webp') }}') 50% -2.8vw/100% auto no-repeat, #fff;
     padding:30% 0 100px;   /* tinggi mengikuti lebar gambar */
 }
 .vm-misi{ padding:0 10%; }
@@ -364,7 +364,7 @@
     .vm-visi p{ font-size:15px; }
     .vm-photo{ aspect-ratio:auto; height:260px; margin-top:30px; }
     .vm-plan-wrap{
-        background:url('{{ asset('images/Jasa-Arsitek-Jember-Misi-Perusahaan.webp') }}') -53vw -2vw/150% auto no-repeat, #fff;
+        background:url('{{ asset('images/denah-3d.webp') }}') -53vw -2vw/150% auto no-repeat, #fff;
         padding:190px 0 60px;
     }
     .vm-misi{ padding:0 20px; }
@@ -409,6 +409,11 @@
 .pf-badge.type{ border:1px solid #e3e3e3; color:#444; font-weight:500; }
 .pf-label{ font-size:12px; color:#999; text-transform:uppercase; margin:0; }
 .pf-price{ font-size:22px; font-weight:700; margin:2px 0 8px; }
+.pf-cicilan{
+    display:inline-flex; align-items:center; gap:6px; background:#fff6e0; color:#555;
+    font-size:13px; padding:5px 10px; border-radius:6px; margin:0 0 8px;
+}
+.pf-cicilan b{ color:#c77700; font-weight:600; }
 .pf-loc{ font-size:13px; color:#666; display:flex; align-items:center; gap:5px; margin:0 0 6px; }
 .pf-loc i{ color:#e0a000; }
 .pf-title{
@@ -603,59 +608,77 @@
     </div>
 </section>
 
-{{-- Portofolio Proyek (siap diganti data dari database/CMS) --}}
+{{-- Listing Rumah: data dari SIMAntosa ($listings dikirim dari controller) --}}
 @php
-    $projects = $projects ?? [
-        ['title'=>'Desain Rumah Modern Tropis 2 Lantai','category'=>'Rumah Tinggal','service'=>'Desain','type'=>'Rumah','price'=>'Rp 850 Juta','location'=>'Jember, Jawa Timur','bedrooms'=>4,'bathrooms'=>3,'land'=>'200m²','building'=>'180m²','photos'=>6,'image'=>'images/banner1.jpg','url'=>'#'],
-        ['title'=>'Renovasi Rumah Minimalis Type 90','category'=>'Renovasi','service'=>'Renovasi','type'=>'Rumah','price'=>'Rp 320 Juta','location'=>'Jember, Jawa Timur','bedrooms'=>3,'bathrooms'=>2,'land'=>'120m²','building'=>'90m²','photos'=>5,'image'=>'images/banner2.jpg','url'=>'#'],
-        ['title'=>'Bangun Ruko Dua Lantai','category'=>'Komersial','service'=>'Bangun','type'=>'Ruko','price'=>'Rp 1,2 Miliar','location'=>'Jember, Jawa Timur','bedrooms'=>null,'bathrooms'=>2,'land'=>'150m²','building'=>'240m²','photos'=>8,'image'=>'images/banner3.jpg','url'=>'#'],
+    // ---- data contoh, otomatis diabaikan kalau controller mengirim $listings ----
+    $listings = $listings ?? [
+        ['status'=>'Dijual','tipe'=>'Rumah','harga'=>1000000000,'cicilan'=>'Rp 7,12 juta/bln','lokasi'=>'Jember, Jawa Timur','kota'=>'Jember','judul'=>'Dijual Rumah Minimalis 2 Lantai Strategis','kt'=>4,'km'=>2,'lt'=>'99m²','lb'=>'90m²','jumlah_foto'=>6,'foto'=>'images/banner1.jpg','agen_nama'=>'Antosa Architect','agen_peran'=>'Pemilik Properti','agen_foto'=>'images/antosa.png','agen_telepon'=>'085189523863','url'=>'#'],
+        ['status'=>'Dijual','tipe'=>'Tanah','harga'=>350000000,'lokasi'=>'Kaliwates, Jember','kota'=>'Jember','judul'=>'Dijual Tanah Kavling Siap Bangun','kt'=>null,'km'=>null,'lt'=>'580m²','lb'=>null,'jumlah_foto'=>5,'foto'=>'images/banner2.jpg','agen_nama'=>'Antosa Architect','agen_peran'=>'Agen Independen','agen_foto'=>'images/antosa.png','agen_telepon'=>'085189523863','url'=>'#'],
+        ['status'=>'Dijual','tipe'=>'Rumah','harga'=>650000000,'lokasi'=>'Banyuwangi, Jawa Timur','kota'=>'Banyuwangi','judul'=>'Dijual Rumah Modern Tropis Dekat Pusat Kota','kt'=>3,'km'=>2,'lt'=>'120m²','lb'=>'90m²','jumlah_foto'=>5,'foto'=>'images/banner3.jpg','agen_nama'=>'Antosa Architect','agen_peran'=>'Pemilik Properti','agen_foto'=>'images/antosa.png','agen_telepon'=>'085189523863','url'=>'#'],
     ];
-    $pfCategories = collect($projects)->pluck('category')->unique()->values();
+    $lsTabs = collect($listings)->map(fn($l) => data_get($l, 'kota'))->filter()->unique()->values();
+    $lsImg  = fn($path) => ! $path ? asset('images/antosa.png') : (str_starts_with($path, 'http') ? $path : (str_starts_with($path, 'images/') ? asset($path) : asset('storage/' . $path)));
+    $lsM2   = fn($v) => is_numeric($v) ? $v . 'm²' : $v;
+    $lsRp   = fn($v) => is_numeric($v)
+        ? 'Rp ' . ($v >= 1000000000 ? rtrim(rtrim(number_format($v / 1000000000, 2, ',', '.'), '0'), ',') . ' Miliar'
+                 : ($v >= 1000000 ? rtrim(rtrim(number_format($v / 1000000, 2, ',', '.'), '0'), ',') . ' Juta' : number_format($v, 0, ',', '.')))
+        : $v;
+    $lsWa   = function ($no) { $n = preg_replace('/\D/', '', (string) $no); return str_starts_with($n, '0') ? '62' . substr($n, 1) : $n; };
 @endphp
-<section class="pf" id="portofolio">
+<section class="pf" id="listing">
     <div class="pf-wrap">
-        <h2>Portofolio Proyek Antosa Architect</h2>
-        <p class="pf-sub">Lihat hasil karya desain, bangun, dan renovasi rumah yang telah kami wujudkan untuk klien.</p>
+        <h2>Pilihan Properti Dijual</h2>
+        <p class="pf-sub">Temukan rumah dan properti pilihan langsung dari pemilik &amp; agen terverifikasi.</p>
 
         <div class="pf-tabs" id="pfTabs">
-            <button type="button" class="pf-tab active" data-filter="all">Semua Proyek</button>
-            @foreach ($pfCategories as $cat)
-                <button type="button" class="pf-tab" data-filter="{{ $cat }}">{{ $cat }}</button>
+            <button type="button" class="pf-tab active" data-filter="all">Semua Lokasi</button>
+            @foreach ($lsTabs as $kota)
+                <button type="button" class="pf-tab" data-filter="{{ $kota }}">{{ $kota }}</button>
             @endforeach
         </div>
 
         <div class="pf-grid">
-            @foreach ($projects as $pr)
-                <article class="pf-card" data-category="{{ $pr['category'] }}">
-                    <a href="{{ $pr['url'] }}" class="pf-img">
-                        <img src="{{ asset($pr['image']) }}" alt="{{ $pr['title'] }}">
-                        <span class="pf-photos"><i class="ti ti-camera"></i> {{ $pr['photos'] }}</span>
+            @foreach ($listings as $l)
+                @php
+                    $status = data_get($l, 'status', 'Dijual');
+                    $url    = data_get($l, 'url', '#');
+                    $wa     = $lsWa(data_get($l, 'agen_telepon', '6285189523863'));
+                @endphp
+                <article class="pf-card" data-category="{{ data_get($l, 'kota') }}">
+                    <a href="{{ $url }}" class="pf-img">
+                        <img src="{{ $lsImg(data_get($l, 'foto')) }}" alt="{{ data_get($l, 'judul') }}" loading="lazy">
+                        @if (data_get($l, 'jumlah_foto'))
+                            <span class="pf-photos"><i class="ti ti-camera"></i> {{ data_get($l, 'jumlah_foto') }}</span>
+                        @endif
                     </a>
                     <div class="pf-body">
                         <div class="pf-badges">
-                            <span class="pf-badge main">{{ $pr['service'] }}</span>
-                            <span class="pf-badge type"><i class="ti ti-home"></i> {{ $pr['type'] }}</span>
+                            <span class="pf-badge main">{{ $status }}</span>
+                            <span class="pf-badge type"><i class="ti ti-home"></i> {{ data_get($l, 'tipe') }}</span>
                         </div>
-                        <p class="pf-label">Estimasi biaya</p>
-                        <div class="pf-price">{{ $pr['price'] }}</div>
-                        <p class="pf-loc"><i class="ti ti-map-pin-filled"></i> {{ $pr['location'] }}</p>
-                        <h3 class="pf-title"><a href="{{ $pr['url'] }}">{{ $pr['title'] }}</a></h3>
+                        <p class="pf-label">{{ strtolower($status) === 'disewa' ? 'Harga Sewa' : 'Harga Jual' }}</p>
+                        <div class="pf-price">{{ $lsRp(data_get($l, 'harga')) }}</div>
+                        @if (data_get($l, 'cicilan'))
+                            <div class="pf-cicilan"><i class="ti ti-credit-card"></i> Cicilan mulai <b>{{ data_get($l, 'cicilan') }}</b></div>
+                        @endif
+                        <p class="pf-loc"><i class="ti ti-map-pin-filled"></i> {{ data_get($l, 'lokasi') }}</p>
+                        <h3 class="pf-title"><a href="{{ $url }}">{{ data_get($l, 'judul') }}</a></h3>
                         <div class="pf-specs">
-                            @if (!empty($pr['bedrooms']))<div class="pf-spec"><b>{{ $pr['bedrooms'] }}</b><span><i class="ti ti-bed"></i> KT</span></div>@endif
-                            @if (!empty($pr['bathrooms']))<div class="pf-spec"><b>{{ $pr['bathrooms'] }}</b><span><i class="ti ti-bath"></i> KM</span></div>@endif
-                            @if (!empty($pr['land']))<div class="pf-spec"><b>{{ $pr['land'] }}</b><span><i class="ti ti-arrows-maximize"></i> LT</span></div>@endif
-                            @if (!empty($pr['building']))<div class="pf-spec"><b>{{ $pr['building'] }}</b><span><i class="ti ti-building"></i> LB</span></div>@endif
+                            @if (data_get($l, 'kt'))<div class="pf-spec"><b>{{ data_get($l, 'kt') }}</b><span><i class="ti ti-bed"></i> KT</span></div>@endif
+                            @if (data_get($l, 'km'))<div class="pf-spec"><b>{{ data_get($l, 'km') }}</b><span><i class="ti ti-bath"></i> KM</span></div>@endif
+                            @if (data_get($l, 'lt'))<div class="pf-spec"><b>{{ $lsM2(data_get($l, 'lt')) }}</b><span><i class="ti ti-arrows-maximize"></i> LT</span></div>@endif
+                            @if (data_get($l, 'lb'))<div class="pf-spec"><b>{{ $lsM2(data_get($l, 'lb')) }}</b><span><i class="ti ti-building"></i> LB</span></div>@endif
                         </div>
                         <div class="pf-foot">
                             <div class="pf-agent">
-                                <img src="{{ asset('images/antosa.png') }}" alt="Antosa Architect">
+                                <img src="{{ $lsImg(data_get($l, 'agen_foto')) }}" alt="{{ data_get($l, 'agen_nama') }}">
                                 <div>
-                                    <strong>Antosa Architect</strong>
-                                    <small>Arsitek Berlisensi</small>
+                                    <strong>{{ data_get($l, 'agen_nama') }}</strong>
+                                    <small>{{ data_get($l, 'agen_peran') }}</small>
                                 </div>
                             </div>
-                            <a href="tel:+6285189523863" class="pf-call" aria-label="Telepon"><i class="ti ti-phone"></i></a>
-                            <a href="https://wa.me/6285189523863?text={{ urlencode('Halo Antosa Architect, saya tertarik dengan proyek: '.$pr['title']) }}" target="_blank" rel="noopener" class="pf-wa"><i class="ti ti-brand-whatsapp"></i> WhatsApp</a>
+                            <a href="tel:+{{ $wa }}" class="pf-call" aria-label="Telepon"><i class="ti ti-phone"></i></a>
+                            <a href="https://wa.me/{{ $wa }}?text={{ urlencode('Halo, saya tertarik dengan listing: ' . data_get($l, 'judul')) }}" target="_blank" rel="noopener" class="pf-wa"><i class="ti ti-brand-whatsapp"></i> WhatsApp</a>
                         </div>
                     </div>
                 </article>
