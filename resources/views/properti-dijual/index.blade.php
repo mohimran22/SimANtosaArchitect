@@ -28,9 +28,6 @@
     <div class="container-xl">
         <div class="row row-deck row-cards">
             <div class="col-12">
-                @if (session('success'))
-                    <div class="alert alert-success">{{ session('success') }}</div>
-                @endif
                 <div class="card">
                     <div class="card-header">
                         <p class="text-center mb-4" style="font-size: 1.5rem; font-weight: 400; font-family: 'Poppins', sans-serif;">
@@ -102,11 +99,11 @@
                     { data: 'harga' },
                     { data: 'status'},
                     { data: 'is_published', orderable: false, searchable: false },
-                    { data: 'aksi', orderable: false, searchable: false}
+                    { data: 'action', orderable: false, searchable: false}
                 ],
                 language: {
                     search: "",
-                    searchPlaceholder: "Cari proyek...",
+                    searchPlaceholder: "Cari properti...",
                     lengthMenu: "Tampilkan _MENU_ data",
                     info: "Menampilkan _START_ - _END_ dari _TOTAL_ data",
                     infoEmpty: "Tidak ada data",
@@ -139,7 +136,7 @@
             });
 
             // Delete user functionally
-            $('table').on('click', '.delete-projects', function () {
+        $('#tableProperties').on('click', '.delete-properties', function () {
             const projectId = $(this).data('id');
 
             Swal.fire({
@@ -157,7 +154,7 @@
                 if (result.isConfirmed) {
                     $.ajax({
 
-                        url: `/projects/${projectId}`,
+                        url: `/jual/${projectId}`,
                         method: 'DELETE',
                         data: {
                             _token: '{{ csrf_token() }}',
@@ -188,7 +185,7 @@
                     });
                 }
             });
-            });
+        });
 
 
            

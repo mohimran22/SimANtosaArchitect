@@ -49,7 +49,6 @@ use App\Http\Controllers\JournalExportController;
 use App\Http\Controllers\KasController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PropertiDijualController;
-use App\Http\Controllers\EventController;
 
 $homeDomain = config('app.home_domain');
 $simDomain  = config('app.sim_domain');
@@ -753,6 +752,7 @@ Route::middleware(['auth', 'permission:kelola akun'])->group(function () {
 });
 
 Route::middleware(['auth'])->group(function () {
+    Route::delete('jual/foto/{foto}', [PropertiDijualController::class, 'destroyFoto'])->name('jual.foto.destroy');
     Route::resource('jual', PropertiDijualController::class)
         ->parameters(['jual' => 'properti'])
         ->except('show');

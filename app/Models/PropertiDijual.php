@@ -10,7 +10,6 @@ class PropertiDijual extends Model
     protected $table = 'properti_dijual';
     protected $guarded = ['id'];
     protected $casts = [
-        'galeri'       => 'array',
         'is_published' => 'boolean',
         'harga'        => 'integer',
     ];
@@ -33,6 +32,11 @@ class PropertiDijual extends Model
         return $slug;
     }
 
+    public function fotos()
+    {
+        return $this->hasMany(PropertiDijualFoto::class, 'properti_dijual_id')->orderBy('urutan')->orderBy('id');
+    }
+
     public function scopePublished($q)
     {
         return $q->where('is_published', true);
@@ -41,7 +45,7 @@ class PropertiDijual extends Model
     // dipakai homepage lewat data_get($l, 'jumlah_foto') dan data_get($l, 'url')
     public function getJumlahFotoAttribute(): int
     {
-        return ($this->foto ? 1 : 0) + count($this->galeri ?? []);
+        return ($this->foto ? 1 : 0) + ($this->fotos_count ?? $this->fotos()->count());
     }
 
     public function getUrlAttribute(): string
