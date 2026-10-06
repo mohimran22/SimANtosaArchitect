@@ -8,11 +8,10 @@ class HomeController extends Controller
 {
     public function index()
     {
-        // $listings = PropertiDijual::published()->latest()->take(9)->get();
+        $listings = PropertiDijual::published()->latest()->take(9)->get();
 
         // kalau belum ada data, kirim null supaya homepage memakai data contoh
-        // return view('welcome', ['listings' => $listings->isNotEmpty() ? $listings : null]);
-             return view('welcome');
+        return view('welcome', ['listings' => $listings->isNotEmpty() ? $listings : null]);
     }
 
     public function show(string $slug)
