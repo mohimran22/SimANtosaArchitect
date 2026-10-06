@@ -36,7 +36,10 @@ class PropertiDijual extends Model
     {
         return $this->hasMany(PropertiDijualFoto::class, 'properti_dijual_id')->orderBy('urutan')->orderBy('id');
     }
-
+        public function tipe()
+    {
+        return $this->hasMany(TipeProperti::class);
+    }
     public function scopePublished($q)
     {
         return $q->where('is_published', true);

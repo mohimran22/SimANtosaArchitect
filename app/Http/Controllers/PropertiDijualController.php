@@ -27,7 +27,7 @@ class PropertiDijualController extends Controller
                 ->editColumn('is_published', fn ($r) => $r->is_published ? 'Ya' : 'Draft')
                 ->addColumn('action', function ($r) {
                     $buttons = '';
-                    if (auth()->user()->can('ubah data customer')) {
+                    if (auth()->user()->can('ubah data properti')) {
                         $buttons .= '<a href="' . route('jual.edit', $r->id) . '" class="btn btn-icon btn-sm btn-dark me-1" title="Ubah">
                                         <i class="ti ti-edit"></i>
                                     </a>';
@@ -38,7 +38,7 @@ class PropertiDijualController extends Controller
                     //                 </a>';
 
                     // }
-                    if (auth()->user()->can('hapus data customer')) {
+                    if (auth()->user()->can('hapus data properti')) {
                         $buttons .= '<button data-id="' . $r->id . '" class="btn btn-icon btn-sm btn-dark delete-properties" title="Hapus">
                                         <i class="ti ti-trash"></i>
                                     </button>';

@@ -14,6 +14,8 @@
         });
     }
 
+    window.pastikanSwal = loadSwal;   // dipakai script lain (mis. tambah tipe properti)
+
     function tanya(judul, teks) {
         return loadSwal().then(function () {
             return Swal.fire({

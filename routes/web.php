@@ -49,6 +49,7 @@ use App\Http\Controllers\JournalExportController;
 use App\Http\Controllers\KasController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PropertiDijualController;
+use App\Http\Controllers\TipePropertiController;
 
 $homeDomain = config('app.home_domain');
 $simDomain  = config('app.sim_domain');
@@ -752,7 +753,11 @@ Route::middleware(['auth', 'permission:kelola akun'])->group(function () {
 });
 
 Route::middleware(['auth'])->group(function () {
+    Route::post('jual/tipe', [PropertiDijualController::class, 'storeTipe'])->name('jual.tipe.store');
     Route::delete('jual/foto/{foto}', [PropertiDijualController::class, 'destroyFoto'])->name('jual.foto.destroy');
+    Route::resource('tipe-properti', TipePropertiController::class)
+        ->parameters(['tipe-properti' => 'tipe'])
+        ->only(['index', 'store', 'update', 'destroy']);
     Route::resource('jual', PropertiDijualController::class)
         ->parameters(['jual' => 'properti'])
         ->except('show');

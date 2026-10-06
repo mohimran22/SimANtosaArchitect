@@ -33,13 +33,23 @@
             @endforeach
         </select>
     </div>
+    @php
+        $tipeList = \App\Models\TipeProperti::orderBy('nama')->pluck('nama');
+        if ($item->tipe && ! $tipeList->contains($item->tipe)) { $tipeList->push($item->tipe); }
+        $tipeDipilih = old('tipe', $item->tipe ?? ($tipeList->contains('rumah') ? 'rumah' : $tipeList->first()));
+    @endphp
     <div class="col-md-4">
         <label class="form-label">Tipe</label>
-        <select name="tipe" class="form-select">
-            @foreach (['rumah','tanah','ruko','apartemen'] as $v)
-                <option value="{{ $v }}" @selected(old('tipe', $item->tipe ?? 'rumah') === $v)>{{ ucfirst($v) }}</option>
-            @endforeach
-        </select>
+        <div class="input-group">
+            <select name="tipe" id="tipeSelect" class="form-select">
+                @foreach ($tipeList as $v)
+                    <option value="{{ $v }}" @selected($tipeDipilih === $v)>{{ ucfirst($v) }}</option>
+                @endforeach
+            </select>
+            <button type="button" class="btn btn-outline-secondary" id="btnTipeBaru" title="Tambah tipe baru">
+                <i class="ti ti-plus"></i>
+            </button>
+        </div>
     </div>
 
     {{-- Harga: tampil berformat Rupiah, yang dikirim ke server angka murni --}}
@@ -230,6 +240,57 @@
         inp.files = dt.files;
         render();
         if (ditolak.length) alert('Tidak ditambahkan (bukan gambar / lebih dari 4 MB):\n' + ditolak.join('\n'));
+    });
+})();
+</script>
+
+<script>
+// ===== Tambah tipe properti baru dari form =====
+(function () {
+    var btn = document.getElementById('btnTipeBaru');
+    var sel = document.getElementById('tipeSelect');
+    if (!btn || !sel) return;
+
+    btn.addEventListener('click', async function () {
+        try { await window.pastikanSwal(); } catch (e) { alert('SweetAlert gagal dimuat.'); return; }
+
+        var r = await Swal.fire({
+            title: 'Tambah tipe properti',
+            input: 'text',
+            inputPlaceholder: 'mis. Villa, Gudang, Kos-kosan',
+            showCancelButton: true,
+            confirmButtonText: 'Simpan',
+            cancelButtonText: 'Batal',
+            inputValidator: function (v) { if (!v || !v.trim()) return 'Nama tipe wajib diisi'; }
+        });
+        if (!r.isConfirmed) return;
+
+        try {
+            var res = await fetch("{{ route('jual.tipe.store') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ nama: r.value })
+            });
+            var data = await res.json();
+            if (!res.ok) throw new Error((data.errors && Object.values(data.errors)[0][0]) || data.message || 'Gagal menyimpan');
+
+            var ada = Array.from(sel.options).some(function (o) { return o.value === data.nama; });
+            if (!ada) {
+                var o = new Option(data.label, data.nama);
+                sel.add(o);
+                // urutkan A-Z supaya rapi
+                Array.from(sel.options).sort(function (a, b) { return a.text.localeCompare(b.text); })
+                     .forEach(function (x) { sel.add(x); });
+            }
+            sel.value = data.nama;
+            Swal.fire({ icon: 'success', title: data.baru ? 'Tipe ditambahkan' : 'Tipe sudah ada', timer: 1400, showConfirmButton: false });
+        } catch (err) {
+            Swal.fire('Gagal', err.message, 'error');
+        }
     });
 })();
 </script>
