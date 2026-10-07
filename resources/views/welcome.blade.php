@@ -619,10 +619,13 @@
     $lsTabs = collect($listings)->map(fn($l) => data_get($l, 'kota'))->filter()->unique()->values();
     $lsImg  = fn($path) => ! $path ? asset('images/antosa.png') : (str_starts_with($path, 'http') ? $path : (str_starts_with($path, 'images/') ? asset($path) : asset('storage/' . $path)));
     $lsM2   = fn($v) => is_numeric($v) ? $v . 'm²' : $v;
-    $lsRp   = fn($v) => is_numeric($v)
-        ? 'Rp ' . ($v >= 1000000000 ? rtrim(rtrim(number_format($v / 1000000000, 2, ',', '.'), '0'), ',') . ' Miliar'
-                 : ($v >= 1000000 ? rtrim(rtrim(number_format($v / 1000000, 2, ',', '.'), '0'), ',') . ' Juta' : number_format($v, 0, ',', '.')))
+    $lsRp = fn($v) => is_numeric($v)
+        ? 'Rp ' . number_format($v, 0, ',', '.')
         : $v;
+    // $lsRp   = fn($v) => is_numeric($v)
+    //     ? 'Rp ' . ($v >= 1000000000 ? rtrim(rtrim(number_format($v / 1000000000, 2, ',', '.'), '0'), ',') . ' Miliar'
+    //              : ($v >= 1000000 ? rtrim(rtrim(number_format($v / 1000000, 2, ',', '.'), '0'), ',') . ' Juta' : number_format($v, 0, ',', '.')))
+    //     : $v;
     $lsWa   = function ($no) { $n = preg_replace('/\D/', '', (string) $no); return str_starts_with($n, '0') ? '62' . substr($n, 1) : $n; };
     $waMarketing = $lsWa(config('antosa.wa_marketing'));
 @endphp
@@ -659,7 +662,11 @@
                         <p class="pf-label">{{ strtolower($status) === 'disewa' ? 'Harga Sewa' : 'Harga Jual' }}</p>
                         <div class="pf-price">{{ $lsRp(data_get($l, 'harga')) }}</div>
                         @if (data_get($l, 'cicilan'))
-                            <div class="pf-cicilan"><i class="ti ti-credit-card"></i> Cicilan mulai <b>{{ data_get($l, 'cicilan') }}</b></div>
+                            <div class="pf-cicilan">
+                                <i class="ti ti-credit-card"></i>
+                                Cicilan mulai
+                                <b>Rp {{ number_format(data_get($l, 'cicilan'), 0, ',', '.') }}/bln</b>
+                            </div>
                         @endif
                         <p class="pf-loc"><i class="ti ti-map-pin-filled"></i> {{ data_get($l, 'lokasi_lengkap', data_get($l, 'lokasi')) }}</p>
                         <h3 class="pf-title"><a href="{{ $url }}">{{ data_get($l, 'judul') }}</a></h3>

@@ -50,6 +50,9 @@ use App\Http\Controllers\KasController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PropertiDijualController;
 use App\Http\Controllers\TipePropertiController;
+use App\Http\Controllers\Admin\ArticleController as AdminArticleController;
+use App\Http\Controllers\ArticleController;
+use App\Http\Controllers\SitemapController;
 
 $homeDomain = config('app.home_domain');
 $simDomain  = config('app.sim_domain');
@@ -58,6 +61,9 @@ $simDomain  = config('app.sim_domain');
 Route::domain($homeDomain)->group(function () {
     Route::get('/', [HomeController::class, 'index'])->name('landing');
     Route::get('/listing/{slug}', [HomeController::class, 'show'])->name('listing.show');
+    Route::get('/artikel', [ArticleController::class, 'index'])->name('articles.index');
+    Route::get('/artikel/{article:slug}', [ArticleController::class, 'show'])->name('articles.show');
+    Route::get('/sitemap.xml', [SitemapController::class, 'index']);
 });
 
 // si.antosaarchitect.com langsung diarahkan ke login/dashboard
@@ -839,4 +845,11 @@ Route::get('/api/postal_codes/{sub_district_id}', function ($sub_district_id) {
 
 Route::get('/api/banks', function () {
     return \App\Models\Bank::select('id', 'name', 'code')->orderBy('name')->get();
+});
+
+
+
+// Admin (sesuaikan middleware dengan sistemmu)
+Route::middleware(['auth', 'role:Super-Admin'])->group(function () {
+    Route::resource('articles', AdminArticleController::class)->except('show');
 });
