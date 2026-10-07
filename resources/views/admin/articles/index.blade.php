@@ -28,11 +28,11 @@
                 <td>{{ $a->status === 'published' ? 'Terbit' : 'Draft' }}</td>
                 <td>{{ $a->published_at?->format('d M Y') ?? '-' }}</td>
                 <td>
-                    <a href="{{ route('admin.articles.edit', $a) }}">Edit</a>
+                    <a href="{{ route('articles.edit', $a) }}">Edit</a>
                     @if($a->status === 'published')
                         | <a href="{{ route('articles.show', $a) }}" target="_blank">Lihat</a>
                     @endif
-                    <form action="{{ route('admin.articles.destroy', $a) }}" method="POST"
+                    <form action="{{ route('articles.destroy', $a) }}" method="POST"
                           style="display:inline" onsubmit="return confirm('Hapus artikel ini?')">
                         @csrf @method('DELETE')
                         <button type="submit">Hapus</button>

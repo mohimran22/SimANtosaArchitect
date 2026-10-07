@@ -61,7 +61,7 @@ $simDomain  = config('app.sim_domain');
 Route::domain($homeDomain)->group(function () {
     Route::get('/', [HomeController::class, 'index'])->name('landing');
     Route::get('/listing/{slug}', [HomeController::class, 'show'])->name('listing.show');
-    Route::get('/artikel', [ArticleController::class, 'index'])->name('articles.index');
+    Route::get('/artikel', [ArticleController::class, 'index'])->name('artikel.index');
     Route::get('/artikel/{article:slug}', [ArticleController::class, 'show'])->name('articles.show');
     Route::get('/sitemap.xml', [SitemapController::class, 'index']);
 });
