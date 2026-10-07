@@ -612,7 +612,7 @@
 @php
     // ---- data contoh, otomatis diabaikan kalau controller mengirim $listings ----
     $listings = $listings ?? [
-        ['status'=>'Dijual','tipe'=>'Rumah','harga'=>1000000000,'cicilan'=>'Rp 7,12 juta/bln','lokasi'=>'Jember, Jawa Timur','kota'=>'Jember','judul'=>'Dijual Rumah Minimalis 2 Lantai Strategis','kt'=>4,'km'=>2,'lt'=>'99m²','lb'=>'90m²','jumlah_foto'=>6,'foto'=>'images/listing-1.jpg','agen_nama'=>'Antosa Architect','agen_peran'=>'Pemilik Properti','agen_foto'=>'images/antosa.png','agen_telepon'=>'085189523863','url'=>'#'],
+        ['status'=>'Dijual','tipe'=>'Rumah','harga'=>1000000000,'cicilan'=>7120000,'lokasi'=>'Jember, Jawa Timur','kota'=>'Jember','judul'=>'Dijual Rumah Minimalis 2 Lantai Strategis','kt'=>4,'km'=>2,'lt'=>'99m²','lb'=>'90m²','jumlah_foto'=>6,'foto'=>'images/listing-1.jpg','agen_nama'=>'Antosa Architect','agen_peran'=>'Pemilik Properti','agen_foto'=>'images/antosa.png','agen_telepon'=>'085189523863','url'=>'#'],
         ['status'=>'Dijual','tipe'=>'Tanah','harga'=>350000000,'lokasi'=>'Kaliwates, Jember','kota'=>'Jember','judul'=>'Dijual Tanah Kavling Siap Bangun','kt'=>null,'km'=>null,'lt'=>'580m²','lb'=>null,'jumlah_foto'=>5,'foto'=>'images/listing-2.jpg','agen_nama'=>'Antosa Architect','agen_peran'=>'Agen Independen','agen_foto'=>'images/antosa.png','agen_telepon'=>'085189523863','url'=>'#'],
         ['status'=>'Dijual','tipe'=>'Rumah','harga'=>650000000,'lokasi'=>'Banyuwangi, Jawa Timur','kota'=>'Banyuwangi','judul'=>'Dijual Rumah Modern Tropis Dekat Pusat Kota','kt'=>3,'km'=>2,'lt'=>'120m²','lb'=>'90m²','jumlah_foto'=>5,'foto'=>'images/listing-3.jpg','agen_nama'=>'Antosa Architect','agen_peran'=>'Pemilik Properti','agen_foto'=>'images/antosa.png','agen_telepon'=>'085189523863','url'=>'#'],
     ];
@@ -661,11 +661,11 @@
                         </div>
                         <p class="pf-label">{{ strtolower($status) === 'disewa' ? 'Harga Sewa' : 'Harga Jual' }}</p>
                         <div class="pf-price">{{ $lsRp(data_get($l, 'harga')) }}</div>
-                        @if (data_get($l, 'cicilan'))
+                        @if (is_numeric(data_get($l, 'cicilan')) && data_get($l, 'cicilan') > 0)
                             <div class="pf-cicilan">
                                 <i class="ti ti-credit-card"></i>
                                 Cicilan mulai
-                                <b>Rp {{ number_format(data_get($l, 'cicilan'), 0, ',', '.') }}/bln</b>
+                                <b>Rp {{ number_format((float) data_get($l, 'cicilan'), 0, ',', '.') }}/bln</b>
                             </div>
                         @endif
                         <p class="pf-loc"><i class="ti ti-map-pin-filled"></i> {{ data_get($l, 'lokasi_lengkap', data_get($l, 'lokasi')) }}</p>

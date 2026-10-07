@@ -13,6 +13,7 @@ class PropertiDijual extends Model
         'is_published' => 'boolean',
         'harga'        => 'integer',
         'fasilitas'    => 'array',
+        'cicilan'        => 'integer',
     ];
 
     protected static function booted(): void

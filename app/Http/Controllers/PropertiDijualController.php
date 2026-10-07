@@ -123,7 +123,7 @@ class PropertiDijualController extends Controller
             'status'       => 'required|in:dijual,disewa,terjual',
             'tipe'         => 'required|in:rumah,tanah,ruko,apartemen',
             'harga'        => 'required|integer|min:0',
-            'cicilan'      => 'nullable|string|max:100',
+            'cicilan'      => 'nullable|integer|min:0',
             'deskripsi'    => 'nullable|string',
             'kt'           => 'nullable|integer|min:0',
             'km'           => 'nullable|integer|min:0',
