@@ -346,12 +346,12 @@
 .vm-photo{
     margin-top:65px;
     aspect-ratio:3.05/1;
-    background:url('{{ asset('images/visi-rumah.jpg') }}') center bottom/cover no-repeat;
+    background:url('{{ asset('images/visi-rumah.webp') }}') center bottom/cover no-repeat;
 }
 
 /* denah 3D = background selebar layar, "Misi" ada di atasnya */
 .vm-plan-wrap{
-    background:url('{{ asset('images/denah-3d.png') }}') 50% -2.8vw/100% auto no-repeat, #fff;
+    background:url('{{ asset('images/denah-3d.webp') }}') 50% -2.8vw/100% auto no-repeat, #fff;
     padding:30% 0 100px;   /* tinggi mengikuti lebar gambar */
 }
 .vm-misi{ padding:0 10%; }
@@ -364,7 +364,7 @@
     .vm-visi p{ font-size:15px; }
     .vm-photo{ aspect-ratio:auto; height:260px; margin-top:30px; }
     .vm-plan-wrap{
-        background:url('{{ asset('images/denah-3d.png') }}') -53vw -2vw/150% auto no-repeat, #fff;
+        background:url('{{ asset('images/denah-3d.webp') }}') -53vw -2vw/150% auto no-repeat, #fff;
         padding:190px 0 60px;
     }
     .vm-misi{ padding:0 20px; }
@@ -554,19 +554,19 @@
         [
             'title'   => 'Jasa Arsitek',
             'excerpt' => 'Perancangan arsitektur, tata ruang, dan detail teknis seperti struktur, sirkulasi udara, pencahayaan alami, regulasi bangunan.',
-            'image'   => 'images/layanan-arsitek.jpg',
+            'image'   => 'images/layanan-arsitek.webp',
             'url'     => '#',
         ],
         [
             'title'   => 'Jasa Renovasi Rumah',
             'excerpt' => 'Merenovasi, perbaikan, dan perawatan bangunan, meningkatkan kualitas bangunan menjadi lebih sehat dan nyaman.',
-            'image'   => 'images/layanan-renovasi.jpg',
+            'image'   => 'images/layanan-renovasi.webp',
             'url'     => '#',
         ],
         [
             'title'   => 'Jasa Bangun Rumah',
             'excerpt' => 'Konstruksi Bangunan dari Nol, memastikan setiap bangunan memiliki kualitas terbaik, nyaman dan sehat.',
-            'image'   => 'images/layanan-bangun.jpg',
+            'image'   => 'images/layanan-bangun.webp',
             'url'     => '#',
         ],
     ];
@@ -674,7 +674,7 @@
                                 <img src="{{ $lsImg(data_get($l, 'agen_foto')) }}" alt="{{ data_get($l, 'agen_nama') }}">
                                 <div>
                                     <strong>{{ data_get($l, 'agen_nama') }}</strong>
-                                    <small>{{ data_get($l, 'agen_peran') }}</small>
+                                    {{-- <small>{{ data_get($l, 'agen_peran') }}</small> --}}
                                 </div>
                             </div>
                             <a href="tel:+{{ $waMarketing }}" class="pf-call" aria-label="Telepon"><i class="ti ti-phone"></i></a>

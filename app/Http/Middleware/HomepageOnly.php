@@ -10,7 +10,7 @@ class HomepageOnly
     public function handle(Request $request, Closure $next)
     {
         if ($request->getHost() === config('app.home_domain')
-            && ! $request->routeIs('landing*')) {
+            && ! $request->routeIs('landing*', 'listing.*')) {
             return redirect()->away(rtrim(config('app.url'), '/').$request->getRequestUri());
         }
 

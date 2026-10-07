@@ -10,6 +10,7 @@ use Yajra\DataTables\Facades\DataTables;
 use App\Models\City;
 use App\Models\{Province, District, SubDistrict, PostalCode};
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class PropertiDijualController extends Controller
 {
@@ -24,8 +25,16 @@ class PropertiDijualController extends Controller
                 ->editColumn('judul', fn ($r) => e($r->judul) . '<div class="text-muted small">' . e(ucfirst($r->tipe)) . '</div>')
                 ->editColumn('harga', fn ($r) => 'Rp ' . number_format($r->harga, 0, ',', '.'))
                 ->editColumn('status', function ($r) {
-                    $c = $r->status === 'dijual' ? 'green' : ($r->status === 'disewa' ? 'blue' : 'secondary');
-                    return '<span class="badge bg-' . $c . '-lt">' . e(ucfirst($r->status)) . '</span>';
+                    $class = match ($r->status) {
+                        'dijual'  => 'bg-success text-white',
+                        'disewa'  => 'bg-primary text-white',
+                        'terjual' => 'bg-secondary text-white',
+                        default   => 'bg-secondary text-white',
+                    };
+
+                    return '<span class="badge ' . $class . '">'
+                        . e(ucfirst($r->status))
+                        . '</span>';
                 })
                 ->editColumn('is_published', fn ($r) => $r->is_published ? 'Ya' : 'Draft')
                 ->addColumn('action', function ($r) {
@@ -80,7 +89,7 @@ class PropertiDijualController extends Controller
         $properti->update($data);
         $this->simpanFotoTambahan($request, $properti);
 
-        return redirect()->route('jual.edit', $properti)->with('success', 'Properti berhasil diperbarui.');
+        return redirect()->route('jual.index', $properti)->with('success', 'Properti berhasil diperbarui.');
     }
 
     public function destroy(Request $request, PropertiDijual $properti)
@@ -129,10 +138,18 @@ class PropertiDijualController extends Controller
             'sub_district_id' => ['nullable', Rule::exists(SubDistrict::class, 'id')],
             'postal_code_id'  => ['nullable', Rule::exists(PostalCode::class, 'id')],
             'lokasi'          => 'nullable|string|max:255',
+            'jumlah_lantai' => 'nullable|integer|min:1|max:20',
+            'sertifikat'    => 'nullable|string|max:30',
+            'perabotan'     => 'nullable|string|max:30',
+            'fasilitas'     => 'nullable|array',
+            'video_url'     => 'nullable|url|max:500',
+            'maps_url' => ['nullable', 'url', 'max:500',
+                'regex:#^https?://(www\.)?(google\.[a-z.]+/maps|maps\.google\.[a-z.]+|goo\.gl/maps|maps\.app\.goo\.gl)#i'],
         ]);
 
         $data['is_published'] = $request->boolean('is_published');
         $data['kota'] = Str::title(Str::lower(City::find($data['city_id'])?->name ?? ''));
+        $data['fasilitas'] = $request->input('fasilitas', []);
         unset($data['galeri']); // foto tambahan disimpan di tabel terpisah
 
         return $data;

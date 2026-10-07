@@ -12,6 +12,7 @@ class PropertiDijual extends Model
     protected $casts = [
         'is_published' => 'boolean',
         'harga'        => 'integer',
+        'fasilitas'    => 'array',
     ];
 
     protected static function booted(): void

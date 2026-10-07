@@ -4,7 +4,7 @@
     <div class="container-xl">
         <div class="row align-items-center">
             <div class="col d-flex align-items-center">
-                <a href="{{ route('jual.index') }}" class="btn btn-dark d-flex align-items-center me-3">
+                <a href="{{ route('jual.index') }}" class="btn btn-dark d-flex align-items-center">
                     <i class="ti ti-arrow-left"></i>
                 </a>
                 <h2 class="page-title mb-0">Edit Data Properti</h2>

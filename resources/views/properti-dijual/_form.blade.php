@@ -139,7 +139,13 @@
         <label class="form-label">Alamat / nama jalan (opsional)</label>
         <input type="text" name="lokasi" class="form-control" placeholder="mis. Jl. Mawar No. 5, Perumahan Griya Asri" value="{{ old('lokasi', $item->lokasi) }}">
     </div>
-
+    <div class="col-12">
+        <label class="form-label">Link Google Maps (opsional)</label>
+        <input type="url" name="maps_url" class="form-control"
+            placeholder="https://maps.app.goo.gl/..."
+            value="{{ old('maps_url', $item->maps_url) }}">
+        <div class="form-hint">Buka lokasi di Google Maps, klik Bagikan, lalu salin link-nya ke sini.</div>
+    </div>
     @foreach ([['kt','Kamar Tidur',null], ['km','Kamar Mandi',null], ['lt','Luas Tanah','m²'], ['lb','Luas Bangunan','m²']] as [$f, $lbl, $suf])
         <div class="col-6 col-md-3">
             <label class="form-label">{{ $lbl }}</label>
@@ -149,7 +155,46 @@
             </div>
         </div>
     @endforeach
-
+    <div class="col-6 col-md-3">
+       <label class="form-label">Jumlah Lantai</label>
+       <input type="number" min="1" name="jumlah_lantai" class="form-control" value="{{ old('jumlah_lantai', $item->jumlah_lantai) }}">
+   </div>
+   <div class="col-md-3">
+       <label class="form-label">Sertifikat</label>
+       <select name="sertifikat" class="form-select">
+           <option value="">-</option>
+           @foreach (['SHM','HGB','HP','Girik','Lainnya'] as $v)
+               <option value="{{ $v }}" @selected(old('sertifikat', $item->sertifikat) === $v)>{{ $v }}</option>
+           @endforeach
+       </select>
+   </div>
+   <div class="col-md-3">
+       <label class="form-label">Perabotan</label>
+       <select name="perabotan" class="form-select">
+           <option value="">-</option>
+           @foreach (['unfurnished','semi furnished','furnished'] as $v)
+               <option value="{{ $v }}" @selected(old('perabotan', $item->perabotan) === $v)>{{ ucfirst($v) }}</option>
+           @endforeach
+       </select>
+   </div>
+   <div class="col-12">
+       <label class="form-label">Fasilitas</label>
+       <div class="row g-2">
+           @foreach (['WiFi','Internet','Carport','Garasi','Dekat Sekolah','Dekat Rumah Sakit','Dekat Tempat Ibadah','Bebas Banjir','Minimarket','Parkir Motor','Dekat Jalan Raya','Dekat Pusat Perbelanjaan'] as $f)
+               <div class="col-6 col-md-4">
+                   <label class="form-check">
+                       <input type="checkbox" name="fasilitas[]" value="{{ $f }}" class="form-check-input"
+                              @checked(in_array($f, old('fasilitas', $item->fasilitas ?? []), true))>
+                       <span class="form-check-label">{{ $f }}</span>
+                   </label>
+               </div>
+           @endforeach
+       </div>
+   </div>
+   <div class="col-12">
+       <label class="form-label">Link video (opsional)</label>
+       <input type="url" name="video_url" class="form-control" placeholder="https://www.tiktok.com/..." value="{{ old('video_url', $item->video_url) }}">
+   </div>
     <div class="col-12">
         <label class="form-label">Deskripsi</label>
         <textarea name="deskripsi" rows="5" class="form-control">{{ old('deskripsi', $item->deskripsi) }}</textarea>
@@ -168,11 +213,11 @@
     <div class="col-md-6">
         <label class="form-label">Foto tambahan (bisa banyak)</label>
         <input type="file" name="galeri[]" id="inpGaleri" accept="image/*" multiple class="form-control">
-        <div class="form-hint">JPG/PNG, maks 4 MB per foto. Pilih lagi untuk menambah; klik × untuk membatalkan satu foto.</div>
         <div class="foto-preview mt-2 d-block p-2" id="prevGaleri">
             <span class="text-muted small" id="galeriKosong">Belum ada foto baru dipilih</span>
             <div class="galeri-grid" id="galeriGrid"></div>
         </div>
+        <div class="form-hint">JPG/PNG, maks 4 MB per foto. Pilih lagi untuk menambah; klik × untuk membatalkan satu foto.</div>
     </div>
 
     {{-- Foto tersimpan (halaman edit) --}}
