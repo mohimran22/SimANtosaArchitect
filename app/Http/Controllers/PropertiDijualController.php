@@ -7,6 +7,9 @@ use App\Models\PropertiDijualFoto;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Yajra\DataTables\Facades\DataTables;
+use App\Models\City;
+use App\Models\{Province, District, SubDistrict, PostalCode};
+use Illuminate\Support\Str;
 
 class PropertiDijualController extends Controller
 {
@@ -112,22 +115,24 @@ class PropertiDijualController extends Controller
             'tipe'         => 'required|in:rumah,tanah,ruko,apartemen',
             'harga'        => 'required|integer|min:0',
             'cicilan'      => 'nullable|string|max:100',
-            'kota'         => 'required|string|max:100',
-            'lokasi'       => 'required|string|max:255',
             'deskripsi'    => 'nullable|string',
             'kt'           => 'nullable|integer|min:0',
             'km'           => 'nullable|integer|min:0',
             'lt'           => 'nullable|integer|min:0',
             'lb'           => 'nullable|integer|min:0',
-            'agen_nama'    => 'required|string|max:100',
-            'agen_peran'   => 'required|string|max:100',
-            'agen_telepon' => 'nullable|string|max:20',
             'foto'         => 'nullable|image|max:4096',
             'galeri.*'     => 'nullable|image|max:4096',
-            'agen_foto'    => 'nullable|image|max:2048',
+            'employee_id'  => 'nullable|exists:employees,id',
+            'province_id'     => ['required', Rule::exists(Province::class, 'id')],
+            'city_id'         => ['required', Rule::exists(City::class, 'id')],
+            'district_id'     => ['nullable', Rule::exists(District::class, 'id')],
+            'sub_district_id' => ['nullable', Rule::exists(SubDistrict::class, 'id')],
+            'postal_code_id'  => ['nullable', Rule::exists(PostalCode::class, 'id')],
+            'lokasi'          => 'nullable|string|max:255',
         ]);
 
         $data['is_published'] = $request->boolean('is_published');
+        $data['kota'] = Str::title(Str::lower(City::find($data['city_id'])?->name ?? ''));
         unset($data['galeri']); // foto tambahan disimpan di tabel terpisah
 
         return $data;
@@ -135,7 +140,7 @@ class PropertiDijualController extends Controller
 
     private function handleUploads(Request $request, array $data, ?PropertiDijual $old = null): array
     {
-        foreach (['foto', 'agen_foto'] as $field) {
+        foreach (['foto'] as $field) {
             if ($request->hasFile($field)) {
                 if ($old?->$field) {
                     Storage::disk('public')->delete($old->$field);

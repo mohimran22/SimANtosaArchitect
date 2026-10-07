@@ -346,12 +346,12 @@
 .vm-photo{
     margin-top:65px;
     aspect-ratio:3.05/1;
-    background:url('{{ asset('images/visi-rumah.webp') }}') center bottom/cover no-repeat;
+    background:url('{{ asset('images/visi-rumah.jpg') }}') center bottom/cover no-repeat;
 }
 
 /* denah 3D = background selebar layar, "Misi" ada di atasnya */
 .vm-plan-wrap{
-    background:url('{{ asset('images/denah-3d.webp') }}') 50% -2.8vw/100% auto no-repeat, #fff;
+    background:url('{{ asset('images/denah-3d.png') }}') 50% -2.8vw/100% auto no-repeat, #fff;
     padding:30% 0 100px;   /* tinggi mengikuti lebar gambar */
 }
 .vm-misi{ padding:0 10%; }
@@ -364,7 +364,7 @@
     .vm-visi p{ font-size:15px; }
     .vm-photo{ aspect-ratio:auto; height:260px; margin-top:30px; }
     .vm-plan-wrap{
-        background:url('{{ asset('images/denah-3d.webp') }}') -53vw -2vw/150% auto no-repeat, #fff;
+        background:url('{{ asset('images/denah-3d.png') }}') -53vw -2vw/150% auto no-repeat, #fff;
         padding:190px 0 60px;
     }
     .vm-misi{ padding:0 20px; }
@@ -554,19 +554,19 @@
         [
             'title'   => 'Jasa Arsitek',
             'excerpt' => 'Perancangan arsitektur, tata ruang, dan detail teknis seperti struktur, sirkulasi udara, pencahayaan alami, regulasi bangunan.',
-            'image'   => 'images/layanan-arsitek.webp',
+            'image'   => 'images/layanan-arsitek.jpg',
             'url'     => '#',
         ],
         [
             'title'   => 'Jasa Renovasi Rumah',
             'excerpt' => 'Merenovasi, perbaikan, dan perawatan bangunan, meningkatkan kualitas bangunan menjadi lebih sehat dan nyaman.',
-            'image'   => 'images/layanan-renovasi.webp',
+            'image'   => 'images/layanan-renovasi.jpg',
             'url'     => '#',
         ],
         [
             'title'   => 'Jasa Bangun Rumah',
             'excerpt' => 'Konstruksi Bangunan dari Nol, memastikan setiap bangunan memiliki kualitas terbaik, nyaman dan sehat.',
-            'image'   => 'images/layanan-bangun.webp',
+            'image'   => 'images/layanan-bangun.jpg',
             'url'     => '#',
         ],
     ];
@@ -612,9 +612,9 @@
 @php
     // ---- data contoh, otomatis diabaikan kalau controller mengirim $listings ----
     $listings = $listings ?? [
-        ['status'=>'Dijual','tipe'=>'Rumah','harga'=>1000000000,'cicilan'=>'Rp 7,12 juta/bln','lokasi'=>'Jember, Jawa Timur','kota'=>'Jember','judul'=>'Dijual Rumah Minimalis 2 Lantai Strategis','kt'=>4,'km'=>2,'lt'=>'99m²','lb'=>'90m²','jumlah_foto'=>6,'foto'=>'images/banner1.jpg','agen_nama'=>'Antosa Architect','agen_peran'=>'Pemilik Properti','agen_foto'=>'images/antosa.png','agen_telepon'=>'085189523863','url'=>'#'],
-        ['status'=>'Dijual','tipe'=>'Tanah','harga'=>350000000,'lokasi'=>'Kaliwates, Jember','kota'=>'Jember','judul'=>'Dijual Tanah Kavling Siap Bangun','kt'=>null,'km'=>null,'lt'=>'580m²','lb'=>null,'jumlah_foto'=>5,'foto'=>'images/banner2.jpg','agen_nama'=>'Antosa Architect','agen_peran'=>'Agen Independen','agen_foto'=>'images/antosa.png','agen_telepon'=>'085189523863','url'=>'#'],
-        ['status'=>'Dijual','tipe'=>'Rumah','harga'=>650000000,'lokasi'=>'Banyuwangi, Jawa Timur','kota'=>'Banyuwangi','judul'=>'Dijual Rumah Modern Tropis Dekat Pusat Kota','kt'=>3,'km'=>2,'lt'=>'120m²','lb'=>'90m²','jumlah_foto'=>5,'foto'=>'images/banner3.jpg','agen_nama'=>'Antosa Architect','agen_peran'=>'Pemilik Properti','agen_foto'=>'images/antosa.png','agen_telepon'=>'085189523863','url'=>'#'],
+        ['status'=>'Dijual','tipe'=>'Rumah','harga'=>1000000000,'cicilan'=>'Rp 7,12 juta/bln','lokasi'=>'Jember, Jawa Timur','kota'=>'Jember','judul'=>'Dijual Rumah Minimalis 2 Lantai Strategis','kt'=>4,'km'=>2,'lt'=>'99m²','lb'=>'90m²','jumlah_foto'=>6,'foto'=>'images/listing-1.jpg','agen_nama'=>'Antosa Architect','agen_peran'=>'Pemilik Properti','agen_foto'=>'images/antosa.png','agen_telepon'=>'085189523863','url'=>'#'],
+        ['status'=>'Dijual','tipe'=>'Tanah','harga'=>350000000,'lokasi'=>'Kaliwates, Jember','kota'=>'Jember','judul'=>'Dijual Tanah Kavling Siap Bangun','kt'=>null,'km'=>null,'lt'=>'580m²','lb'=>null,'jumlah_foto'=>5,'foto'=>'images/listing-2.jpg','agen_nama'=>'Antosa Architect','agen_peran'=>'Agen Independen','agen_foto'=>'images/antosa.png','agen_telepon'=>'085189523863','url'=>'#'],
+        ['status'=>'Dijual','tipe'=>'Rumah','harga'=>650000000,'lokasi'=>'Banyuwangi, Jawa Timur','kota'=>'Banyuwangi','judul'=>'Dijual Rumah Modern Tropis Dekat Pusat Kota','kt'=>3,'km'=>2,'lt'=>'120m²','lb'=>'90m²','jumlah_foto'=>5,'foto'=>'images/listing-3.jpg','agen_nama'=>'Antosa Architect','agen_peran'=>'Pemilik Properti','agen_foto'=>'images/antosa.png','agen_telepon'=>'085189523863','url'=>'#'],
     ];
     $lsTabs = collect($listings)->map(fn($l) => data_get($l, 'kota'))->filter()->unique()->values();
     $lsImg  = fn($path) => ! $path ? asset('images/antosa.png') : (str_starts_with($path, 'http') ? $path : (str_starts_with($path, 'images/') ? asset($path) : asset('storage/' . $path)));
@@ -624,6 +624,7 @@
                  : ($v >= 1000000 ? rtrim(rtrim(number_format($v / 1000000, 2, ',', '.'), '0'), ',') . ' Juta' : number_format($v, 0, ',', '.')))
         : $v;
     $lsWa   = function ($no) { $n = preg_replace('/\D/', '', (string) $no); return str_starts_with($n, '0') ? '62' . substr($n, 1) : $n; };
+    $waMarketing = $lsWa(config('antosa.wa_marketing'));
 @endphp
 <section class="pf" id="listing">
     <div class="pf-wrap">
@@ -642,7 +643,6 @@
                 @php
                     $status = data_get($l, 'status', 'Dijual');
                     $url    = data_get($l, 'url', '#');
-                    $wa     = $lsWa(data_get($l, 'agen_telepon', '6285189523863'));
                 @endphp
                 <article class="pf-card" data-category="{{ data_get($l, 'kota') }}">
                     <a href="{{ $url }}" class="pf-img">
@@ -661,7 +661,7 @@
                         @if (data_get($l, 'cicilan'))
                             <div class="pf-cicilan"><i class="ti ti-credit-card"></i> Cicilan mulai <b>{{ data_get($l, 'cicilan') }}</b></div>
                         @endif
-                        <p class="pf-loc"><i class="ti ti-map-pin-filled"></i> {{ data_get($l, 'lokasi') }}</p>
+                        <p class="pf-loc"><i class="ti ti-map-pin-filled"></i> {{ data_get($l, 'lokasi_lengkap', data_get($l, 'lokasi')) }}</p>
                         <h3 class="pf-title"><a href="{{ $url }}">{{ data_get($l, 'judul') }}</a></h3>
                         <div class="pf-specs">
                             @if (data_get($l, 'kt'))<div class="pf-spec"><b>{{ data_get($l, 'kt') }}</b><span><i class="ti ti-bed"></i> KT</span></div>@endif
@@ -677,8 +677,8 @@
                                     <small>{{ data_get($l, 'agen_peran') }}</small>
                                 </div>
                             </div>
-                            <a href="tel:+{{ $wa }}" class="pf-call" aria-label="Telepon"><i class="ti ti-phone"></i></a>
-                            <a href="https://wa.me/{{ $wa }}?text={{ urlencode('Halo, saya tertarik dengan listing: ' . data_get($l, 'judul')) }}" target="_blank" rel="noopener" class="pf-wa"><i class="ti ti-brand-whatsapp"></i> WhatsApp</a>
+                            <a href="tel:+{{ $waMarketing }}" class="pf-call" aria-label="Telepon"><i class="ti ti-phone"></i></a>
+                            <a href="https://wa.me/{{ $waMarketing }}?text={{ urlencode('Halo, saya tertarik dengan listing: ' . data_get($l, 'judul')) }}" target="_blank" rel="noopener" class="pf-wa"><i class="ti ti-brand-whatsapp"></i> WhatsApp</a>
                         </div>
                     </div>
                 </article>

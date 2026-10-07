@@ -14,7 +14,7 @@ class HomeController extends Controller
         // Pengaman: kalau model/tabel belum ada di server, homepage tetap tampil
         // memakai data contoh (tidak error 500).
         if (class_exists(PropertiDijual::class) && Schema::hasTable('properti_dijual')) {
-            $data = PropertiDijual::published()->latest()->take(9)->get();
+            $data = PropertiDijual::published()->with(['employee.user', 'province', 'city', 'district'])->withCount('fotos')->latest()->take(9)->get();
             $listings = $data->isNotEmpty() ? $data : null;
         }
 
@@ -23,7 +23,7 @@ class HomeController extends Controller
 
     public function show(string $slug)
     {
-        $listing = PropertiDijual::published()->where('slug', $slug)->firstOrFail();
+        $listing = PropertiDijual::published()->with(['fotos', 'employee.user', 'province', 'city', 'district', 'subDistrict', 'postalCode'])->where('slug', $slug)->firstOrFail();
 
         return view('listing.show', compact('listing'));
     }

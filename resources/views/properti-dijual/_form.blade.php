@@ -6,6 +6,11 @@
     .foto-preview img{ max-width:100%; max-height:220px; object-fit:cover; display:block; }
     .foto-preview.avatar{ width:110px; height:110px; min-height:0; border-radius:50%; }
     .foto-preview.avatar img{ width:100%; height:100%; max-height:none; }
+    /* select2 di dalam .input-group (dropdown Tipe + tombol +) */
+    .input-group > .select2-container{ flex:1 1 auto; width:1% !important; min-width:0; }
+    .input-group > .select2-container .select2-selection{
+        border-top-right-radius:0; border-bottom-right-radius:0; height:100%;
+    }
     .galeri-grid{ display:flex; flex-wrap:wrap; gap:12px; }
     .galeri-item{ position:relative; width:130px; height:95px; }
     .galeri-item img{ width:100%; height:100%; object-fit:cover; border-radius:8px; border:1px solid #e3e6eb; }
@@ -27,7 +32,7 @@
 
     <div class="col-md-4">
         <label class="form-label">Status</label>
-        <select name="status" class="form-select">
+        <select name="status" class="form-select select2" data-minimum-results-for-search="-1">
             @foreach (['dijual','disewa','terjual'] as $v)
                 <option value="{{ $v }}" @selected(old('status', $item->status ?? 'dijual') === $v)>{{ ucfirst($v) }}</option>
             @endforeach
@@ -41,7 +46,7 @@
     <div class="col-md-4">
         <label class="form-label">Tipe</label>
         <div class="input-group">
-            <select name="tipe" id="tipeSelect" class="form-select">
+            <select name="tipe" id="tipeSelect" class="form-select select2">
                 @foreach ($tipeList as $v)
                     <option value="{{ $v }}" @selected($tipeDipilih === $v)>{{ ucfirst($v) }}</option>
                 @endforeach
@@ -67,13 +72,72 @@
         <label class="form-label">Cicilan (opsional)</label>
         <input type="text" name="cicilan" class="form-control" placeholder="Rp 7,12 juta/bln" value="{{ old('cicilan', $item->cicilan) }}">
     </div>
-    <div class="col-md-4">
-        <label class="form-label">Kota</label>
-        <input type="text" name="kota" class="form-control" value="{{ old('kota', $item->kota) }}" required>
+    @php
+        $provId = old('province_id', $item->province_id);
+        $cityId = old('city_id', $item->city_id);
+        $distId = old('district_id', $item->district_id);
+        $subId  = old('sub_district_id', $item->sub_district_id);
+        $postId = old('postal_code_id', $item->postal_code_id);
+
+        $provinces = \App\Models\Province::orderBy('name')->get(['id', 'name']);
+        $cities    = $provId ? \App\Models\City::where('province_id', $provId)->orderBy('name')->get(['id', 'name']) : collect();
+        $districts = $cityId ? \App\Models\District::where('city_id', $cityId)->orderBy('name')->get(['id', 'name']) : collect();
+        $subs      = $distId ? \App\Models\SubDistrict::where('district_id', $distId)->orderBy('name')->get(['id', 'name']) : collect();
+        $posts     = $subId ? \App\Models\PostalCode::where('sub_district_id', $subId)->get(['id', 'postal_code']) : collect();
+    @endphp
+
+    <div class="col-12 mt-4">
+        <h4 class="mb-0"><i class="ti ti-map-pin me-1"></i> Lokasi Properti</h4>
+        <hr class="mt-2 mb-0">
     </div>
-    <div class="col-md-4">
-        <label class="form-label">Lokasi / Alamat singkat</label>
-        <input type="text" name="lokasi" class="form-control" value="{{ old('lokasi', $item->lokasi) }}" required>
+    <div class="col-md-6">
+        <label class="form-label">Provinsi</label>
+        <select name="province_id" id="province" class="form-select select2" required>
+            <option value="">-- Pilih Provinsi --</option>
+            @foreach ($provinces as $p)
+                <option value="{{ $p->id }}" @selected((string) $provId === (string) $p->id)>{{ $p->name }}</option>
+            @endforeach
+        </select>
+    </div>
+    <div class="col-md-6">
+        <label class="form-label">Kabupaten/Kota</label>
+        <select name="city_id" id="city" class="form-select select2" required>
+            <option value="">-- Pilih Kota --</option>
+            @foreach ($cities as $c)
+                <option value="{{ $c->id }}" @selected((string) $cityId === (string) $c->id)>{{ $c->name }}</option>
+            @endforeach
+        </select>
+    </div>
+    <div class="col-md-5">
+        <label class="form-label">Kecamatan</label>
+        <select name="district_id" id="district" class="form-select select2">
+            <option value="">-- Pilih Kecamatan --</option>
+            @foreach ($districts as $d)
+                <option value="{{ $d->id }}" @selected((string) $distId === (string) $d->id)>{{ $d->name }}</option>
+            @endforeach
+        </select>
+    </div>
+    <div class="col-md-5">
+        <label class="form-label">Kelurahan</label>
+        <select name="sub_district_id" id="sub_district" class="form-select select2">
+            <option value="">-- Pilih Kelurahan --</option>
+            @foreach ($subs as $sd)
+                <option value="{{ $sd->id }}" @selected((string) $subId === (string) $sd->id)>{{ $sd->name }}</option>
+            @endforeach
+        </select>
+    </div>
+    <div class="col-md-2">
+        <label class="form-label">Kode Pos</label>
+        <select name="postal_code_id" id="postal_code" class="form-select select2">
+            <option value="">-- Kode Pos --</option>
+            @foreach ($posts as $pc)
+                <option value="{{ $pc->id }}" @selected((string) $postId === (string) $pc->id)>{{ $pc->postal_code }}</option>
+            @endforeach
+        </select>
+    </div>
+    <div class="col-12">
+        <label class="form-label">Alamat / nama jalan (opsional)</label>
+        <input type="text" name="lokasi" class="form-control" placeholder="mis. Jl. Mawar No. 5, Perumahan Griya Asri" value="{{ old('lokasi', $item->lokasi) }}">
     </div>
 
     @foreach ([['kt','Kamar Tidur',null], ['km','Kamar Mandi',null], ['lt','Luas Tanah','m²'], ['lb','Luas Bangunan','m²']] as [$f, $lbl, $suf])
@@ -128,26 +192,37 @@
         </div>
     @endif
 
-    <div class="col-md-4">
-        <label class="form-label">Nama agen / pemilik</label>
-        <input type="text" name="agen_nama" class="form-control" value="{{ old('agen_nama', $item->agen_nama ?? 'Antosa Architect') }}" required>
-    </div>
-    <div class="col-md-3">
-        <label class="form-label">Peran</label>
-        <input type="text" name="agen_peran" class="form-control" value="{{ old('agen_peran', $item->agen_peran ?? 'Pemilik Properti') }}" required>
-    </div>
-    <div class="col-md-3">
-        <label class="form-label">No. WhatsApp</label>
-        <input type="text" name="agen_telepon" class="form-control" placeholder="0851..." value="{{ old('agen_telepon', $item->agen_telepon) }}">
-    </div>
+    @php
+        $karyawan = \App\Models\Employee::with('user:id,fullname,phone,photo')->get()
+            ->filter(fn ($e) => $e->user)
+            ->sortBy(fn ($e) => mb_strtolower($e->user->fullname))
+            ->values();
 
-    {{-- Foto agen --}}
-    <div class="col-md-2">
-        <label class="form-label">Foto agen</label>
-        <input type="file" name="agen_foto" id="inpAgen" accept="image/*" class="form-control" data-preview="#prevAgen" data-max="2">
-        <div class="foto-preview avatar mt-2" id="prevAgen" data-empty="">
-            @if ($item->agen_foto)<img src="{{ asset('storage/'.$item->agen_foto) }}" alt="">@endif
-        </div>
+        // tambah: default karyawan yang sedang login | edit: agen yang tersimpan (boleh kosong)
+        $agenDipilih = old('employee_id', $item->exists ? $item->employee_id : auth()->user()?->employee?->id);
+    @endphp
+    <div class="col-md-6">
+        <label class="form-label">Agen / Karyawan</label>
+        <select name="employee_id" id="agenSelect" class="form-select select2">
+            <option value="">Antosa Architect (tanpa karyawan tertentu)</option>
+            @foreach ($karyawan as $e)
+                @php
+                    $jabatan = collect($e->position ?? [])->first(fn ($p) => is_string($p) && ! is_numeric($p) && trim($p) !== '');
+                @endphp
+                <option value="{{ $e->id }}"
+                        data-phone="{{ $e->user->phone }}"
+                        data-jabatan="{{ $jabatan }}"
+                        data-foto="{{ $e->user->photo ? asset('storage/'.$e->user->photo) : '' }}"
+                        @selected((string) $agenDipilih === (string) $e->id)>
+                    {{ $e->user->fullname }}
+                </option>
+            @endforeach
+        </select>
+        <div class="form-hint">Nama, nomor WhatsApp, dan foto agen diambil otomatis dari data karyawan.</div>
+    </div>
+    <div class="col-md-6">
+        <label class="form-label">Pratinjau agen</label>
+        <div id="agenPreview" class="d-flex align-items-center gap-3 border rounded p-2" style="min-height:58px"></div>
     </div>
 
     <div class="col-12">
@@ -245,6 +320,109 @@
 </script>
 
 <script>
+// ===== Dropdown wilayah bertingkat (memakai endpoint /api/... yang sama dengan form user) =====
+document.addEventListener('DOMContentLoaded', function () {
+    var $ = window.jQuery;
+    if (!$) return;
+
+    // --- Inisialisasi select2 untuk dropdown wilayah ---
+    // Kalau layout sudah memuat select2, langsung dipakai. Kalau belum, dimuat dari CDN.
+    function pakaiSelect2(pakaiTema) {
+        $('#province, #city, #district, #sub_district, #postal_code, #tipeSelect, #agenSelect, select[name="status"]').each(function () {
+            if ($(this).hasClass('select2-hidden-accessible')) return;   // sudah diinisialisasi layout
+            var opsi = { width: '100%' };
+            if (this.dataset.minimumResultsForSearch) opsi.minimumResultsForSearch = parseInt(this.dataset.minimumResultsForSearch, 10) < 0 ? Infinity : parseInt(this.dataset.minimumResultsForSearch, 10);
+            if (pakaiTema) opsi.theme = 'bootstrap-5';
+            $(this).select2(opsi);
+        });
+    }
+
+    if ($.fn.select2) {
+        pakaiSelect2(false);
+    } else {
+        var css1 = document.createElement('link');
+        css1.rel = 'stylesheet';
+        css1.href = 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css';
+        var css2 = document.createElement('link');
+        css2.rel = 'stylesheet';
+        css2.href = 'https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css';
+        document.head.appendChild(css1);
+        document.head.appendChild(css2);
+
+        var js = document.createElement('script');
+        js.src = 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js';
+        js.onload = function () { pakaiSelect2(true); };
+        document.head.appendChild(js);
+    }
+
+    var rantai = [
+        { el: '#province',     next: '#city',        url: '/api/cities/',       label: '-- Pilih Kota --' },
+        { el: '#city',         next: '#district',    url: '/api/districts/',    label: '-- Pilih Kecamatan --' },
+        { el: '#district',     next: '#sub_district',url: '/api/sub_districts/',label: '-- Pilih Kelurahan --' },
+        { el: '#sub_district', next: '#postal_code', url: '/api/postal_codes/', label: '-- Kode Pos --', text: 'postal_code' }
+    ];
+
+    function kosongkan(sel, label) {
+        $(sel).empty().append(new Option(label, '')).trigger('change.select2');
+    }
+
+    rantai.forEach(function (r, i) {
+        $(r.el).on('change', function () {
+            var id = $(this).val();
+            for (var j = i; j < rantai.length; j++) kosongkan(rantai[j].next, rantai[j].label);
+            if (!id) return;
+
+            $.get(r.url + id, function (data) {
+                var $n = $(r.next);
+                data.forEach(function (d) { $n.append(new Option(d[r.text || 'name'], d.id)); });
+                $n.trigger('change.select2');
+            });
+        });
+    });
+});
+</script>
+
+<script>
+// ===== Pratinjau agen =====
+document.addEventListener('DOMContentLoaded', function () {
+    var sel = document.getElementById('agenSelect');
+    var box = document.getElementById('agenPreview');
+    if (!sel || !box) return;
+
+    function tampil() {
+        var o = sel.options[sel.selectedIndex];
+        box.innerHTML = '';
+        if (!o || !o.value) {
+            var t = document.createElement('span');
+            t.className = 'text-muted small';
+            t.textContent = 'Kartu listing memakai kontak Antosa Architect.';
+            box.appendChild(t);
+            return;
+        }
+        var foto = document.createElement(o.dataset.foto ? 'img' : 'span');
+        if (o.dataset.foto) {
+            foto.src = o.dataset.foto;
+            foto.style.cssText = 'width:42px;height:42px;border-radius:50%;object-fit:cover';
+        } else {
+            foto.className = 'avatar';
+            foto.textContent = o.text.trim().charAt(0).toUpperCase();
+        }
+        var info = document.createElement('div');
+        var nama = document.createElement('strong');
+        nama.textContent = o.text.trim();
+        var det = document.createElement('div');
+        det.className = 'text-muted small';
+        det.textContent = [o.dataset.jabatan, o.dataset.phone].filter(Boolean).join(' · ') || 'Nomor WhatsApp belum diisi di data karyawan';
+        info.appendChild(nama); info.appendChild(det);
+        box.appendChild(foto); box.appendChild(info);
+    }
+    // select2 hanya memicu event 'change' milik jQuery, jadi pakai jQuery bila tersedia
+    if (window.jQuery) { jQuery(sel).on('change', tampil); } else { sel.addEventListener('change', tampil); }
+    tampil();
+});
+</script>
+
+<script>
 // ===== Tambah tipe properti baru dari form =====
 (function () {
     var btn = document.getElementById('btnTipeBaru');
@@ -287,6 +465,7 @@
                      .forEach(function (x) { sel.add(x); });
             }
             sel.value = data.nama;
+            if (window.jQuery) jQuery(sel).trigger('change');   // refresh tampilan select2
             Swal.fire({ icon: 'success', title: data.baru ? 'Tipe ditambahkan' : 'Tipe sudah ada', timer: 1400, showConfirmButton: false });
         } catch (err) {
             Swal.fire('Gagal', err.message, 'error');

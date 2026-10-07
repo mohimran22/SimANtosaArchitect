@@ -1,4 +1,4 @@
-@extends('tablar::page')
+@extends('layouts.website')
 @section('content')
 @php
     $wa = preg_replace('/\D/', '', (string) ($listing->agen_telepon ?: '6285189523863'));
@@ -7,8 +7,8 @@
 <section style="padding:60px 0;font-family:'Poppins',sans-serif">
     <div style="width:min(100% - 40px,1000px);margin:0 auto">
         <a href="{{ url('/') }}#listing" style="color:#555;text-decoration:none">← Kembali</a>
-        <h1 style="font-size:30px;mahorgin:14px 0 6px">{{ $listing->judul }}</h1>
-        <p style="color:#777"><i class="ti ti-map-pin-filled"></i> {{ $listing->lokasi }}</p>
+        <h1 style="font-size:30px;margin:14px 0 6px">{{ $listing->judul }}</h1>
+        <p style="color:#777"><i class="ti ti-map-pin-filled"></i> {{ $listing->alamat_lengkap }}</p>
 
         @if ($listing->foto)
             <img src="{{ asset('storage/'.$listing->foto) }}" alt="{{ $listing->judul }}" style="width:100%;max-height:520px;object-fit:cover;border-radius:12px">

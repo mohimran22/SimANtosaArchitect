@@ -706,7 +706,7 @@
                                         {{ $emp->user->fullname }}
                                     </option>
                                 @endforeach
-                        </select>
+                            </select>
                         </div>
                     </div>
                     <div class="col-12 col-md-6">
