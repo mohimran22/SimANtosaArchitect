@@ -29,7 +29,10 @@ public function up(): void
         $table->string('canonical_url')->nullable();
         $table->boolean('noindex')->default(false);
         $table->string('og_image')->nullable();
-
+        $table->unsignedTinyInteger('seo_score')->nullable();
+        $table->unsignedTinyInteger('readability_score')->nullable();
+        $table->unsignedInteger('views')->default(0);
+        $table->softDeletes();
         $table->timestamps();
     });
 }

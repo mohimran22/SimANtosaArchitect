@@ -7,7 +7,7 @@
         'orderby' => $col,
         'order'   => ($orderby === $col && $order === 'desc') ? 'asc' : 'desc',
     ]);
-    $tab = fn ($label, $key, $n) => '<a href="' . e(route('admin.articles.index', $key ? ['status' => $key] : [])) . '"'
+    $tab = fn ($label, $key, $n) => '<a href="' . e(route('articles.index', $key ? ['status' => $key] : [])) . '"'
         . ((request('status') ?: null) === $key ? ' style="font-weight:bold;color:#000"' : '') . '>'
         . $label . ' (' . $n . ')</a>';
 @endphp

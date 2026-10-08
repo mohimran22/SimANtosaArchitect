@@ -69,7 +69,7 @@
     </div>
 </div>
 @can('tambah data properti')
-<a href="{{ route('projects.create') }}"
+<a href="{{ route('jual.create') }}"
    class="mobile-fab d-md-none">
 
     <svg xmlns="http://www.w3.org/2000/svg"

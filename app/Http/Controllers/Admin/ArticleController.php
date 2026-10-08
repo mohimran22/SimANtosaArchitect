@@ -9,11 +9,48 @@ use Illuminate\Support\Str;
 
 class ArticleController extends Controller
 {
-    public function index()
-    {
-        $articles = Article::latest()->paginate(15);
-        return view('admin.articles.index', compact('articles'));
+public function index(Request $request)
+{
+    $status  = $request->query('status');
+    $orderby = in_array($request->query('orderby'), ['title', 'created_at']) ? $request->query('orderby') : 'created_at';
+    $order   = $request->query('order') === 'asc' ? 'asc' : 'desc';
+
+    $query = Article::query()->with(['author', 'categories', 'tags']);
+
+    if ($status === 'trash') {
+        $query->onlyTrashed();
+    } elseif (in_array($status, ['published', 'draft'])) {
+        $query->where('status', $status);
     }
+
+    $query
+        ->when($request->search, fn ($q, $s) => $q->where('title', 'like', "%{$s}%"))
+        ->when($request->month, fn ($q, $m) => $q
+            ->whereYear('created_at', substr($m, 0, 4))
+            ->whereMonth('created_at', substr($m, 5, 2)))
+        ->when($request->category, fn ($q, $c) => $q
+            ->whereHas('categories', fn ($x) => $x->where('categories.id', $c)))
+        ->when($request->seo, fn ($q, $v) => $this->scoreFilter($q, 'seo_score', $v))
+        ->when($request->readability, fn ($q, $v) => $this->scoreFilter($q, 'readability_score', $v));
+
+    $articles = $query->orderBy($orderby, $order)->paginate(20)->withQueryString();
+
+    $counts = [
+        'all'       => Article::count(),
+        'published' => Article::where('status', 'published')->count(),
+        'draft'     => Article::where('status', 'draft')->count(),
+        'trash'     => Article::onlyTrashed()->count(),
+    ];
+
+    $months = Article::withTrashed()->orderByDesc('created_at')->pluck('created_at')
+        ->map(fn ($d) => $d->format('Y-m'))->unique()->values();
+
+    $categories = \App\Models\Category::orderBy('name')->get();
+
+    return view('admin.articles.index', compact(
+        'articles', 'counts', 'months', 'categories', 'status', 'orderby', 'order'
+    ));
+}
 
     public function create()
     {

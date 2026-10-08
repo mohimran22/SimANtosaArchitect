@@ -8,10 +8,11 @@
                 </div>
                 <div class="col-12 col-md-auto ms-auto d-print-none">
                     <div class="btn-list">
-                        {{-- TODO: bungkus dengan @can('...') sesuai permission yang kamu pakai --}}
-                        <button type="button" id="btnTambahTipe" class="btn btn-dark">
-                            <i class="ti ti-plus"></i> Tambah Tipe
-                        </button>
+                        @can('tambah data properti')
+                            <button type="button" class="btn btn-dark btnTambahTipe">
+                                <i class="ti ti-plus"></i> Tambah Tipe
+                            </button>
+                        @endcan
                     </div>
                 </div>
             </div>
@@ -44,6 +45,23 @@
             </div>
         </div>
     </div>
+@can('tambah data properti')
+<button type="button" class="mobile-fab d-md-none btnTambahTipe">
+    <svg xmlns="http://www.w3.org/2000/svg"
+         width="26"
+         height="26"
+         viewBox="0 0 24 24"
+         stroke-width="2"
+         stroke="currentColor"
+         fill="none"
+         stroke-linecap="round"
+         stroke-linejoin="round">
+        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+        <line x1="12" y1="5" x2="12" y2="19"/>
+        <line x1="5" y1="12" x2="19" y2="12"/>
+    </svg>
+</button>
+@endcan
 @endsection
 
 @push('js')
@@ -51,8 +69,14 @@
 $(function () {
     const urlBase = "{{ url('tipe-properti') }}";
     const csrf    = "{{ csrf_token() }}";
-
+    const isMobile = window.innerWidth < 576;
     const table = $('#tableTipe').DataTable({
+        scrollY: '500px',
+        scrollX: true,
+        scrollCollapse: true,
+        fixedColumns: !isMobile ? {
+            leftColumns: 1
+        } : false,
         serverSide: true,
         processing: true,
         responsive: false,
@@ -105,14 +129,23 @@ $(function () {
     }
 
     // Tambah
-    $('#btnTambahTipe').on('click', function () {
+    $('.btnTambahTipe').on('click', function () {
         dialogNama('Tambah tipe properti').then(function (r) {
             if (!r.isConfirmed) return;
+
             $.ajax({
-                url: urlBase, method: 'POST',
-                data: { _token: csrf, nama: r.value },
-                success: function () { sukses('Tipe ditambahkan'); },
-                error: function (xhr) { Swal.fire('Gagal', pesanError(xhr), 'error'); }
+                url: urlBase,
+                method: 'POST',
+                data: {
+                    _token: csrf,
+                    nama: r.value.trim()
+                },
+                success: function () {
+                    sukses('Tipe ditambahkan');
+                },
+                error: function (xhr) {
+                    Swal.fire('Gagal', pesanError(xhr), 'error');
+                }
             });
         });
     });
