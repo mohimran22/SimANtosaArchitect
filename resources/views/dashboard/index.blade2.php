@@ -50,7 +50,7 @@
             @endcan
             @can('lihat daftar absensi')
             <div class="col-xl-8">
-                <div class="card shadow-sm border-0 rounded-4 h-100">
+                <div class="card shadow-sm border-0 rounded-4">
                     <div class="card-header bg-white d-flex justify-content-between">
 
                             <div>
@@ -69,11 +69,11 @@
 
                         </div>
 
-                        <div class="card-body p-0 attendance-body">
+                        <div class="card-body p-0">
 
                             <div class="attendance-scroll">
 
-                                <table class="table table-hover align-middle mb-0 {{ $attendances->isEmpty() ? 'attendance-empty' : '' }}">
+                                <table class="table table-hover align-middle mb-0">
 
                                     <thead>
 
@@ -179,331 +179,149 @@
         </div>
 
         <div class="row g-4 mt-2">
-            @can('lihat data finance')
+            {{-- ===================== FINANCE ===================== --}}
+            @can('lihat akun-akuntansi')
             <div class="col-12">
-                <div class="card shadow-sm border-0 rounded-4 h-100">
+                <div class="card zh-section border-0 shadow-sm rounded-4">
 
-                    <div class="card-header">
-                        <h5 class="mb-0">💰 Finance</h5>
+                    <div class="zh-section-header">
+                        <div class="zh-section-title">💰 Finance</div>
+                        <div class="zh-section-meta">
+                            {{ \Carbon\Carbon::now()->translatedFormat('F Y') }}
+                        </div>
                     </div>
 
-                    <div class="card-body p-5">
-                        <div class="card bg-primary-lt border-0 mb-3">
-                            <div class="card-body">
-                                <div class="text-secondary">
-                                    Total Kas & Bank
-                                </div>
-                                <div class="fs-1 fw-bold text-primary">
-                                    Rp {{ number_format($totalCashBank,0,',','.') }}
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row g-3 mb-4">
-                            <h4 class="text-center">
-                                {{ \Carbon\Carbon::now()->translatedFormat('F Y') }}
-                            </h4>
-                            <div class="col-md-4">
-                                <a href="{{ route('journals.general') }}" class="text-decoration-none text-dark">
-                                    <div class="border rounded-3 p-3 h-100">
-                                        <div class="small text-secondary">
-                                            📈 Pendapatan
-                                        </div>
+                    <div class="zh-section-body">
+                        @php
+                            $rp = fn($n) => ($n < 0 ? '-' : '') . 'Rp ' . number_format(abs($n), 0, ',', '.');
+                        @endphp
 
-                                        <div class="fs-4 fw-bold text-success mt-2">
-                                            Rp {{ number_format($monthlyRevenue,0,',','.') }}
-                                        </div>
-                                    </div>
-                                </a>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="border rounded-3 p-3 h-100">
-                                    <div class="small text-secondary">
-                                        📈 Kas Masuk
-                                    </div>
-                                    <div class="fs-3 fw-bold text-success mt-1">
-                                        Rp {{ number_format($cashInThisMonth,0,',','.') }}
-                                    </div>
+                        <div class="zh-stat-grid zh-stat-grid-finance">
+
+                            {{-- Total Kas & Bank --}}
+                            <div class="zh-stat zh-stat-highlight">
+                                <div class="zh-stat-label">Total Kas & Bank</div>
+                                <div class="zh-stat-value zh-stat-value-xl {{ $totalCashBank < 0 ? 'text-danger' : 'text-primary' }}">
+                                    {{ $rp($totalCashBank) }}
                                 </div>
                             </div>
-                            <div class="col-md-4">
-                                <div class="border rounded-3 p-3 h-100">
-                                    <div class="small text-secondary">
-                                        📉 Kas Keluar
-                                    </div>
-                                    <div class="fs-3 fw-bold text-danger mt-1">
-                                        Rp {{ number_format($cashOutThisMonth,0,',','.') }}
-                                    </div>
-                                </div>
+
+                            {{-- Pendapatan --}}
+                            <a href="{{ route('journals.general') }}" class="zh-stat text-decoration-none">
+                                <div class="zh-stat-label">📈 Pendapatan</div>
+                                <div class="zh-stat-value text-success">{{ $rp($monthlyRevenue) }}</div>
+                            </a>
+
+                            {{-- Kas Masuk --}}
+                            <div class="zh-stat">
+                                <div class="zh-stat-label">📥 Kas Masuk</div>
+                                <div class="zh-stat-value text-success">{{ $rp($cashInThisMonth) }}</div>
+                            </div>
+
+                            {{-- Kas Keluar --}}
+                            <div class="zh-stat">
+                                <div class="zh-stat-label">📤 Kas Keluar</div>
+                                <div class="zh-stat-value text-danger">{{ $rp($cashOutThisMonth) }}</div>
                             </div>
                         </div>
-                        <div class="finance-scroll">
+
+                        <div class="zh-subtitle">Saldo per akun</div>
+
+                        <div class="zh-account-grid">
                             @foreach($cashAccounts as $account)
-                                <div class="finance-card">
-                                    <div class="finance-icon">
-                                        @if(str_contains(strtolower($account['account_name']), 'bank'))
-                                            🏦
-                                        @else
-                                            💵
-                                        @endif
+                                <div class="zh-account">
+                                    <div class="zh-account-icon">
+                                        {{ str_contains(strtolower($account['account_name']), 'bank') ? '🏦' : '💵' }}
                                     </div>
-                                    @php
-                                        $words = explode(' ', $account['account_name']);
-
-                                        $line1 = implode(' ', array_slice($words, 0, 2)); // dua kata pertama
-                                        $line2 = implode(' ', array_slice($words, 2));    // sisanya
-                                    @endphp
-
-                                    <div class="finance-name">
-                                        <div>{{ $line1 }}</div>
-
-                                        @if($line2)
-                                            <div class="finance-sub">{{ $line2 }}</div>
-                                        @endif
-                                    </div>
-                                    <div class="finance-balance">
-                                        Rp {{ number_format($account['balance'],0,',','.') }}
+                                    <div class="zh-account-info">
+                                        <div class="zh-account-name">{{ $account['account_name'] }}</div>
+                                        <div class="zh-account-balance {{ $account['balance'] < 0 ? 'text-danger' : '' }}">
+                                            {{ $rp($account['balance']) }}
+                                        </div>
                                     </div>
                                 </div>
                             @endforeach
                         </div>
                     </div>
+
                 </div>
             </div>
             @endcan
+
+            {{-- ===================== PROJECT ===================== --}}
             @can('lihat daftar proyek')
             <div class="col-12">
-                <div class="card shadow-sm border-0 rounded-4 h-100">
+                <div class="card zh-section border-0 shadow-sm rounded-4">
 
-                    <div class="card-header">
-                        <h5 class="mb-0">📁 Project</h5>
+                    <div class="zh-section-header">
+                        <div class="zh-section-title">📁 Projects</div>
+                        <a href="{{ route('projects.index') }}" class="zh-section-meta text-decoration-none">
+                            Lihat semua →
+                        </a>
                     </div>
 
-                    <div class="card-body p-4">
+                    <div class="zh-section-body">
 
-                        {{-- <div class="row g-3 mb-4">
+                        <div class="zh-stat-grid zh-stat-grid-project">
 
-                            <div class="col-4">
-                                <a href="{{ route('projects.index') }}"
-                                class="text-decoration-none text-dark">
-
-                                    <div class="border rounded-3 p-3 text-center bg-light h-100 hover-card">
-                                        <div class="text-secondary small">Total Project</div>
-                                        <div class="fs-2 fw-bold">
-                                            {{ $totalProject }}
-                                        </div>
-                                    </div>
-
-                                </a>
-                            </div>
-
-                            <div class="col-4">
-                                <div class="border rounded-3 p-3 text-center bg-light">
-                                    <div class="text-secondary small">Sedang Dikerjakan</div>
-                                    <div class="fs-2 fw-bold text-primary">
-                                        {{ $runningBuild }}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-4">
-                                <div class="border rounded-3 p-3 text-center bg-light">
-                                    <div class="text-secondary small">Sudah Selesai</div>
-                                    <div class="fs-2 fw-bold text-primary">
-                                        {{ $completedBuild }}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-4">
-                                <a href="{{ route('projects.index', ['type' => 1]) }}"
-                                    class="text-decoration-none text-dark">
-                                    <div class="border rounded-3 p-3 text-center">
-                                        <div class="text-secondary small">Total Desain</div>
-                                        <div class="fs-3 fw-bold text-info">
-                                            {{ $totalDesign }}
-                                        </div>
-                                    </div>
-                                </a>
-                            </div>
-
-                            <div class="col-4">
-                                <a href="{{ route('projects.index', ['type' => 2]) }}"
-                                    class="text-decoration-none text-dark">
-                                    <div class="border rounded-3 p-3 text-center">
-                                        <div class="text-secondary small">Total RAB</div>
-                                        <div class="fs-3 fw-bold text-warning">
-                                            {{ $totalRab }}
-                                        </div>
-                                    </div>
-                                </a>
-                            </div>
-
-                            <div class="col-4">
-                                <a href="{{ route('projects.index', ['type' => 3]) }}"
-                                        class="text-decoration-none text-dark">
-                                    <div class="border rounded-3 p-3 text-center">
-                                        <div class="text-secondary small">Total Build</div>
-                                        <div class="fs-3 fw-bold text-success">
-                                            {{ $totalBuild }}
-                                        </div>
-                                    </div>
-                                </a>
-                            </div>
-
-                        </div> --}}
-                        <div class="project-scroll mb-4">
-
-                            {{-- Total Project --}}
-                            <a href="{{ route('projects.index') }}"
-                            class="project-card text-decoration-none text-dark">
-
-                                <div class="project-icon">📁</div>
-                                <div class="project-title">Total</div>
-                                <div class="project-number">{{ $totalProject }}</div>
-
+                            {{-- Total --}}
+                            <a href="{{ route('projects.index') }}" class="zh-stat zh-stat-highlight text-decoration-none">
+                                <div class="zh-stat-label">📁 Total Project</div>
+                                <div class="zh-stat-value zh-stat-value-xl text-primary">{{ $totalProject }}</div>
                             </a>
 
                             {{-- Sedang Dikerjakan --}}
-                            <div class="project-card">
-
-                                <div class="project-icon">🚧</div>
-                                <div class="project-title">Sedang Dikerjakan</div>
-                                <div class="project-number text-primary">
-                                    {{ $runningBuild }}
-                                </div>
-
+                            <div class="zh-stat">
+                                <div class="zh-stat-label">🚧 Dikerjakan</div>
+                                <div class="zh-stat-value text-primary">{{ $runningBuild }}</div>
                             </div>
 
                             {{-- Selesai --}}
-                            <div class="project-card">
-
-                                <div class="project-icon">✅</div>
-                                <div class="project-title">Sudah Selesai</div>
-                                <div class="project-number text-success">
-                                    {{ $completedBuild }}
-                                </div>
-
+                            <div class="zh-stat">
+                                <div class="zh-stat-label">✅ Selesai</div>
+                                <div class="zh-stat-value text-success">{{ $completedBuild }}</div>
                             </div>
 
                             {{-- Desain --}}
-                            <a href="{{ route('projects.index',['type'=>1]) }}"
-                            class="project-card text-decoration-none text-dark">
-
-                                <div class="project-icon">🎨</div>
-                                <div class="project-title">Desain</div>
-                                <div class="project-number text-info">
-                                    {{ $totalDesign }}
-                                </div>
-
+                            <a href="{{ route('projects.index', ['type' => 1]) }}" class="zh-stat text-decoration-none">
+                                <div class="zh-stat-label">🎨 Desain</div>
+                                <div class="zh-stat-value text-info">{{ $totalDesign }}</div>
                             </a>
 
                             {{-- RAB --}}
-                            <a href="{{ route('projects.index',['type'=>2]) }}"
-                            class="project-card text-decoration-none text-dark">
-
-                                <div class="project-icon">📑</div>
-                                <div class="project-title">RAB</div>
-                                <div class="project-number text-warning">
-                                    {{ $totalRab }}
-                                </div>
-
+                            <a href="{{ route('projects.index', ['type' => 2]) }}" class="zh-stat text-decoration-none">
+                                <div class="zh-stat-label">📑 RAB</div>
+                                <div class="zh-stat-value text-warning">{{ $totalRab }}</div>
                             </a>
 
                             {{-- Build --}}
-                            <a href="{{ route('projects.index',['type'=>3]) }}"
-                            class="project-card text-decoration-none text-dark">
-
-                                <div class="project-icon">🏗</div>
-                                <div class="project-title">Build</div>
-                                <div class="project-number text-success">
-                                    {{ $totalBuild }}
-                                </div>
-
+                            <a href="{{ route('projects.index', ['type' => 3]) }}" class="zh-stat text-decoration-none">
+                                <div class="zh-stat-label">🏗 Build</div>
+                                <div class="zh-stat-value text-success">{{ $totalBuild }}</div>
                             </a>
-
                         </div>
-                        <hr>
-                        <div class="zh-subtitle">Pantau tahap proyek</div>
 
-<div class="zh-stage-wrap">
-    <table class="table align-middle mb-0">
-        <thead>
-            <tr>
-                <th>Proyek</th>
-                <th>Tahap</th>
-                <th>Di tahap ini sejak</th>
-                <th class="text-end">Status</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse($projectStages as $p)
-                @php $days = $p->days_idle; @endphp
-                <tr>
-                    <td>
-                        <div class="fw-semibold">{{ $p->name }}</div>
-                        <span class="badge bg-secondary-lt">{{ $p->type }}</span>
-                    </td>
-                    <td>
-                        {{ $p->stage }}
-                        <small class="text-secondary">({{ $p->stage_no }}/{{ $p->stage_total }})</small>
-                    </td>
-                    <td class="text-secondary">
-                        {{ $p->since?->translatedFormat('d M Y') ?? '-' }}
-                    </td>
-                    <td class="text-end">
-                        @if(is_null($days))
-                            <span class="badge bg-secondary-lt">Belum ada tanggal</span>
-                        @elseif($days >= 3)
-                            <span class="badge bg-danger">⚠ {{ $days }} hari belum pindah tahap</span>
-                        @elseif($days >= 2)
-                            <span class="badge bg-warning">⚠ {{ $days }} hari belum pindah tahap</span>
-                        @else
-                            <span class="badge bg-success-lt">Terbaru</span>
-                        @endif
-                    </td>
-                </tr>
-            @empty
-                <tr>
-                    <td colspan="4" class="text-center text-secondary py-4">
-                        Tidak ada proyek yang sedang berjalan.
-                    </td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
-</div>
-<hr>
-                        <h6 class="mb-3">
-                            🏗 Progress Tertinggi
-                        </h6>
+                        <div class="zh-subtitle">Progress tertinggi</div>
 
-                        @foreach($topBuildProjects as $project)
-
-                            <div class="mb-3">
-
-                                <div class="d-flex justify-content-between">
-
-                                    <span>
-                                        {{ $project->project_name }}
-                                    </span>
-
-                                    <span>
-                                        {{ number_format($project->progress,0) }}%
-                                    </span>
-
-                                </div>
-
-                                <div class="progress mt-1" style="height:8px;">
-                                    <div
-                                        class="progress-bar"
-                                        style="width: {{ $project->progress }}%">
+                        <div class="zh-progress-grid">
+                            @forelse($topBuildProjects as $project)
+                                <div class="zh-progress-card">
+                                    <div class="zh-progress-head">
+                                        <span class="zh-progress-name" title="{{ $project->project_name }}">
+                                            {{ $project->project_name }}
+                                        </span>
+                                        <span class="zh-progress-percent">
+                                            {{ number_format($project->progress, 0) }}%
+                                        </span>
+                                    </div>
+                                    <div class="progress" style="height:8px;">
+                                        <div class="progress-bar" style="width: {{ $project->progress }}%"></div>
                                     </div>
                                 </div>
-
-                            </div>
-
-                        @endforeach
-
+                            @empty
+                                <div class="text-secondary small">Belum ada project build yang berjalan.</div>
+                            @endforelse
+                        </div>
                     </div>
 
                 </div>
@@ -818,5 +636,96 @@ initCamera({
     padding-right: 18px;
     margin-left: 0 !important;
     margin-right: 0 !important;
+}
+
+/* ===== Dashboard sections (Finance & Projects) ===== */
+.zh-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.1rem 1.75rem;
+    border-bottom: 1px solid var(--tblr-border-color, #e6e7e9);
+}
+.zh-section-title { font-weight: 600; font-size: .95rem; }
+.zh-section-meta  { color: var(--tblr-secondary, #667382); font-size: 1rem; }
+.zh-section-body  { padding: 1.75rem; }
+
+.zh-subtitle {
+    font-size: .8rem;
+    font-weight: 600;
+    margin: 1.75rem 0 .9rem;
+}
+
+/* Kartu statistik */
+.zh-stat-grid { display: grid; gap: 1.25rem; }
+.zh-stat-grid-finance { grid-template-columns: 1.5fr 1fr 1fr 1fr; }
+.zh-stat-grid-project { grid-template-columns: 1.5fr repeat(5, 1fr); }
+
+.zh-stat {
+    display: block;
+    color: inherit;
+    border: 1px solid var(--tblr-border-color, #e6e7e9);
+    border-radius: 12px;
+    padding: 1.1rem 1.5rem;
+    transition: box-shadow .15s ease, transform .15s ease;
+}
+a.zh-stat:hover { box-shadow: 0 4px 14px rgba(0,0,0,.07); transform: translateY(-1px); color: inherit; }
+.zh-stat-highlight {
+    background: var(--tblr-primary-lt, #e7f0fa);
+    border-color: transparent;
+    padding-top: 1.4rem;
+    padding-bottom: 1.4rem;
+}
+.zh-stat-label { color: var(--tblr-secondary, #667382); font-size: .95rem; margin-bottom: .35rem; }
+.zh-stat-value { font-size: 1.6rem; font-weight: 700; line-height: 1.2; }
+.zh-stat-value-xl { font-size: 2.2rem; }
+
+/* Saldo per akun */
+.zh-account-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
+.zh-account {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    border: 1px solid var(--tblr-border-color, #e6e7e9);
+    border-radius: 12px;
+    padding: 1.1rem 1.5rem;
+}
+.zh-account-icon {
+    width: 48px; height: 48px;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.5rem;
+    background: #f3f4f6;
+    border-radius: 12px;
+}
+.zh-account-info { min-width: 0; }
+.zh-account-name {
+    color: var(--tblr-secondary, #667382);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.zh-account-balance { font-weight: 700; }
+
+/* Progress project */
+.zh-progress-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.25rem; }
+.zh-progress-card {
+    border: 1px solid var(--tblr-border-color, #e6e7e9);
+    border-radius: 12px;
+    padding: 1.1rem 1.5rem;
+}
+.zh-progress-head { display: flex; justify-content: space-between; gap: 1rem; margin-bottom: .6rem; }
+.zh-progress-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.zh-progress-percent { font-weight: 700; }
+
+/* Responsive */
+@media (max-width: 1199.98px) {
+    .zh-stat-grid-finance { grid-template-columns: repeat(2, 1fr); }
+    .zh-stat-grid-project { grid-template-columns: repeat(3, 1fr); }
+    .zh-stat-grid .zh-stat-highlight { grid-column: 1 / -1; }
+    .zh-account-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 575.98px) {
+    .zh-stat-grid-finance, .zh-stat-grid-project, .zh-account-grid { grid-template-columns: 1fr; }
+    .zh-stat-grid-project { grid-template-columns: repeat(2, 1fr); }
+    .zh-section-body { padding: 1.1rem; }
 }
 </style>

@@ -19,7 +19,7 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
-
+use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
@@ -182,11 +182,47 @@ class DashboardController extends Controller
                 ->first();
         }
         $attendanceClosed = now()->gte(today()->setTime(10, 0));
+
+    $projectStages = Project::with('levels')
+    ->get()
+    ->map(function ($project) {
+        $levels  = $project->levels->sortBy('level_order')->values();
+        $current = $levels->firstWhere('is_completed', false);
+
+        // semua tahap sudah selesai -> tidak perlu dipantau
+        if (!$current) {
+            return null;
+        }
+
+        $lastDone = $levels->where('is_completed', true)->last();
+
+        // ⬇ GANTI 'completed_at' kalau nama kolom tanggalnya berbeda
+        $since = $lastDone?->completed_at ?? $project->start_date;
+        $since = $since ? Carbon::parse($since)->startOfDay() : null;
+
+        return (object) [
+            'name'        => $project->project_name,
+            'type'        => match ((int) $project->project_type) {
+                Project::TYPE_DESIGN => 'Desain',
+                Project::TYPE_RAB    => 'RAB',
+                Project::TYPE_BUILD  => 'Build',
+                default              => '-',
+            },
+            'stage'       => $current->level_name,
+            'stage_no'    => $current->level_order,
+            'stage_total' => $levels->count(),
+            'since'       => $since,
+            'days_idle'   => $since ? (int) $since->diffInDays(today(), true) : null,
+        ];
+    })
+    ->filter()
+    ->sortByDesc('days_idle')   // paling lama diam di atas
+    ->values();
         return view('dashboard.index', compact('user', 'incompleteProfile', 'incompleteAffiliator', 'attendanceToday', 'greeting', 'attendances',
         'hadir',
         'terlambat',
         'totalKaryawan',
-        'belumHadir',
+        'belumHadir', 'projectStages',
         'cashAccounts', 'totalProject', 'totalDesign', 'totalRab', 'totalBuild',
         'runningBuild', 'attendanceClosed', 'todayRequest',
         'completedBuild',

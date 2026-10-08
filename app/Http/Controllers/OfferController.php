@@ -85,6 +85,8 @@ public function store(OfferRequest $request)
             'level_order' => 5,
         ])->update(['is_started' => true]);
 
+        ProjectLevel::complete($data['project_id'], 4);
+        
         DB::commit();
 
         $creatorUser = auth()->user();

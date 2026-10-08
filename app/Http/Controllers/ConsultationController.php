@@ -76,13 +76,15 @@ class ConsultationController extends Controller
             'level_order' => 1,
         ])->first();
 
-        if ($level) {
+        if ($level && !$level->is_completed) {
             $level->update([
-                'employee_id'  => $data['employee_id'],
                 'is_completed' => true,
             ]);
         }
-
+        if ($level && !$level->is_completed) {
+            $level->update(['is_completed' => true]);
+            $level->employees()->syncWithoutDetaching([$data['employee_id']]);
+        }
         ProjectLevel::where([
             'project_id'  => $project->id,
             'level_order' => 2,

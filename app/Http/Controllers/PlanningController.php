@@ -96,13 +96,16 @@ class PlanningController extends Controller
             $invoice = null;
 
             if ($surveyFee === 0) {
-                ProjectLevel::where('project_id', $planning->project_id)
-                    ->where('level_order', 2)
-                    ->update(['is_completed' => true]);
+                if ($projectLevel) {
+                    $projectLevel->update([
+                        'is_completed' => true,
+                        'completed_at' => now(),
+                    ]);
+                }
 
                 ProjectLevel::where('project_id', $planning->project_id)
                     ->where('level_order', 3)
-                    ->update(['is_started' => true]);
+                    ->update(['is_started' => true]);   // ini aman, tidak butuh tanggal
             } else {
                 $invoice = Invoice::create([
                     'project_id'   => $planning->project_id,

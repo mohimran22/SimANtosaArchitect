@@ -27,6 +27,31 @@
     z-index: 2;
     border-bottom: 1px solid #dee2e6;
 }
+.attendance-body {
+    position: relative;
+    min-height: 280px;              /* batas minimal kalau card kiri sedang pendek */
+    overflow: hidden;
+    border-radius: 0 0 1rem 1rem;   /* sudut bawah ikut membulat */
+}
+
+.attendance-body .attendance-scroll {
+    position: absolute;
+    inset: 0;                       /* penuhi seluruh card-body */
+    height: auto;
+    max-height: none;               /* timpa tinggi tetap dari CSS lama */
+    overflow: auto;
+}
+
+.attendance-body thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: #fff;
+}
+
+/* tampilan kosong: pesan di tengah area, bukan menempel di atas */
+.attendance-empty { height: 100%; }
+.attendance-empty tbody tr { height: 100%; }
 .jabatan-column {
     width: 150px;
     max-width: 150px;
@@ -179,19 +204,3 @@
     font-weight:700;
     margin-top:8px;
 }
-/* @media (min-width: 992px){
-.footer.footer-transparent {
-    display: flex;
-    margin-left: 0;
-    flex-direction: column;
-    padding: 20px 20px 20px 16px;
-    transition: all .3s ease;
-}
-
-.sidebar-collapsed .footer.footer-transparent {
-    padding-left: 20px;
-    padding-right: 18px;
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-}
-} */

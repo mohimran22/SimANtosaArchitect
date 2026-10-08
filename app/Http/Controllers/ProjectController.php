@@ -53,6 +53,15 @@ class ProjectController extends Controller
         'postalCode:id,postal_code',
         'levels:id,project_id,level_order,level_name,is_completed'
     ]);
+    
+    $query->addSelect([
+        'current_level_order' => ProjectLevel::query()
+            ->select('level_order')
+            ->whereColumn('project_id', 'projects.id')
+            ->where('is_completed', false)
+            ->orderBy('level_order')
+            ->limit(1),
+    ]);
 
     // Jika ada hak akses untuk membatasi data
 if (
@@ -94,7 +103,13 @@ if ($request->filled('type')) {
         ->addColumn('employee', fn($row) => $row->employee?->user?->fullname ?? '-')
         ->addColumn('affiliator', fn($row) => $row->affiliator?->user?->fullname ?? '-')
         ->addColumn('project_type', fn($row) => $this->readableProjectType($row->project_type))
-        ->addColumn('start_date', fn($row) => $row->start_date ? Carbon::parse($row->start_date)->format('d/m/Y') : '-')
+
+        ->editColumn('start_date', function ($row) {
+            return $row->start_date
+                ? Carbon::parse($row->start_date)->format('d/m/Y')
+                : '-';
+        })
+
 
         ->addColumn('project_status', function ($row) use ($statusLabel) {
 
@@ -143,6 +158,16 @@ if ($request->filled('type')) {
                             <i class="ti ti-trash"></i></button>';
             }
             return $buttons;
+        })
+        
+        ->orderColumn('start_date', function ($query, $order) {
+            $query->orderBy('projects.start_date', $order);
+        })
+
+        ->orderColumn('current_level', function ($query, $order) {
+            $query->orderByRaw(
+                'current_level_order ' . (strtolower($order) === 'asc' ? 'asc' : 'desc') . ' NULLS LAST'
+            );
         })
 
         ->rawColumns(['current_level', 'action', 'project_status', 'project_name'])
