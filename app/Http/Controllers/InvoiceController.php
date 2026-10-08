@@ -235,10 +235,6 @@ class InvoiceController extends Controller
             $offer = $project->offer;
             abort_if(!$offer, 404, 'Offer belum tersedia.');
 
-            // ===============================
-            // SYNC PROJECT TASK DARI OFFER
-            // ===============================
-
             $existingTasks = ProjectTask::where('project_id', $project->id)
                 ->pluck('task_name')
                 ->toArray();
@@ -257,11 +253,12 @@ class InvoiceController extends Controller
 
                 }
             }
+            ProjectLevel::complete($project->id, 6);
 
-            ProjectLevel::where([
-                'project_id'  => $project->id,
-                'level_order' => 6,
-            ])->update(['is_completed' => true]);
+            // ProjectLevel::where([
+            //     'project_id'  => $project->id,
+            //     'level_order' => 6,
+            // ])->update(['is_completed' => true]);
 
             ProjectLevel::where([
                 'project_id'  => $project->id,
@@ -325,11 +322,11 @@ class InvoiceController extends Controller
                 'approved_at' => now(),
             ]);
 
-            // Level pengerjaan selesai
-            ProjectLevel::where([
-                'project_id'  => $project->id,
-                'level_order' => 8,
-            ])->update(['is_completed' => true]);
+            ProjectLevel::complete($project->id, 8);
+            // ProjectLevel::where([
+            //     'project_id'  => $project->id,
+            //     'level_order' => 8,
+            // ])->update(['is_completed' => true]);
 
             // Level selesai proyek
             ProjectLevel::where([
@@ -393,11 +390,11 @@ class InvoiceController extends Controller
                 'approved_at' => now(),
             ]);
 
-            // Level pengerjaan selesai
-            ProjectLevel::where([
-                'project_id'  => $project->id,
-                'level_order' => 5,
-            ])->update(['is_completed' => true]);
+            ProjectLevel::complete($project->id, 5);
+            // ProjectLevel::where([
+            //     'project_id'  => $project->id,
+            //     'level_order' => 5,
+            // ])->update(['is_completed' => true]);
 
             // Level selesai proyek
             ProjectLevel::where([

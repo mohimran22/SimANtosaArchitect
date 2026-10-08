@@ -107,12 +107,7 @@ public function store(OfferBuildRequest $request)
             ]);
         }
 
-        ProjectLevel::where([
-            'project_id'  => $data['project_id'],
-            'level_order' => 4,
-        ])->update([
-            'is_completed' => true
-        ]);
+        ProjectLevel::complete($data['project_id'], 4);
 
         ProjectLevel::where([
             'project_id'  => $data['project_id'],
@@ -120,7 +115,6 @@ public function store(OfferBuildRequest $request)
         ])->update([
             'is_started' => true
         ]);
-
 
         DB::commit();
 

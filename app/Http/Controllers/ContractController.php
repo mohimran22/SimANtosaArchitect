@@ -114,12 +114,7 @@ class ContractController extends Controller
                 'approved_by' => auth()->id(),
             ]);
 
-            ProjectLevel::where([
-                'project_id'  => $project->id,
-                'level_order' => 5,
-            ])->update([
-                'is_completed' => true,
-            ]);
+            ProjectLevel::complete($project->id, 5);
 
             ProjectLevel::where([
                 'project_id'  => $project->id,

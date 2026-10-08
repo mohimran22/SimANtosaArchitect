@@ -75,18 +75,13 @@ public function store(OfferRequest $request)
             }
         }
 
-        ProjectLevel::where([
-            'project_id'  => $data['project_id'],
-            'level_order' => 4,
-        ])->update(['is_completed' => true]);
+        ProjectLevel::complete($data['project_id'], 4);
 
         ProjectLevel::where([
             'project_id'  => $data['project_id'],
             'level_order' => 5,
         ])->update(['is_started' => true]);
 
-        ProjectLevel::complete($data['project_id'], 4);
-        
         DB::commit();
 
         $creatorUser = auth()->user();

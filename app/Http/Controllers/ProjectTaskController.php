@@ -135,10 +135,11 @@ protected function checkAutoNextLevel(ProjectTask $task)
         return;
     }
 
-    ProjectLevel::where([
-        'project_id'  => $projectId,
-        'level_order' => 7,
-    ])->update(['is_completed' => true]);
+    ProjectLevel::complete($projectId, 7);
+    // ProjectLevel::where([
+    //     'project_id'  => $projectId,
+    //     'level_order' => 7,
+    // ])->update(['is_completed' => true]);
 
     ProjectLevel::where([
         'project_id'  => $projectId,

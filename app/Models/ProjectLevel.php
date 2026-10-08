@@ -36,6 +36,15 @@ protected static function booted()
     });
 }
 
+public static function complete(string $projectId, int $order): void
+{
+    $level = static::where(['project_id' => $projectId, 'level_order' => $order])->first();
+
+    if ($level && !$level->is_completed) {
+        $level->update(['is_completed' => true]);
+    }
+}
+
 public function project()
     {
         return $this->belongsTo(Project::class);

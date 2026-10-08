@@ -130,12 +130,7 @@ public function buildpdf(Project $project)
                 'approved_by' => auth()->id(),
             ]);
 
-            ProjectLevel::where([
-                'project_id'  => $project->id,
-                'level_order' => 6,
-            ])->update([
-                'is_completed' => true,
-            ]);
+            ProjectLevel::complete($project->id, 6);
 
             ProjectLevel::where([
                 'project_id'  => $project->id,
