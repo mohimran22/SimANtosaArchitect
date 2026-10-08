@@ -108,7 +108,7 @@
                     { data: 'url' },
                     { data: 'parent_name' },
                     { data: 'order' },
-                    { data: 'icon', orderable:false, searchable:false },
+                    { data: 'icon' },
                     { data: 'permission_name' },
                     { data: 'actions', orderable:false, searchable:false },
                 ],

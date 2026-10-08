@@ -3,81 +3,188 @@
 @section('content')
 @php $isEdit = $article->exists; @endphp
 
+<style>
+    .ck-editor__editable { min-height: 380px; }
+    #seo-checks li { padding: 2px 0; font-size: 14px; }
+    .serp { font-family: Arial, sans-serif; max-width: 600px; }
+</style>
+
 <form method="POST" enctype="multipart/form-data"
       action="{{ $isEdit ? route('articles.update', $article) : route('articles.store') }}">
     @csrf
     @if($isEdit) @method('PUT') @endif
 
-    <h2>{{ $isEdit ? 'Edit' : 'Tulis' }} Artikel</h2>
-
-    @if($errors->any())
-        <ul style="color:#b00">
-            @foreach($errors->all() as $e)<li>{{ $e }}</li>@endforeach
-        </ul>
-    @endif
-
-    <label>Judul</label>
-    <input type="text" id="title" name="title" value="{{ old('title', $article->title) }}" required style="width:100%">
-
-    <label>Slug (kosongkan untuk otomatis)</label>
-    <input type="text" id="slug" name="slug" value="{{ old('slug', $article->slug) }}" style="width:100%">
-
-    <label>Konten</label>
-    <textarea id="content" name="content">{{ old('content', $article->content) }}</textarea>
-
-    <label>Ringkasan (excerpt)</label>
-    <textarea id="excerpt" name="excerpt" maxlength="300" rows="3" style="width:100%">{{ old('excerpt', $article->excerpt) }}</textarea>
-
-    <label>Gambar utama</label>
-    <input type="file" name="featured_image" accept="image/*">
-    @if($article->featured_image)
-        <img src="{{ asset('storage/'.$article->featured_image) }}" width="120" alt="">
-    @endif
-
-    <label>Status</label>
-    <select name="status">
-        <option value="draft" @selected(old('status', $article->status) === 'draft')>Draft</option>
-        <option value="published" @selected(old('status', $article->status) === 'published')>Terbit</option>
-    </select>
-
-    <hr>
-    <h3>SEO</h3>
-
-    <label>Focus keyword</label>
-    <input type="text" id="focus_keyword" name="focus_keyword"
-           value="{{ old('focus_keyword', $article->focus_keyword) }}" style="width:100%">
-
-    <label>Meta title <small id="mt-count"></small></label>
-    <input type="text" id="meta_title" name="meta_title" maxlength="70"
-           value="{{ old('meta_title', $article->meta_title) }}" style="width:100%">
-
-    <label>Meta description <small id="md-count"></small></label>
-    <textarea id="meta_description" name="meta_description" maxlength="170" rows="3" style="width:100%">{{ old('meta_description', $article->meta_description) }}</textarea>
-
-    <label>Canonical URL (opsional)</label>
-    <input type="url" name="canonical_url" value="{{ old('canonical_url', $article->canonical_url) }}" style="width:100%">
-
-    <label>Gambar share (OG image, opsional)</label>
-    <input type="file" name="og_image" accept="image/*">
-
-    <label><input type="checkbox" name="noindex" value="1" @checked(old('noindex', $article->noindex))> Jangan diindex Google (noindex)</label>
-
-    {{-- Preview Google --}}
-    <div style="border:1px solid #ddd;padding:12px;margin:12px 0;font-family:Arial,sans-serif;max-width:600px">
-        <div id="pv-url" style="color:#188038;font-size:13px"></div>
-        <div id="pv-title" style="color:#1a0dab;font-size:19px"></div>
-        <div id="pv-desc" style="color:#4d5156;font-size:13px"></div>
+    <div class="page-header d-print-none">
+        <div class="container-xl">
+            <div class="row g-2 align-items-center">
+                <div class="col"><h2 class="page-title">{{ $isEdit ? 'Edit' : 'Tulis' }} Artikel</h2></div>
+                <div class="col-auto ms-auto d-flex gap-2">
+                    <a href="{{ route('articles.index') }}" class="btn btn-outline-secondary">Kembali</a>
+                    <button type="submit" class="btn btn-dark">Simpan</button>
+                </div>
+            </div>
+        </div>
     </div>
 
-    {{-- Hasil analisis --}}
-    <ul id="seo-checks" style="list-style:none;padding:0"></ul>
+    <div class="page-body">
+        <div class="container-xl">
 
-    <button type="submit">Simpan</button>
+            @if($errors->any())
+                <div class="alert alert-danger">
+                    <ul class="mb-0">
+                        @foreach($errors->all() as $e)<li>{{ $e }}</li>@endforeach
+                    </ul>
+                </div>
+            @endif
+
+            <div class="row g-3">
+
+                {{-- KOLOM KIRI --}}
+                <div class="col-lg-8">
+
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label required">Judul</label>
+                                <input type="text" id="title" name="title" class="form-control"
+                                       value="{{ old('title', $article->title) }}" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Slug <span class="text-muted">(kosongkan untuk otomatis)</span></label>
+                                <input type="text" id="slug" name="slug" class="form-control"
+                                       value="{{ old('slug', $article->slug) }}">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label required">Konten</label>
+                                <textarea id="content" name="content">{{ old('content', $article->content) }}</textarea>
+                            </div>
+
+                            <div>
+                                <label class="form-label">Ringkasan (excerpt)</label>
+                                <textarea id="excerpt" name="excerpt" rows="3" maxlength="300"
+                                          class="form-control">{{ old('excerpt', $article->excerpt) }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- SEO --}}
+                    <div class="card mb-3">
+                        <div class="card-header"><h3 class="card-title">SEO</h3></div>
+                        <div class="card-body">
+
+                            <div class="mb-3">
+                                <label class="form-label">Focus keyword</label>
+                                <input type="text" id="focus_keyword" name="focus_keyword" class="form-control"
+                                       value="{{ old('focus_keyword', $article->focus_keyword) }}">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Meta title <small id="mt-count" class="text-muted"></small></label>
+                                <input type="text" id="meta_title" name="meta_title" maxlength="70" class="form-control"
+                                       value="{{ old('meta_title', $article->meta_title) }}">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Meta description <small id="md-count" class="text-muted"></small></label>
+                                <textarea id="meta_description" name="meta_description" maxlength="170" rows="3"
+                                          class="form-control">{{ old('meta_description', $article->meta_description) }}</textarea>
+                            </div>
+
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Canonical URL <span class="text-muted">(opsional)</span></label>
+                                    <input type="url" name="canonical_url" class="form-control"
+                                           value="{{ old('canonical_url', $article->canonical_url) }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Gambar share / OG image <span class="text-muted">(opsional)</span></label>
+                                    <input type="file" name="og_image" accept="image/*" class="form-control">
+                                </div>
+                            </div>
+
+                            <label class="form-check mb-4">
+                                <input type="checkbox" name="noindex" value="1" class="form-check-input"
+                                       @checked(old('noindex', $article->noindex))>
+                                <span class="form-check-label">Jangan diindex Google (noindex)</span>
+                            </label>
+
+                            <div class="form-label">Preview hasil Google</div>
+                            <div class="serp border rounded p-3 mb-4 bg-white">
+                                <div id="pv-url" style="color:#188038;font-size:13px"></div>
+                                <div id="pv-title" style="color:#1a0dab;font-size:19px"></div>
+                                <div id="pv-desc" style="color:#4d5156;font-size:13px"></div>
+                            </div>
+
+                            <div class="form-label">Analisis</div>
+                            <ul id="seo-checks" class="list-unstyled mb-0"></ul>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- KOLOM KANAN --}}
+                <div class="col-lg-4">
+
+                    <div class="card mb-3">
+                        <div class="card-header"><h3 class="card-title">Publikasi</h3></div>
+                        <div class="card-body">
+                            <label class="form-label">Status</label>
+                            <select name="status" class="form-select mb-3">
+                                <option value="draft" @selected(old('status', $article->status) === 'draft')>Draft</option>
+                                <option value="published" @selected(old('status', $article->status) === 'published')>Terbit</option>
+                            </select>
+                            <button type="submit" class="btn btn-dark w-100">Simpan</button>
+                        </div>
+                    </div>
+
+                    <div class="card mb-3">
+                        <div class="card-header"><h3 class="card-title">Gambar utama</h3></div>
+                        <div class="card-body">
+                            @if($article->featured_image)
+                                <img src="{{ asset('storage/'.$article->featured_image) }}" alt=""
+                                     class="img-fluid rounded mb-2">
+                            @endif
+                            <input type="file" name="featured_image" accept="image/*" class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="card mb-3">
+                        <div class="card-header"><h3 class="card-title">Kategori</h3></div>
+                        <div class="card-body">
+                            @php
+                                $allCategories = \App\Models\Category::orderBy('name')->get();
+                                $selectedCats  = old('categories', $article->categories->pluck('id')->all());
+                            @endphp
+                            @forelse($allCategories as $c)
+                                <label class="form-check">
+                                    <input type="checkbox" name="categories[]" value="{{ $c->id }}"
+                                           class="form-check-input" @checked(in_array($c->id, $selectedCats))>
+                                    <span class="form-check-label">{{ $c->name }}</span>
+                                </label>
+                            @empty
+                                <div class="text-muted">Belum ada kategori.</div>
+                            @endforelse
+                        </div>
+                    </div>
+
+                    <div class="card mb-3">
+                        <div class="card-header"><h3 class="card-title">Tag</h3></div>
+                        <div class="card-body">
+                            <input type="text" name="tags" class="form-control"
+                                   placeholder="pisahkan dengan koma"
+                                   value="{{ old('tags', $article->tags->pluck('name')->implode(', ')) }}">
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
 </form>
 @endsection
 
 @push('js')
-<script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/classic/ckeditor.js"></script>
 <script>
 const $ = id => document.getElementById(id);
 let editor;
@@ -107,7 +214,6 @@ function analyze() {
     const words = text ? text.split(' ').length : 0;
     const firstP = (html.match(/<p>(.*?)<\/p>/i) || [,''])[1].replace(/<[^>]+>/g,'').toLowerCase();
 
-    // counter + preview
     $('mt-count').textContent = `(${$('meta_title').value.length}/70)`;
     $('md-count').textContent = `(${$('meta_description').value.length}/170)`;
     $('pv-url').textContent   = `antosaarchitect.com › artikel › ${slug}`;

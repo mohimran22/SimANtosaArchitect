@@ -70,6 +70,11 @@ Route::domain($homeDomain)->group(function () {
 Route::domain($simDomain)->get('/', function () {
     return redirect()->route('dashboard');
 });
+Route::domain($homeDomain)->get('/robots.txt', fn () => response(
+    "User-agent: *\nAllow: /\nSitemap: " . url('/sitemap.xml') . "\n", 200, ['Content-Type' => 'text/plain']));
+
+Route::domain($simDomain)->get('/robots.txt', fn () => response(
+    "User-agent: *\nDisallow: /\n", 200, ['Content-Type' => 'text/plain']));
 Route::get('/', function () {
     return view('welcome');
 });

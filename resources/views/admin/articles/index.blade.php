@@ -1,6 +1,16 @@
 @extends('tablar::page')
 
 @section('content')
+<div class="page-header d-print-none">
+    <div class="container-xl">
+        <div class="row g-2 align-items-center">
+            <div class="col"><h2 class="page-title">Artikel</h2></div>
+            <div class="col-auto ms-auto">
+                <a href="{{ route('articles.create') }}" class="btn btn-dark">+ Tulis Artikel</a>
+            </div>
+        </div>
+    </div>
+</div>
 @php
     $dot = fn ($s) => is_null($s) ? '#9ca3af' : ($s >= 70 ? '#16a34a' : ($s >= 40 ? '#f59e0b' : '#dc2626'));
     $sortUrl = fn ($col) => request()->fullUrlWithQuery([
@@ -11,12 +21,9 @@
         . ((request('status') ?: null) === $key ? ' style="font-weight:bold;color:#000"' : '') . '>'
         . $label . ' (' . $n . ')</a>';
 @endphp
-
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h2 class="m-0">Artikel</h2>
-    <a href="{{ route('articles.create') }}" class="btn btn-primary">+ Tulis Artikel</a>
-</div>
-
+<div class="page-body">
+    <div class="container-xl">
+        <div class="card"><div class="card-body">
 @if(session('success'))
     <div class="alert alert-success">{{ session('success') }}</div>
 @endif
@@ -171,4 +178,7 @@ function rowAction(action, id, confirmMsg) {
     f.submit();
 }
 </script>
+        </div></div>
+    </div>
+</div>
 @endsection
