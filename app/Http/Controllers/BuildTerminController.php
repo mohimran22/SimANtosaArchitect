@@ -113,16 +113,16 @@ class BuildTerminController extends Controller
                     'description' => $validated['termin_description'][$index] ?? null,
                 ]);
             }
+            ProjectLevel::complete($project->id, 5);
+            // ProjectLevel::where([
+            //     'project_id' =>
+            //         $project->id,
 
-            ProjectLevel::where([
-                'project_id' =>
-                    $project->id,
-
-                'level_order' =>
-                    5,
-            ])->update([
-                'is_completed' => true,
-            ]);
+            //     'level_order' =>
+            //         5,
+            // ])->update([
+            //     'is_completed' => true,
+            // ]);
 
             ProjectLevel::where([
                 'project_id' => $project->id,

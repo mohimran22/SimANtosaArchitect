@@ -44,12 +44,12 @@ class PropertiDijualController extends Controller
                                         <i class="ti ti-edit"></i>
                                     </a>';
                     }
-                    // if (auth()->user()->can('lihat data customer')) {
-                    //     $buttons .= '<a href="' . route('jual.show', $r->id) . '" class="btn btn-icon btn-sm btn-dark me-1" title="Lihat">
-                    //                     <i class="ti ti-eye"></i>
-                    //                 </a>';
+                    if (auth()->user()->can('lihat data properti')) {
+                        $buttons .= '<a href="' . route('jual.show', $r->id) . '" class="btn btn-icon btn-sm btn-dark me-1" title="Lihat">
+                                        <i class="ti ti-eye"></i>
+                                    </a>';
 
-                    // }
+                    }
                     if (auth()->user()->can('hapus data properti')) {
                         $buttons .= '<button data-id="' . $r->id . '" class="btn btn-icon btn-sm btn-dark delete-properties" title="Hapus">
                                         <i class="ti ti-trash"></i>
@@ -91,7 +91,14 @@ class PropertiDijualController extends Controller
 
         return redirect()->route('jual.index', $properti)->with('success', 'Properti berhasil diperbarui.');
     }
+    public function show(PropertiDijual $properti)
+    {
+        abort_unless(auth()->user()->can('lihat data properti'), 403);
 
+        $properti->load(['fotos', 'province', 'city', 'district', 'subDistrict', 'postalCode', 'employee.user']);
+
+        return view('properti-dijual.show', ['listing' => $properti]);
+    }
     public function destroy(Request $request, PropertiDijual $properti)
     {
         $paths = array_filter([$properti->foto, $properti->agen_foto, ...$properti->fotos()->pluck('path')->all()]);

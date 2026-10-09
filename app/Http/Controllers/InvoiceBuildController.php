@@ -371,70 +371,19 @@ public function approve(Project $project, InvoiceBuild $invoice)
             );
         }
 
-        if ($currentTermin === 1) {
+        if ($currentTermin === 1 || $currentTermin === $lastTermin) {
+
+            ProjectLevel::complete($project->id, 7);
 
             ProjectLevel::where([
-                'project_id' =>
-                    $project->id,
-
-                'level_order' =>
-                    7,
-            ])->update([
-                'is_completed' =>
-                    true,
-            ]);
-
-
-            ProjectLevel::where([
-                'project_id' =>
-                    $project->id,
-
-                'level_order' =>
-                    8,
-            ])->update([
-                'is_started' =>
-                    true,
-            ]);
-
+                'project_id'  => $project->id,
+                'level_order' => 8,
+            ])->update(['is_started' => true]);
 
             $project->update([
-                'active_step' =>
-                    7,
+                'active_step' => $currentTermin === 1 ? 7 : 8,
             ]);
-        }
-
-        elseif ($currentTermin === $lastTermin) {
-
-            ProjectLevel::where([
-                'project_id' =>
-                    $project->id,
-
-                'level_order' =>
-                    7,
-            ])->update([
-                'is_completed' =>
-                    true,
-            ]);
-
-
-            ProjectLevel::where([
-                'project_id' =>
-                    $project->id,
-
-                'level_order' =>
-                    8,
-            ])->update([
-                'is_started' =>
-                    true,
-            ]);
-
-
-            $project->update([
-                'active_step' =>
-                    8,
-            ]);
-        }
-    });
+        }    });
 
     $event = 'invoice_build_created';
 

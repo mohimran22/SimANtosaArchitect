@@ -74,10 +74,10 @@
                     </div>
                 </div>
 
-                <a href="https://si.antosaarchitect.com/projects">Portofolio</a>
+                <a href="#">Portofolio</a>
                 <a href="#" class="{{ request()->is('/') ? 'active' : '' }}">Tentang Kami</a>
                 <a href="https://wa.me/6285189523863">Kontak Kami</a>
-
+                <a href="{{ url('/') }}#listing">Listing Rumah</a>
                 <a href="https://wa.me/6285189523863" target="_blank" rel="noopener" class="btn-contact">Hubungi Kami</a>
             </nav>
         </div>

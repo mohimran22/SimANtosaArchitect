@@ -370,7 +370,9 @@
     .vm-misi{ padding:0 20px; }
     .vm-misi ol{ padding-left:30px; }
 }
-
+html{ scroll-behavior:smooth; }
+#listing{ scroll-margin-top:80px; }
+@media (prefers-reduced-motion:reduce){ html{ scroll-behavior:auto; } }
 /* ===== Portofolio Proyek ===== */
 .pf{ background:#fff; padding:80px 0 90px; font-family:'Poppins',sans-serif; color:#222; }
 .pf-wrap{ width:min(100% - 40px,1140px); margin:0 auto; }

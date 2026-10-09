@@ -770,8 +770,7 @@ Route::middleware(['auth'])->group(function () {
         ->parameters(['tipe-properti' => 'tipe'])
         ->only(['index', 'store', 'update', 'destroy']);
     Route::resource('jual', PropertiDijualController::class)
-        ->parameters(['jual' => 'properti'])
-        ->except('show');
+        ->parameters(['jual' => 'properti']);
 });
 
 Route::middleware(['auth', 'permission:lihat data absensi'])->group(function () {
@@ -852,9 +851,6 @@ Route::get('/api/banks', function () {
     return \App\Models\Bank::select('id', 'name', 'code')->orderBy('name')->get();
 });
 
-
-
-// Admin (sesuaikan middleware dengan sistemmu)
 Route::middleware(['auth', 'role:Super-Admin'])->group(function () {
     Route::resource('articles', AdminArticleController::class)->except('show');
     Route::post('articles/bulk', [AdminArticleController::class, 'bulk'])->name('articles.bulk');

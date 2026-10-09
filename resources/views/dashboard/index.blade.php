@@ -279,78 +279,6 @@
                     </div>
 
                     <div class="card-body p-4">
-
-                        {{-- <div class="row g-3 mb-4">
-
-                            <div class="col-4">
-                                <a href="{{ route('projects.index') }}"
-                                class="text-decoration-none text-dark">
-
-                                    <div class="border rounded-3 p-3 text-center bg-light h-100 hover-card">
-                                        <div class="text-secondary small">Total Project</div>
-                                        <div class="fs-2 fw-bold">
-                                            {{ $totalProject }}
-                                        </div>
-                                    </div>
-
-                                </a>
-                            </div>
-
-                            <div class="col-4">
-                                <div class="border rounded-3 p-3 text-center bg-light">
-                                    <div class="text-secondary small">Sedang Dikerjakan</div>
-                                    <div class="fs-2 fw-bold text-primary">
-                                        {{ $runningBuild }}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-4">
-                                <div class="border rounded-3 p-3 text-center bg-light">
-                                    <div class="text-secondary small">Sudah Selesai</div>
-                                    <div class="fs-2 fw-bold text-primary">
-                                        {{ $completedBuild }}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-4">
-                                <a href="{{ route('projects.index', ['type' => 1]) }}"
-                                    class="text-decoration-none text-dark">
-                                    <div class="border rounded-3 p-3 text-center">
-                                        <div class="text-secondary small">Total Desain</div>
-                                        <div class="fs-3 fw-bold text-info">
-                                            {{ $totalDesign }}
-                                        </div>
-                                    </div>
-                                </a>
-                            </div>
-
-                            <div class="col-4">
-                                <a href="{{ route('projects.index', ['type' => 2]) }}"
-                                    class="text-decoration-none text-dark">
-                                    <div class="border rounded-3 p-3 text-center">
-                                        <div class="text-secondary small">Total RAB</div>
-                                        <div class="fs-3 fw-bold text-warning">
-                                            {{ $totalRab }}
-                                        </div>
-                                    </div>
-                                </a>
-                            </div>
-
-                            <div class="col-4">
-                                <a href="{{ route('projects.index', ['type' => 3]) }}"
-                                        class="text-decoration-none text-dark">
-                                    <div class="border rounded-3 p-3 text-center">
-                                        <div class="text-secondary small">Total Build</div>
-                                        <div class="fs-3 fw-bold text-success">
-                                            {{ $totalBuild }}
-                                        </div>
-                                    </div>
-                                </a>
-                            </div>
-
-                        </div> --}}
                         <div class="project-scroll mb-4">
 
                             {{-- Total Project --}}
@@ -425,54 +353,59 @@
                         <hr>
                         <div class="zh-subtitle">Pantau tahap proyek</div>
 
-<div class="zh-stage-wrap">
-    <table class="table align-middle mb-0">
-        <thead>
-            <tr>
-                <th>Proyek</th>
-                <th>Tahap</th>
-                <th>Di tahap ini sejak</th>
-                <th class="text-end">Status</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse($projectStages as $p)
-                @php $days = $p->days_idle; @endphp
-                <tr>
-                    <td>
-                        <div class="fw-semibold">{{ $p->name }}</div>
-                        <span class="badge bg-secondary-lt">{{ $p->type }}</span>
-                    </td>
-                    <td>
-                        {{ $p->stage }}
-                        <small class="text-secondary">({{ $p->stage_no }}/{{ $p->stage_total }})</small>
-                    </td>
-                    <td class="text-secondary">
-                        {{ $p->since?->translatedFormat('d M Y') ?? '-' }}
-                    </td>
-                    <td class="text-end">
-                        @if(is_null($days))
-                            <span class="badge bg-secondary-lt">Belum ada tanggal</span>
-                        @elseif($days >= 3)
-                            <span class="badge bg-danger">⚠ {{ $days }} hari belum pindah tahap</span>
-                        @elseif($days >= 2)
-                            <span class="badge bg-warning">⚠ {{ $days }} hari belum pindah tahap</span>
-                        @else
-                            <span class="badge bg-success-lt">Terbaru</span>
-                        @endif
-                    </td>
-                </tr>
-            @empty
-                <tr>
-                    <td colspan="4" class="text-center text-secondary py-4">
-                        Tidak ada proyek yang sedang berjalan.
-                    </td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
-</div>
-<hr>
+                        <div class="zh-stage-wrap">
+                            <table class="table align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Proyek</th>
+                                        <th>Tahap</th>
+                                        <th>Di tahap ini sejak</th>
+                                        <th class="text-end">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse($projectStages as $p)
+                                        @php $days = $p->days_idle; @endphp
+                                        <tr>
+                                            <td>
+                                                <div class="fw-semibold">{{ $p->name }}</div>
+                                                <span class="badge bg-secondary-lt">{{ $p->type }}</span>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-blue-lt">{{ $p->stage }}</span>
+                                                <small class="text-secondary ms-1">{{ $p->stage_no }}/{{ $p->stage_total }}</small>
+                                            </td>
+                                            <td class="text-secondary">
+                                                {{ $p->since?->translatedFormat('d M Y') ?? '-' }}
+                                            </td>
+                                            <td class="text-end">
+                                                @if(is_null($days))
+                                                    <span class="badge bg-secondary-lt">Belum ada tanggal</span>
+                                                @elseif($days >= 3)
+                                                    <span class="badge bg-danger">⚠ Segera Follow Up</span>
+                                                    <div class="small text-danger mt-1">{{ $days }} hari belum berpindah tahap</div>
+                                                @elseif($days >= 2)
+                                                    <span class="badge bg-warning">⚠ Segera Follow Up</span>
+                                                    <div class="small text-warning mt-1">{{ $days }} hari belum berpindah tahap</div>
+                                                @else
+                                                    <span class="badge bg-success-lt">Terbaru</span>
+                                                    <div class="small text-secondary mt-1">
+                                                        Baru pindah tahap {{ $days == 0 ? 'hari ini' : 'kemarin' }}
+                                                    </div>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="4" class="text-center text-secondary py-4">
+                                                Tidak ada proyek yang sedang berjalan.
+                                            </td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                        <hr>
                         <h6 class="mb-3">
                             🏗 Progress Tertinggi
                         </h6>

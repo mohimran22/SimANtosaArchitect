@@ -50,6 +50,26 @@
         default => 'Tonton video',
     };
 
+    // Thumbnail video: kolom video_thumbnail (opsional) > YouTube otomatis > TikTok lewat oEmbed (di-cache)
+    $videoThumb = null;
+    $thumbCol = $attr['video_thumbnail'] ?? null;
+    if (is_string($thumbCol) && Str::startsWith($thumbCol, ['http://', 'https://'])) {
+        $videoThumb = $thumbCol;
+    } elseif ($videoUrl) {
+        if (preg_match('~(?:youtu\.be/|youtube\.com/(?:watch\?(?:.*&)?v=|embed/|shorts/|live/))([\w-]{11})~', $videoUrl, $mv)) {
+            $videoThumb = 'https://img.youtube.com/vi/' . $mv[1] . '/hqdefault.jpg';
+        } elseif (Str::contains($videoUrl, 'tiktok')) {
+            $videoThumb = \Illuminate\Support\Facades\Cache::remember('tiktok-thumb-' . md5($videoUrl), now()->addHours(3), function () use ($videoUrl) {
+                try {
+                    $r = \Illuminate\Support\Facades\Http::timeout(3)->get('https://www.tiktok.com/oembed', ['url' => $videoUrl]);
+                    return $r->successful() ? $r->json('thumbnail_url') : null;
+                } catch (\Throwable $e) {
+                    return null;
+                }
+            });
+        }
+    }
+
     $mapsUrl = $attr['maps_url'] ?? null;
     $mapsUrl = (is_string($mapsUrl) && Str::startsWith($mapsUrl, ['http://', 'https://']))
         ? $mapsUrl
@@ -81,12 +101,12 @@
     // Detail lokasi
     $nm = fn ($rel) => optional($listing->$rel)->name ? Str::title(Str::lower($listing->$rel->name)) : null;
     $wilayah = array_filter([
-        'Alamat'    => $listing->lokasi,
-        'Kelurahan' => $nm('subDistrict'),
+        // 'Alamat'    => $listing->lokasi,
+        // 'Kelurahan' => $nm('subDistrict'),
         'Kecamatan' => $nm('district'),
         'Kota'      => $nm('city'),
         'Provinsi'  => $nm('province'),
-        'Kode pos'  => optional($listing->postalCode)->postal_code,
+        // 'Kode pos'  => optional($listing->postalCode)->postal_code,
     ]);
 
     // Spesifikasi lengkap (baris yang kosong otomatis tidak tampil)
@@ -139,7 +159,8 @@
     .ls-crumb span:last-child{ color:var(--ls-ink); }
 
     /* ===== Galeri ===== */
-    .ls-gallery{ display:grid; gap:10px; border-radius:14px; overflow:hidden; height:clamp(240px, 40vw, 470px); }
+    .ls-galwrap{ position:relative; }
+    .ls-gallery{ display:grid; gap:10px; border-radius:20px; overflow:hidden; aspect-ratio:2.71 / 1; }
     .ls-gallery button{ all:unset; position:relative; display:block; cursor:pointer; overflow:hidden; background:#eceef1; }
     .ls-gallery img{ width:100%; height:100%; object-fit:cover; display:block; transition:transform .25s; }
     .ls-gallery button:hover img{ transform:scale(1.03); }
@@ -153,10 +174,19 @@
     .ls-g4{ grid-template-columns:2fr 1fr 1fr; grid-template-rows:1fr 1fr; }
     .ls-g4 .ls-t1{ grid-row:span 2; }
     .ls-g5{ grid-template-columns:2fr 1fr 1fr; grid-template-rows:1fr 1fr; }
-    .ls-more{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; gap:8px;
-              background:rgba(0,0,0,.52); color:#fff; font-weight:600; font-size:15px; text-align:center; padding:8px; }
+    .ls-more{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; gap:10px;
+              background:rgba(0,0,0,.42); color:#fff; font-weight:600; font-size:18px; text-align:center; padding:8px; }
+    .ls-more i{ font-size:26px; }
     .ls-allbtn{ display:none; position:absolute; right:12px; bottom:12px; z-index:2; background:rgba(0,0,0,.72); color:#fff;
                 padding:8px 14px; border-radius:999px; font-size:13px; font-weight:600; align-items:center; gap:6px; }
+
+    /* Tombol favorit & bagikan melayang di pojok kanan atas galeri */
+    .ls-gact{ position:absolute; top:15px; right:15px; z-index:3; display:flex; gap:8px; }
+    .ls-gact button{ all:unset; box-sizing:border-box; cursor:pointer; width:44px; height:44px; border-radius:50%; background:#fff; color:#333;
+                     display:flex; align-items:center; justify-content:center; font-size:22px; box-shadow:0 1px 5px rgba(0,0,0,.18); }
+    .ls-gact button:hover{ color:var(--ls-red); }
+    .ls-gact button.on{ color:var(--ls-red); }
+    .ls-gact button:focus-visible{ outline:2px solid var(--ls-red); outline-offset:2px; }
 
     /* ===== Tab ===== */
     .ls-tabs{ position:sticky; top:var(--ls-top); z-index:20; display:flex; align-items:stretch; background:#fff;
@@ -208,9 +238,35 @@
     .ls-spec dt{ color:var(--ls-muted); font-weight:400; }
     .ls-spec dd{ margin:0; font-weight:500; color:#2b2b2b; text-align:right; }
     .ls-desc{ white-space:pre-line; line-height:1.8; font-size:16px; margin:0; color:#444; }
+    .ls-desc-wrap{ position:relative; }
+    .ls-desc-wrap.is-clamp{ max-height:212px; overflow:hidden;
+        -webkit-mask-image:linear-gradient(#000 62%, transparent 100%); mask-image:linear-gradient(#000 62%, transparent 100%); }
+    .ls-desc-wrap.is-clamp.open{ max-height:none; -webkit-mask-image:none; mask-image:none; }
+    .ls-more-btn{ all:unset; box-sizing:border-box; cursor:pointer; display:inline-flex; align-items:center; gap:10px; margin-top:14px;
+                  padding:12px 18px; border:1px solid var(--ls-line); border-radius:10px; background:#fff; font-size:16px; font-weight:600; color:#2b2b2b; }
+    .ls-more-btn[hidden]{ display:none; }
+    .ls-more-btn:hover{ border-color:#d3d5db; background:#fafafb; }
+    .ls-more-btn:focus-visible{ outline:2px solid var(--ls-red); outline-offset:2px; }
+    .ls-more-btn i{ font-size:18px; transition:transform .2s; }
+    .ls-more-btn[aria-expanded="true"] i{ transform:rotate(180deg); }
     .ls-dl{ display:grid; grid-template-columns:repeat(auto-fill, minmax(190px,1fr)); gap:14px 20px; margin:18px 0 0; }
     .ls-dl div span{ display:block; font-size:13px; color:var(--ls-muted); }
     .ls-dl div b{ font-weight:600; font-size:15px; }
+    .ls-info{ margin:18px 0 10px; font-size:15px; color:#666; line-height:1.7; }
+    .ls-info-btn{ all:unset; box-sizing:border-box; cursor:default; display:inline-flex; align-items:center; gap:10px;
+                  padding:12px 20px; border-radius:10px; background:#12c25a; color:#fff; font-size:15px; font-weight:600; }
+    .ls-info-btn i{ font-size:22px; }
+    .ls-info-btn:focus-visible{ outline:2px solid var(--ls-red); outline-offset:2px; }
+    .ls-vid{ position:relative; display:block; aspect-ratio:16 / 9; border-radius:14px; overflow:hidden; text-decoration:none;
+             background:linear-gradient(135deg,#2b2d33,#111214); }
+    .ls-vid img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; transition:transform .25s; }
+    .ls-vid:hover img{ transform:scale(1.03); }
+    .ls-vid-play{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:68px; height:68px; border-radius:50%;
+                  background:rgba(0,0,0,.55); border:2px solid #fff; color:#fff; display:flex; align-items:center; justify-content:center; font-size:30px; }
+    .ls-vid:hover .ls-vid-play{ background:var(--ls-red); border-color:var(--ls-red); }
+    .ls-vid-cap{ position:absolute; left:0; right:0; bottom:0; padding:28px 16px 12px; color:#fff; font-size:14px; font-weight:600;
+                 display:flex; align-items:center; gap:8px; background:linear-gradient(transparent, rgba(0,0,0,.7)); }
+    .ls-vid:focus-visible{ outline:3px solid var(--ls-red); outline-offset:2px; }
     .ls-maplink{ display:inline-flex; gap:8px; align-items:center; margin-top:20px; font-size:15px; font-weight:600; color:var(--ls-red) !important; text-decoration:none; }
 
     /* ===== Sidebar ===== */
@@ -289,7 +345,7 @@
         .ls{ padding-bottom:100px; }
     }
     @media (max-width:640px){
-        .ls-gallery{ display:block; height:clamp(220px, 62vw, 340px); position:relative; }
+        .ls-gallery{ display:block; aspect-ratio:auto; height:clamp(220px, 62vw, 340px); position:relative; border-radius:14px; }
         .ls-gallery .ls-t{ display:none; }
         .ls-gallery .ls-main{ width:100%; height:100%; }
         .ls-allbtn{ display:inline-flex; }
@@ -315,21 +371,28 @@
 
         {{-- ===== Galeri ===== --}}
         <div id="foto" style="scroll-margin-top:calc(var(--ls-top) + 16px)">
-            <div class="ls-gallery ls-g{{ $mode }}">
-                <button type="button" class="ls-main" data-open="0" aria-label="Buka foto utama">
-                    <img src="{{ $fotoList[0] }}" alt="{{ $listing->judul }}">
-                    @if ($total > 1)
-                        <span class="ls-allbtn"><i class="ti ti-photo"></i> Lihat semua {{ $total }} foto</span>
-                    @endif
-                </button>
-                @foreach ($thumbs as $i => $src)
-                    <button type="button" class="ls-t ls-t{{ $loop->iteration }}" data-open="{{ $i }}" aria-label="Buka foto {{ $i + 1 }}">
-                        <img src="{{ $src }}" alt="" loading="lazy">
-                        @if ($loop->last && $total > 5)
-                            <span class="ls-more"><i class="ti ti-photo"></i> Lihat semua {{ $total }} foto</span>
+            <div class="ls-galwrap">
+                <div class="ls-gallery ls-g{{ $mode }}">
+                    <button type="button" class="ls-main" data-open="0" aria-label="Buka foto utama">
+                        <img src="{{ $fotoList[0] }}" alt="{{ $listing->judul }}">
+                        @if ($total > 1)
+                            <span class="ls-allbtn"><i class="ti ti-library-photo"></i> Lihat semua {{ $total }} foto</span>
                         @endif
                     </button>
-                @endforeach
+                    @foreach ($thumbs as $i => $src)
+                        <button type="button" class="ls-t ls-t{{ $loop->iteration }}" data-open="{{ $i }}" aria-label="Buka foto {{ $i + 1 }}">
+                            <img src="{{ $src }}" alt="" loading="lazy">
+                            @if ($loop->last && $total > 5)
+                                <span class="ls-more"><i class="ti ti-library-photo"></i> Lihat semua {{ $total }} foto</span>
+                            @endif
+                        </button>
+                    @endforeach
+                </div>
+
+                <div class="ls-gact">
+                    <button type="button" data-fav aria-pressed="false" aria-label="Simpan ke favorit"><i class="ti ti-heart"></i></button>
+                    <button type="button" data-share aria-label="Bagikan"><i class="ti ti-share"></i></button>
+                </div>
             </div>
         </div>
 
@@ -341,8 +404,8 @@
             @if (filled($listing->deskripsi))<a class="t" href="#deskripsi">Deskripsi</a>@endif
             <a class="t" href="#lokasi">Detail Lokasi</a>
             <div class="ls-tab-actions">
-                <button type="button" id="lsFav" aria-pressed="false"><i class="ti ti-heart"></i><span>Favorit</span></button>
-                <button type="button" id="lsShare"><i class="ti ti-share"></i><span id="lsShareTxt">Bagikan</span></button>
+                <button type="button" id="lsFav" data-fav aria-pressed="false"><i class="ti ti-heart"></i><span>Favorit</span></button>
+                <button type="button" id="lsShare" data-share><i class="ti ti-share"></i><span id="lsShareTxt">Bagikan</span></button>
             </div>
         </nav>
 
@@ -381,8 +444,13 @@
                     <div class="ls-card">
                         <h2><i class="ti ti-player-play"></i> Video Properti</h2>
                         <p class="ls-sub">Tur singkat properti dalam format video.</p>
-                        <a class="ls-btn-out" href="{{ $videoUrl }}" target="_blank" rel="noopener">
-                            <i class="ti ti-player-play"></i> {{ $videoLabel }} <i class="ti ti-external-link"></i>
+                        <a class="ls-vid" href="{{ $videoUrl }}" target="_blank" rel="noopener" aria-label="{{ $videoLabel }}">
+                            @if ($videoThumb)
+                                <img src="{{ $videoThumb }}" alt="Thumbnail video {{ $listing->judul }}" loading="lazy" referrerpolicy="no-referrer"
+                                     onerror="this.remove()">
+                            @endif
+                            <span class="ls-vid-play"><i class="ti ti-player-play-filled"></i></span>
+                            <span class="ls-vid-cap">{{ $videoLabel }} <i class="ti ti-external-link"></i></span>
                         </a>
                     </div>
                 @endif
@@ -391,7 +459,12 @@
                 @if (filled($listing->deskripsi))
                     <div class="ls-card" id="deskripsi">
                         <h2 style="margin-bottom:16px">Tentang Listing Ini</h2>
-                        <p class="ls-desc">{{ $listing->deskripsi }}</p>
+                        <div class="ls-desc-wrap" id="lsDescWrap">
+                            <p class="ls-desc" id="lsDesc">{{ $listing->deskripsi }}</p>
+                        </div>
+                        <button type="button" class="ls-more-btn" id="lsDescBtn" aria-expanded="false" aria-controls="lsDesc" hidden>
+                            <span>Baca selengkapnya</span> <i class="ti ti-chevron-down"></i>
+                        </button>
                     </div>
                 @endif
 
@@ -422,7 +495,7 @@
                 {{-- Detail lokasi --}}
                 <div class="ls-card" id="lokasi">
                     <h2 style="margin-bottom:12px">Detail Lokasi</h2>
-                    <p class="ls-desc">{{ $listing->alamat_lengkap }}</p>
+                    {{-- <p class="ls-desc">{{ $listing->alamat_lengkap }}</p> --}}
                     @if ($wilayah)
                         <div class="ls-dl">
                             @foreach ($wilayah as $label => $nilai)
@@ -430,10 +503,14 @@
                             @endforeach
                         </div>
                     @endif
-                    <a class="ls-maplink" target="_blank" rel="noopener"
+                    <p class="ls-info">Info lebih lanjut dapat menghubungi</p>
+                    <button type="button" class="ls-info-btn">
+                        <i class="ti ti-brand-whatsapp"></i> Whatsapp Antosa Land
+                    </button>
+                    {{-- <a class="ls-maplink" target="_blank" rel="noopener"
                        href="{{ $mapsUrl }}">
                         <i class="ti ti-map-2"></i> Lihat di Google Maps
-                    </a>
+                    </a> --}}
                 </div>
 
             </div>
@@ -591,34 +668,60 @@
         });
     });
 
-    // ===== Favorit (disimpan di browser) =====
-    var fav = document.getElementById('lsFav');
+    // ===== Favorit (disimpan di browser; tombol galeri & tab saling sinkron) =====
+    var favBtns = document.querySelectorAll('[data-fav]');
     var favKey = 'ls-fav-{{ $listing->slug }}';
     function setFav(on) {
-        fav.classList.toggle('on', on);
-        fav.setAttribute('aria-pressed', on ? 'true' : 'false');
-        fav.querySelector('i').className = 'ti ' + (on ? 'ti-heart-filled' : 'ti-heart');
+        favBtns.forEach(function (b) {
+            b.classList.toggle('on', on);
+            b.setAttribute('aria-pressed', on ? 'true' : 'false');
+            b.querySelector('i').className = 'ti ' + (on ? 'ti-heart-filled' : 'ti-heart');
+        });
     }
     try { setFav(localStorage.getItem(favKey) === '1'); } catch (e) {}
-    fav.addEventListener('click', function () {
-        var on = !fav.classList.contains('on');
-        setFav(on);
-        try { on ? localStorage.setItem(favKey, '1') : localStorage.removeItem(favKey); } catch (e) {}
+    favBtns.forEach(function (b) {
+        b.addEventListener('click', function () {
+            var on = !b.classList.contains('on');
+            setFav(on);
+            try { on ? localStorage.setItem(favKey, '1') : localStorage.removeItem(favKey); } catch (e) {}
+        });
     });
 
     // ===== Bagikan =====
-    var share = document.getElementById('lsShare');
     var shareTxt = document.getElementById('lsShareTxt');
-    share.addEventListener('click', function () {
-        var data = { title: document.title, url: location.href };
-        if (navigator.share) { navigator.share(data).catch(function () {}); return; }
-        if (navigator.clipboard) {
-            navigator.clipboard.writeText(location.href).then(function () {
-                shareTxt.textContent = 'Tautan disalin';
-                setTimeout(function () { shareTxt.textContent = 'Bagikan'; }, 1800);
-            });
-        }
+    document.querySelectorAll('[data-share]').forEach(function (b) {
+        b.addEventListener('click', function () {
+            var data = { title: document.title, url: location.href };
+            if (navigator.share) { navigator.share(data).catch(function () {}); return; }
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(location.href).then(function () {
+                    shareTxt.textContent = 'Tautan disalin';
+                    setTimeout(function () { shareTxt.textContent = 'Bagikan'; }, 1800);
+                });
+            }
+        });
     });
+
+    // ===== Deskripsi: potong + "Baca selengkapnya" =====
+    var dWrap = document.getElementById('lsDescWrap');
+    var dBtn = document.getElementById('lsDescBtn');
+    if (dWrap && dBtn) {
+        var dTxt = dBtn.querySelector('span');
+        // Tampilkan tombol hanya kalau teks memang lebih panjang dari batas potong
+        dWrap.classList.add('is-clamp');
+        if (dWrap.scrollHeight - dWrap.clientHeight > 24) {
+            dBtn.hidden = false;
+        } else {
+            dWrap.classList.remove('is-clamp');
+        }
+        dBtn.addEventListener('click', function () {
+            var buka = !dWrap.classList.contains('open');
+            dWrap.classList.toggle('open', buka);
+            dBtn.setAttribute('aria-expanded', buka ? 'true' : 'false');
+            dTxt.textContent = buka ? 'Tampilkan lebih sedikit' : 'Baca selengkapnya';
+            if (!buka) document.getElementById('deskripsi').scrollIntoView({ behavior: kurangGerak ? 'auto' : 'smooth', block: 'start' });
+        });
+    }
 
     // ===== Jadwal survei: tanggal & waktu lain =====
     var other = document.getElementById('lsOther');
