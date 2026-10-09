@@ -56,13 +56,24 @@ public function index(Request $request)
     return view('menus.index');
 }
 
-    public function create()
-    {
-        $parents = Menu::whereNull('parent_id')->get();
-        $permissions = Permission::all();
+    // public function create()
+    // {
+    //     $parents = Menu::whereNull('parent_id')->get();
+    //     $permissions = Permission::all();
 
-        return view('menus.create', compact('parents', 'permissions'));
-    }
+    //     return view('menus.create', compact('parents', 'permissions'));
+    // }
+    public function create()
+{
+    $parents = Menu::whereNull('parent_id')
+        ->orWhereHas('parent', fn ($q) => $q->whereNull('parent_id'))
+        ->orderBy('text')
+        ->get();
+
+    $permissions = Permission::all();
+
+    return view('menus.create', compact('parents', 'permissions'));
+}
 
     public function store(Request $request)
 {

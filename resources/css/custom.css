@@ -1324,6 +1324,7 @@ input[type=number]::-webkit-outer-spin-button {
         border-color: #9ca3af;
         box-shadow: 0 0 0 .15rem rgba(0,0,0,.05);
     }
+
 @media (min-width: 992px){
 .footer.footer-transparent {
     display: flex;

@@ -34,39 +34,90 @@
         <div class="container-xl">
             <div class="row row-deck row-cards">
                 <div class="col-12">
-                    <div class="card">
-                        <div class="card-header">
-                            <h2 class="text-center mb-4">
-                                 Daftar Proyek
-                            </h2>
-                        </div>
+                <div class="card">
+                    {{-- Header --}}
+                    <div class="card-header">
+                        <h2 class="card-title mb-0">
+                            Daftar Proyek
+                        </h2>
+                    </div>
 
-                        <div class="table-responsive">
-                            <table id="tableProjects" class="table card-table table-vcenter text-nowrap">
-                                <thead>
-                                    <tr>
-                                        <th>No</th>
-                                        {{-- <th>Kode Proyek</th> --}}
-                                        <th>Nama Proyek</th>
-                                        <th>Jenis Proyek</th>
-                                        <th>Customer</th>
-                                        <th>Karyawan</th>
-                                        {{-- <th>Affiliator</th> --}}
-                                        <th>Tanggal</th>
-                                        <th>Lokasi</th>
-                                        {{-- <th>Provinsi</th>
-                                        <th>Kabupaten/Kota</th>
-                                        <th>Kecamatan</th>
-                                        <th>Kelurahan</th>
-                                        <th>Kode Pos</th> --}}
-                                        <th>Tahapan</th>
-                                        {{-- <th>Status</th> --}}
-                                        <th>Aksi</th>
-                                    </tr>
-                                </thead>
-                            </table>
+                    <div class="card-body border-bottom">
+                        <div class="row g-3 align-items-end">
+
+                            {{-- Tanggal Mulai Dari --}}
+                            <div class="col-12 col-md-6 col-lg-3">
+                                <label for="filter_start_date_from" class="form-label">
+                                    Tanggal Mulai Dari
+                                </label>
+                                <input type="date"
+                                    id="filter_start_date_from"
+                                    class="form-control">
+                            </div>
+
+                            {{-- Tanggal Mulai Sampai --}}
+                            <div class="col-12 col-md-6 col-lg-3">
+                                <label for="filter_start_date_to" class="form-label">
+                                    Tanggal Mulai Sampai
+                                </label>
+                                <input type="date"
+                                    id="filter_start_date_to"
+                                    class="form-control">
+                            </div>
+
+                            {{-- Jenis Proyek --}}
+                            <div class="col-12 col-md-6 col-lg-3">
+                                <label for="filter_project_type" class="form-label">
+                                    Jenis Proyek
+                                </label>
+                                <select id="filter_project_type" class="form-select">
+                                    <option value="">Semua Jenis Proyek</option>
+                                    <option value="1">Desain</option>
+                                    <option value="2">RAB</option>
+                                    <option value="3">Build</option>
+                                </select>
+                            </div>
+
+                            {{-- Tombol Filter --}}
+                            <div class="col-12 col-md-6 col-lg-3">
+                                <div class="d-flex gap-2">
+                                    <button type="button"
+                                        id="btnFilterProjects"
+                                        class="btn btn-dark">
+                                        <i class="ti ti-filter me-1"></i>
+                                        Filter
+                                    </button>
+
+                                    <button type="button"
+                                        id="btnResetProjects"
+                                        class="btn btn-outline-secondary">
+                                        <i class="ti ti-refresh me-1"></i>
+                                        Reset
+                                    </button>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
+                    <div class="table-responsive">
+                        <table id="tableProjects"
+                            class="table card-table table-vcenter text-nowrap">
+                            <thead>
+                                <tr>
+                                    <th>No</th>
+                                    <th>Nama Proyek</th>
+                                    <th>Jenis Proyek</th>
+                                    <th>Customer</th>
+                                    <th>Karyawan</th>
+                                    <th>Tanggal</th>
+                                    <th>Lokasi</th>
+                                    <th>Tahapan</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+                </div>
                 </div>
             </div>
         </div>
@@ -99,7 +150,8 @@
     <script>
         $(function() {
             const isMobile = window.innerWidth < 576;
-            const projectType = new URLSearchParams(window.location.search).get('type');
+            let projectType = new URLSearchParams(window.location.search).get('type');
+            if (projectType) $('#filter_project_type').val(projectType);
             const table = $('#tableProjects').DataTable({
                 scrollY: '500px',
                 scrollX: true,
@@ -114,26 +166,21 @@
                     url: '{{ route("projects.index") }}',
                     data: function (d) {
                         d.type = projectType;
+                        d.start_date_from = $('#filter_start_date_from').val();
+                        d.start_date_to = $('#filter_start_date_to').val();
+                        d.filter_project_type = $('#filter_project_type').val();
                     }
                 },
                 order: [[5, 'desc']],
                 columns: [
                     { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
-                    // { data: 'project_code', name: 'project_code' },
                     { data: 'project_name', name: 'project_name' },
-                    { data: 'project_type', name: 'project_type' },
+                    { data: 'project_type', name: 'project_type', orderable: true, searchable: true },
                     { data: 'customer', name: 'customer.user.fullname' },
                     { data: 'employee', name: 'employee.user.fullname' },
-                    // { data: 'affiliator', name: 'affiliator.user.fullname' },
                     { data: 'start_date', name: 'start_date', orderable: true },
                     { data: 'project_location', name: 'project_location' },
-                    // { data: 'province_name', name: 'province.name' },
-                    // { data: 'city_name', name: 'city.name'},
-                    // { data: 'district_name', name: 'district.name' },
-                    // { data: 'sub_district_name', name: 'sub_district_name' },
-                    // { data: 'postal_code', name: 'postal_code' },
-                    { data: 'current_level', name: 'current_level', orderable: true, searchable: false, },
-                    // { data: 'project_status', name: 'project_status' },
+                    { data: 'current_level', name: 'current_level', orderable: true, searchable: false },
                     { data: 'action', name: 'action', orderable: false, searchable: false }
                 ],
                 language: {
@@ -169,61 +216,67 @@
                     }
                 }
             });
+            $('#btnFilterProjects').on('click', function () {
+                table.ajax.reload();
+            });
 
-            // Delete user functionally
+            $('#btnResetProjects').on('click', function () {
+                $('#filter_start_date_from').val('');
+                $('#filter_start_date_to').val('');
+                $('#filter_project_type').val('');
+                projectType = null;
+                table.ajax.reload();
+            });
             $('table').on('click', '.delete-projects', function () {
-            const projectId = $(this).data('id');
+                const projectId = $(this).data('id');
 
-            Swal.fire({
-            title: 'Yakin ingin menghapus?',
-            text: "Data akan hilang secara permanen.",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Ya, hapus!',
-            cancelButtonText: 'Batal'
+                Swal.fire({
+                title: 'Yakin ingin menghapus?',
+                text: "Data akan hilang secara permanen.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Ya, hapus!',
+                cancelButtonText: 'Batal'
 
-            }).then((result) => {
+                }).then((result) => {
 
-                if (result.isConfirmed) {
-                    $.ajax({
+                    if (result.isConfirmed) {
+                        $.ajax({
 
-                        url: `/projects/${projectId}`,
-                        method: 'DELETE',
-                        data: {
-                            _token: '{{ csrf_token() }}',
-                        },
+                            url: `/projects/${projectId}`,
+                            method: 'DELETE',
+                            data: {
+                                _token: '{{ csrf_token() }}',
+                            },
 
-                        success: function (response) {
-                            if (response.status === 'success') {
-                                Swal.fire({
-                                    icon: 'success',
-                                    title: 'Berhasil!',
-                                    text: 'Data Proyek telah dihapus.',
-                                    timer: 2000,
-                                    showConfirmButton: false
-                            });
+                            success: function (response) {
+                                if (response.status === 'success') {
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Berhasil!',
+                                        text: 'Data Proyek telah dihapus.',
+                                        timer: 2000,
+                                        showConfirmButton: false
+                                });
 
-                        table.ajax.reload(null, false); // refresh datatable
-                        } else {
+                            table.ajax.reload(null, false); // refresh datatable
+                            } else {
 
-                            Swal.fire('Gagal', response.message || 'Tidak bisa menghapus data.', 'error');
+                                Swal.fire('Gagal', response.message || 'Tidak bisa menghapus data.', 'error');
+                            }
+                            },
+
+                        error: function () {
+
+                        Swal.fire('Error', 'Terjadi kesalahan saat menghapus.', 'error');
                         }
-                        },
 
-                    error: function () {
-
-                    Swal.fire('Error', 'Terjadi kesalahan saat menghapus.', 'error');
+                        });
                     }
-
-                    });
-                }
+                });
             });
-            });
-
-
-           
         });
     </script>
 

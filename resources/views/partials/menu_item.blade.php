@@ -9,6 +9,45 @@
     $userPermissions = $isSuperAdmin
         ? Permission::pluck('name')->toArray()     
         : (ActiveRole::permissions() ?? []);              
+
+    // Kunci query string yang dipakai untuk filter halaman (samakan dengan controller)
+    $filterKeys = ['type'];
+
+    // Deteksi aktif secara rekursif (mendukung menu level 3 + query string)
+    $isItemActive = function (array $item) use (&$isItemActive, $filterKeys) {
+        $kids = $item['children'] ?? [];
+
+        if (!empty($kids)) {
+            foreach ($kids as $kid) {
+                if ($isItemActive($kid)) return true;
+            }
+            return false;
+        }
+
+        if (($item['type'] ?? 'url') === 'route') {
+            return request()->routeIs($item['url']);
+        }
+
+        $parts   = parse_url($item['url'] ?? '') ?: [];
+        $path    = trim($parts['path'] ?? '', '/');
+        $current = trim(request()->path(), '/');
+
+        // URL menu punya query, mis. /projects?project_type=Desain
+        if (!empty($parts['query'])) {
+            if ($current !== $path) return false;
+            parse_str($parts['query'], $query);
+            foreach ($query as $key => $val) {
+                if ((string) request()->query($key) !== (string) $val) return false;
+            }
+            return true;
+        }
+
+        // URL tanpa query (mis. "Semua Proyek") tidak aktif saat filter dipakai
+        if (request()->anyFilled($filterKeys)) return false;
+
+        if ($path === '') return $current === '';
+        return $current === $path || str_starts_with($current, $path . '/');
+    };
 @endphp
 
 @foreach($menus as $menu)
@@ -54,15 +93,7 @@
 
         if (!$isActive && $hasChildren) {
             foreach ($filteredChildren as $child) {
-                $url = ltrim($child['url'], '/');
-                if ($child['type'] === 'route' && request()->routeIs($child['url'])) {
-                    $isActive = true;
-                    break;
-                }
-                if (
-                    $child['type'] === 'url' &&
-                    (request()->is($url) || request()->is($url . '/*'))
-                ) {
+                if ($isItemActive($child)) {
                     $isActive = true;
                     break;
                 }
@@ -99,24 +130,12 @@
                 <div class="submenu {{ $isActive ? 'show' : '' }}"
                     id="{{ $submenuId }}">
                     <ul class="nav nav-sm flex-column ms-4">
-                        @foreach($filteredChildren as $child)
-                            @php
-                            $url = trim($child['url'], '/');
-
-                            $childActive = $child['type'] === 'route'
-                                ? request()->routeIs($child['url'])
-                                : trim(request()->path(), '/') === $url;
-                            @endphp
-
-                            <li class="nav-item">
-                                <a href="{{ $child['type'] === 'route' ? route($child['url']) : url($child['url']) }}"
-                                class="nav-link {{ $childActive ? 'active' : '' }}"
-                                data-title="{{ $child['text'] }}">
-                                    <i class="{{ $child['icon'] ?? 'ti ti-point' }} me-2"></i>
-                                    {{ $child['text'] }}
-                                </a>
-                            </li>
-                        @endforeach
+                        @include('partials.menu_child', [
+                            'items' => $filteredChildren,
+                            'userPermissions' => $userPermissions,
+                            'isItemActive' => $isItemActive,
+                            'parentKey' => $submenuId,
+                        ])
                     </ul>
                 </div>
             @endif
@@ -166,6 +185,23 @@ document.querySelectorAll('[data-submenu]').forEach(menu => {
 
     });
 
+});
+</script>
+<script>
+// Toggle submenu level 3 (mis. Daftar Proyek -> Desain / RAB / Build)
+document.querySelectorAll('[data-submenu-l3]').forEach(toggle => {
+    toggle.addEventListener('click', function (e) {
+        e.preventDefault();
+
+        // mode collapsed: level 3 selalu tampil di floating panel
+        if (document.documentElement.classList.contains('sidebar-collapsed')) return;
+
+        const target = document.getElementById(this.dataset.submenuL3);
+        if (!target) return;
+
+        target.classList.toggle('show');
+        this.classList.toggle('open');
+    });
 });
 </script>
 @endpush
@@ -531,5 +567,43 @@ document.querySelectorAll('[data-submenu]').forEach(menu => {
         visibility:visible !important;
     }
 
+}
+
+/* ===== SUBMENU LEVEL 3 ===== */
+.submenu-l3 {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height .25s ease, opacity .2s ease;
+}
+
+.submenu-l3.show {
+    max-height: 300px;
+    opacity: 1;
+}
+
+.submenu .submenu-l3 .nav {
+    margin-left: 0 !important;
+    padding-left: 14px;
+}
+
+/* panah toggle di dalam submenu (lawan rule .submenu .nav-link span) */
+.submenu .nav-link .submenu-arrow {
+    flex: 0 0 7px;
+    width: 7px;
+    height: 7px;
+    min-width: 7px;
+}
+
+/* toggle yang punya anak aktif */
+.submenu .nav-link.open {
+    font-weight: 600;
+}
+
+/* collapsed: level 3 selalu terbuka di dalam floating panel */
+.sidebar-collapsed .submenu-l3 {
+    max-height: none;
+    overflow: visible;
+    opacity: 1;
 }
 </style>

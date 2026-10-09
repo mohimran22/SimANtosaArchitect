@@ -82,14 +82,39 @@ if ($request->filled('type')) {
     $query->where('project_type', (int) $request->type);
 }
 
+// Filter rentang tanggal mulai
+if ($request->filled('start_date_from')) {
+    $query->where(
+        'projects.start_date',
+        '>=',
+        $request->start_date_from
+    );
+}
+
+if ($request->filled('start_date_to')) {
+    $query->where(
+        'projects.start_date',
+        '<=',
+        $request->start_date_to
+    );
+}
+
+// Filter jenis proyek dari dropdown
+if ($request->filled('filter_project_type')) {
+    $query->where(
+        'projects.project_type',
+        (int) $request->filter_project_type
+    );
+}
+
     if ($request->ajax()) {
 
-        $statusLabel = [
-            1 => 'Proses',
-            2 => 'Revisi',
-            3 => 'Butuh Persetujuan',
-            4 => 'Selesai'
-        ];
+        // $statusLabel = [
+        //     1 => 'Proses',
+        //     2 => 'Revisi',
+        //     3 => 'Butuh Persetujuan',
+        //     4 => 'Selesai'
+        // ];
 
         return DataTables::of($query)
         ->addIndexColumn()
@@ -111,20 +136,20 @@ if ($request->filled('type')) {
         })
 
 
-        ->addColumn('project_status', function ($row) use ($statusLabel) {
+        // ->addColumn('project_status', function ($row) use ($statusLabel) {
 
-            $label = $statusLabel[$row->project_status] ?? 'Tidak Diketahui';
+        //     $label = $statusLabel[$row->project_status] ?? 'Tidak Diketahui';
 
-            $color = match ($row->project_status) {
-                1 => 'info',
-                2 => 'danger',
-                3 => 'warning',
-                4 => 'success',
-                default => 'secondary'
-            };
+        //     $color = match ($row->project_status) {
+        //         1 => 'info',
+        //         2 => 'danger',
+        //         3 => 'warning',
+        //         4 => 'success',
+        //         default => 'secondary'
+        //     };
 
-            return '<span class="badge bg-' . $color . '">' . $label . '</span>';
-        })
+        //     return '<span class="badge bg-' . $color . '">' . $label . '</span>';
+        // })
 
         ->addColumn('current_level', function ($row) {
             $current = $row->levels
@@ -164,13 +189,17 @@ if ($request->filled('type')) {
             $query->orderBy('projects.start_date', $order);
         })
 
+        ->orderColumn('project_type', function ($query, $order) {
+            $query->orderBy('projects.project_type', $order);
+        })
+
         ->orderColumn('current_level', function ($query, $order) {
             $query->orderByRaw(
                 'current_level_order ' . (strtolower($order) === 'asc' ? 'asc' : 'desc') . ' NULLS LAST'
             );
         })
 
-        ->rawColumns(['current_level', 'action', 'project_status', 'project_name'])
+        ->rawColumns(['current_level', 'action', 'project_name'])
         ->make(true);
     }
 

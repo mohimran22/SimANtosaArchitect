@@ -15,6 +15,33 @@ class ViewServiceProvider extends ServiceProvider
         //
     }
 
+//     public function boot(): void
+// {
+//     View::composer('tablar::partials.navbar.sidebar', function ($view) {
+//         $user = Auth::user();
+//         if (!$user) return;
+
+//         $cacheKey = 'menus_for_user_' . $user->id;
+
+//         $menus = Cache::remember($cacheKey, now()->addMinutes(1), function () use ($user) {
+//             return Menu::whereNull('parent_id')
+//                 ->where('is_active', true)
+//                 ->orderBy('order')
+//                 ->with(['children' => fn($q) => $q->where('is_active', true)->orderBy('order')])
+//                 ->get()
+//                 ->filter(fn($menu) => $menu->isVisibleFor($user))
+//                 ->map(function ($menu) {
+//                     $menuArray = $menu->toArray(); // convert ke array biar aman di Blade
+//                     $menuArray['children'] = $menu->children->toArray();
+//                     return $menuArray;
+//                 })
+//                 ->values()
+//                 ->toArray(); // biar hasil akhir array, bukan Collection
+//         });
+
+//         $view->with('menus', $menus);
+//     });
+// }
     public function boot(): void
 {
     View::composer('tablar::partials.navbar.sidebar', function ($view) {
@@ -27,20 +54,22 @@ class ViewServiceProvider extends ServiceProvider
             return Menu::whereNull('parent_id')
                 ->where('is_active', true)
                 ->orderBy('order')
-                ->with(['children' => fn($q) => $q->where('is_active', true)->orderBy('order')])
+                ->with(['children' => fn ($q) => $q
+                    ->where('is_active', true)
+                    ->orderBy('order')
+                    ->with(['children' => fn ($q2) => $q2
+                        ->where('is_active', true)
+                        ->orderBy('order')
+                    ])
+                ])
                 ->get()
-                ->filter(fn($menu) => $menu->isVisibleFor($user))
-                ->map(function ($menu) {
-                    $menuArray = $menu->toArray(); // convert ke array biar aman di Blade
-                    $menuArray['children'] = $menu->children->toArray();
-                    return $menuArray;
-                })
+                ->filter(fn ($menu) => $menu->isVisibleFor($user))
+                ->map(fn ($menu) => $menu->toArray())
                 ->values()
-                ->toArray(); // biar hasil akhir array, bukan Collection
+                ->toArray();
         });
 
         $view->with('menus', $menus);
     });
 }
-
 }
