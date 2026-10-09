@@ -1,6 +1,6 @@
 @extends('layouts.website')
 @section('content')
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=Saira:wght@600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=Saira:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{ --accent:#ffb000; }
 
@@ -453,6 +453,107 @@ html{ scroll-behavior:smooth; }
     .pf{ padding:60px 0; }
     .pf-grid{ grid-template-columns:1fr; }
 }
+
+/* ===== Portfolio / Artikel ===== */
+.pfo{ background:#000; color:#fff; padding:150px 0 110px; font-family:'Poppins',sans-serif; text-align:center; }
+.pfo-wrap{ width:min(100% - 40px,1425px); margin:0 auto; }
+.pfo h2{ font-size:clamp(30px,3.4vw,48px); font-weight:600; margin:0 0 26px; color:#fff; }
+.pfo-sub{ font-size:clamp(15px,1.4vw,20px); font-weight:400; margin:0 0 80px; color:#fff; }
+.pfo-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:0; }
+.pfo-item{ position:relative; display:block; aspect-ratio:475/261; overflow:hidden; background:#000; color:#fff; text-decoration:none; }
+.pfo-item img{ width:100%; height:100%; object-fit:cover; display:block; transition:transform .5s ease; }
+.pfo-item:hover img{ transform:scale(1.05); }
+.pfo-item::after{ content:""; position:absolute; inset:0; background:rgba(0,0,0,0); transition:background .3s; }
+.pfo-item:hover::after{ background:rgba(0,0,0,.35); }
+.pfo-text{ display:flex; align-items:center; justify-content:center; padding:24px 30px; }
+.pfo-text span{ font-family:'Saira',sans-serif; font-weight:700; font-size:clamp(20px,2.1vw,30px); line-height:1.3; }
+.pfo-btn-wrap{ margin-top:85px; }
+.pfo-btn{
+    display:inline-block; background:#f9b719; color:#000; font-family:'Saira',sans-serif; font-weight:500;
+    font-size:20px; padding:15px 33px; border-radius:3px; text-decoration:none; transition:background .2s;
+}
+.pfo-btn:hover{ background:#e0a30e; color:#000; }
+@media (max-width:1000px){ .pfo-grid{ grid-template-columns:repeat(2,1fr); } .pfo{ padding:100px 0 80px; } .pfo-sub{ margin-bottom:50px; } }
+@media (max-width:560px){ .pfo-grid{ grid-template-columns:1fr; } .pfo-btn-wrap{ margin-top:50px; } }
+
+/* ===== Klien Kami ===== */
+.kl{ background:#fff; color:#222; padding:190px 0 200px; text-align:center; font-family:'Saira',sans-serif; }
+.kl-wrap{ width:min(100% - 40px,1100px); margin:0 auto; }
+.kl h2{ font-family:'Saira',sans-serif; font-size:clamp(32px,3.4vw,48px); font-weight:700; margin:0 0 28px; color:#1f1f1f; }
+.kl-sub{ font-size:clamp(15px,1.4vw,20px); font-weight:400; margin:0 0 110px; color:#222; }
+.kl-grid{ display:grid; grid-template-columns:repeat(3,1fr); row-gap:70px; align-items:center; justify-items:center; }
+.kl-item{ display:flex; align-items:center; justify-content:center; width:100%; height:135px; padding:0 24px; }
+.kl-item img{ max-width:290px; width:100%; max-height:135px; object-fit:contain; display:block; transition:transform .3s; }
+a.kl-item:hover img{ transform:scale(1.06); }
+@media (max-width:760px){
+    .kl{ padding:100px 0 100px; }
+    .kl-sub{ margin-bottom:50px; }
+    .kl-grid{ grid-template-columns:repeat(2,1fr); row-gap:30px; }
+    .kl-item{ height:100px; padding:0 12px; }
+}
+
+/* ===== Review Pelanggan ===== */
+.rv{ background:radial-gradient(ellipse at top,#1a1a1a 0%,#0c0c0c 70%); color:#fff; padding:100px 0 120px; text-align:center; font-family:'Poppins',sans-serif; }
+.rv-wrap{ width:min(100% - 40px,1142px); margin:0 auto; }
+.rv-eyebrow{ font-size:16px; font-weight:400; margin:0 0 30px; color:#fff; }
+.rv h2{ font-family:'Saira',sans-serif; font-size:clamp(34px,4vw,60px); font-weight:700; margin:0 0 80px; color:#fff; }
+.rv-grid{ display:grid; grid-template-columns:repeat(2,1fr); column-gap:114px; row-gap:70px; text-align:left; }
+.rv-quote{ display:block; width:40px; height:34px; margin:0 0 36px; fill:#fff; }
+.rv-video{ position:relative; width:100%; aspect-ratio:16/9; background:#000 center/cover no-repeat; overflow:hidden; cursor:pointer; display:block; border:0; padding:0; }
+.rv-video iframe{ position:absolute; inset:0; width:100%; height:100%; border:0; }
+.rv-play{
+    position:absolute; left:50%; top:50%; width:62px; height:62px; transform:translate(-50%,-50%);
+    border:2px solid #fff; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    transition:transform .2s, background .2s;
+}
+.rv-play::before{ content:""; margin-left:4px; border-left:16px solid #fff; border-top:10px solid transparent; border-bottom:10px solid transparent; }
+.rv-video:hover .rv-play{ transform:translate(-50%,-50%) scale(1.1); background:rgba(0,0,0,.35); }
+.rv-text{ font-size:16px; line-height:2; font-weight:400; margin:22px 0 22px; color:#fff; }
+.rv-name{ font-size:20px; font-weight:600; margin:0; line-height:1.3; }
+.rv-role{ font-size:14px; letter-spacing:3px; text-transform:uppercase; margin:2px 0 0; color:#fff; }
+@media (max-width:900px){
+    .rv{ padding:70px 0 80px; }
+    .rv-grid{ grid-template-columns:1fr; row-gap:50px; }
+    .rv h2{ margin-bottom:50px; }
+}
+
+/* ===== CTA Konsultasi ===== */
+.cta{ background:#fff; padding:100px 0 125px; font-family:'Poppins',sans-serif; color:#111; }
+.cta-wrap{ width:min(100% - 40px,1140px); margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:40px; }
+.cta h2{ font-family:'Saira',sans-serif; font-size:clamp(28px,3vw,42px); font-weight:700; line-height:1.25; margin:0 0 22px; max-width:780px; }
+.cta p{ font-size:15px; margin:0; color:#222; }
+.cta p b{ font-weight:700; color:#000; }
+.cta-btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:14px; flex:0 0 auto;
+    background:#000; color:#fff; font-size:14px; font-weight:600; text-transform:uppercase; letter-spacing:.2px;
+    padding:0 44px; height:46px; min-width:208px; text-decoration:none; transition:background .2s;
+}
+.cta-btn:hover{ background:#22c55e; color:#fff; }
+.cta-btn svg{ width:16px; height:16px; fill:currentColor; }
+@media (max-width:800px){
+    .cta{ padding:60px 0; }
+    .cta-wrap{ flex-direction:column; align-items:flex-start; }
+}
+
+/* ===== FAQ ===== */
+.faq{ background:#f4f4f4; padding:100px 0 110px; font-family:'Poppins',sans-serif; color:#111; }
+.faq-wrap{ width:min(100% - 40px,900px); margin:0 auto; }
+.faq h2{ font-family:'Saira',sans-serif; font-size:clamp(28px,3vw,42px); font-weight:700; margin:0 0 44px; }
+.faq-item{ border-bottom:1px solid #d9d9d9; }
+.faq-item:last-child{ border-bottom:0; }
+.faq-item summary{
+    list-style:none; cursor:pointer; padding:13px 0 13px 30px; position:relative;
+    font-size:15px; font-weight:600; color:#000; line-height:1.5;
+}
+.faq-item summary::-webkit-details-marker{ display:none; }
+.faq-item summary::before{
+    content:""; position:absolute; left:14px; top:50%; transform:translateY(-50%);
+    border-left:5px solid #000; border-top:4px solid transparent; border-bottom:4px solid transparent;
+    transition:transform .2s;
+}
+.faq-item[open] summary::before{ transform:translateY(-50%) rotate(90deg); }
+.faq-item .faq-a{ padding:0 0 18px 30px; font-size:15px; line-height:1.8; color:#444; }
+@media (max-width:700px){ .faq{ padding:60px 0 70px; } }
 </style>
 
 <section class="hero">
@@ -484,7 +585,7 @@ html{ scroll-behavior:smooth; }
 </section>
 
 {{-- Tentang Perusahaan --}}
-<section class="about">
+<section class="about" id="tentang">
     <div class="about-text">
         <h2>Tentang Perusahaan</h2>
         <p>Antosa Architect adalah perusahaan terkemuka yang bergerak di bidang arsitektur, perencanaan pembangunan, jasa konstruksi, hingga renovasi bangunan.</p>
@@ -573,7 +674,7 @@ html{ scroll-behavior:smooth; }
         ],
     ];
 @endphp
-<section class="services">
+<section class="services" id="layanan">
     <h2>Layanan Jasa Arsitek Jember - Antosa Architect</h2>
     <div class="services-grid">
         @foreach ($services as $service)
@@ -695,6 +796,184 @@ html{ scroll-behavior:smooth; }
         </div>
     </div>
 </section>
+{{-- Portfolio / Artikel (3 kolom x 4 baris). Siap diganti data CMS: kirim $articles dari controller --}}
+@php
+    // Tiap item: title, image (boleh kosong => tampil kartu teks), url
+    $articles = collect($articles ?? [
+        ['title'=>'Proses Pemasangan Granit',            'image'=>'images/portfolio/1.webp',  'url'=>'#'],
+        ['title'=>'Rumah Minimalis Pagar Kayu',          'image'=>'images/portfolio/2.webp',  'url'=>'#'],
+        ['title'=>'Kampoeng Heritage Kajoetangan',       'image'=>'images/portfolio/3.webp',  'url'=>'#'],
+        ['title'=>'Wisata Kuliner Malam',                'image'=>'images/portfolio/4.webp',  'url'=>'#'],
+        ['title'=>'City Tour Malang Heritage',           'image'=>'images/portfolio/5.webp',  'url'=>'#'],
+        ['title'=>'Gazebo UNSIL Ambruk',                 'image'=>'images/portfolio/6.webp',  'url'=>'#'],
+        ['title'=>'Heritage Malang Arsitektur Cor Jesu', 'image'=>'images/portfolio/7.webp',  'url'=>'#'],
+        ['title'=>'Rumah Subsidi Industrialis Keren',    'image'=>'images/portfolio/8.webp',  'url'=>'#'],
+        ['title'=>'Jingle Antosa Architect',             'image'=>'images/portfolio/9.webp',  'url'=>'#'],
+        ['title'=>'Tips Kolom Bangunan Rata Tembok',     'image'=>'images/portfolio/10.webp', 'url'=>'#'],
+        ['title'=>'Desain Rumah Industrialis: Gaya Modern yang Tangguh dan Estetik', 'image'=>null, 'url'=>'#'],
+        ['title'=>'Perbedaan Besi Ulir dan Polos',       'image'=>'images/portfolio/12.webp', 'url'=>'#'],
+    ])->take(12);
+    // Normalisasi: bisa menerima model Article (title/judul, thumbnail/image/cover/featured_image, slug) atau array contoh
+    $artTitle = fn($a) => data_get($a, 'title') ?? data_get($a, 'judul');
+    $artPhoto = fn($a) => data_get($a, 'thumbnail') ?? data_get($a, 'image') ?? data_get($a, 'cover') ?? data_get($a, 'featured_image') ?? data_get($a, 'foto');
+    $artUrl   = fn($a) => data_get($a, 'url') ?? (data_get($a, 'slug') && Route::has('articles.show') ? route('articles.show', data_get($a, 'slug')) : '#');
+    $artImg = fn($p) => ! $p ? null : (str_starts_with($p, 'http') ? $p : (str_starts_with($p, 'images/') ? asset($p) : asset('storage/' . $p)));
+@endphp
+<section class="pfo" id="portfolio">
+    <div class="pfo-wrap">
+        <h2>Portfolio Kami</h2>
+        <p class="pfo-sub">Berikut beberapa hasil pekerjaan jasa arsitek jember - Antosa Architect</p>
+
+        <div class="pfo-grid">
+            @foreach ($articles as $a)
+                @php $img = $artImg($artPhoto($a)); @endphp
+                <a href="{{ $artUrl($a) }}" class="pfo-item {{ $img ? '' : 'pfo-text' }}" title="{{ $artTitle($a) }}">
+                    @if ($img)
+                        <img src="{{ $img }}" alt="{{ $artTitle($a) }}" loading="lazy">
+                    @else
+                        <span>{{ $artTitle($a) }}</span>
+                    @endif
+                </a>
+            @endforeach
+        </div>
+
+        <div class="pfo-btn-wrap">
+            <a href="{{ Route::has('artikel.index') ? route('artikel.index') : '#' }}" class="pfo-btn">Portfolio Selengkapnya</a>
+        </div>
+    </div>
+</section>
+{{-- Klien Kami (siap diganti data CMS: kirim $clients dari controller; tiap item name, logo, url opsional) --}}
+@php
+    $clients = collect($clients ?? [
+        ['name'=>'Galena Logistics',          'logo'=>'images/klien/galena.webp'],
+        ['name'=>'CV. Duta Timber Group',     'logo'=>'images/klien/duta-timber.webp'],
+        ['name'=>'Bamboe Badja Corp',         'logo'=>'images/klien/bamboe-badja.webp'],
+        ['name'=>'Sembilan Bintang Lestari',  'logo'=>'images/klien/sembilan-bintang.webp'],
+        ['name'=>'Bank Syariah Indonesia',    'logo'=>'images/klien/bsi.webp'],
+        ['name'=>'Grades',                    'logo'=>'images/klien/grades.webp'],
+        ['name'=>'Masjid Al-Bahmudah',        'logo'=>'images/klien/al-bahmudah.webp'],
+        ['name'=>'Multi Bangunan',            'logo'=>'images/klien/multi-bangunan.webp'],
+        ['name'=>'Villa Camelia Indah',       'logo'=>'images/klien/villa-camelia.webp'],
+        ['name'=>'Me Mak Enak Indonesia',     'logo'=>'images/klien/me-mak-enak.webp'],
+        ['name'=>'Mie Sakera',                'logo'=>'images/klien/mie-sakera.webp'],
+        ['name'=>'Yatim Mandiri',             'logo'=>'images/klien/yatim-mandiri.webp'],
+    ]);
+    $klImg = fn($p) => ! $p ? asset('images/antosa.png') : (str_starts_with($p, 'http') ? $p : (str_starts_with($p, 'images/') ? asset($p) : asset('storage/' . $p)));
+@endphp
+<section class="kl" id="klien">
+    <div class="kl-wrap">
+        <h2>Klien Kami</h2>
+        <p class="kl-sub">Mereka yang telah mempercayai jasa arsitek jember - Antosa Architect</p>
+
+        <div class="kl-grid">
+            @foreach ($clients as $c)
+                @php $href = data_get($c, 'url'); @endphp
+                @if ($href)
+                    <a href="{{ $href }}" target="_blank" rel="noopener" class="kl-item" title="{{ data_get($c, 'name') }}">
+                        <img src="{{ $klImg(data_get($c, 'logo')) }}" alt="{{ data_get($c, 'name') }}" loading="lazy">
+                    </a>
+                @else
+                    <div class="kl-item" title="{{ data_get($c, 'name') }}">
+                        <img src="{{ $klImg(data_get($c, 'logo')) }}" alt="{{ data_get($c, 'name') }}" loading="lazy">
+                    </div>
+                @endif
+            @endforeach
+        </div>
+    </div>
+</section>
+{{-- Review Pelanggan (video YouTube). Siap diganti data CMS: kirim $reviews dari controller.
+     'video' boleh berupa URL YouTube atau ID-nya saja; 'thumb' opsional (gambar sampul sendiri). --}}
+@php
+    $reviews = collect($reviews ?? [
+        ['video'=>'GANTI_ID_VIDEO_1','thumb'=>null,'text'=>'Saya sangat sangat berapresiasi kepada Antosa dimana dalam pembangunan Rumah Quran ini sangat sangat memuaskan, jadi memang kepercayaan itu sangat sangat mahal.','name'=>'Bapak Abdullah','role'=>'Pendiri Masjid & Rumah Al Quran Al Bahmudah'],
+        ['video'=>'GANTI_ID_VIDEO_2','thumb'=>null,'text'=>'Pekerjaannya bagus banget ya, perbedaannya jauh banget dari bentuk awalnya, lebih minimalis, Pasti pangling deh.','name'=>'Ibu Yenny','role'=>'Pemilik Rumah'],
+        ['video'=>'GANTI_ID_VIDEO_3','thumb'=>null,'text'=>'Semua Oke, nggak molor waktu pengerjaannya, tepat waktu, cara kerjanya juga bagus, sesuai ekspektasi.','name'=>'Ibu Siti Chotimah','role'=>'Pemilik Rumah'],
+        ['video'=>'GANTI_ID_VIDEO_4','thumb'=>null,'text'=>'Kalau mau bangun rumah kita emang harus hati-hati. apalagi membutuhkan biaya yang lumayan besar,itu yang melandasi kenapa kami memilih Antosa Architect. Kita menilainya antosa architect ini Amanah','name'=>'Bapak Herman Setio Budi','role'=>'Pemilik Rumah'],
+    ])->take(4);
+    $ytId = function ($v) {
+        if (preg_match('~(?:youtu\.be/|v=|embed/|shorts/)([A-Za-z0-9_-]{6,})~', (string) $v, $m)) return $m[1];
+        return trim((string) $v);
+    };
+@endphp
+<section class="rv" id="review">
+    <div class="rv-wrap">
+        <p class="rv-eyebrow">Review Pelanggan</p>
+        <h2>Apa Kata Mereka?</h2>
+
+        <div class="rv-grid">
+            @foreach ($reviews as $r)
+                @php
+                    $vid   = $ytId(data_get($r, 'video'));
+                    $thumb = data_get($r, 'thumb');
+                    $thumb = $thumb ? (str_starts_with($thumb, 'http') ? $thumb : (str_starts_with($thumb, 'images/') ? asset($thumb) : asset('storage/' . $thumb))) : "https://i.ytimg.com/vi/{$vid}/hqdefault.jpg";
+                @endphp
+                <figure style="margin:0">
+                    <svg class="rv-quote" viewBox="0 0 512 512" aria-hidden="true"><path d="M0 216C0 149.7 53.7 96 120 96h8c17.7 0 32 14.3 32 32s-14.3 32-32 32h-8c-30.9 0-56 25.1-56 56v8h64c35.3 0 64 28.7 64 64v64c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V216zm256 0c0-66.3 53.7-120 120-120h8c17.7 0 32 14.3 32 32s-14.3 32-32 32h-8c-30.9 0-56 25.1-56 56v8h64c35.3 0 64 28.7 64 64v64c0 35.3-28.7 64-64 64h-64c-35.3 0-64-28.7-64-64V216z"/></svg>
+                    <button type="button" class="rv-video" data-yt="{{ $vid }}" style="background-image:url('{{ $thumb }}')" aria-label="Putar video {{ data_get($r, 'name') }}">
+                        <span class="rv-play"></span>
+                    </button>
+                    <p class="rv-text">{{ data_get($r, 'text') }}</p>
+                    <p class="rv-name">{{ data_get($r, 'name') }}</p>
+                    <p class="rv-role">{{ data_get($r, 'role') }}</p>
+                </figure>
+            @endforeach
+        </div>
+    </div>
+</section>
+{{-- CTA Konsultasi --}}
+@php
+    $ctaWa = $waMarketing ?? preg_replace('/^0/', '62', preg_replace('/\D/', '', (string) config('antosa.wa_marketing')));
+@endphp
+<section class="cta" id="konsultasi">
+    <div class="cta-wrap">
+        <div>
+            <h2>Konsultasikan Kebutuhan Rumah Impian Anda</h2>
+            <p><b>Gratis.</b> dengan klik tombol Whatsapp berikut ini.</p>
+        </div>
+        <a href="https://wa.me/{{ $ctaWa }}?text={{ urlencode('Halo Antosa Architect, saya ingin konsultasi kebutuhan rumah impian saya.') }}" target="_blank" rel="noopener" class="cta-btn">
+            <svg viewBox="0 0 512 512" aria-hidden="true"><path d="M164.9 24.6c-7.7-18.6-28-28.5-47.4-23.2l-88 24C12.1 30.2 0 46 0 64c0 247.4 200.6 448 448 448 18 0 33.8-12.1 38.6-29.5l24-88c5.3-19.4-4.6-39.7-23.2-47.4l-96-40c-16.3-6.8-35.2-2.1-46.3 11.6L304.7 368C234.3 334.7 177.3 277.7 144 207.3L193.3 167c13.7-11.2 18.4-30 11.6-46.3l-40-96z"/></svg>
+            WhatsApp
+        </a>
+    </div>
+</section>
+
+{{-- FAQ (siap diganti data CMS: kirim $faqs berisi q & a) --}}
+@php
+    $faqs = collect($faqs ?? [
+        ['q'=>'Apa saja layanan yang ditawarkan?','a'=>'Kami melayani jasa desain arsitek (denah, tampak, 3D, RAB, gambar kerja), renovasi rumah, dan bangun rumah dari nol, termasuk pengawasan pekerjaan di lapangan.'],
+        ['q'=>'Apakah bisa hanya menggunakan jasa desain tanpa pembangunan?','a'=>'Bisa. Anda dapat memakai jasa desain saja, hasilnya berupa gambar kerja dan RAB yang bisa dibangun oleh kontraktor pilihan Anda sendiri.'],
+        ['q'=>'Apakah ada survei lokasi sebelum memulai proyek?','a'=>'Ya, kami melakukan survei lokasi untuk mengukur lahan dan memahami kondisi sekitar sebelum desain dibuat.'],
+        ['q'=>'Berapa biaya jasa desain arsitek?','a'=>'Biaya bergantung pada luas bangunan, tingkat kerumitan, dan lingkup layanan. Hubungi kami via WhatsApp untuk mendapatkan penawaran yang sesuai.'],
+        ['q'=>'Apakah bisa mengurus IMB/PBG juga?','a'=>'Bisa. Kami membantu pengurusan perizinan PBG (dahulu IMB) beserta kelengkapan dokumen teknisnya.'],
+        ['q'=>'Bagaimana sistem pembayaran jasa?','a'=>'Pembayaran dilakukan bertahap sesuai progres pekerjaan, dengan rincian disepakati di awal dalam surat perjanjian kerja.'],
+        ['q'=>'Apakah hasil desain bisa direvisi?','a'=>'Pembayaran dilakukan bertahap sesuai progres pekerjaan, dengan rincian disepakati di awal dalam surat perjanjian kerja.'],
+        ['q'=>'Apakah bisa menggunakan material sesuai permintaan klien?','a'=>'Pembayaran dilakukan bertahap sesuai progres pekerjaan, dengan rincian disepakati di awal dalam surat perjanjian kerja.'],
+        ['q'=>'Apakah ada garansi hasil kerja?','a'=>'Pembayaran dilakukan bertahap sesuai progres pekerjaan, dengan rincian disepakati di awal dalam surat perjanjian kerja.'],
+        ['q'=>'Di area mana saja layanan ini tersedia?','a'=>'Pembayaran dilakukan bertahap sesuai progres pekerjaan, dengan rincian disepakati di awal dalam surat perjanjian kerja.'],
+    ]);
+@endphp
+<section class="faq" id="faq">
+    <div class="faq-wrap">
+        <h2>Pertanyaan Yang Sering Diajukan</h2>
+        @foreach ($faqs as $f)
+            <details class="faq-item">
+                <summary>{{ data_get($f, 'q') }}</summary>
+                <div class="faq-a">{{ data_get($f, 'a') }}</div>
+            </details>
+        @endforeach
+    </div>
+    <script type="application/ld+json">
+    {!! json_encode([
+        '@context' => 'https://schema.org',
+        '@type'    => 'FAQPage',
+        'mainEntity' => $faqs->map(fn($f) => [
+            '@type' => 'Question',
+            'name'  => data_get($f, 'q'),
+            'acceptedAnswer' => ['@type' => 'Answer', 'text' => data_get($f, 'a')],
+        ])->values()->all(),
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) !!}
+    </script>
+</section>
 @endsection
 
 @push('scripts')
@@ -763,5 +1042,21 @@ document.addEventListener("DOMContentLoaded", function () {
         }, 400);
     }, 3500);
 });
+// Review: video YouTube dimuat saat diklik (lebih ringan)
+document.querySelectorAll('.rv-video').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+        var id = btn.dataset.yt;
+        if (!id) return;
+        var f = document.createElement('iframe');
+        f.src = 'https://www.youtube-nocookie.com/embed/' + encodeURIComponent(id) + '?autoplay=1&rel=0';
+        f.allow = 'accelerometer; autoplay; encrypted-media; picture-in-picture; fullscreen';
+        f.allowFullscreen = true;
+        f.title = 'Review pelanggan';
+        btn.innerHTML = '';
+        btn.style.cursor = 'default';
+        btn.appendChild(f);
+    }, { once: true });
+});
 </script>
+
 @endpush

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\PropertiDijual;
+use App\Models\Article;
 use Illuminate\Support\Facades\Schema;
 
 class HomeController extends Controller
@@ -17,8 +18,14 @@ class HomeController extends Controller
             $data = PropertiDijual::published()->with(['employee.user', 'province', 'city', 'district'])->withCount('fotos')->latest()->take(9)->get();
             $listings = $data->isNotEmpty() ? $data : null;
         }
-
-        return view('welcome', ['listings' => $listings]);
+        $articles = (class_exists(Article::class) && Schema::hasTable((new Article)->getTable()))
+            ? Article::query()
+                // ->where('status', 'published')   // sesuaikan dengan kolom/scope publish-mu
+                ->latest()                          // atau ->latest('published_at')
+                ->take(12)
+                ->get()
+            : collect();
+        return view('welcome', ['listings' => $listings, 'articles' => $articles]);
     }
 
     public function show(string $slug)
