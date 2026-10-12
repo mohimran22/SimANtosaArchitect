@@ -477,19 +477,15 @@ html{ scroll-behavior:smooth; }
 @media (max-width:560px){ .pfo-grid{ grid-template-columns:1fr; } .pfo-btn-wrap{ margin-top:50px; } }
 
 /* ===== Klien Kami ===== */
+/* ===== Klien Kami ===== */
 .kl{ background:#fff; color:#222; padding:190px 0 200px; text-align:center; font-family:'Saira',sans-serif; }
 .kl-wrap{ width:min(100% - 40px,1100px); margin:0 auto; }
 .kl h2{ font-family:'Saira',sans-serif; font-size:clamp(32px,3.4vw,48px); font-weight:700; margin:0 0 28px; color:#1f1f1f; }
-.kl-sub{ font-size:clamp(15px,1.4vw,20px); font-weight:400; margin:0 0 110px; color:#222; }
-.kl-grid{ display:grid; grid-template-columns:repeat(3,1fr); row-gap:70px; align-items:center; justify-items:center; }
-.kl-item{ display:flex; align-items:center; justify-content:center; width:100%; height:135px; padding:0 24px; }
-.kl-item img{ max-width:290px; width:100%; max-height:135px; object-fit:contain; display:block; transition:transform .3s; }
-a.kl-item:hover img{ transform:scale(1.06); }
+.kl-sub{ font-size:clamp(15px,1.4vw,20px); font-weight:400; margin:0 0 70px; color:#222; }
+.kl-img{ display:block; width:100%; max-width:1100px; height:auto; margin:0 auto; }
 @media (max-width:760px){
     .kl{ padding:100px 0 100px; }
-    .kl-sub{ margin-bottom:50px; }
-    .kl-grid{ grid-template-columns:repeat(2,1fr); row-gap:30px; }
-    .kl-item{ height:100px; padding:0 12px; }
+    .kl-sub{ margin-bottom:40px; }
 }
 
 /* ===== Review Pelanggan ===== */
@@ -542,17 +538,24 @@ a.kl-item:hover img{ transform:scale(1.06); }
 .faq-item{ border-bottom:1px solid #d9d9d9; }
 .faq-item:last-child{ border-bottom:0; }
 .faq-item summary{
-    list-style:none; cursor:pointer; padding:13px 0 13px 30px; position:relative;
-    font-size:15px; font-weight:600; color:#000; line-height:1.5;
+    list-style:none; cursor:pointer; padding:16px 0 16px 30px; position:relative;
+    font-size:16px; font-weight:600; color:#000; line-height:1.5; transition:color .2s;
 }
 .faq-item summary::-webkit-details-marker{ display:none; }
 .faq-item summary::before{
     content:""; position:absolute; left:14px; top:50%; transform:translateY(-50%);
-    border-left:5px solid #000; border-top:4px solid transparent; border-bottom:4px solid transparent;
-    transition:transform .2s;
+    border-left:5px solid currentColor; border-top:4px solid transparent; border-bottom:4px solid transparent;
 }
-.faq-item[open] summary::before{ transform:translateY(-50%) rotate(90deg); }
-.faq-item .faq-a{ padding:0 0 18px 30px; font-size:15px; line-height:1.8; color:#444; }
+/* terbuka: judul kuning + panah ke atas */
+.faq-item[open] summary{ color:#f9b719; }
+.faq-item[open] summary::before{
+    border-left:4px solid transparent; border-right:4px solid transparent;
+    border-top:0; border-bottom:5px solid currentColor;
+}
+.faq-a{ padding:8px 0 24px 14px; font-size:16px; line-height:1.9; color:#222; }
+.faq-a p{ margin:0 0 14px; }
+.faq-a ul, .faq-a ol{ margin:0; padding-left:42px; }
+.faq-a li{ margin-bottom:4px; }
 @media (max-width:700px){ .faq{ padding:60px 0 70px; } }
 </style>
 
@@ -821,7 +824,7 @@ a.kl-item:hover img{ transform:scale(1.06); }
 @endphp
 <section class="pfo" id="portfolio">
     <div class="pfo-wrap">
-        <h2>Portfolio Kami</h2>
+        <h2>Portofolio Kami</h2>
         <p class="pfo-sub">Berikut beberapa hasil pekerjaan jasa arsitek jember - Antosa Architect</p>
 
         <div class="pfo-grid">
@@ -838,57 +841,28 @@ a.kl-item:hover img{ transform:scale(1.06); }
         </div>
 
         <div class="pfo-btn-wrap">
-            <a href="{{ Route::has('artikel.index') ? route('artikel.index') : '#' }}" class="pfo-btn">Portfolio Selengkapnya</a>
+            <a href="{{ Route::has('artikel.index') ? route('artikel.index') : '#' }}" class="pfo-btn">Portofolio Selengkapnya</a>
         </div>
     </div>
 </section>
-{{-- Klien Kami (siap diganti data CMS: kirim $clients dari controller; tiap item name, logo, url opsional) --}}
-@php
-    $clients = collect($clients ?? [
-        ['name'=>'Galena Logistics',          'logo'=>'images/klien/galena.webp'],
-        ['name'=>'CV. Duta Timber Group',     'logo'=>'images/klien/duta-timber.webp'],
-        ['name'=>'Bamboe Badja Corp',         'logo'=>'images/klien/bamboe-badja.webp'],
-        ['name'=>'Sembilan Bintang Lestari',  'logo'=>'images/klien/sembilan-bintang.webp'],
-        ['name'=>'Bank Syariah Indonesia',    'logo'=>'images/klien/bsi.webp'],
-        ['name'=>'Grades',                    'logo'=>'images/klien/grades.webp'],
-        ['name'=>'Masjid Al-Bahmudah',        'logo'=>'images/klien/al-bahmudah.webp'],
-        ['name'=>'Multi Bangunan',            'logo'=>'images/klien/multi-bangunan.webp'],
-        ['name'=>'Villa Camelia Indah',       'logo'=>'images/klien/villa-camelia.webp'],
-        ['name'=>'Me Mak Enak Indonesia',     'logo'=>'images/klien/me-mak-enak.webp'],
-        ['name'=>'Mie Sakera',                'logo'=>'images/klien/mie-sakera.webp'],
-        ['name'=>'Yatim Mandiri',             'logo'=>'images/klien/yatim-mandiri.webp'],
-    ]);
-    $klImg = fn($p) => ! $p ? asset('images/antosa.png') : (str_starts_with($p, 'http') ? $p : (str_starts_with($p, 'images/') ? asset($p) : asset('storage/' . $p)));
-@endphp
+
 <section class="kl" id="klien">
     <div class="kl-wrap">
         <h2>Klien Kami</h2>
         <p class="kl-sub">Mereka yang telah mempercayai jasa arsitek jember - Antosa Architect</p>
-
-        <div class="kl-grid">
-            @foreach ($clients as $c)
-                @php $href = data_get($c, 'url'); @endphp
-                @if ($href)
-                    <a href="{{ $href }}" target="_blank" rel="noopener" class="kl-item" title="{{ data_get($c, 'name') }}">
-                        <img src="{{ $klImg(data_get($c, 'logo')) }}" alt="{{ data_get($c, 'name') }}" loading="lazy">
-                    </a>
-                @else
-                    <div class="kl-item" title="{{ data_get($c, 'name') }}">
-                        <img src="{{ $klImg(data_get($c, 'logo')) }}" alt="{{ data_get($c, 'name') }}" loading="lazy">
-                    </div>
-                @endif
-            @endforeach
-        </div>
+        <img class="kl-img" src="{{ asset('images/klien-kami.webp') }}"
+             alt="Klien Antosa Architect: Galena Logistics, CV. Duta Timber Group, Bamboe Badja Corp, Sembilan Bintang Lestari, Bank Syariah Indonesia, Grades, Masjid Al-Bahmudah, Multi Bangunan, Villa Camelia Indah, Me Mak Enak Indonesia, Mie Sakera, Yatim Mandiri"
+             loading="lazy">
     </div>
 </section>
 {{-- Review Pelanggan (video YouTube). Siap diganti data CMS: kirim $reviews dari controller.
      'video' boleh berupa URL YouTube atau ID-nya saja; 'thumb' opsional (gambar sampul sendiri). --}}
 @php
     $reviews = collect($reviews ?? [
-        ['video'=>'GANTI_ID_VIDEO_1','thumb'=>null,'text'=>'Saya sangat sangat berapresiasi kepada Antosa dimana dalam pembangunan Rumah Quran ini sangat sangat memuaskan, jadi memang kepercayaan itu sangat sangat mahal.','name'=>'Bapak Abdullah','role'=>'Pendiri Masjid & Rumah Al Quran Al Bahmudah'],
-        ['video'=>'GANTI_ID_VIDEO_2','thumb'=>null,'text'=>'Pekerjaannya bagus banget ya, perbedaannya jauh banget dari bentuk awalnya, lebih minimalis, Pasti pangling deh.','name'=>'Ibu Yenny','role'=>'Pemilik Rumah'],
-        ['video'=>'GANTI_ID_VIDEO_3','thumb'=>null,'text'=>'Semua Oke, nggak molor waktu pengerjaannya, tepat waktu, cara kerjanya juga bagus, sesuai ekspektasi.','name'=>'Ibu Siti Chotimah','role'=>'Pemilik Rumah'],
-        ['video'=>'GANTI_ID_VIDEO_4','thumb'=>null,'text'=>'Kalau mau bangun rumah kita emang harus hati-hati. apalagi membutuhkan biaya yang lumayan besar,itu yang melandasi kenapa kami memilih Antosa Architect. Kita menilainya antosa architect ini Amanah','name'=>'Bapak Herman Setio Budi','role'=>'Pemilik Rumah'],
+        ['video'=>'https://youtu.be/4IqNN-zueqg?si=9APLPBw1ECxc9_5f','thumb'=>null,'text'=>'Saya sangat sangat berapresiasi kepada Antosa dimana dalam pembangunan Rumah Quran ini sangat sangat memuaskan, jadi memang kepercayaan itu sangat sangat mahal.','name'=>'Bapak Abdullah','role'=>'Pendiri Masjid & Rumah Al Quran Al Bahmudah'],
+        ['video'=>'https://youtu.be/tMUpDTTwT9w?si=HTRQd2V-OJRBmLpn','thumb'=>null,'text'=>'Pekerjaannya bagus banget ya, perbedaannya jauh banget dari bentuk awalnya, lebih minimalis, Pasti pangling deh.','name'=>'Ibu Yenny','role'=>'Pemilik Rumah'],
+        ['video'=>'https://youtu.be/etKnltXYieQ?si=zqylriMOd1QkICXw','thumb'=>null,'text'=>'Semua Oke, nggak molor waktu pengerjaannya, tepat waktu, cara kerjanya juga bagus, sesuai ekspektasi.','name'=>'Ibu Siti Chotimah','role'=>'Pemilik Rumah'],
+        ['video'=>'https://youtu.be/LDAEL_U1H8E?si=Yjb1Uy2xh_sGqtZn','thumb'=>null,'text'=>'Kalau mau bangun rumah kita emang harus hati-hati. apalagi membutuhkan biaya yang lumayan besar,itu yang melandasi kenapa kami memilih Antosa Architect. Kita menilainya antosa architect ini Amanah','name'=>'Bapak Herman Setio Budi','role'=>'Pemilik Rumah'],
     ])->take(4);
     $ytId = function ($v) {
         if (preg_match('~(?:youtu\.be/|v=|embed/|shorts/)([A-Za-z0-9_-]{6,})~', (string) $v, $m)) return $m[1];
@@ -940,16 +914,32 @@ a.kl-item:hover img{ transform:scale(1.06); }
 {{-- FAQ (siap diganti data CMS: kirim $faqs berisi q & a) --}}
 @php
     $faqs = collect($faqs ?? [
-        ['q'=>'Apa saja layanan yang ditawarkan?','a'=>'Kami melayani jasa desain arsitek (denah, tampak, 3D, RAB, gambar kerja), renovasi rumah, dan bangun rumah dari nol, termasuk pengawasan pekerjaan di lapangan.'],
-        ['q'=>'Apakah bisa hanya menggunakan jasa desain tanpa pembangunan?','a'=>'Bisa. Anda dapat memakai jasa desain saja, hasilnya berupa gambar kerja dan RAB yang bisa dibangun oleh kontraktor pilihan Anda sendiri.'],
-        ['q'=>'Apakah ada survei lokasi sebelum memulai proyek?','a'=>'Ya, kami melakukan survei lokasi untuk mengukur lahan dan memahami kondisi sekitar sebelum desain dibuat.'],
-        ['q'=>'Berapa biaya jasa desain arsitek?','a'=>'Biaya bergantung pada luas bangunan, tingkat kerumitan, dan lingkup layanan. Hubungi kami via WhatsApp untuk mendapatkan penawaran yang sesuai.'],
-        ['q'=>'Apakah bisa mengurus IMB/PBG juga?','a'=>'Bisa. Kami membantu pengurusan perizinan PBG (dahulu IMB) beserta kelengkapan dokumen teknisnya.'],
-        ['q'=>'Bagaimana sistem pembayaran jasa?','a'=>'Pembayaran dilakukan bertahap sesuai progres pekerjaan, dengan rincian disepakati di awal dalam surat perjanjian kerja.'],
-        ['q'=>'Apakah hasil desain bisa direvisi?','a'=>'Pembayaran dilakukan bertahap sesuai progres pekerjaan, dengan rincian disepakati di awal dalam surat perjanjian kerja.'],
-        ['q'=>'Apakah bisa menggunakan material sesuai permintaan klien?','a'=>'Pembayaran dilakukan bertahap sesuai progres pekerjaan, dengan rincian disepakati di awal dalam surat perjanjian kerja.'],
-        ['q'=>'Apakah ada garansi hasil kerja?','a'=>'Pembayaran dilakukan bertahap sesuai progres pekerjaan, dengan rincian disepakati di awal dalam surat perjanjian kerja.'],
-        ['q'=>'Di area mana saja layanan ini tersedia?','a'=>'Pembayaran dilakukan bertahap sesuai progres pekerjaan, dengan rincian disepakati di awal dalam surat perjanjian kerja.'],
+        ['q'=>'Apa saja layanan yang ditawarkan?','a'=>'
+            <p>Kami menyediakan layanan lengkap mulai dari:</p>
+            <ul>
+                <li>Desain arsitektur rumah</li>
+                <li>Renovasi rumah lama</li>
+                <li>Pembangunan rumah baru</li>
+                <li>Gambar kerja &amp; RAB</li>
+                <li>Konsultasi desain</li>
+            </ul>'],
+        ['q'=>'Apakah bisa hanya menggunakan jasa desain tanpa pembangunan?','a'=>'Tentu bisa. Kami melayani jasa desain arsitektur saja, lengkap dengan gambar kerja dan RAB.'],
+        ['q'=>'Apakah ada survei lokasi sebelum memulai proyek?','a'=>'Ya. Survei lokasi adalah bagian penting dari proses awal untuk memahami kondisi lahan, orientasi matahari, kebutuhan klien, dan potensi desain.'],
+        ['q'=>'Berapa biaya jasa desain arsitek?','a'=>'Biaya desain tergantung pada luas bangunan, tingkat kerumitan desain, dan kebutuhan khusus klien. Hubungi kami untuk mendapatkan penawaran harga sesuai kebutuhan Anda.'],
+        ['q'=>'Apakah bisa mengurus IMB/PBG juga?','a'=>'Ya, kami dapat membantu proses perizinan seperti PBG (Persetujuan Bangunan Gedung) sesuai peraturan terbaru.'],
+        ['q'=>'Bagaimana sistem pembayaran jasa?','a'=>'
+            <p>Pembayaran dibagi dalam beberapa tahap, seperti:</p>
+            <ul>
+                <li>DP saat kesepakatan awal</li>
+                <li>Termin di tengah proses</li>
+                <li>Pelunasan saat proyek selesai (untuk pembangunan)</li>
+            </ul>'],
+        ['q'=>'Apakah hasil desain bisa direvisi?',
+            'a'=>'Ya, kami memberikan beberapa kali revisi (jumlah revisi disesuaikan dengan paket layanan) untuk memastikan desain sesuai keinginan Anda.'],
+        ['q'=>'Apakah bisa menggunakan material sesuai permintaan klien?',
+            'a'=>'Tentu. Kami terbuka dengan permintaan material tertentu, selama masih sesuai dengan standar teknis dan anggaran.'],
+        ['q'=>'Apakah ada garansi hasil kerja?','a'=>'Ya, untuk pembangunan kami memberikan garansi struktur dan pekerjaan sesuai perjanjian kontrak.'],
+        ['q'=>'Di area mana saja layanan ini tersedia?','a'=>'Kami melayani klien di Jember , Malang, Surabaya dan sekitarnya, serta layanan desain online untuk seluruh Indonesia'],
     ]);
 @endphp
 <section class="faq" id="faq">
@@ -958,7 +948,7 @@ a.kl-item:hover img{ transform:scale(1.06); }
         @foreach ($faqs as $f)
             <details class="faq-item">
                 <summary>{{ data_get($f, 'q') }}</summary>
-                <div class="faq-a">{{ data_get($f, 'a') }}</div>
+                <div class="faq-a">{!! data_get($f, 'a') !!}</div>
             </details>
         @endforeach
     </div>
@@ -969,7 +959,7 @@ a.kl-item:hover img{ transform:scale(1.06); }
         'mainEntity' => $faqs->map(fn($f) => [
             '@type' => 'Question',
             'name'  => data_get($f, 'q'),
-            'acceptedAnswer' => ['@type' => 'Answer', 'text' => data_get($f, 'a')],
+            'acceptedAnswer' => ['@type' => 'Answer', 'text' => trim(preg_replace('/\s+/', ' ', strip_tags(data_get($f, 'a'))))],
         ])->values()->all(),
     ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) !!}
     </script>
