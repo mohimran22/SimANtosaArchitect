@@ -26,11 +26,30 @@ class CategoryController extends Controller
         $data = $request->validate([
             'name' => 'required|string|max:100|unique:categories,name',
             'slug' => 'nullable|string|max:100|unique:categories,slug',
+            'parent_id' => 'nullable|integer|exists:categories,id',
+        ]);
+        $name     = trim(preg_replace('/\s+/', ' ', $data['name']));
+        $parentId = $data['parent_id'] ?? null;
+
+        // Jangan buat ganda (nama sama di induk yang sama)
+        $existing = Category::whereRaw('LOWER(name) = ?', [mb_strtolower($name)])
+            ->where('parent_id', $parentId)
+            ->first();
+
+        if ($existing) {
+            return response()->json($this->payload($existing, true));
+        }
+        $category = Category::create([
+            'name'      => $name,
+            'parent_id' => $parentId,
         ]);
 
-        Category::create($data);
+        return response()->json($this->payload($category, false), 201);
+    }
 
-        return redirect()->route('categories.index')->with('success', 'Category ditambahkan.');
+        private function payload(Category $c, bool $existing): array
+    {
+        return ['id' => $c->id, 'name' => $c->name, 'parent_id' => $c->parent_id, 'existing' => $existing];
     }
 
     public function edit(Category $cat)
@@ -50,7 +69,7 @@ class CategoryController extends Controller
         return redirect()->route('categories.index')->with('success', 'Tag diperbarui.');
     }
 
-    public function destroy(Tag $cat)
+    public function destroy(Category $cat)
     {
         $cat->articles()->detach();
         $cat->delete();

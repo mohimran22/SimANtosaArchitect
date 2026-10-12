@@ -206,22 +206,47 @@
                         </div>
                     </div>
 
+                    @php
+                        $catTree      = \App\Models\Category::flatTree();
+                        $selectedCats = old('categories', $article->categories->pluck('id')->all());
+                    @endphp
+
                     <div class="card mb-3">
                         <div class="card-header"><h3 class="card-title">Kategori</h3></div>
                         <div class="card-body">
-                            @php
-                                $allCategories = \App\Models\Category::orderBy('name')->get();
-                                $selectedCats  = old('categories', $article->categories->pluck('id')->all());
-                            @endphp
-                            @forelse($allCategories as $c)
-                                <label class="form-check">
-                                    <input type="checkbox" name="categories[]" value="{{ $c->id }}"
-                                           class="form-check-input" @checked(in_array($c->id, $selectedCats))>
-                                    <span class="form-check-label">{{ $c->name }}</span>
-                                </label>
-                            @empty
-                                <div class="text-muted">Belum ada kategori.</div>
-                            @endforelse
+
+                            <input type="search" id="cat-search" class="form-control form-control-sm mb-2" placeholder="Cari kategori…">
+
+                            <div id="cat-list" class="border rounded p-2" style="max-height:220px;overflow:auto">
+                                @foreach($catTree as $c)
+                                    <label class="form-check d-block cat-item"
+                                        data-id="{{ $c->id }}" data-depth="{{ $c->depth }}"
+                                        data-name="{{ mb_strtolower($c->name) }}"
+                                        style="margin-left:{{ $c->depth * 18 }}px">
+                                        <input type="checkbox" name="categories[]" value="{{ $c->id }}" class="form-check-input"
+                                            @checked(in_array($c->id, $selectedCats))>
+                                        <span class="form-check-label">{{ $c->name }}</span>
+                                    </label>
+                                @endforeach
+                                <div id="cat-empty" class="text-muted small" style="display:{{ $catTree->isEmpty() ? 'block' : 'none' }}">
+                                    Belum ada kategori.
+                                </div>
+                            </div>
+
+                            <a href="#" id="cat-toggle" class="d-inline-block mt-2 small">+ Tambah kategori baru</a>
+
+                            <div id="cat-new" class="mt-2" style="display:none">
+                                <input type="text" id="cat-name" class="form-control form-control-sm mb-2"
+                                    placeholder="Nama kategori" maxlength="100">
+                                <select id="cat-parent" class="form-select form-select-sm mb-2">
+                                    <option value="">— Tanpa induk —</option>
+                                    @foreach($catTree as $c)
+                                        <option value="{{ $c->id }}">{{ str_repeat('— ', $c->depth) }}{{ $c->name }}</option>
+                                    @endforeach
+                                </select>
+                                <button type="button" id="cat-add" class="btn btn-sm btn-outline-primary">Tambah kategori</button>
+                                <div id="cat-msg" class="small mt-2"></div>
+                            </div>
                         </div>
                     </div>
 
@@ -402,6 +427,122 @@ function renderSection(title, data) {
         </details>`;
     }
     return html + '</div>';
+}
+
+// ---------- Kategori ----------
+const CAT_URL  = @json(route('categories.store'));
+const catList  = $('cat-list');
+const catMsg   = $('cat-msg');
+
+// Cari kategori
+$('cat-search').addEventListener('input', e => {
+    const q = e.target.value.trim().toLowerCase();
+    catList.querySelectorAll('.cat-item').forEach(el =>
+        el.style.display = (!q || el.dataset.name.includes(q)) ? '' : 'none');
+});
+
+// Buka/tutup isian kategori baru
+$('cat-toggle').addEventListener('click', e => {
+    e.preventDefault();
+    const box = $('cat-new');
+    box.style.display = box.style.display === 'none' ? '' : 'none';
+    if (box.style.display !== 'none') $('cat-name').focus();
+});
+
+// Enter di kolom nama = tambah (tanpa mengirim form artikel)
+$('cat-name').addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); $('cat-add').click(); }
+});
+
+$('cat-add').addEventListener('click', async () => {
+    const name = $('cat-name').value.trim();
+    catMsg.className = 'small mt-2 text-danger';
+    catMsg.textContent = '';
+    if (!name) { catMsg.textContent = 'Nama kategori wajib diisi.'; return; }
+
+    const btn = $('cat-add');
+    btn.disabled = true;
+    try {
+        const res = await fetch(CAT_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': CSRF,
+            },
+            body: JSON.stringify({ name, parent_id: $('cat-parent').value || null }),
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+            catMsg.textContent = data.errors ? Object.values(data.errors).flat()[0] : (data.message || 'Gagal menambah kategori.');
+            return;
+        }
+
+        addCategoryToUI(data);
+        $('cat-name').value = '';
+        catMsg.className = 'small mt-2 text-success';
+        catMsg.textContent = data.existing ? 'Kategori sudah ada, langsung dicentang.' : 'Kategori ditambahkan.';
+    } catch (err) {
+        catMsg.textContent = 'Gagal menambah kategori.';
+    } finally {
+        btn.disabled = false;
+    }
+});
+
+function addCategoryToUI(c) {
+    // Pastikan kategori tidak tersembunyi oleh pencarian
+    $('cat-search').value = '';
+    catList.querySelectorAll('.cat-item').forEach(el => el.style.display = '');
+
+    let input = catList.querySelector(`.cat-item input[value="${c.id}"]`);
+
+    if (!input) {
+        const parent = c.parent_id ? catList.querySelector(`.cat-item[data-id="${c.parent_id}"]`) : null;
+        const depth  = parent ? Number(parent.dataset.depth) + 1 : 0;
+
+        const label = document.createElement('label');
+        label.className = 'form-check d-block cat-item';
+        label.dataset.id = c.id;
+        label.dataset.depth = depth;
+        label.dataset.name = c.name.toLowerCase();
+        label.style.marginLeft = (depth * 18) + 'px';
+        label.innerHTML = '<input type="checkbox" name="categories[]" class="form-check-input"><span class="form-check-label"></span>';
+        label.querySelector('input').value = c.id;
+        label.querySelector('span').textContent = c.name;
+
+        if (parent) {
+            // taruh di akhir anak-anak induknya
+            let ref = parent, n = parent.nextElementSibling;
+            while (n && n.classList.contains('cat-item') && Number(n.dataset.depth) > Number(parent.dataset.depth)) {
+                ref = n;
+                n = n.nextElementSibling;
+            }
+            ref.after(label);
+        } else {
+            catList.insertBefore(label, $('cat-empty'));
+        }
+
+        $('cat-empty').style.display = 'none';
+        input = label.querySelector('input');
+        rebuildParentOptions();
+        label.scrollIntoView({ block: 'nearest' });
+    }
+
+    input.checked = true;
+}
+
+function rebuildParentOptions() {
+    const sel  = $('cat-parent');
+    const keep = sel.value;
+    sel.innerHTML = '<option value="">— Tanpa induk —</option>';
+    catList.querySelectorAll('.cat-item').forEach(el => {
+        const o = document.createElement('option');
+        o.value = el.dataset.id;
+        o.textContent = '— '.repeat(Number(el.dataset.depth)) + el.querySelector('.form-check-label').textContent;
+        sel.appendChild(o);
+    });
+    sel.value = keep;
 }
 </script>
 @endpush

@@ -3,7 +3,7 @@
 @section('content')
 <div class="page-header d-print-none">
     <div class="container-xl">
-        <h2 class="page-title">Tag</h2>
+        <h2 class="page-title">Kategori</h2>
     </div>
 </div>
 @php
@@ -22,11 +22,11 @@
             {{-- Form tambah --}}
             <div class="col-md-4">
                 <div class="card"><div class="card-body">
-                    <h3 class="card-title">Tambah Tag Baru</h3>
+                    <h3 class="card-title">Tambah Kategori Baru</h3>
                     <form method="POST" action="{{ route('categories.store') }}">
                         @csrf
                         <div class="mb-3">
-                            <label class="form-label">Nama</label>
+                            <label class="form-label required">Nama</label>
                             <input type="text" name="name" value="{{ old('name') }}"
                                    class="form-control @error('name') is-invalid @enderror" required>
                             @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
@@ -39,7 +39,7 @@
                             @error('slug') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             <small class="text-muted">Versi URL dari nama. Kosongkan untuk otomatis.</small>
                         </div>
-                        <button class="btn btn-primary">Tambah Tag</button>
+                        <button class="btn btn-dark">Tambah Kategori</button>
                     </form>
                 </div></div>
             </div>
@@ -85,7 +85,7 @@
                                             <div class="small">
                                                 <a href="{{ route('categories.edit', $t) }}">Edit</a> |
                                                 <a href="#" class="text-danger"
-                                                   onclick="deleteTag('{{ route('categories.destroy', $t) }}'); return false;">Hapus</a> |
+                                                   onclick="deleteCat('{{ route('categories.destroy', $t) }}'); return false;">Hapus</a> |
                                                 <a href="{{ route('articles.index', ['categories' => $t->slug]) }}">Lihat artikel</a>
                                             </div>
                                         </td>
@@ -113,7 +113,7 @@
 document.getElementById('check-all').addEventListener('change', e =>
     document.querySelectorAll('.row-check').forEach(c => c.checked = e.target.checked));
 
-function deleteTag(url) {
+function deleteCat(url) {
     if (!confirm('Hapus kategori ini?')) return;
     const f = document.getElementById('delete-form');
     f.action = url;

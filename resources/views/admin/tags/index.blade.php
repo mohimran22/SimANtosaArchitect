@@ -26,7 +26,7 @@
                     <form method="POST" action="{{ route('tags.store') }}">
                         @csrf
                         <div class="mb-3">
-                            <label class="form-label">Nama</label>
+                            <label class="form-label required">Nama</label>
                             <input type="text" name="name" value="{{ old('name') }}"
                                    class="form-control @error('name') is-invalid @enderror" required>
                             @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
@@ -39,7 +39,7 @@
                             @error('slug') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             <small class="text-muted">Versi URL dari nama. Kosongkan untuk otomatis.</small>
                         </div>
-                        <button class="btn btn-primary">Tambah Tag</button>
+                        <button class="btn btn-dark">Tambah Tag</button>
                     </form>
                 </div></div>
             </div>
