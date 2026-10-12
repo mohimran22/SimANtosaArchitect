@@ -854,4 +854,5 @@ Route::get('/api/banks', function () {
 Route::middleware(['auth', 'role:Super-Admin'])->group(function () {
     Route::resource('articles', AdminArticleController::class)->except('show');
     Route::post('articles/bulk', [AdminArticleController::class, 'bulk'])->name('articles.bulk');
+    Route::post('articles/analyze', [AdminArticleController::class, 'analyze'])->name('articles.analyze');
 });

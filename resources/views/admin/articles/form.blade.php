@@ -7,6 +7,17 @@
     .ck-editor__editable { min-height: 380px; }
     #seo-checks li { padding: 2px 0; font-size: 14px; }
     .serp { font-family: Arial, sans-serif; max-width: 600px; }
+    /* Kotak keterangan di bawah video */
+.ck-content figure.media + p:has(> i:only-child),
+.ck-content figure.media + p:has(> em:only-child) {
+    text-align: center; color: #6c757d; font-size: .9em;
+}
+.ck-content figure.media + p:has(> br[data-cke-filler]:only-child) { position: relative; }
+.ck-content figure.media + p:has(> br[data-cke-filler]:only-child)::before {
+    content: 'Tambahkan keterangan video (opsional)';
+    position: absolute; left: 0; right: 0; text-align: center;
+    color: #adb5bd; font-style: italic; font-size: .9em; pointer-events: none;
+}
 </style>
 
 <form method="POST" enctype="multipart/form-data"
@@ -17,10 +28,26 @@
     <div class="page-header d-print-none">
         <div class="container-xl">
             <div class="row g-2 align-items-center">
-                <div class="col"><h2 class="page-title">{{ $isEdit ? 'Edit' : 'Tulis' }} Artikel</h2></div>
-                <div class="col-auto ms-auto d-flex gap-2">
-                    <a href="{{ route('articles.index') }}" class="btn btn-outline-secondary">Kembali</a>
-                    <button type="submit" class="btn btn-dark">Simpan</button>
+                <div class="col">
+                    <div class="d-flex align-items-center gap-2">
+                        <a href="{{ route('articles.index') }}"
+                        class="btn btn-icon btn-dark"
+                        aria-label="Kembali"
+                        title="Kembali">
+                            <i class="ti ti-arrow-left"></i>
+                        </a>
+
+                        <h2 class="page-title mb-0">
+                            {{ $isEdit ? 'Edit' : 'Tulis' }} Artikel
+                        </h2>
+                    </div>
+                </div>
+
+                <div class="col-auto ms-auto">
+                    <button type="submit" class="btn btn-dark">
+                        <i class="ti ti-device-floppy me-1"></i>
+                        Simpan
+                    </button>
                 </div>
             </div>
         </div>
@@ -57,10 +84,41 @@
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label required">Konten</label>
                                 <textarea id="content" name="content">{{ old('content', $article->content) }}</textarea>
                             </div>
+                            {{-- CTA di akhir artikel --}}
+                            <div class="mb-3 border rounded-3 p-3 bg-light">
+                                <label class="form-check mb-0">
+                                    <input type="checkbox" id="f_cta_enabled" name="cta_enabled" value="1" class="form-check-input"
+                                        @checked(old('cta_enabled', $article->cta_enabled))>
+                                    <span class="form-check-label fw-semibold">Tampilkan kotak CTA di akhir artikel</span>
+                                </label>
 
+                                <div id="f_cta_fields" class="mt-3">
+                                    <div class="mb-3">
+                                        <label class="form-label">Judul CTA</label>
+                                        <input type="text" name="cta_title" maxlength="120" class="form-control"
+                                            value="{{ old('cta_title', $article->cta_title ?? 'Info Antosa Architect') }}">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Deskripsi</label>
+                                        <textarea name="cta_text" rows="2" maxlength="300" class="form-control">{{ old('cta_text', $article->cta_text ?? 'Gratis konsultasi untuk segala kebutuhan rumah dan bangunan Anda, hubungi kami dengan klik tombol berikut ini') }}</textarea>
+                                    </div>
+                                    <div class="row g-3">
+                                        <div class="col-md-5">
+                                            <label class="form-label">Teks tombol</label>
+                                            <input type="text" name="cta_button" maxlength="60" class="form-control"
+                                                value="{{ old('cta_button', $article->cta_button ?? 'HUBUNGI KAMI') }}">
+                                        </div>
+                                        <div class="col-md-7">
+                                            <label class="form-label">Link tombol</label>
+                                            <input type="text" name="cta_url" maxlength="255" class="form-control"
+                                                placeholder="https://wa.me/62…"
+                                                value="{{ old('cta_url', $article->cta_url ?: config('app.cta_url')) }}">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                             <div>
                                 <label class="form-label">Ringkasan (excerpt)</label>
                                 <textarea id="excerpt" name="excerpt" rows="3" maxlength="300"
@@ -118,7 +176,7 @@
                             </div>
 
                             <div class="form-label">Analisis</div>
-                            <ul id="seo-checks" class="list-unstyled mb-0"></ul>
+                            <div id="analysis" class="text-muted">Menganalisis…</div>
                         </div>
                     </div>
                 </div>
@@ -134,7 +192,6 @@
                                 <option value="draft" @selected(old('status', $article->status) === 'draft')>Draft</option>
                                 <option value="published" @selected(old('status', $article->status) === 'published')>Terbit</option>
                             </select>
-                            <button type="submit" class="btn btn-dark w-100">Simpan</button>
                         </div>
                     </div>
 
@@ -182,64 +239,169 @@
         </div>
     </div>
 </form>
+
 @endsection
 
 @push('js')
+
 <script>
 const $ = id => document.getElementById(id);
-let editor;
+const ANALYZE_URL  = @json(route('articles.analyze'));
+const ARTICLE_ID   = @json($article->id);
+const HAS_FEATURED = @json((bool) $article->featured_image);
+const CSRF         = @json(csrf_token());
+let editor, timer;
+
+const YT_RE = /^https?:\/\/(?:www\.|m\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)[\w-]{11}\S*$/i;
 
 ClassicEditor.create($('content'), {
-    toolbar: ['heading','|','bold','italic','link','bulletedList','numberedList','blockQuote','insertTable','undo','redo'],
+    toolbar: ['heading','|','bold','italic','link','bulletedList','numberedList','blockQuote','insertTable','mediaEmbed','undo','redo'],
 }).then(ed => {
     editor = ed;
-    ed.model.document.on('change:data', analyze);
-    analyze();
+    // Setelah video dimasukkan, buat kotak keterangan (paragraf miring kosong) di bawahnya
+    ed.commands.get('mediaEmbed').on('execute', () => {
+        const media = ed.model.document.selection.getSelectedElement();
+        if (!media || media.name !== 'media') return;
+
+        const next = media.nextSibling;
+        if (next && next.is('element', 'paragraph')) return;   // sudah ada paragraf di bawahnya
+
+        ed.model.change(writer => {
+            const p = writer.createElement('paragraph');
+            writer.insert(p, media, 'after');
+            writer.setSelection(p, 'in');
+            writer.setSelectionAttribute('italic', true);       // teks yang diketik langsung miring
+        });
+    }, { priority: 'low' });
+    // Tempel URL YouTube di paragraf kosong -> langsung jadi video
+    ed.editing.view.document.on('clipboardInput', (evt, data) => {
+        const text = (data.dataTransfer.getData('text/plain') || '').trim();
+        const parent = ed.model.document.selection.getFirstPosition().parent;
+        if (YT_RE.test(text) && parent.is('element', 'paragraph') && parent.isEmpty) {
+            evt.stop();
+            ed.execute('mediaEmbed', text);
+        }
+    });
+
+    ed.model.document.on('change:data', onChange);
+    onChange();
 });
 
+// ---------- CTA ----------
+const CTA_RE  = /^\[cta\s+([\s\S]*)\]$/i;
+const ctaDlg  = $('cta-dialog');
+let ctaTarget = null;   // paragraf CTA yang sedang diedit (null = sisip baru)
+
+const ctaDefaults = () => {
+    let url = '';
+    try { url = localStorage.getItem('cta_url') || ''; } catch (e) {}
+    return {
+        judul: 'Info Antosa Architect',
+        teks: 'Gratis konsultasi untuk segala kebutuhan rumah dan bangunan Anda, hubungi kami dengan klik tombol berikut ini',
+        tombol: 'HUBUNGI KAMI',
+        url,
+    };
+};
+
+const ctaClean = s => String(s).replace(/["“”]/g, "'").replace(/[\[\]\r\n]+/g, ' ').trim();
+
+const ctaBuild = v =>
+    `[cta judul="${ctaClean(v.judul)}" teks="${ctaClean(v.teks)}" tombol="${ctaClean(v.tombol)}" url="${ctaClean(v.url)}"]`;
+
+function ctaParse(str) {
+    const out = {};
+    for (const m of str.matchAll(/(\w+)\s*=\s*["“”]([^"“”]*)["“”]/g)) out[m[1].toLowerCase()] = m[2];
+    return out;
+}
+
+const paraText = p => Array.from(p.getChildren()).map(n => n.data ?? '').join('').trim();
+
+const ctaToggle = () => $('f_cta_fields').style.display = $('f_cta_enabled').checked ? '' : 'none';
+$('f_cta_enabled').addEventListener('change', ctaToggle);
+ctaToggle();
+
 ['title','slug','focus_keyword','meta_title','meta_description','excerpt'].forEach(id =>
-    $(id).addEventListener('input', analyze));
+    $(id).addEventListener('input', onChange));
+document.querySelector('input[name=featured_image]').addEventListener('change', onChange);
+
+function onChange() {
+    updatePreview();
+    clearTimeout(timer);
+    timer = setTimeout(runAnalysis, 700);
+}
 
 const slugify = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')
     .replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
 
-function analyze() {
+// Counter dan preview Google (lokal, tanpa server)
+function updatePreview() {
     const title = $('title').value.trim();
     const slug  = $('slug').value.trim() || slugify(title);
-    const kw    = $('focus_keyword').value.trim().toLowerCase();
     const mt    = $('meta_title').value.trim() || title;
     const md    = $('meta_description').value.trim() || $('excerpt').value.trim();
-    const html  = editor ? editor.getData() : '';
-    const text  = html.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
-    const words = text ? text.split(' ').length : 0;
-    const firstP = (html.match(/<p>(.*?)<\/p>/i) || [,''])[1].replace(/<[^>]+>/g,'').toLowerCase();
 
     $('mt-count').textContent = `(${$('meta_title').value.length}/70)`;
     $('md-count').textContent = `(${$('meta_description').value.length}/170)`;
     $('pv-url').textContent   = `antosaarchitect.com › artikel › ${slug}`;
     $('pv-title').textContent = mt.slice(0, 60) || 'Judul artikel';
     $('pv-desc').textContent  = md.slice(0, 160) || 'Deskripsi artikel akan tampil di sini.';
+}
 
-    const checks = [
-        [mt.length >= 30 && mt.length <= 60, 'Panjang meta title ideal 30–60 karakter'],
-        [md.length >= 120 && md.length <= 160, 'Panjang meta description ideal 120–160 karakter'],
-        [words >= 300, `Jumlah kata minimal 300 (sekarang ${words})`],
-        [/<a [^>]*href/i.test(html), 'Ada minimal 1 link di dalam konten'],
-        [/<h2/i.test(html), 'Ada subjudul (H2) di dalam konten'],
-    ];
-    if (kw) {
-        checks.push(
-            [mt.toLowerCase().includes(kw), 'Focus keyword ada di meta title'],
-            [slug.includes(slugify(kw)), 'Focus keyword ada di slug'],
-            [md.toLowerCase().includes(kw), 'Focus keyword ada di meta description'],
-            [firstP.includes(kw), 'Focus keyword ada di paragraf pertama'],
-        );
-    } else {
-        checks.push([false, 'Isi focus keyword terlebih dahulu']);
+// Analisis lengkap (dihitung di server oleh SeoAnalyzer)
+async function runAnalysis() {
+    const hasNewFeatured = document.querySelector('input[name=featured_image]').files.length > 0;
+    try {
+        const res = await fetch(ANALYZE_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': CSRF,
+            },
+            body: JSON.stringify({
+                title: $('title').value,
+                slug: $('slug').value,
+                content: editor ? editor.getData() : '',
+                excerpt: $('excerpt').value,
+                meta_title: $('meta_title').value,
+                meta_description: $('meta_description').value,
+                focus_keyword: $('focus_keyword').value,
+                article_id: ARTICLE_ID,
+                has_featured: HAS_FEATURED || hasNewFeatured,
+            }),
+        });
+        if (!res.ok) throw new Error(res.status);
+        const data = await res.json();
+        $('analysis').innerHTML =
+            renderSection('Analisis SEO', data.seo) +
+            renderSection('Keterbacaan', data.readability);
+    } catch (e) {
+        $('analysis').textContent = 'Analisis gagal dimuat. Coba muat ulang halaman.';
     }
+}
 
-    $('seo-checks').innerHTML = checks.map(([ok, msg]) =>
-        `<li style="color:${ok ? '#188038' : '#d93025'}">${ok ? '●' : '○'} ${msg}</li>`).join('');
+const COLORS = { good: '#188038', ok: '#f59e0b', bad: '#d93025' };
+const esc = s => { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; };
+const dot = c => `<span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:${c};margin:4px 8px 0 0;flex:none"></span>`;
+
+function renderSection(title, data) {
+    const color = data.score >= 70 ? COLORS.good : data.score >= 40 ? COLORS.ok : COLORS.bad;
+    const groups = [['bad', 'Masalah'], ['ok', 'Perbaikan'], ['good', 'Hasil baik']];
+
+    let html = `<div class="mb-4">
+        <div class="d-flex align-items-center mb-2">${dot(color)}<strong>${title}</strong>
+        <span class="ms-2 text-muted">${data.score}/100</span></div>`;
+
+    for (const [key, label] of groups) {
+        const items = data.results.filter(r => r.status === key);
+        if (!items.length) continue;
+        html += `<details ${key !== 'good' ? 'open' : ''} class="mb-2">
+            <summary><strong>${label} (${items.length})</strong></summary>
+            <ul class="list-unstyled mt-2 mb-0">${items.map(i =>
+                `<li class="d-flex py-1">${dot(COLORS[key])}<span>${esc(i.text)}</span></li>`).join('')}</ul>
+        </details>`;
+    }
+    return html + '</div>';
 }
 </script>
 @endpush

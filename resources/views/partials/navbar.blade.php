@@ -74,7 +74,7 @@
                     </div>
                 </div>
 
-                <a href="#">Portofolio</a>
+                <a href="{{ route('artikel.index') }}">Portofolio</a>
                 <a href="#" class="{{ request()->is('/') ? 'active' : '' }}">Tentang Kami</a>
                 <a href="https://wa.me/6285189523863">Kontak Kami</a>
                 <a href="{{ url('/') }}#listing">Listing Rumah</a>

@@ -56,7 +56,7 @@ return [
     'license_id' => '61d3ba28-e020-46e7-8527-5a2e15d0dd4d',
     'home_domain' => env('HOME_DOMAIN', 'antosaarchitect.com'),
     'sim_domain'  => env('SIM_DOMAIN', 'si.antosaarchitect.com'),
-
+    'cta_url' => env('ARTICLE_CTA_URL', ''),
     /*
     |--------------------------------------------------------------------------
     | Application Timezone

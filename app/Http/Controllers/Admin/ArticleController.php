@@ -33,7 +33,10 @@ class ArticleController extends Controller
             ->when($request->category, fn ($q, $c) => $q
                 ->whereHas('categories', fn ($x) => $x->where('categories.id', $c)))
             ->when($request->seo, fn ($q, $v) => $this->scoreFilter($q, 'seo_score', $v))
-            ->when($request->readability, fn ($q, $v) => $this->scoreFilter($q, 'readability_score', $v));
+            ->when($request->readability, fn ($q, $v) => $this->scoreFilter($q, 'readability_score', $v))
+            ->when($request->filled('tag'), fn ($q) =>
+                $q->whereHas('tags', fn ($t) => $t->where('tags.slug', $request->tag))
+            );
 
         $articles = $query->orderBy($orderby, $order)->paginate(20)->withQueryString();
 
@@ -111,11 +114,16 @@ class ArticleController extends Controller
             'categories'   => 'nullable|array',
             'categories.*' => 'exists:categories,id',
             'tags'         => 'nullable|string|max:500',
+            'cta_title'  => 'nullable|string|max:120',
+            'cta_text'   => 'nullable|string|max:300',
+            'cta_button' => 'required_if:cta_enabled,1|nullable|string|max:60',
+            'cta_url'    => ['required_if:cta_enabled,1', 'nullable', 'string', 'max:255', 'regex:~^(https?://|/|tel:|mailto:)~i'],
         ]);
 
-        $data['content'] = clean($data['content']);          // sanitasi HTML (mews/purifier)
+        $data['content'] = \App\Support\VideoEmbed::sanitize($data['content']);          // sanitasi HTML (mews/purifier)
         $data['noindex'] = $request->boolean('noindex');
-
+        $data['cta_enabled'] = $request->boolean('cta_enabled');
+        
         if ($data['status'] === 'published') {
             $data['published_at'] = $request->input('published_at') ?: ($article?->published_at ?? now());
         } else {
@@ -196,5 +204,24 @@ private function afterSave(Request $request, Article $article): void
 
     $article->tags()->sync($tagIds);
     $article->update(SeoAnalyzer::scores($article->fresh()));
+}
+
+public function analyze(Request $request)
+{
+    $article = new Article([
+        'title'            => (string) $request->input('title'),
+        'slug'             => $request->filled('slug') ? $request->input('slug') : Str::slug((string) $request->input('title')),
+        'content'          => (string) $request->input('content'),
+        'excerpt'          => $request->input('excerpt'),
+        'meta_title'       => $request->input('meta_title'),
+        'meta_description' => $request->input('meta_description'),
+        'focus_keyword'    => $request->input('focus_keyword'),
+    ]);
+
+    return response()->json(SeoAnalyzer::analyze(
+        $article,
+        $request->boolean('has_featured'),
+        $request->integer('article_id') ?: null,
+    ));
 }
 }

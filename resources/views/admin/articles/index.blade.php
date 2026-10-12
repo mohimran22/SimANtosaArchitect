@@ -35,7 +35,9 @@
     {!! $tab('Draft', 'draft', $counts['draft']) !!} |
     {!! $tab('Trash', 'trash', $counts['trash']) !!}
 </div>
-
+{{-- @if(request('tag'))
+    <a href="{{ route('articles.index', request()->except('tag', 'page')) }}" class="badge bg-red-lt text-decoration-none">Tag: {{ $tags_active_name ?? request('tag') }} ✕</a>
+@endif --}}
 {{-- Filter --}}
 <form method="GET" class="row g-2 mb-3">
     <input type="hidden" name="status" value="{{ request('status') }}">
@@ -71,6 +73,7 @@
         <input type="text" name="search" value="{{ request('search') }}" class="form-control" placeholder="Cari judul...">
         <button class="btn btn-outline-secondary">Cari</button>
     </div>
+    <input type="hidden" name="tag" value="{{ request('tag') }}">
 </form>
 
 {{-- Form tersembunyi untuk aksi per baris (tidak boleh bersarang di dalam form bulk) --}}
@@ -141,9 +144,16 @@
                     </td>
                     <td>{{ $a->author->name ?? '-' }}</td>
                     <td>{{ $a->categories->pluck('name')->implode(', ') ?: '—' }}</td>
-                    <td style="max-width:240px">{{ $a->tags->pluck('name')->implode(', ') ?: '—' }}</td>
+                    <td style="min-width:200px;max-width:240px;white-space:normal;word-break:break-word">
+                        @forelse($a->tags as $t)
+                        <a href="{{ route('articles.index', array_merge(request()->except('page'), ['tag' => $t->slug])) }}"
+                        class="badge bg-secondary-lt mb-1 text-decoration-none">{{ $t->name }}</a>
+                        @empty
+                            —
+                        @endforelse
+                    </td>
                     <td>{{ number_format($a->views) }}</td>
-                    <td>
+                    <td style="white-space:nowrap">
                         {{ $a->status === 'published' ? 'Terbit' : 'Draft' }}<br>
                         {{ ($a->published_at ?? $a->created_at)->format('Y/m/d \a\t h:i a') }}
                     </td>

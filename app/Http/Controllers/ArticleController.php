@@ -17,7 +17,7 @@ class ArticleController extends Controller
         SEOMeta::setDescription('Artikel dan wawasan seputar arsitektur dari Antosa Architect.');
         SEOMeta::setCanonical(url()->current());
 
-        $articles = Article::published()->latest('published_at')->paginate(9);
+        $articles = Article::published()->with('categories')->latest('published_at')->paginate(9);
         return view('articles.index', compact('articles'));
     }
 
@@ -29,13 +29,14 @@ class ArticleController extends Controller
         );
 
         $title = $article->meta_title ?: $article->title;
-        $desc  = $article->meta_description
-            ?: Str::limit(strip_tags($article->excerpt ?: $article->content), 160);
+$plain = trim(preg_replace('/\s+/', ' ', strip_tags(str_replace('<', ' <',
+    \App\Support\Shortcodes::strip($article->excerpt ?: $article->content)))));
+$desc  = $article->meta_description ?: \Illuminate\Support\Str::limit($plain, 160);
         $img   = $article->og_image ?: $article->featured_image;
         $imgUrl = $img ? asset('storage/' . $img) : null;
         $canonical = $article->canonical_url ?: route('articles.show', $article);
 
-        SEOMeta::setTitle($title);
+        SEOMeta::setTitle($title, false);   // false = jangan tambahkan " - Antosa Architect"
         SEOMeta::setDescription($desc);
         SEOMeta::setCanonical($canonical);
         if ($article->noindex) {
@@ -48,14 +49,16 @@ class ArticleController extends Controller
         JsonLd::setType('Article')->setTitle($title)->setDescription($desc)->setUrl($canonical);
         JsonLd::addValue('datePublished', $article->published_at->toIso8601String());
         JsonLd::addValue('dateModified', $article->updated_at->toIso8601String());
-        JsonLd::addValue('author', ['@type' => 'Person', 'name' => $article->author->name]);
+        JsonLd::addValue('author', ['@type' => 'Person', 'name' => $article->author?->name ?? 'Antosa Architect']);
 
         if ($imgUrl) {
             OpenGraph::addImage($imgUrl);
             TwitterCard::setImage($imgUrl);
             JsonLd::addImage($imgUrl);
         }
-
-        return view('articles.show', compact('article'));
+        $article->load(['author', 'categories', 'tags']);
+        $related = Article::published()->where('id', '!=', $article->id)
+            ->latest('published_at')->take(3)->get();
+        return view('articles.show', compact('article', 'related'));
     }
 }

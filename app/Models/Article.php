@@ -13,11 +13,13 @@ class Article extends Model
         'title', 'slug', 'content', 'excerpt', 'featured_image', 'author_id',
         'status', 'published_at', 'meta_title', 'meta_description',
         'focus_keyword', 'canonical_url', 'noindex', 'og_image', 'seo_score', 'readability_score', 'views',
+        'cta_enabled', 'cta_title', 'cta_text', 'cta_button', 'cta_url',
     ];
 
     protected $casts = [
         'published_at' => 'datetime',
         'noindex'      => 'boolean',
+        'cta_enabled'   => 'boolean'
     ];
 
     public function author()
@@ -40,4 +42,11 @@ class Article extends Model
     {
         return $this->belongsToMany(Tag::class, 'article_tag');
     }
+
+public function renderedContent(): string
+{
+    return \App\Support\Shortcodes::render(
+        \App\Support\VideoEmbed::render((string) $this->content)
+    );
+}
 }

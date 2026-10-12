@@ -168,7 +168,11 @@ public function activeRole()
         2 => 'Perempuan',
     ][$this->gender] ?? 'Tidak diketahui';
     }
-
+// app/Models/User.php
+public function getNameAttribute()
+{
+    return $this->fullname;
+}
 public function setActiveRoleAttribute($value)
 {
     // Larangan nilai angka
