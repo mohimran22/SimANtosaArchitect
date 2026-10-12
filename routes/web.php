@@ -53,6 +53,7 @@ use App\Http\Controllers\TipePropertiController;
 use App\Http\Controllers\Admin\ArticleController as AdminArticleController;
 use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\SitemapController;
+use App\Http\Controllers\TagController;
 
 $homeDomain = config('app.home_domain');
 $simDomain  = config('app.sim_domain');
@@ -853,6 +854,10 @@ Route::get('/api/banks', function () {
 
 Route::middleware(['auth', 'role:Super-Admin'])->group(function () {
     Route::resource('articles', AdminArticleController::class)->except('show');
+    Route::delete('categories/bulk', [\App\Http\Controllers\CategoryController::class, 'bulk'])->name('categories.bulk');
+    Route::resource('categories', \App\Http\Controllers\CategoryController::class)->except(['create', 'show']);
+    Route::delete('tags/bulk', [TagController::class, 'bulk'])->name('tags.bulk');
+    Route::resource('tags', TagController::class)->except(['create', 'show']);
     Route::post('articles/bulk', [AdminArticleController::class, 'bulk'])->name('articles.bulk');
     Route::post('articles/analyze', [AdminArticleController::class, 'analyze'])->name('articles.analyze');
 });

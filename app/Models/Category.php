@@ -7,7 +7,18 @@ use Illuminate\Database\Eloquent\Model;
 class Category extends Model
 {
     protected $fillable = ['name', 'slug'];
-
+        protected static function booted()
+    {
+        static::saving(function ($tag) {
+            $base = Str::slug($tag->slug ?: $tag->name) ?: 'tag';
+            $slug = $base;
+            $i = 2;
+            while (static::where('slug', $slug)->where('id', '!=', $tag->id ?? 0)->exists()) {
+                $slug = $base . '-' . $i++;
+            }
+            $tag->slug = $slug;
+        });
+    }
     public function articles()
     {
         return $this->belongsToMany(Article::class);

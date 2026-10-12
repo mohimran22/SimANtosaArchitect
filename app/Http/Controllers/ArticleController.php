@@ -13,7 +13,8 @@ class ArticleController extends Controller
 {
     public function index()
     {
-        SEOMeta::setTitle('Artikel');
+        $title = 'Tips Seputar Desain Dan Konstruksi Rumah';
+        SEOMeta::setTitle($title, false);
         SEOMeta::setDescription('Artikel dan wawasan seputar arsitektur dari Antosa Architect.');
         SEOMeta::setCanonical(url()->current());
 
