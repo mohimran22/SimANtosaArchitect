@@ -18,6 +18,8 @@
     position: absolute; left: 0; right: 0; text-align: center;
     color: #adb5bd; font-style: italic; font-size: .9em; pointer-events: none;
 }
+.pv-img { background: #e9ecef center/cover no-repeat; display: flex; align-items: center; justify-content: center; color: #6c757d; font-size: 12px; }
+.pv-img-empty::after { content: 'Belum ada gambar'; }
 </style>
 
 <form method="POST" enctype="multipart/form-data"
@@ -168,12 +170,50 @@
                                 <span class="form-check-label">Jangan diindex Google (noindex)</span>
                             </label>
 
-                            <div class="form-label">Preview hasil Google</div>
-                            <div class="serp border rounded p-3 mb-4 bg-white">
-                                <div id="pv-url" style="color:#188038;font-size:13px"></div>
-                                <div id="pv-title" style="color:#1a0dab;font-size:19px"></div>
-                                <div id="pv-desc" style="color:#4d5156;font-size:13px"></div>
-                            </div>
+<div class="form-label">Preview</div>
+<div class="btn-group btn-group-sm mb-2" id="pv-tabs" role="group">
+    <button type="button" class="btn btn-outline-secondary active" data-pv="desktop">Google (desktop)</button>
+    <button type="button" class="btn btn-outline-secondary" data-pv="mobile">Google (mobile)</button>
+    <button type="button" class="btn btn-outline-secondary" data-pv="share">Share (WhatsApp/Facebook)</button>
+</div>
+
+<div class="border rounded p-3 mb-4 bg-white" style="max-width:640px;font-family:Arial,sans-serif">
+
+    {{-- Google desktop --}}
+    <div id="pv-desktop">
+        <div class="pv-url" style="color:#188038;font-size:13px"></div>
+        <div class="pv-title" style="color:#1a0dab;font-size:19px"></div>
+        <div class="pv-desc" style="color:#4d5156;font-size:13px"></div>
+    </div>
+
+    {{-- Google mobile (dengan thumbnail) --}}
+    <div id="pv-mobile" style="display:none;max-width:380px">
+        <div class="d-flex align-items-center mb-2" style="gap:8px">
+            <img src="{{ asset('favicon.ico') }}" width="22" height="22" alt="" style="border-radius:50%">
+            <div style="line-height:1.25">
+                <div style="font-size:13px;color:#202124">Antosa Architect</div>
+                <div class="pv-url" style="font-size:11px;color:#4d5156"></div>
+            </div>
+        </div>
+        <div class="d-flex" style="gap:12px">
+            <div>
+                <div class="pv-title" style="color:#1a0dab;font-size:17px;line-height:1.3"></div>
+                <div class="pv-desc" style="color:#4d5156;font-size:13px;margin-top:4px"></div>
+            </div>
+            <div class="pv-img" style="width:92px;height:92px;flex:none;border-radius:8px"></div>
+        </div>
+    </div>
+
+    {{-- Kartu share --}}
+    <div id="pv-share" style="display:none;max-width:500px;border:1px solid #dadde1;border-radius:8px;overflow:hidden">
+        <div class="pv-img" style="width:100%;aspect-ratio:1.91/1"></div>
+        <div style="background:#f0f2f5;padding:10px 12px">
+            <div style="font-size:12px;color:#65676b;text-transform:uppercase">antosaarchitect.com</div>
+            <div class="pv-title" style="font-size:16px;font-weight:600;color:#050505"></div>
+            <div class="pv-desc" style="font-size:14px;color:#65676b"></div>
+        </div>
+    </div>
+</div>
 
                             <div class="form-label">Analisis</div>
                             <div id="analysis" class="text-muted">Menganalisis…</div>
@@ -275,6 +315,9 @@ const ANALYZE_URL  = @json(route('articles.analyze'));
 const ARTICLE_ID   = @json($article->id);
 const HAS_FEATURED = @json((bool) $article->featured_image);
 const CSRF         = @json(csrf_token());
+const EXISTING_OG       = @json($article->og_image ? asset('storage/'.$article->og_image) : null);
+const EXISTING_FEATURED = @json($article->featured_image ? asset('storage/'.$article->featured_image) : null);
+let ogObjUrl = null, featObjUrl = null;   // pratinjau file yang baru dipilih (belum diupload)
 let editor, timer;
 
 const YT_RE = /^https?:\/\/(?:www\.|m\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)[\w-]{11}\S*$/i;
@@ -347,7 +390,25 @@ ctaToggle();
 
 ['title','slug','focus_keyword','meta_title','meta_description','excerpt'].forEach(id =>
     $(id).addEventListener('input', onChange));
-document.querySelector('input[name=featured_image]').addEventListener('change', onChange);
+// Pratinjau gambar yang baru dipilih
+document.querySelector('input[name=og_image]').addEventListener('change', e => {
+    if (ogObjUrl) URL.revokeObjectURL(ogObjUrl);
+    const f = e.target.files[0];
+    ogObjUrl = f ? URL.createObjectURL(f) : null;
+    onChange();
+});
+document.querySelector('input[name=featured_image]').addEventListener('change', e => {
+    if (featObjUrl) URL.revokeObjectURL(featObjUrl);
+    const f = e.target.files[0];
+    featObjUrl = f ? URL.createObjectURL(f) : null;
+    onChange();
+});
+
+// Tab preview
+document.querySelectorAll('#pv-tabs button').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('#pv-tabs button').forEach(x => x.classList.toggle('active', x === b));
+    ['desktop', 'mobile', 'share'].forEach(k => $('pv-' + k).style.display = (k === b.dataset.pv) ? '' : 'none');
+}));
 
 function onChange() {
     updatePreview();
@@ -365,11 +426,21 @@ function updatePreview() {
     const mt    = $('meta_title').value.trim() || title;
     const md    = $('meta_description').value.trim() || $('excerpt').value.trim();
 
+    // Urutan sama dengan di halaman publik: gambar share > gambar utama
+    const img = ogObjUrl || EXISTING_OG || featObjUrl || EXISTING_FEATURED || null;
+
     $('mt-count').textContent = `(${$('meta_title').value.length}/70)`;
     $('md-count').textContent = `(${$('meta_description').value.length}/170)`;
-    $('pv-url').textContent   = `antosaarchitect.com › artikel › ${slug}`;
-    $('pv-title').textContent = mt.slice(0, 60) || 'Judul artikel';
-    $('pv-desc').textContent  = md.slice(0, 160) || 'Deskripsi artikel akan tampil di sini.';
+
+    const set = (cls, text) => document.querySelectorAll('.' + cls).forEach(el => el.textContent = text);
+    set('pv-url',   `antosaarchitect.com › artikel › ${slug}`);
+    set('pv-title', mt.slice(0, 60) || 'Judul artikel');
+    set('pv-desc',  md.slice(0, 160) || 'Deskripsi artikel akan tampil di sini.');
+
+    document.querySelectorAll('.pv-img').forEach(el => {
+        el.style.backgroundImage = img ? `url("${img}")` : 'none';
+        el.classList.toggle('pv-img-empty', !img);
+    });
 }
 
 // Analisis lengkap (dihitung di server oleh SeoAnalyzer)
