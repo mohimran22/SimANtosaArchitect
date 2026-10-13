@@ -12,7 +12,7 @@
     $fotoList = collect();
     if ($listing->foto) { $fotoList->push(asset('storage/' . $listing->foto)); }
     foreach ($listing->fotos as $f) { $fotoList->push(asset('storage/' . $f->path)); }
-    if ($fotoList->isEmpty()) { $fotoList->push(asset('images/antosa.png')); }
+    if ($fotoList->isEmpty()) { $fotoList->push(asset('images/logo-icon.png')); }
 
     $total  = $fotoList->count();
     $mode   = min($total, 5);          // menentukan susunan grid galeri
@@ -688,19 +688,38 @@
     });
 
     // ===== Bagikan =====
-    var shareTxt = document.getElementById('lsShareTxt');
-    document.querySelectorAll('[data-share]').forEach(function (b) {
-        b.addEventListener('click', function () {
-            var data = { title: document.title, url: location.href };
-            if (navigator.share) { navigator.share(data).catch(function () {}); return; }
-            if (navigator.clipboard) {
-                navigator.clipboard.writeText(location.href).then(function () {
-                    shareTxt.textContent = 'Tautan disalin';
-                    setTimeout(function () { shareTxt.textContent = 'Bagikan'; }, 1800);
-                });
-            }
-        });
+// ===== Bagikan =====
+var shareTxt = document.getElementById('lsShareTxt');
+function tandaiSalin(ok) {
+    shareTxt.textContent = ok ? 'Tautan disalin' : 'Gagal menyalin';
+    setTimeout(function () { shareTxt.textContent = 'Bagikan'; }, 1800);
+}
+function salinManual(teks) {
+    var ta = document.createElement('textarea');
+    ta.value = teks;
+    ta.setAttribute('readonly', '');
+    ta.style.cssText = 'position:fixed;top:-1000px;opacity:0';
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) {}
+    document.body.removeChild(ta);
+    tandaiSalin(ok);
+}
+document.querySelectorAll('[data-share]').forEach(function (b) {
+    b.addEventListener('click', function () {
+        var data = { title: document.title, url: location.href };
+        if (navigator.share) { navigator.share(data).catch(function () {}); return; }
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(location.href).then(
+                function () { tandaiSalin(true); },
+                function () { salinManual(location.href); }
+            );
+            return;
+        }
+        salinManual(location.href);
     });
+});
 
     // ===== Deskripsi: potong + "Baca selengkapnya" =====
     var dWrap = document.getElementById('lsDescWrap');

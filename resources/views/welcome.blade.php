@@ -718,12 +718,12 @@ html{ scroll-behavior:smooth; }
 @php
     // ---- data contoh, otomatis diabaikan kalau controller mengirim $listings ----
     $listings = $listings ?? [
-        ['status'=>'Dijual','tipe'=>'Rumah','harga'=>1000000000,'cicilan'=>7120000,'lokasi'=>'Jember, Jawa Timur','kota'=>'Jember','judul'=>'Dijual Rumah Minimalis 2 Lantai Strategis','kt'=>4,'km'=>2,'lt'=>'99m²','lb'=>'90m²','jumlah_foto'=>6,'foto'=>'images/listing-1.jpg','agen_nama'=>'Antosa Architect','agen_peran'=>'Pemilik Properti','agen_foto'=>'images/antosa.png','agen_telepon'=>'085189523863','url'=>'#'],
-        ['status'=>'Dijual','tipe'=>'Tanah','harga'=>350000000,'lokasi'=>'Kaliwates, Jember','kota'=>'Jember','judul'=>'Dijual Tanah Kavling Siap Bangun','kt'=>null,'km'=>null,'lt'=>'580m²','lb'=>null,'jumlah_foto'=>5,'foto'=>'images/listing-2.jpg','agen_nama'=>'Antosa Architect','agen_peran'=>'Agen Independen','agen_foto'=>'images/antosa.png','agen_telepon'=>'085189523863','url'=>'#'],
-        ['status'=>'Dijual','tipe'=>'Rumah','harga'=>650000000,'lokasi'=>'Banyuwangi, Jawa Timur','kota'=>'Banyuwangi','judul'=>'Dijual Rumah Modern Tropis Dekat Pusat Kota','kt'=>3,'km'=>2,'lt'=>'120m²','lb'=>'90m²','jumlah_foto'=>5,'foto'=>'images/listing-3.jpg','agen_nama'=>'Antosa Architect','agen_peran'=>'Pemilik Properti','agen_foto'=>'images/antosa.png','agen_telepon'=>'085189523863','url'=>'#'],
+        ['status'=>'Dijual','tipe'=>'Rumah','harga'=>1000000000,'cicilan'=>7120000,'lokasi'=>'Jember, Jawa Timur','kota'=>'Jember','judul'=>'Dijual Rumah Minimalis 2 Lantai Strategis','kt'=>4,'km'=>2,'lt'=>'99m²','lb'=>'90m²','jumlah_foto'=>6,'foto'=>'images/listing-1.jpg','agen_nama'=>'Antosa Architect','agen_peran'=>'Pemilik Properti','agen_foto'=>'images/logo-icon.png','agen_telepon'=>'085189523863','url'=>'#'],
+        ['status'=>'Dijual','tipe'=>'Tanah','harga'=>350000000,'lokasi'=>'Kaliwates, Jember','kota'=>'Jember','judul'=>'Dijual Tanah Kavling Siap Bangun','kt'=>null,'km'=>null,'lt'=>'580m²','lb'=>null,'jumlah_foto'=>5,'foto'=>'images/listing-2.jpg','agen_nama'=>'Antosa Architect','agen_peran'=>'Agen Independen','agen_foto'=>'images/logo-icon.png','agen_telepon'=>'085189523863','url'=>'#'],
+        ['status'=>'Dijual','tipe'=>'Rumah','harga'=>650000000,'lokasi'=>'Banyuwangi, Jawa Timur','kota'=>'Banyuwangi','judul'=>'Dijual Rumah Modern Tropis Dekat Pusat Kota','kt'=>3,'km'=>2,'lt'=>'120m²','lb'=>'90m²','jumlah_foto'=>5,'foto'=>'images/listing-3.jpg','agen_nama'=>'Antosa Architect','agen_peran'=>'Pemilik Properti','agen_foto'=>'images/logo-icon.png','agen_telepon'=>'085189523863','url'=>'#'],
     ];
     $lsTabs = collect($listings)->map(fn($l) => data_get($l, 'kota'))->filter()->unique()->values();
-    $lsImg  = fn($path) => ! $path ? asset('images/antosa.png') : (str_starts_with($path, 'http') ? $path : (str_starts_with($path, 'images/') ? asset($path) : asset('storage/' . $path)));
+    $lsImg  = fn($path) => ! $path ? asset('favicon.ico') : (str_starts_with($path, 'http') ? $path : (str_starts_with($path, 'images/') ? asset($path) : asset('storage/' . $path)));
     $lsM2   = fn($v) => is_numeric($v) ? $v . 'm²' : $v;
     $lsRp = fn($v) => is_numeric($v)
         ? 'Rp ' . number_format($v, 0, ',', '.')

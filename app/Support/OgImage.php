@@ -91,4 +91,12 @@ class OgImage
 
         return $img;
     }
+
+    /** Pakai versi OG yang sudah ada, atau buat sekali jika belum. */
+public static function ensure(string $sourcePath): ?string
+{
+    $target = 'articles/og/' . pathinfo($sourcePath, PATHINFO_FILENAME) . '.jpg';
+
+    return Storage::disk('public')->exists($target) ? $target : self::make($sourcePath);
+}
 }
