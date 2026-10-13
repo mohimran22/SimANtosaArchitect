@@ -54,6 +54,7 @@ use App\Http\Controllers\Admin\ArticleController as AdminArticleController;
 use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\TagController;
+use App\Http\Controllers\LayananController;
 
 $homeDomain = config('app.home_domain');
 $simDomain  = config('app.sim_domain');
@@ -65,6 +66,9 @@ Route::domain($homeDomain)->group(function () {
     Route::get('/artikel', [ArticleController::class, 'index'])->name('artikel.index');
     Route::get('/artikel/{article:slug}', [ArticleController::class, 'show'])->name('articles.show');
     Route::get('/sitemap.xml', [SitemapController::class, 'index']);
+    Route::get('/{layanan}', [LayananController::class, 'show'])
+        ->where('layanan', implode('|', array_map('preg_quote', array_keys(config('layanan', [])))))
+        ->name('layanan.show');
 });
 
 // si.antosaarchitect.com langsung diarahkan ke login/dashboard

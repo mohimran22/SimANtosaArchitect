@@ -4,11 +4,8 @@
     $ftHome = url('/');
     $ftLinks = [
         ['Beranda',  $ftHome, []],
-        ['Layanan',  $ftHome . '#layanan', [
-            ['Jasa Arsitek',        $ftHome . '#layanan'],
-            ['Jasa Bangun rumah',   $ftHome . '#layanan'],
-            ['Jasa Renovasi Rumah', $ftHome . '#layanan'],
-        ]],
+['Layanan', $ftHome . '#layanan',
+    collect(config('layanan'))->map(fn ($l, $slug) => [$l['title'], route('layanan.show', $slug)])->values()->all()],
         ['Portofolio',   Route::has('artikel.index') ? route('artikel.index') : $ftHome . '#portfolio', []],
         ['Tentang Kami', $ftHome . '#tentang', []],
         ['Kontak Kami',  $ftHome . '#konsultasi', []],
@@ -82,7 +79,7 @@
 
 <div class="ft-bar">
     <div class="ft-bar-wrap">
-        <p class="ft-copy">Copyright © {{ date('Y') }} jasabangunrumahjember.com | <b>Antosa Architect</b></p>
+        <p class="ft-copy">Copyright © {{ date('Y') }} antosaarchitect.com | <b>Antosa Architect</b></p>
         <div class="ft-social">
             <a href="{{ $ftSocial['youtube'] }}" target="_blank" rel="noopener" aria-label="YouTube"><svg viewBox="0 0 576 512"><path d="M549.7 124.1c-6.3-23.7-24.8-42.3-48.3-48.6C458.8 64 288 64 288 64S117.2 64 74.6 75.5c-23.5 6.3-42 24.9-48.3 48.6C14.9 167 14.9 256.4 14.9 256.4s0 89.4 11.4 132.3c6.3 23.6 24.8 41.5 48.3 47.8C117.2 448 288 448 288 448s170.8 0 213.4-11.5c23.5-6.3 42-24.2 48.3-47.8 11.4-42.9 11.4-132.3 11.4-132.3s0-89.4-11.4-132.3zM232.2 337.6V175.2l142.7 81.2-142.7 81.2z"/></svg></a>
             <a href="{{ $ftSocial['tiktok'] }}" target="_blank" rel="noopener" aria-label="TikTok"><svg viewBox="0 0 448 512"><path d="M448 209.9a210.1 210.1 0 0 1-122.8-39.3v179.8A162.5 162.5 0 1 1 185 188.3v89.9a74.6 74.6 0 1 0 52.2 71.2V0h88a121.2 121.2 0 0 0 1.9 22.2A122.2 122.2 0 0 0 381 102.4a121.4 121.4 0 0 0 67 20.1z"/></svg></a>

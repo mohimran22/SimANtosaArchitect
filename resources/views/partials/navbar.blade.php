@@ -68,9 +68,9 @@
                         <i class="ti ti-chevron-down"></i>
                     </button>
                     <div class="mega-menu">
-                        <a href="https://si.antosaarchitect.com/jasa-arsitek">Jasa Arsitek</a>
-                        <a href="https://si.antosaarchitect.com/jasa-bangun-rumah">Jasa Bangun Rumah</a>
-                        <a href="https://si.antosaarchitect.com/jasa-renovasi-rumah">Jasa Renovasi Rumah</a>
+                        @foreach (config('layanan') as $slug => $l)
+                            <a href="{{ route('layanan.show', $slug) }}">{{ $l['title'] }}</a>
+                        @endforeach
                     </div>
                 </div>
 
@@ -78,7 +78,7 @@
                 <a href="#" class="{{ request()->is('/') ? 'active' : '' }}">Tentang Kami</a>
                 <a href="https://wa.me/6285189523863">Kontak Kami</a>
                 <a href="{{ url('/') }}#listing">Listing Rumah</a>
-                <a href="https://wa.me/6285189523863" target="_blank" rel="noopener" class="btn-contact">Hubungi Kami</a>
+                <a href="https://wa.link/1lzgs1" target="_blank" rel="noopener" class="btn-contact">Hubungi Kami</a>
             </nav>
         </div>
     </div>

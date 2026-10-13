@@ -15,7 +15,7 @@
     background:
         linear-gradient(to top, #000 0%, rgba(0,0,0,0) 22%),
         linear-gradient(90deg, rgba(0,0,0,.92) 0%, rgba(0,0,0,.6) 40%, rgba(0,0,0,0) 70%),
-        url('{{ asset('bg-gedung.jpeg') }}') right bottom/cover no-repeat;
+        var(--hero-bg, url('{{ asset('bg-gedung.jpeg') }}')) right bottom/cover no-repeat;
 }
 .hero-content{
     width:min(100% - 40px,1200px);
@@ -76,7 +76,7 @@
         padding:60px 0 120px;
         background:
             linear-gradient(to bottom, rgba(0,0,0,.8), rgba(0,0,0,.6)),
-            url('{{ asset('bg-gedung.jpeg') }}') 85% top/cover no-repeat;
+            var(--hero-bg, url('{{ asset('bg-gedung.jpeg') }}')) 85% top/cover no-repeat;
     }
     .hero-content{ width:calc(100% - 32px); }
     .hero-buttons{ margin-top:28px; }
@@ -560,9 +560,9 @@ html{ scroll-behavior:smooth; }
 @media (max-width:700px){ .faq{ padding:60px 0 70px; } }
 </style>
 
-<section class="hero">
+<section class="hero" @isset($heroImage) style="--hero-bg:url('{{ asset($heroImage) }}')" @endisset>
     <div class="hero-content">
-        <h1>Jasa Arsitek<br>Jember</h1>
+        <h1>{!! $heroTitle ?? 'Jasa Arsitek<br>Jember' !!}</h1>
         <h2>Rancang Kebaikan, <span class="rotating" id="rotatingText">Membangun Kehidupan</span></h2>
         <p>Antosa Architect merupakan jasa arsitek jember profesional berlisensi yang berkomitmen menghadirkan solusi hunian terbaik bagi Anda.</p>
         <div class="hero-buttons">
@@ -655,43 +655,27 @@ html{ scroll-behavior:smooth; }
     </div>
 </section>
 
-{{-- Layanan (siap diganti data dari database/CMS) --}}
 @php
-    $services = $services ?? [
-        [
-            'title'   => 'Jasa Arsitek',
-            'excerpt' => 'Perancangan arsitektur, tata ruang, dan detail teknis seperti struktur, sirkulasi udara, pencahayaan alami, regulasi bangunan.',
-            'image'   => 'images/layanan-arsitek.webp',
-            'url'     => '#',
-        ],
-        [
-            'title'   => 'Jasa Renovasi Rumah',
-            'excerpt' => 'Merenovasi, perbaikan, dan perawatan bangunan, meningkatkan kualitas bangunan menjadi lebih sehat dan nyaman.',
-            'image'   => 'images/layanan-renovasi.webp',
-            'url'     => '#',
-        ],
-        [
-            'title'   => 'Jasa Bangun Rumah',
-            'excerpt' => 'Konstruksi Bangunan dari Nol, memastikan setiap bangunan memiliki kualitas terbaik, nyaman dan sehat.',
-            'image'   => 'images/layanan-bangun.webp',
-            'url'     => '#',
-        ],
-    ];
+    $services = $services ?? collect(config('layanan'))->map(fn ($l, $slug) => [
+        'title' => $l['title'], 'excerpt' => $l['excerpt'], 'image' => $l['image'],
+        'url'   => route('layanan.show', $slug),
+    ])->values()->all();
+    $servicesHeading = $servicesHeading ?? 'Layanan Jasa Arsitek Jember - Antosa Architect';
 @endphp
 <section class="services" id="layanan">
-    <h2>Layanan Jasa Arsitek Jember - Antosa Architect</h2>
+    <h2>{{ $servicesHeading }}</h2>
     <div class="services-grid">
         @foreach ($services as $service)
+            @php $ext = str_starts_with($service['url'], 'http'); @endphp
             <article class="service-card">
                 <img src="{{ asset($service['image']) }}" alt="{{ $service['title'] }}">
                 <h3>{{ $service['title'] }}</h3>
                 <p>{{ $service['excerpt'] }}</p>
-                <a href="{{ $service['url'] }}" class="service-btn">Info Selengkapnya</a>
+                <a href="{{ $service['url'] }}" class="service-btn" @if($ext) target="_blank" rel="noopener" @endif>Info Selengkapnya</a>
             </article>
         @endforeach
     </div>
 </section>
-
 {{-- Visi & Misi --}}
 <section class="vm">
     <div class="vm-visi">
