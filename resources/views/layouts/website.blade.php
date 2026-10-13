@@ -8,6 +8,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     {!! SEO::generate() !!}
+    <meta name="google-site-verification" content="xqx_628Xnnn190lY2t-dRdsZiPJmUpx4yb0DY_aHqqs" />
     <!-- sesuaikan dengan brand guidelines -->
     <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
 
