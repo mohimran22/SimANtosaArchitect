@@ -152,7 +152,7 @@
                                           class="form-control">{{ old('meta_description', $article->meta_description) }}</textarea>
                             </div>
 
-                            <div class="row g-3 mb-3">
+                            {{-- <div class="row g-3 mb-3">
                                 <div class="col-md-6">
                                     <label class="form-label">Canonical URL <span class="text-muted">(opsional)</span></label>
                                     <input type="url" name="canonical_url" class="form-control"
@@ -168,52 +168,108 @@
                                 <input type="checkbox" name="noindex" value="1" class="form-check-input"
                                        @checked(old('noindex', $article->noindex))>
                                 <span class="form-check-label">Jangan diindex Google (noindex)</span>
-                            </label>
+                            </label> --}}
+                            @php
+    $advancedOpen = old('canonical_url', $article->canonical_url)
+        || $article->og_image
+        || old('noindex', $article->noindex)
+        || $errors->has('canonical_url')
+        || $errors->has('og_image');
+@endphp
 
-<div class="form-label">Preview</div>
-<div class="btn-group btn-group-sm mb-2" id="pv-tabs" role="group">
-    <button type="button" class="btn btn-outline-secondary active" data-pv="desktop">Google (desktop)</button>
-    <button type="button" class="btn btn-outline-secondary" data-pv="mobile">Google (mobile)</button>
-    <button type="button" class="btn btn-outline-secondary" data-pv="share">Share (WhatsApp/Facebook)</button>
-</div>
+<details class="border rounded-3 mb-4" @if($advancedOpen) open @endif>
+    <summary class="px-3 py-2 fw-semibold" style="cursor:pointer">
+        Pengaturan lanjutan <span class="text-muted fw-normal">(opsional, boleh dilewati)</span>
+    </summary>
 
-<div class="border rounded p-3 mb-4 bg-white" style="max-width:640px;font-family:Arial,sans-serif">
+    <div class="p-3 border-top">
 
-    {{-- Google desktop --}}
-    <div id="pv-desktop">
-        <div class="pv-url" style="color:#188038;font-size:13px"></div>
-        <div class="pv-title" style="color:#1a0dab;font-size:19px"></div>
-        <div class="pv-desc" style="color:#4d5156;font-size:13px"></div>
-    </div>
+        {{-- Gambar share --}}
+        <div class="mb-4">
+            <label class="form-label">Gambar share</label>
+            <input type="file" name="og_image" accept="image/*" class="form-control">
+            <div class="text-muted small mt-1">
+                Gambar yang muncul saat link artikel dibagikan ke WhatsApp atau Facebook.
+                Kosongkan saja untuk memakai gambar utama artikel.
+            </div>
+            @if($article->og_image)
+                <div class="small mt-2">
+                    Gambar share saat ini:
+                    <img src="{{ asset('storage/'.$article->og_image) }}" alt="" height="40" class="rounded ms-1">
+                </div>
+            @endif
+        </div>
 
-    {{-- Google mobile (dengan thumbnail) --}}
-    <div id="pv-mobile" style="display:none;max-width:380px">
-        <div class="d-flex align-items-center mb-2" style="gap:8px">
-            <img src="{{ asset('favicon.ico') }}" width="22" height="22" alt="" style="border-radius:50%">
-            <div style="line-height:1.25">
-                <div style="font-size:13px;color:#202124">Antosa Architect</div>
-                <div class="pv-url" style="font-size:11px;color:#4d5156"></div>
+        {{-- Canonical URL --}}
+        <div class="mb-4">
+            <label class="form-label">Canonical URL</label>
+            <input type="text" name="canonical_url" class="form-control" placeholder="https://…"
+                   value="{{ old('canonical_url', $article->canonical_url) }}">
+            <div class="text-muted small mt-1">
+                Kosongkan, kecuali artikel ini salinan dari tulisan lain dan kamu ingin Google
+                menganggap alamat aslinya sebagai yang utama. Kalau diisi salah, artikel ini bisa
+                hilang dari hasil pencarian.
             </div>
         </div>
-        <div class="d-flex" style="gap:12px">
-            <div>
-                <div class="pv-title" style="color:#1a0dab;font-size:17px;line-height:1.3"></div>
-                <div class="pv-desc" style="color:#4d5156;font-size:13px;margin-top:4px"></div>
-            </div>
-            <div class="pv-img" style="width:92px;height:92px;flex:none;border-radius:8px"></div>
-        </div>
-    </div>
 
-    {{-- Kartu share --}}
-    <div id="pv-share" style="display:none;max-width:500px;border:1px solid #dadde1;border-radius:8px;overflow:hidden">
-        <div class="pv-img" style="width:100%;aspect-ratio:1.91/1"></div>
-        <div style="background:#f0f2f5;padding:10px 12px">
-            <div style="font-size:12px;color:#65676b;text-transform:uppercase">antosaarchitect.com</div>
-            <div class="pv-title" style="font-size:16px;font-weight:600;color:#050505"></div>
-            <div class="pv-desc" style="font-size:14px;color:#65676b"></div>
+        {{-- Noindex --}}
+        <div>
+            <label class="form-check mb-0">
+                <input type="checkbox" name="noindex" value="1" class="form-check-input"
+                       @checked(old('noindex', $article->noindex))>
+                <span class="form-check-label">Jangan tampilkan di Google (noindex)</span>
+            </label>
+            <div class="text-muted small ms-4">
+                Centang kalau halaman ini tidak boleh muncul di hasil pencarian Google.
+                Artikel tetap bisa dibuka lewat link-nya.
+            </div>
         </div>
     </div>
-</div>
+</details>
+                            <div class="form-label">Preview</div>
+                            <div class="btn-group btn-group-sm mb-2" id="pv-tabs" role="group">
+                                <button type="button" class="btn btn-outline-secondary active" data-pv="desktop">Google (desktop)</button>
+                                <button type="button" class="btn btn-outline-secondary" data-pv="mobile">Google (mobile)</button>
+                                <button type="button" class="btn btn-outline-secondary" data-pv="share">Share (WhatsApp/Facebook)</button>
+                            </div>
+
+                            <div class="border rounded p-3 mb-4 bg-white" style="max-width:640px;font-family:Arial,sans-serif">
+
+                                {{-- Google desktop --}}
+                                <div id="pv-desktop">
+                                    <div class="pv-url" style="color:#188038;font-size:13px"></div>
+                                    <div class="pv-title" style="color:#1a0dab;font-size:19px"></div>
+                                    <div class="pv-desc" style="color:#4d5156;font-size:13px"></div>
+                                </div>
+
+                                {{-- Google mobile (dengan thumbnail) --}}
+                                <div id="pv-mobile" style="display:none;max-width:380px">
+                                    <div class="d-flex align-items-center mb-2" style="gap:8px">
+                                        <img src="{{ asset('favicon.ico') }}" width="22" height="22" alt="" style="border-radius:50%">
+                                        <div style="line-height:1.25">
+                                            <div style="font-size:13px;color:#202124">Antosa Architect</div>
+                                            <div class="pv-url" style="font-size:11px;color:#4d5156"></div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex" style="gap:12px">
+                                        <div>
+                                            <div class="pv-title" style="color:#1a0dab;font-size:17px;line-height:1.3"></div>
+                                            <div class="pv-desc" style="color:#4d5156;font-size:13px;margin-top:4px"></div>
+                                        </div>
+                                        <div class="pv-img" style="width:92px;height:92px;flex:none;border-radius:8px"></div>
+                                    </div>
+                                </div>
+
+                                {{-- Kartu share --}}
+                                <div id="pv-share" style="display:none;max-width:500px;border:1px solid #dadde1;border-radius:8px;overflow:hidden">
+                                    <div class="pv-img" style="width:100%;aspect-ratio:1.91/1"></div>
+                                    <div style="background:#f0f2f5;padding:10px 12px">
+                                        <div style="font-size:12px;color:#65676b;text-transform:uppercase">antosaarchitect.com</div>
+                                        <div class="pv-title" style="font-size:16px;font-weight:600;color:#050505"></div>
+                                        <div class="pv-desc" style="font-size:14px;color:#65676b"></div>
+                                    </div>
+                                </div>
+                            </div>
 
                             <div class="form-label">Analisis</div>
                             <div id="analysis" class="text-muted">Menganalisis…</div>

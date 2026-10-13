@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Article;
 use App\Models\Tag;
+use App\Support\OgImage;
 use App\Services\SeoAnalyzer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
