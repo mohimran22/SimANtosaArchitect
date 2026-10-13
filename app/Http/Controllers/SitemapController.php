@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Article;
+use App\Models\PropertiDijual;
 
 class SitemapController extends Controller
 {
@@ -16,6 +17,12 @@ class SitemapController extends Controller
         $articles = Article::published()->where('noindex', false)->latest('updated_at')->get();
         foreach ($articles as $a) {
             $urls[] = ['loc' => route('articles.show', $a), 'lastmod' => $a->updated_at->toAtomString()];
+        }
+        foreach (PropertiDijual::published()->get(['slug', 'updated_at']) as $p) {
+            $urls[] = [
+                'loc'     => route('listing.show', $p->slug),
+                'lastmod' => $p->updated_at?->toAtomString(),
+            ];
         }
 
         $xml  = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
