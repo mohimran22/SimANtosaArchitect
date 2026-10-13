@@ -126,9 +126,9 @@
     ], fn ($v) => filled($v));
 
     // Agen
-    $agenFoto    = $listing->agen_foto ? asset('storage/' . $listing->agen_foto) : null;
+    $agenFoto = asset('images/logo-icon.png');
     $agenInisial = mb_strtoupper(mb_substr($listing->agen_nama, 0, 1));
-
+    $agenNama = 'Antosa Land';
     // Jadwal survei: 3 hari cepat (hari ini + 2 hari)
     $hariCepat = collect(range(0, 2))->map(function ($i) use ($listing, $waLink) {
         $d = now()->addDays($i)->locale('id');
@@ -277,7 +277,8 @@
     .ls-side{ position:sticky; top:calc(var(--ls-top) + 76px); }
     .ls-side .ls-card{ padding:30px; margin-bottom:20px; }
     .ls-agent{ display:flex; gap:16px; align-items:center; margin-bottom:22px; }
-    .ls-avatar{ width:56px; height:56px; border-radius:50%; object-fit:cover; background:#222; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:22px; flex:none; }
+    .ls-avatar{ width:56px; height:56px; border-radius:50%; object-fit:contain; background:#fff;
+            border:1px solid var(--ls-line); padding:8px; flex:none; }
     .ls-agent strong{ display:block; font-size:18px; font-weight:600; color:#2b2b2b; }
     .ls-agent small{ color:#666; font-size:14px; display:flex; align-items:center; gap:6px; }
     .ls-agent small::before{ content:""; width:7px; height:7px; border-radius:50%; background:#f5a623; }
@@ -533,6 +534,13 @@
             <aside class="ls-side">
                 <div class="ls-card">
                     <div class="ls-agent">
+                        <img class="ls-avatar" src="{{ $agenFoto }}" alt="{{ $listing->agen_nama }}">
+                        <div>
+                            <strong>{{ $agenNama }}</strong>
+                            {{-- <small>{{ $listing->agen_peran }}</small> --}}
+                        </div>
+                    </div>
+                    {{-- <div class="ls-agent">
                         @if ($agenFoto)
                             <img class="ls-avatar" src="{{ $agenFoto }}" alt="{{ $listing->agen_nama }}">
                         @else
@@ -542,7 +550,7 @@
                             <strong>{{ $listing->agen_nama }}</strong>
                             <small>{{ $listing->agen_peran }}</small>
                         </div>
-                    </div>
+                    </div> --}}
 
                     <a class="ls-cta wa" target="_blank" rel="noopener" href="{{ $waLink($pesanTanya) }}">
                         <i class="ti ti-brand-whatsapp"></i> Tanya via WhatsApp

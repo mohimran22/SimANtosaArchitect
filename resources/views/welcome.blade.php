@@ -434,7 +434,8 @@ html{ scroll-behavior:smooth; }
     border-top:1px solid #f0f0f0; margin-top:18px; padding-top:16px;
 }
 .pf-agent{ display:flex; align-items:center; gap:10px; flex:1; min-width:0; }
-.pf-agent img{ width:36px; height:36px; border-radius:50%; object-fit:cover; background:#eee; }
+.pf-agent img{ width:36px; height:36px; border-radius:50%; object-fit:contain; background:#fff;
+               border:1px solid #ececf0; padding:6px; flex:none; }
 .pf-agent strong{ display:block; font-size:13px; font-weight:600; line-height:1.3; }
 .pf-agent small{ font-size:11px; color:#777; display:flex; align-items:center; gap:5px; }
 .pf-agent small::before{ content:""; width:6px; height:6px; border-radius:50%; background:#f5a400; }
@@ -645,11 +646,11 @@ html{ scroll-behavior:smooth; }
         <div class="legal-col">
             <h3>Architect Legal</h3>
             {{-- ganti dengan nama file gambar kamu --}}
-            <img class="img-a" src="{{ asset('images/legal-architect.webp') }}" alt="Legalitas arsitek Antosa Architect">
+            <img class="img-a" src="{{ asset('legal-engineer.jpg') }}" alt="Legalitas arsitek Antosa Architect">
         </div>
         <div class="legal-col">
             <h3>Engineer Legal</h3>
-            <img class="img-b" src="{{ asset('images/legal-engineer.webp') }}" alt="Legalitas insinyur Antosa Architect">
+            <img class="img-b" src="{{ asset('legal-architect.jpg') }}" alt="Legalitas insinyur Antosa Architect">
         </div>
     </div>
 </section>
@@ -734,6 +735,8 @@ html{ scroll-behavior:smooth; }
     //     : $v;
     $lsWa   = function ($no) { $n = preg_replace('/\D/', '', (string) $no); return str_starts_with($n, '0') ? '62' . substr($n, 1) : $n; };
     $waMarketing = $lsWa(config('antosa.wa_marketing'));
+    $agenLogo = asset('images/logo-icon.png');   // logo statis untuk semua agen
+    $agenNama = 'Antosa Land';
 @endphp
 <section class="pf" id="listing">
     <div class="pf-wrap">
@@ -784,10 +787,9 @@ html{ scroll-behavior:smooth; }
                         </div>
                         <div class="pf-foot">
                             <div class="pf-agent">
-                                <img src="{{ $lsImg(data_get($l, 'agen_foto')) }}" alt="{{ data_get($l, 'agen_nama') }}">
+                                <img src="{{ $agenLogo }}" alt="{{ $agenNama }}">
                                 <div>
-                                    <strong>{{ data_get($l, 'agen_nama') }}</strong>
-                                    {{-- <small>{{ data_get($l, 'agen_peran') }}</small> --}}
+                                    <strong>{{ $agenNama }}</strong>
                                 </div>
                             </div>
                             <a href="tel:+{{ $waMarketing }}" class="pf-call" aria-label="Telepon"><i class="ti ti-phone"></i></a>
