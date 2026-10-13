@@ -46,52 +46,49 @@ class HomeController extends Controller
     }
 
     /** Judul, deskripsi, canonical, dan gambar share untuk halaman listing. */
-    private function applySeo(PropertiDijual $listing, string $slug): void
-    {
-        // CATATAN: nama kolom di bawah adalah tebakan umum. Cek tabel properti_dijual-mu
-        // dan sisakan nama yang benar saja (lihat bagian "Cek nama kolom" di balasan).
-        $title = $this->pick($listing, ['judul', 'nama', 'title', 'nama_properti']) ?: 'Properti Dijual';
+private function applySeo(PropertiDijual $listing, string $slug): void
+{
+    $title = trim((string) $listing->judul) ?: 'Properti Dijual';
 
-        $location = collect([
-            $listing->district?->name,
-            $listing->city?->name,
-            $listing->province?->name,
-        ])->filter()->implode(', ');
+    $location = collect([
+        $listing->district?->name,
+        $listing->city?->name,
+        $listing->province?->name,
+    ])->filter()->implode(', ');
 
-        $rawDesc = (string) $this->pick($listing, ['deskripsi', 'description', 'keterangan']);
-        $desc    = trim(preg_replace('/\s+/', ' ', strip_tags(str_replace('<', ' <', $rawDesc))));
-        if ($desc === '') {
-            $desc = "{$title}" . ($location ? " di {$location}" : '') . '. Hubungi Antosa Architect untuk informasi lengkap.';
-        }
-        $desc = Str::limit($desc, 160);
+    $rawDesc = (string) $listing->deskripsi;
+    $desc    = trim(preg_replace('/\s+/', ' ', strip_tags(str_replace('<', ' <', $rawDesc))));
+    if ($desc === '') {
+        $desc = $title . ($location ? " di {$location}" : '') . '. Hubungi Antosa Architect untuk informasi lengkap.';
+    }
+    $desc = Str::limit($desc, 160);
 
-        $url = route('listing.show', $slug);
+    $url = route('listing.show', $slug);
 
-        SEOMeta::setTitle($title);
-        SEOMeta::setDescription($desc);
-        SEOMeta::setCanonical($url);
+    SEOMeta::setTitle($title);
+    SEOMeta::setDescription($desc);
+    SEOMeta::setCanonical($url);
 
-        OpenGraph::setTitle($title)->setDescription($desc)->setUrl($url)
-            ->setType('website')->setSiteName('Antosa Architect');
-        TwitterCard::setTitle($title)->setDescription($desc);
-        JsonLd::setType('WebPage')->setTitle($title)->setDescription($desc)->setUrl($url);
+    OpenGraph::setTitle($title)->setDescription($desc)->setUrl($url)
+        ->setType('website')->setSiteName('Antosa Architect');
+    TwitterCard::setTitle($title)->setDescription($desc);
+    JsonLd::setType('WebPage')->setTitle($title)->setDescription($desc)->setUrl($url);
 
-        // Foto utama -> gambar share 1200x630 yang ringan (dibuat sekali, lalu dipakai ulang)
-        $foto = $listing->fotos->first();
-        $raw  = $foto ? $this->pick($foto, ['path', 'foto', 'file', 'gambar', 'url', 'nama_file']) : null;
+    // Foto utama dulu, baru foto tambahan pertama
+    $raw = $listing->foto ?: optional($listing->fotos->first())->path;
 
-        if ($raw) {
-            $path = ltrim(preg_replace('~^/?storage/~', '', $raw), '/');
-            $og   = OgImage::ensure($path);
+    if ($raw) {
+        $path = ltrim(preg_replace('~^/?storage/~', '', $raw), '/');
+        $og   = OgImage::ensure($path);
 
-            if ($og) {
-                $imgUrl = asset('storage/' . $og);
-                OpenGraph::addImage($imgUrl, ['width' => 1200, 'height' => 630]);
-                TwitterCard::setImage($imgUrl);
-                JsonLd::addImage($imgUrl);
-            }
+        if ($og) {
+            $imgUrl = asset('storage/' . $og);
+            OpenGraph::addImage($imgUrl, ['width' => 1200, 'height' => 630]);
+            TwitterCard::setImage($imgUrl);
+            JsonLd::addImage($imgUrl);
         }
     }
+}
 
     /** Ambil nilai teks pertama yang terisi dari daftar nama kolom. */
     private function pick($model, array $keys): ?string

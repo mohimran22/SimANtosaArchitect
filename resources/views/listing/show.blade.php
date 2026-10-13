@@ -399,7 +399,7 @@
         {{-- ===== Tab ===== --}}
         <nav class="ls-tabs" id="lsTabs" aria-label="Bagian halaman">
             <a class="t active" href="#foto">Foto</a>
-            <a class="t" href="#detail">Detail Properti</a>
+            <a class="t" href="#detail">Detail</a>
             @if ($fasilitas->isNotEmpty())<a class="t" href="#fasilitas">Fasilitas</a>@endif
             @if (filled($listing->deskripsi))<a class="t" href="#deskripsi">Deskripsi</a>@endif
             <a class="t" href="#lokasi">Detail Lokasi</a>
@@ -588,10 +588,10 @@
     </div>
 
     {{-- Bar kontak (mobile) --}}
-    <div class="ls-bar">
+    {{-- <div class="ls-bar">
         <a class="wa" target="_blank" rel="noopener" href="{{ $waLink($pesanTanya) }}"><i class="ti ti-brand-whatsapp"></i> WhatsApp</a>
         <a class="tel" href="tel:+{{ $wa }}"><i class="ti ti-phone"></i> Telepon</a>
-    </div>
+    </div> --}}
 
     {{-- ===== Lightbox ===== --}}
     <div class="ls-lb" id="lsLb" hidden role="dialog" aria-modal="true" aria-label="Galeri foto">
