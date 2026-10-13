@@ -7,17 +7,17 @@
 <div class="page-body">
     <div class="container-xl">
         <div class="card" style="max-width:600px"><div class="card-body">
-            <form method="POST" action="{{ route('categories.update', $cat) }}">
+            <form method="POST" action="{{ route('categories.update', $category) }}">
                 @csrf @method('PUT')
                 <div class="mb-3">
                     <label class="form-label">Nama</label>
-                    <input type="text" name="name" value="{{ old('name', $cat->name) }}"
+                    <input type="text" name="name" value="{{ old('name', $category->name) }}"
                            class="form-control @error('name') is-invalid @enderror" required>
                     @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Slug</label>
-                    <input type="text" name="slug" value="{{ old('slug', $cat->slug) }}"
+                    <input type="text" name="slug" value="{{ old('slug', $category->slug) }}"
                            class="form-control @error('slug') is-invalid @enderror">
                     @error('slug') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>

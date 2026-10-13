@@ -13,7 +13,7 @@ class Article extends Model
         'title', 'slug', 'content', 'excerpt', 'featured_image', 'author_id',
         'status', 'published_at', 'meta_title', 'meta_description',
         'focus_keyword', 'canonical_url', 'noindex', 'og_image', 'seo_score', 'readability_score', 'views',
-        'cta_enabled', 'cta_title', 'cta_text', 'cta_button', 'cta_url',
+        'cta_enabled', 'cta_title', 'cta_text', 'cta_button', 'cta_url', 'og_auto'
     ];
 
     protected $casts = [

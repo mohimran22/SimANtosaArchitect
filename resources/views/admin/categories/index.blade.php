@@ -23,7 +23,7 @@
             <div class="col-md-4">
                 <div class="card"><div class="card-body">
                     <h3 class="card-title">Tambah Kategori Baru</h3>
-                    <form method="POST" action="{{ route('categories.store') }}">
+                    <form id="category-create-form" method="POST" action="{{ route('categories.store') }}">
                         @csrf
                         <div class="mb-3">
                             <label class="form-label required">Nama</label>
@@ -39,7 +39,7 @@
                             @error('slug') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             <small class="text-muted">Versi URL dari nama. Kosongkan untuk otomatis.</small>
                         </div>
-                        <button class="btn btn-dark">Tambah Kategori</button>
+                        <button type="submit" class="btn btn-dark">Tambah Kategori</button>
                     </form>
                 </div></div>
             </div>
@@ -67,7 +67,7 @@
                         </div>
 
                         <div class="table-responsive">
-                            <table class="table table-vcenter card-table">
+                            <table id="categories-table" class="table table-vcenter card-table">
                                 <thead>
                                     <tr>
                                         <th style="width:30px"><input type="checkbox" id="check-all"></th>
@@ -119,5 +119,96 @@ function deleteCat(url) {
     f.action = url;
     f.submit();
 }
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('category-create-form');
+    const table = document.getElementById('categories-table');
+
+    if (!form || !table) return;
+
+    form.addEventListener('submit', async function (event) {
+        event.preventDefault();
+
+        const button = form.querySelector('button[type="submit"]');
+        const originalText = button.textContent;
+
+        button.disabled = true;
+        button.textContent = 'Menyimpan...';
+
+        try {
+            const response = await fetch(form.action, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: new FormData(form)
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                const messages = Object.values(data.errors || {})
+                    .flat()
+                    .join('\n');
+
+                throw new Error(
+                    messages || data.message || 'Gagal menyimpan kategori.'
+                );
+            }
+
+            if (data.existing) {
+                alert('Kategori tersebut sudah tersedia.');
+                return;
+            }
+
+            const tbody = table.querySelector('tbody');
+            const emptyRow = tbody.querySelector('td[colspan]');
+
+            if (emptyRow) {
+                tbody.innerHTML = '';
+            }
+
+            const row = document.createElement('tr');
+
+            const checkboxCell = document.createElement('td');
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.name = 'ids[]';
+            checkbox.value = data.id;
+            checkbox.className = 'row-check';
+            checkboxCell.appendChild(checkbox);
+
+            const nameCell = document.createElement('td');
+            const strong = document.createElement('strong');
+            const editLink = document.createElement('a');
+
+            editLink.href = `/categories/${data.id}/edit`;
+            editLink.textContent = data.name;
+            strong.appendChild(editLink);
+            nameCell.appendChild(strong);
+
+            const slugCell = document.createElement('td');
+            slugCell.textContent = data.slug || '';
+
+            const countCell = document.createElement('td');
+            countCell.textContent = '0';
+
+            row.append(checkboxCell, nameCell, slugCell, countCell);
+            tbody.prepend(row);
+
+            form.reset();
+
+            alert('Kategori berhasil ditambahkan.');
+
+        } catch (error) {
+            alert(error.message);
+        } finally {
+            button.disabled = false;
+            button.textContent = originalText;
+        }
+    });
+});
 </script>
 @endsection

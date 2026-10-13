@@ -315,7 +315,7 @@ const ANALYZE_URL  = @json(route('articles.analyze'));
 const ARTICLE_ID   = @json($article->id);
 const HAS_FEATURED = @json((bool) $article->featured_image);
 const CSRF         = @json(csrf_token());
-const EXISTING_OG       = @json($article->og_image ? asset('storage/'.$article->og_image) : null);
+const EXISTING_OG = @json(($article->og_auto ?: $article->og_image) ? asset('storage/'.($article->og_auto ?: $article->og_image)) : null);
 const EXISTING_FEATURED = @json($article->featured_image ? asset('storage/'.$article->featured_image) : null);
 let ogObjUrl = null, featObjUrl = null;   // pratinjau file yang baru dipilih (belum diupload)
 let editor, timer;

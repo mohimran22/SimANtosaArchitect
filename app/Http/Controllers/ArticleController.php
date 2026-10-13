@@ -30,11 +30,20 @@ class ArticleController extends Controller
         );
 
         $title = $article->meta_title ?: $article->title;
-$plain = trim(preg_replace('/\s+/', ' ', strip_tags(str_replace('<', ' <',
-    \App\Support\Shortcodes::strip($article->excerpt ?: $article->content)))));
-$desc  = $article->meta_description ?: \Illuminate\Support\Str::limit($plain, 160);
-        $img   = $article->og_image ?: $article->featured_image;
+        $plain = trim(preg_replace('/\s+/', ' ', strip_tags(str_replace('<', ' <',
+            \App\Support\Shortcodes::strip($article->excerpt ?: $article->content)))));
+        $desc  = $article->meta_description ?: \Illuminate\Support\Str::limit($plain, 160);
+        // sebelumnya: $img = $article->og_image ?: $article->featured_image;
+        $img    = $article->og_auto ?: ($article->og_image ?: $article->featured_image);
         $imgUrl = $img ? asset('storage/' . $img) : null;
+        if ($imgUrl) {
+            // Beri tahu ukuran gambar jika memakai versi otomatis (membantu WhatsApp/Facebook)
+            $article->og_auto
+                ? OpenGraph::addImage($imgUrl, ['width' => 1200, 'height' => 630])
+                : OpenGraph::addImage($imgUrl);
+            TwitterCard::setImage($imgUrl);
+            JsonLd::addImage($imgUrl);
+        }
         $canonical = $article->canonical_url ?: route('articles.show', $article);
 
         SEOMeta::setTitle($title, false);   // false = jangan tambahkan " - Antosa Architect"

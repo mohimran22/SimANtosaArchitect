@@ -21,52 +21,66 @@ class CategoryController extends Controller
         return view('admin.categories.index', compact('cats', 'orderby', 'order'));
     }
 
-    public function store(Request $request)
-    {
-        $data = $request->validate([
-            'name' => 'required|string|max:100|unique:categories,name',
-            'slug' => 'nullable|string|max:100|unique:categories,slug',
-            'parent_id' => 'nullable|integer|exists:categories,id',
-        ]);
-        $name     = trim(preg_replace('/\s+/', ' ', $data['name']));
-        $parentId = $data['parent_id'] ?? null;
+public function store(Request $request)
+{
+    $data = $request->validate([
+        'name' => 'required|string|max:100',
+        'slug' => 'nullable|string|max:100',
+        'parent_id' => 'nullable|integer|exists:categories,id',
+    ]);
 
-        // Jangan buat ganda (nama sama di induk yang sama)
-        $existing = Category::whereRaw('LOWER(name) = ?', [mb_strtolower($name)])
-            ->where('parent_id', $parentId)
-            ->first();
+    $name = trim(preg_replace('/\s+/', ' ', $data['name']));
+    $parentId = $data['parent_id'] ?? null;
 
-        if ($existing) {
-            return response()->json($this->payload($existing, true));
-        }
-        $category = Category::create([
-            'name'      => $name,
-            'parent_id' => $parentId,
-        ]);
+    // Cegah kategori dengan nama sama pada induk yang sama
+    $existing = Category::whereRaw('LOWER(name) = ?', [mb_strtolower($name)])
+        ->where('parent_id', $parentId)
+        ->first();
 
-        return response()->json($this->payload($category, false), 201);
+    if ($existing) {
+        return response()->json(
+            $this->payload($existing, true)
+        );
     }
 
-        private function payload(Category $c, bool $existing): array
+    $category = Category::create([
+        'name' => $name,
+        'slug' => $data['slug'] ?? null,
+        'parent_id' => $parentId,
+    ]);
+
+    return response()->json(
+        $this->payload($category, false),
+        201
+    );
+}
+
+private function payload(Category $category, bool $existing): array
+{
+    return [
+        'id' => $category->id,
+        'name' => $category->name,
+        'slug' => $category->slug,
+        'parent_id' => $category->parent_id,
+        'existing' => $existing,
+    ];
+}
+
+    public function edit(Category $category)
     {
-        return ['id' => $c->id, 'name' => $c->name, 'parent_id' => $c->parent_id, 'existing' => $existing];
+        return view('admin.categories.edit', compact('category'));
     }
 
-    public function edit(Category $cat)
-    {
-        return view('admin.categories.edit', compact('cat'));
-    }
-
-    public function update(Request $request, Category $cat)
+    public function update(Request $request, Category $category)
     {
         $data = $request->validate([
             'name' => 'required|string|max:100|unique:categories,name,' . $cat->id,
             'slug' => 'nullable|string|max:100|unique:categories,slug,' . $cat->id,
         ]);
 
-        $cat->update($data);
+        $category->update($data);
 
-        return redirect()->route('categories.index')->with('success', 'Tag diperbarui.');
+        return redirect()->route('categories.index')->with('success', 'Kategori diperbarui.');
     }
 
     public function destroy(Category $cat)
@@ -74,7 +88,7 @@ class CategoryController extends Controller
         $cat->articles()->detach();
         $cat->delete();
 
-        return redirect()->route('categories.index')->with('success', 'Tag dihapus.');
+        return redirect()->route('categories.index')->with('success', 'Kategori dihapus.');
     }
 
     public function bulk(Request $request)
@@ -86,7 +100,7 @@ class CategoryController extends Controller
                 $cat->articles()->detach();
                 $cat->delete();
             }
-            return redirect()->route('categories.index')->with('success', count($ids) . ' tag dihapus.');
+            return redirect()->route('categories.index')->with('success', count($ids) . ' Kategori dihapus.');
         }
 
         return redirect()->route('categories.index');

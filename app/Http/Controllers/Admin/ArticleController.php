@@ -203,6 +203,11 @@ private function afterSave(Request $request, Article $article): void
         ->map(fn ($name) => Tag::firstOrCreate(['slug' => Str::slug($name)], ['name' => $name])->id);
 
     $article->tags()->sync($tagIds);
+    $regenerate = $request->hasFile('featured_image') || $request->hasFile('og_image') || ! $article->og_auto;
+    if ($regenerate) {
+        $source = $article->og_image ?: $article->featured_image;
+        $article->update(['og_auto' => $source ? OgImage::make($source, $article->og_auto) : null]);
+    }
     $article->update(SeoAnalyzer::scores($article->fresh()));
 }
 
