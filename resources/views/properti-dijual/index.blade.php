@@ -6,7 +6,7 @@
                 <div class="col-12 col-md-auto ms-auto d-print-none">
                     <div class="btn-list">
                         @can('tambah data properti')       
-                                <a href="{{ route("jual.create") }}" class="btn btn-dark" >
+                                <a href="{{ route("property.create") }}" class="btn btn-dark" >
                                     <!-- Download SVG icon from http://tabler-icons.io/i/plus -->
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24"
                                         viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
@@ -69,7 +69,7 @@
     </div>
 </div>
 @can('tambah data properti')
-<a href="{{ route('jual.create') }}"
+<a href="{{ route('property.create') }}"
    class="mobile-fab d-md-none">
 
     <svg xmlns="http://www.w3.org/2000/svg"
@@ -107,7 +107,7 @@
                 processing: true,
                 responsive: false,
                 ajax: {
-                    url: '{{ route("jual.index") }}',
+                    url: '{{ route("property.index") }}',
                     data: function (d) {
                         d.type = projectType;
                     }
@@ -176,7 +176,7 @@
                 if (result.isConfirmed) {
                     $.ajax({
 
-                        url: `/jual/${projectId}`,
+                        url: `/property/${projectId}`,
                         method: 'DELETE',
                         data: {
                             _token: '{{ csrf_token() }}',

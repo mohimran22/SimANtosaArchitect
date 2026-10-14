@@ -119,10 +119,12 @@
                         </th>
 
                         <th>
+                            <div class="d-flex align-items-center gap-2"> 
+                                <span>-</span> 
                             <input type="text"
                                 class="form-control"
                                 id="rab_discount_display_edit">
-
+                            </div>
                             <input type="hidden"
                                 name="discount"
                                 id="rab_discount">

@@ -21,6 +21,7 @@ class LayananController extends Controller
             'heroTitle'       => $l['hero_title'] ?? null,
             'servicesHeading' => $l['heading'],
             'services'        => $l['items'],
+            'showListing'     => false,
         ]);
     }
 }

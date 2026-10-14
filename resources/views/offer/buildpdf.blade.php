@@ -414,7 +414,7 @@ berikut kami sampaikan penawaran harga untuk pelaksanaan pekerjaan:
             </th>
             <th align="right">
 
-                Rp
+               - Rp
                 {{ number_format(
                     $discount,
                     0,
@@ -534,7 +534,7 @@ berikut kami sampaikan penawaran harga untuk pelaksanaan pekerjaan:
 
             <th align="right">
 
-                Rp
+               - Rp
                 {{ number_format(
                     $extraDiscount,
                     0,

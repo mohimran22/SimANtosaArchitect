@@ -699,7 +699,7 @@ html{ scroll-behavior:smooth; }
     </div>
 </section>
 
-{{-- Listing Rumah: data dari SIMAntosa ($listings dikirim dari controller) --}}
+@if ($showListing ?? true)
 @php
     // ---- data contoh, otomatis diabaikan kalau controller mengirim $listings ----
     $listings = $listings ?? [
@@ -724,7 +724,7 @@ html{ scroll-behavior:smooth; }
 @endphp
 <section class="pf" id="listing">
     <div class="pf-wrap">
-        <h2>Pilihan Properti Dijual</h2>
+        <h2>Antosa Land</h2>
         <p class="pf-sub">Temukan rumah dan properti pilihan langsung dari pemilik &amp; agen terverifikasi.</p>
 
         <div class="pf-tabs" id="pfTabs">
@@ -785,7 +785,7 @@ html{ scroll-behavior:smooth; }
         </div>
     </div>
 </section>
-{{-- Portfolio / Artikel (3 kolom x 4 baris). Siap diganti data CMS: kirim $articles dari controller --}}
+@endif
 @php
     // Tiap item: title, image (boleh kosong => tampil kartu teks), url
     $articles = collect($articles ?? [

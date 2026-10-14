@@ -11,8 +11,14 @@ class SitemapController extends Controller
     {
         $urls = [
             ['loc' => url('/'), 'lastmod' => null],
+            ['loc' => route('land.index'), 'lastmod' => null],
             ['loc' => route('artikel.index'), 'lastmod' => null],
         ];
+
+        // halaman layanan (jasa-arsitek, jasa-renovasi-rumah, jasa-bangun-rumah) dari config/layanan.php
+        foreach (array_keys(config('layanan', [])) as $slug) {
+            $urls[] = ['loc' => route('layanan.show', $slug), 'lastmod' => null];
+        }
 
         $articles = Article::published()->where('noindex', false)->latest('updated_at')->get();
         foreach ($articles as $a) {

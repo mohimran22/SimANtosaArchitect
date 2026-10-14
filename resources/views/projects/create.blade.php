@@ -44,17 +44,17 @@
                                     ? '6. Invoice Pembayaran Desain (DP)'
                                     : ($project?->project_type == 2
                                         ? '5. Invoice Jasa Pembuatan RAB'
-                                        : '6. Invoice Termin');
+                                        : '7. Invoice Termin');
                             $workTitle =
                                 $project?->project_type == 1
                                     ? '7. Form Pengerjaan'
                                     : ($project?->project_type == 2
                                         ? '6. Form Pembuatan RAB'
-                                        : '7. Form Kemajuan Pekerjaan');
+                                        : '8. Form Kemajuan Pekerjaan');
                             $finalTitle =
                                 $project?->project_type == 1
                                     ? '9. Hasil Proyek'
-                                    : '8. Serah Terima';
+                                    : '9. Serah Terima';
                             $invoiceFinalTitle =
                                 $project?->project_type == 1
                                     ? '8. Invoice Pelunasan Desain'

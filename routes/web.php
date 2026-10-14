@@ -48,13 +48,14 @@ use App\Http\Controllers\Api\JournalApiController;
 use App\Http\Controllers\JournalExportController;
 use App\Http\Controllers\KasController;
 use App\Http\Controllers\HomeController;
-use App\Http\Controllers\PropertiDijualController;
+use App\Http\Controllers\PropertyController;
 use App\Http\Controllers\TipePropertiController;
 use App\Http\Controllers\Admin\ArticleController as AdminArticleController;
 use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\LayananController;
+use App\Http\Controllers\LandController;
 
 $homeDomain = config('app.home_domain');
 $simDomain  = config('app.sim_domain');
@@ -62,7 +63,8 @@ $simDomain  = config('app.sim_domain');
 // Homepage (didaftarkan paling awal supaya menang untuk domain utama)
 Route::domain($homeDomain)->group(function () {
     Route::get('/', [HomeController::class, 'index'])->name('landing');
-    Route::get('/listing/{slug}', [HomeController::class, 'show'])->name('listing.show');
+    Route::get('/antosa-land/{slug}', [HomeController::class, 'show'])->name('listing.show');
+    Route::get('/antosa-land', [LandController::class, 'index'])->name('land.index');
     Route::get('/artikel', [ArticleController::class, 'index'])->name('artikel.index');
     Route::get('/artikel/{article:slug}', [ArticleController::class, 'show'])->name('articles.show');
     Route::get('/sitemap.xml', [SitemapController::class, 'index']);
@@ -769,13 +771,13 @@ Route::middleware(['auth', 'permission:kelola akun'])->group(function () {
 });
 
 Route::middleware(['auth'])->group(function () {
-    Route::post('jual/tipe', [PropertiDijualController::class, 'storeTipe'])->name('jual.tipe.store');
-    Route::delete('jual/foto/{foto}', [PropertiDijualController::class, 'destroyFoto'])->name('jual.foto.destroy');
+    Route::post('jual/tipe', [PropertyController::class, 'storeTipe'])->name('jual.tipe.store');
+    Route::delete('jual/foto/{foto}', [PropertyController::class, 'destroyFoto'])->name('jual.foto.destroy');
     Route::resource('tipe-properti', TipePropertiController::class)
         ->parameters(['tipe-properti' => 'tipe'])
         ->only(['index', 'store', 'update', 'destroy']);
-    Route::resource('jual', PropertiDijualController::class)
-        ->parameters(['jual' => 'properti']);
+    Route::resource('property', PropertyController::class);
+        // ->parameters(['jual' => 'properti']);
 });
 
 Route::middleware(['auth', 'permission:lihat data absensi'])->group(function () {

@@ -370,18 +370,18 @@
         {{-- Bar admin: hanya untuk user login --}}
         <div class="ls-admin">
             <nav class="ls-crumb" aria-label="Breadcrumb" style="margin:0">
-                <a href="{{ route('jual.index') }}">Properti Dijual</a><span>›</span>
+                <a href="{{ route('property.index') }}">Properti Dijual</a><span>›</span>
                 <span>{{ $listing->judul }}</span>
             </nav>
             <div class="ls-admin-act">
                 <span class="ls-pill {{ $listing->is_published ? 'on' : '' }}">{{ $listing->is_published ? 'Terbit di website' : 'Draft' }}</span>
                 @can('ubah data properti')
-                    <a href="{{ route('jual.edit', $listing->id) }}" class="ls-abtn"><i class="ti ti-edit"></i> Ubah</a>
+                    <a href="{{ route('property.edit', $listing->id) }}" class="ls-abtn"><i class="ti ti-edit"></i> Ubah</a>
                 @endcan
                 @if ($listing->is_published && Route::has('listing.show'))
                     <a href="{{ $listing->url }}" target="_blank" rel="noopener" class="ls-abtn"><i class="ti ti-external-link"></i> Lihat di website</a>
                 @endif
-                <a href="{{ route('jual.index') }}" class="ls-abtn"><i class="ti ti-arrow-left"></i> Kembali</a>
+                <a href="{{ route('property.index') }}" class="ls-abtn"><i class="ti ti-arrow-left"></i> Kembali</a>
             </div>
         </div>
 

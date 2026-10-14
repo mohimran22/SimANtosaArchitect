@@ -9,7 +9,7 @@ class HomepageOnly
 {
 public function handle(Request $request, Closure $next)
 {
-    $allowed = $request->routeIs('landing*', 'listing.*', 'artikel.*', 'articles.show', 'layanan.show')
+    $allowed = $request->routeIs('landing*', 'listing.*', 'artikel.*', 'articles.show', 'layanan.show', 'land.index')
         || $request->is('sitemap.xml', 'robots.txt');
 
     if ($request->getHost() === config('app.home_domain') && ! $allowed) {

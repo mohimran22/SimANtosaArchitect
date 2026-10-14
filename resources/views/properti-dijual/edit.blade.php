@@ -4,7 +4,7 @@
     <div class="container-xl">
         <div class="row align-items-center">
             <div class="col d-flex align-items-center">
-                <a href="{{ route('jual.index') }}" class="btn btn-dark d-flex align-items-center">
+                <a href="{{ route('property.index') }}" class="btn btn-dark d-flex align-items-center">
                     <i class="ti ti-arrow-left"></i>
                 </a>
                 <h2 class="page-title mb-0">Edit Data Properti</h2>
@@ -19,7 +19,7 @@
         @endif
         <div class="card shadow-sm border-0">
             <div class="card-body px-5 py-4">
-                <form action="{{ route('jual.update', $item) }}" method="POST" enctype="multipart/form-data">
+                <form action="{{ route('property.update', $item) }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
                     @include('properti-dijual._form')

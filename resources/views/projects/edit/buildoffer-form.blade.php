@@ -108,13 +108,15 @@
                             </th>
 
                             <th>
+                                <div class="d-flex align-items-center gap-2"> 
+                                <span>-</span> 
                                 <input
                                     type="text"
                                     class="form-control rupiah"
                                     id="discount_display_build"
                                     readonly
                                 >
-
+                                </div>
                                 <input
                                     type="hidden"
                                     name="discount"
@@ -198,13 +200,15 @@
                             </th>
 
                             <th>
+                                <div class="d-flex align-items-center gap-2"> 
+                                <span>-</span> 
                                 <input
                                     type="text"
                                     class="form-control rupiah"
                                     id="extra_discount_display_build"
                                     value="Rp 0"
                                 >
-
+                                </div>
                                 <input
                                     type="hidden"
                                     name="extra_discount"

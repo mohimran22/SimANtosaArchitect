@@ -387,7 +387,7 @@ function numberToLetters($num) {
 
                     <th class="text-end">
 
-                        Rp
+                       - Rp
                         {{ number_format(
                             $discount,
                             0,
@@ -519,7 +519,7 @@ function numberToLetters($num) {
 
                     <th class="text-end">
 
-                        Rp
+                       - Rp
                         {{ number_format(
                             $extraDiscount,
                             0,

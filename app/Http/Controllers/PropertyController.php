@@ -12,7 +12,7 @@ use App\Models\{Province, District, SubDistrict, PostalCode};
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
-class PropertiDijualController extends Controller
+class PropertyController extends Controller
 {
     public function index(Request $request)
     {
@@ -40,12 +40,12 @@ class PropertiDijualController extends Controller
                 ->addColumn('action', function ($r) {
                     $buttons = '';
                     if (auth()->user()->can('ubah data properti')) {
-                        $buttons .= '<a href="' . route('jual.edit', $r->id) . '" class="btn btn-icon btn-sm btn-dark me-1" title="Ubah">
+                        $buttons .= '<a href="' . route('property.edit', $r->id) . '" class="btn btn-icon btn-sm btn-dark me-1" title="Ubah">
                                         <i class="ti ti-edit"></i>
                                     </a>';
                     }
                     if (auth()->user()->can('lihat data properti')) {
-                        $buttons .= '<a href="' . route('jual.show', $r->id) . '" class="btn btn-icon btn-sm btn-dark me-1" title="Lihat">
+                        $buttons .= '<a href="' . route('property.show', $r->id) . '" class="btn btn-icon btn-sm btn-dark me-1" title="Lihat">
                                         <i class="ti ti-eye"></i>
                                     </a>';
 
@@ -72,47 +72,47 @@ class PropertiDijualController extends Controller
     public function store(Request $request)
     {
         $data = $this->handleUploads($request, $this->validated($request));
-        $properti = PropertiDijual::create($data);
-        $this->simpanFotoTambahan($request, $properti);
+        $property = PropertiDijual::create($data);
+        $this->simpanFotoTambahan($request, $property);
 
-        return redirect()->route('jual.index')->with('success', 'Properti berhasil ditambahkan.');
+        return redirect()->route('property.index')->with('success', 'Properti berhasil ditambahkan.');
     }
 
-    public function edit(PropertiDijual $properti)
+    public function edit(PropertiDijual $property)
     {
-        return view('properti-dijual.edit', ['item' => $properti->load('fotos')]);
+        return view('properti-dijual.edit', ['item' => $property->load('fotos')]);
     }
 
-    public function update(Request $request, PropertiDijual $properti)
+    public function update(Request $request, PropertiDijual $property)
     {
-        $data = $this->handleUploads($request, $this->validated($request), $properti);
-        $properti->update($data);
-        $this->simpanFotoTambahan($request, $properti);
+        $data = $this->handleUploads($request, $this->validated($request), $property);
+        $property->update($data);
+        $this->simpanFotoTambahan($request, $property);
 
-        return redirect()->route('jual.index', $properti)->with('success', 'Properti berhasil diperbarui.');
+        return redirect()->route('property.index', $property)->with('success', 'Properti berhasil diperbarui.');
     }
-    public function show(PropertiDijual $properti)
+    public function show(PropertiDijual $property)
     {
         abort_unless(auth()->user()->can('lihat data properti'), 403);
 
-        $properti->load(['fotos', 'province', 'city', 'district', 'subDistrict', 'postalCode', 'employee.user']);
+        $property->load(['fotos', 'province', 'city', 'district', 'subDistrict', 'postalCode', 'employee.user']);
 
-        return view('properti-dijual.show', ['listing' => $properti]);
+        return view('properti-dijual.show', ['listing' => $property]);
     }
-    public function destroy(Request $request, PropertiDijual $properti)
+    public function destroy(Request $request, PropertiDijual $property)
     {
-        $paths = array_filter([$properti->foto, $properti->agen_foto, ...$properti->fotos()->pluck('path')->all()]);
+        $paths = array_filter([$property->foto, ...$property->fotos()->pluck('path')->all()]);
         foreach ($paths as $path) {
             Storage::disk('public')->delete($path);
         }
-        $properti->delete(); // baris foto ikut terhapus (cascade)
+        $property->delete(); // baris foto ikut terhapus (cascade)
  
         // dipanggil lewat AJAX dari tombol .delete-properties di halaman index
         if ($request->ajax() || $request->expectsJson()) {
             return response()->json(['status' => 'success', 'message' => 'Properti dihapus.']);
         }
  
-        return redirect()->route('jual.index')->with('success', 'Properti dihapus.');
+        return redirect()->route('property.index')->with('success', 'Properti dihapus.');
     }
  
     public function destroyFoto(PropertiDijualFoto $foto)
@@ -128,7 +128,7 @@ class PropertiDijualController extends Controller
         $data = $request->validate([
             'judul'        => 'required|string|max:255',
             'status'       => 'required|in:dijual,disewa,terjual',
-            'tipe'         => 'required|in:rumah,tanah,ruko,apartemen',
+            'tipe' => ['required', Rule::exists('tipe_properti', 'nama')],
             'harga'        => 'required|integer|min:0',
             'cicilan'      => 'nullable|integer|min:0',
             'deskripsi'    => 'nullable|string',
@@ -178,15 +178,15 @@ class PropertiDijualController extends Controller
         return $data;
     }
 
-    private function simpanFotoTambahan(Request $request, PropertiDijual $properti): void
+    private function simpanFotoTambahan(Request $request, PropertiDijual $property): void
     {
         if (! $request->hasFile('galeri')) {
             return;
         }
 
-        $urutan = (int) $properti->fotos()->max('urutan');
+        $urutan = (int) $property->fotos()->max('urutan');
         foreach ($request->file('galeri') as $file) {
-            $properti->fotos()->create([
+            $property->fotos()->create([
                 'path'   => $file->store('properti', 'public'),
                 'urutan' => ++$urutan,
             ]);
