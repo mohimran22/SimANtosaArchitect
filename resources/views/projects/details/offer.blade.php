@@ -121,7 +121,7 @@
 
                 <tr>
                     <th colspan="5" class="text-end">DISCOUNT</th>
-                    <th>Rp {{ number_format($offer->discount, 0, ',', '.') }}</th>
+                    <th>- Rp {{ number_format($offer->discount, 0, ',', '.') }}</th>
                 </tr>
 
                 <tr>

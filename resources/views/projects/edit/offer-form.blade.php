@@ -163,9 +163,12 @@
                         <tr>
                             <th colspan="5" class="text-end">DISCOUNT</th>
                             <th>
+                            <div class="d-flex align-items-center gap-2"> 
+                                <span>-</span> 
                                 <input type="number" class="form-control form-control-sm"
                                     name="discount" id="discount"
                                     value="{{ $offer->discount }}">
+                            </div>
                             </th>
                         </tr>
 

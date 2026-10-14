@@ -112,9 +112,11 @@
                     <tr>
                         <th colspan="5" class="text-end">DISCOUNT</th>
                         <th>
-<input type="text" class="form-control rupiah" id="discount_display">
-<input type="hidden" name="discount" id="discount">
-
+                            <div class="d-flex align-items-center gap-2"> 
+                                <span>-</span> 
+                                <input type="text" class="form-control rupiah" id="discount_display">
+                                <input type="hidden" name="discount" id="discount">
+                            </div>
                         </th>
                     </tr>
 

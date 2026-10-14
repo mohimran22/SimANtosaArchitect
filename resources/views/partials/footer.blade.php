@@ -9,6 +9,7 @@
         ['Portofolio',   Route::has('artikel.index') ? route('artikel.index') : $ftHome . '#portfolio', []],
         ['Tentang Kami', $ftHome . '#tentang', []],
         ['Kontak Kami',  $ftHome . '#konsultasi', []],
+        ['Antosa Land',   Route::has('land.index') ? route('land.index') : $ftHome . '#listing', []],
     ];
     $ftSocial = [
         'youtube'   => config('antosa.youtube',   '#'),

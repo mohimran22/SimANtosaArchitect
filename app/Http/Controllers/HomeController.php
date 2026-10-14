@@ -32,7 +32,7 @@ class HomeController extends Controller
                 ->take(12)
                 ->get()
             : collect();
-
+        JsonLd::setType('WebSite')->setTitle('Antosa Architect')->setUrl(url('/'));
         return view('welcome', ['listings' => $listings, 'articles' => $articles]);
     }
 

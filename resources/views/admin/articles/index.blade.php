@@ -33,49 +33,140 @@
     {!! $tab('Semua', null, $counts['all']) !!} |
     {!! $tab('Terbit', 'published', $counts['published']) !!} |
     {!! $tab('Draft', 'draft', $counts['draft']) !!} |
-    {!! $tab('Trash', 'trash', $counts['trash']) !!}
+    {!! $tab('Hapus', 'trash', $counts['trash']) !!}
 </div>
 {{-- @if(request('tag'))
     <a href="{{ route('articles.index', request()->except('tag', 'page')) }}" class="badge bg-red-lt text-decoration-none">Tag: {{ $tags_active_name ?? request('tag') }} ✕</a>
 @endif --}}
-{{-- Filter --}}
-<form method="GET" class="row g-2 mb-3">
+{{-- <form method="GET" class="article-filter mb-3">
     <input type="hidden" name="status" value="{{ request('status') }}">
-    <div class="col-auto">
+    <input type="hidden" name="tag" value="{{ request('tag') }}">
+
+    <div class="article-filter-row">
+        <div class="filter-item filter-date">
+            <select name="month" class="form-select">
+                <option value="">Semua tanggal</option>
+                @foreach($months as $m)
+                    <option value="{{ $m }}" @selected(request('month') === $m)>
+                        {{ \Carbon\Carbon::parse($m . '-01')->translatedFormat('F Y') }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+
+        <div class="filter-item filter-category">
+            <select name="category" class="form-select">
+                <option value="">Semua kategori</option>
+                @foreach($categories as $c)
+                    <option value="{{ $c->id }}"
+                        @selected((string) request('category') === (string) $c->id)>
+                        {{ $c->name }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+
+        @foreach([
+            'seo' => 'Semua skor SEO',
+            'readability' => 'Semua skor keterbacaan'
+        ] as $name => $label)
+            <div class="filter-item filter-score">
+                <select name="{{ $name }}" class="form-select">
+                    <option value="">{{ $label }}</option>
+                    <option value="good" @selected(request($name) === 'good')>
+                        Baik (hijau)
+                    </option>
+                    <option value="ok" @selected(request($name) === 'ok')>
+                        Cukup (oranye)
+                    </option>
+                    <option value="bad" @selected(request($name) === 'bad')>
+                        Buruk (merah)
+                    </option>
+                    <option value="none" @selected(request($name) === 'none')>
+                        Belum dihitung
+                    </option>
+                </select>
+            </div>
+        @endforeach
+
+        <div class="filter-submit">
+            <button type="submit" class="btn btn-outline-secondary">
+                <i class="ti ti-filter me-1"></i> Filter
+            </button>
+        </div>
+    </div>
+    <div class="article-search-row">
+        <div class="article-search">
+            <input
+                type="text"
+                name="search"
+                value="{{ request('search') }}"
+                class="form-control"
+                placeholder="Cari judul artikel..."
+            >
+
+            <button type="submit" class="btn btn-outline-secondary">
+                <i class="ti ti-search me-1"></i> Cari
+            </button>
+        </div>
+    </div>
+</form> --}}
+
+<form method="GET" class="wp-article-toolbar mb-3">
+    <input type="hidden" name="status" value="{{ request('status') }}">
+    <input type="hidden" name="tag" value="{{ request('tag') }}">
+
+    <div class="wp-toolbar-filters">
         <select name="month" class="form-select">
             <option value="">Semua tanggal</option>
             @foreach($months as $m)
-                <option value="{{ $m }}" @selected(request('month') === $m)>{{ \Carbon\Carbon::parse($m . '-01')->translatedFormat('F Y') }}</option>
+                <option value="{{ $m }}" @selected(request('month') === $m)>
+                    {{ \Carbon\Carbon::parse($m . '-01')->translatedFormat('F Y') }}
+                </option>
             @endforeach
         </select>
-    </div>
-    <div class="col-auto">
+
         <select name="category" class="form-select">
             <option value="">Semua kategori</option>
             @foreach($categories as $c)
-                <option value="{{ $c->id }}" @selected((string) request('category') === (string) $c->id)>{{ $c->name }}</option>
+                <option value="{{ $c->id }}"
+                    @selected((string) request('category') === (string) $c->id)>
+                    {{ $c->name }}
+                </option>
             @endforeach
         </select>
-    </div>
-    @foreach(['seo' => 'Semua skor SEO', 'readability' => 'Semua skor keterbacaan'] as $name => $label)
-        <div class="col-auto">
+
+        @foreach([
+            'seo' => 'Semua skor SEO',
+            'readability' => 'Semua skor keterbacaan'
+        ] as $name => $label)
             <select name="{{ $name }}" class="form-select">
                 <option value="">{{ $label }}</option>
-                <option value="good" @selected(request($name) === 'good')>Baik (hijau)</option>
-                <option value="ok" @selected(request($name) === 'ok')>Cukup (oranye)</option>
-                <option value="bad" @selected(request($name) === 'bad')>Buruk (merah)</option>
+                <option value="good" @selected(request($name) === 'good')>Baik</option>
+                <option value="ok" @selected(request($name) === 'ok')>Cukup</option>
+                <option value="bad" @selected(request($name) === 'bad')>Buruk</option>
                 <option value="none" @selected(request($name) === 'none')>Belum dihitung</option>
             </select>
-        </div>
-    @endforeach
-    <div class="col-auto"><button class="btn btn-outline-secondary">Filter</button></div>
-    <div class="col-auto ms-auto d-flex gap-2">
-        <input type="text" name="search" value="{{ request('search') }}" class="form-control" placeholder="Cari judul...">
-        <button class="btn btn-outline-secondary">Cari</button>
-    </div>
-    <input type="hidden" name="tag" value="{{ request('tag') }}">
-</form>
+        @endforeach
 
+        <button type="submit" class="btn btn-outline-secondary">
+            Filter
+        </button>
+    </div>
+
+    <div class="wp-toolbar-search">
+        <input
+            type="search"
+            name="search"
+            value="{{ request('search') }}"
+            class="form-control"
+            placeholder="Cari judul..."
+        >
+        <button type="submit" class="btn btn-dark">
+            Cari
+        </button>
+    </div>
+</form>
 {{-- Form tersembunyi untuk aksi per baris (tidak boleh bersarang di dalam form bulk) --}}
 <form id="row-form" method="POST" action="{{ route('articles.bulk') }}" style="display:none">
     @csrf
@@ -86,7 +177,30 @@
 {{-- Bulk --}}
 <form method="POST" action="{{ route('articles.bulk') }}">
     @csrf
-    <div class="d-flex gap-2 mb-2">
+    <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+        <select name="bulk_action" class="form-select"
+            style="width:auto; min-width:155px" required>
+            <option value="">Bulk actions</option>
+
+            @if(request('status') === 'trash')
+                <option value="restore">Restore</option>
+                <option value="delete">Hapus permanen</option>
+            @else
+                <option value="publish">Terbitkan</option>
+                <option value="draft">Jadikan draft</option>
+                <option value="trash">Pindah ke Trash</option>
+            @endif
+        </select>
+
+        <button type="submit" class="btn btn-outline-secondary">
+            Apply
+        </button>
+
+        <span class="ms-auto text-muted small">
+            {{ $articles->total() }} artikel
+        </span>
+    </div>
+    {{-- <div class="d-flex gap-2 mb-2">
         <select name="bulk_action" class="form-select" style="width:auto" required>
             <option value="">Bulk actions</option>
             @if(request('status') === 'trash')
@@ -100,7 +214,7 @@
         </select>
         <button class="btn btn-outline-secondary">Apply</button>
         <span class="ms-auto text-muted">{{ $articles->total() }} artikel</span>
-    </div>
+    </div> --}}
 
     <div class="table-responsive">
         <table class="table table-vcenter card-table">
@@ -121,8 +235,8 @@
             @forelse($articles as $a)
                 <tr>
                     <td><input type="checkbox" name="ids[]" value="{{ $a->id }}" class="row-check"></td>
-                    <td style="min-width:260px">
-                        <strong>
+                    <td class="article-title-cell">
+                        <strong class="article-title-cell">
                             @if($a->trashed()) {{ $a->title }}
                             @else <a href="{{ route('articles.edit', $a) }}">{{ $a->title }}</a>
                             @endif
@@ -135,7 +249,7 @@
                             @else
                                 <a href="{{ route('articles.edit', $a) }}">Edit</a> |
                                 <a href="#" class="text-danger"
-                                   onclick="rowAction('trash', {{ $a->id }}); return false;">Trash</a>
+                                   onclick="rowAction('trash', {{ $a->id }}); return false;">Hapus</a>
                                 @if($a->status === 'published')
                                     | <a href="{{ route('articles.show', $a) }}" target="_blank">Lihat</a>
                                 @endif

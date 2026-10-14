@@ -24,7 +24,9 @@ class LandController extends Controller
         }
         if ($tipe = $request->query('tipe'))     $q->where('tipe', $tipe);
         if ($kota = $request->query('kota'))     $q->where('kota', $kota);
-        if ($status = $request->query('status')) $q->where('status', $status);
+        // toggle Dijual / Disewa (default: dijual)
+        // $status = in_array($request->query('status'), ['dijual', 'disewa'], true) ? $request->query('status') : 'dijual';
+        // $q->where('status', $status);
 
         match ($request->query('urut')) {
             'termurah' => $q->orderBy('harga'),
@@ -39,10 +41,14 @@ class LandController extends Controller
             : collect(['rumah', 'tanah', 'ruko', 'apartemen']);
         $kotaList = PropertiDijual::published()->whereNotNull('kota')->distinct()->orderBy('kota')->pluck('kota');
 
+        // "Lokasi populer": 5 kota dengan listing terbanyak
+        $kotaPopuler = PropertiDijual::published()->whereNotNull('kota')
+            ->selectRaw('kota, count(*) as total')->groupBy('kota')->orderByDesc('total')->limit(5)->pluck('kota');
+
         SEO::setTitle('Antosa Land - Properti Dijual di Jember' . ($listings->currentPage() > 1 ? ' - Halaman ' . $listings->currentPage() : ''));
         SEO::setDescription('Temukan rumah, tanah, dan properti pilihan langsung dari pemilik dan agen terverifikasi di Jember dan sekitarnya.');
         SEO::setCanonical(route('land.index'));
 
-        return view('listing.index', compact('listings', 'tipeList', 'kotaList'));
+        return view('listing.index', compact('listings', 'tipeList', 'kotaList', 'kotaPopuler'));
     }
 }

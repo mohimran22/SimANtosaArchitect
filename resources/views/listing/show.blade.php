@@ -15,8 +15,8 @@
     if ($fotoList->isEmpty()) { $fotoList->push(asset('images/logo-icon.png')); }
 
     $total  = $fotoList->count();
-    $mode   = min($total, 5);          // menentukan susunan grid galeri
-    $thumbs = $fotoList->slice(1, 4);  // key tetap = indeks asli (untuk lightbox)
+    $mode   = min($total, 4);          // menentukan susunan grid galeri (1,2,3,4+)
+    $thumbs = $fotoList->slice(1, 3);  // maks 3 thumbnail (+1 foto utama = 4 kotak); key tetap = indeks asli (untuk lightbox)
 
     $status  = strtolower($listing->status ?? 'dijual');
     $harga   = (int) $listing->harga;
@@ -160,23 +160,37 @@
 
     /* ===== Galeri ===== */
     .ls-galwrap{ position:relative; }
-    .ls-gallery{ display:grid; gap:10px; border-radius:20px; overflow:hidden; aspect-ratio:2.71 / 1; }
+    .ls-gallery{ display:grid; gap:10px; border-radius:20px; overflow:hidden; aspect-ratio:2 / 1;
+                 grid-template-columns:2fr 1fr; grid-template-rows:1fr 1fr; }
     .ls-gallery button{ all:unset; position:relative; display:block; cursor:pointer; overflow:hidden; background:#eceef1; }
     .ls-gallery img{ width:100%; height:100%; object-fit:cover; display:block; transition:transform .25s; }
     .ls-gallery button:hover img{ transform:scale(1.03); }
     .ls-gallery button:focus-visible{ outline:3px solid var(--ls-red); outline-offset:-3px; }
-    .ls-main{ grid-column:1; grid-row:1 / span 2; }
-    .ls-g1{ grid-template-columns:1fr; grid-template-rows:1fr; }
-    .ls-g1 .ls-main{ grid-row:1; }
-    .ls-g2{ grid-template-columns:2fr 1fr; grid-template-rows:1fr 1fr; }
-    .ls-g2 .ls-t{ grid-row:span 2; }
-    .ls-g3{ grid-template-columns:2fr 1fr; grid-template-rows:1fr 1fr; }
-    .ls-g4{ grid-template-columns:2fr 1fr 1fr; grid-template-rows:1fr 1fr; }
-    .ls-g4 .ls-t1{ grid-row:span 2; }
-    .ls-g5{ grid-template-columns:2fr 1fr 1fr; grid-template-rows:1fr 1fr; }
-    .ls-more{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; gap:10px;
-              background:rgba(0,0,0,.42); color:#fff; font-weight:600; font-size:18px; text-align:center; padding:8px; }
-    .ls-more i{ font-size:26px; }
+
+    /* Penempatan sel. Selector pakai ".ls-gallery ..." supaya menang atas "all:unset" di atas. */
+    .ls-gallery .ls-main{ grid-column:1; grid-row:1; }
+
+    /* 1 foto: penuh */
+    .ls-g1{ grid-template-columns:1fr; }
+    .ls-g1 .ls-main{ grid-row:1 / span 2; }
+
+    /* 2 foto: utama datar (kiri) + 1 persegi panjang berdiri (kanan) */
+    .ls-g2 .ls-main{ grid-row:1 / span 2; }
+    .ls-g2 .ls-t1{ grid-column:2; grid-row:1 / span 2; }
+
+    /* 3 foto: 2 persegi panjang datar (kiri, atas-bawah) + 1 persegi panjang berdiri (kanan) */
+    .ls-g3 .ls-t1{ grid-column:1; grid-row:2; }
+    .ls-g3 .ls-t2{ grid-column:2; grid-row:1 / span 2; }
+
+    /* 4 foto atau lebih: 2 persegi panjang datar (kiri) + 2 kotak (kanan) + ikon "lihat semua" di kotak terakhir */
+    .ls-g4 .ls-t1{ grid-column:1; grid-row:2; }
+    .ls-g4 .ls-t2{ grid-column:2; grid-row:1; }
+    .ls-g4 .ls-t3{ grid-column:2; grid-row:2; }
+
+    .ls-more{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+              background:rgba(0,0,0,.45); color:#fff; transition:background .2s; }
+    .ls-more i{ font-size:44px; }
+    .ls-gallery button:hover .ls-more{ background:rgba(0,0,0,.55); }
     .ls-allbtn{ display:none; position:absolute; right:12px; bottom:12px; z-index:2; background:rgba(0,0,0,.72); color:#fff;
                 padding:8px 14px; border-radius:999px; font-size:13px; font-weight:600; align-items:center; gap:6px; }
 
@@ -381,10 +395,12 @@
                         @endif
                     </button>
                     @foreach ($thumbs as $i => $src)
-                        <button type="button" class="ls-t ls-t{{ $loop->iteration }}" data-open="{{ $i }}" aria-label="Buka foto {{ $i + 1 }}">
+                        @php $adaMore = $loop->last && $total >= 4; @endphp
+                        <button type="button" class="ls-t ls-t{{ $loop->iteration }}" data-open="{{ $adaMore ? 0 : $i }}"
+                                aria-label="{{ $adaMore ? 'Lihat semua ' . $total . ' foto' : 'Buka foto ' . ($i + 1) }}"{!! $adaMore ? ' title="Lihat semua ' . $total . ' foto"' : '' !!}>
                             <img src="{{ $src }}" alt="" loading="lazy">
-                            @if ($loop->last && $total > 5)
-                                <span class="ls-more"><i class="ti ti-library-photo"></i> Lihat semua {{ $total }} foto</span>
+                            @if ($adaMore)
+                                <span class="ls-more"><i class="ti ti-library-photo"></i></span>
                             @endif
                         </button>
                     @endforeach
