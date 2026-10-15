@@ -11,19 +11,15 @@ use App\Models\City;
 use App\Models\{Province, District, SubDistrict, PostalCode};
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
-use Illuminate\Routing\Controllers\HasMiddleware;
-use Illuminate\Routing\Controllers\Middleware;
 
 class PropertyController extends Controller implements HasMiddleware
 {
-        public static function middleware(): array
+    public function __construct()
     {
-        return [
-            new Middleware('permission:lihat data listing', only: ['index', 'show']),
-            new Middleware('permission:tambah data listing', only: ['create', 'store']),
-            new Middleware('permission:ubah data listing', only: ['edit', 'update', 'destroyFoto']),
-            new Middleware('permission:hapus data listing', only: ['destroy']),
-        ];
+        $this->middleware('permission:lihat data artikel')->only(['index']);
+        $this->middleware('permission:tambah data artikel')->only(['create', 'store']);
+        $this->middleware('permission:ubah data artikel')->only(['edit', 'update', 'analyze']);
+        $this->middleware('permission:hapus data artikel')->only(['destroy']);
     }
 
     public function index(Request $request)
