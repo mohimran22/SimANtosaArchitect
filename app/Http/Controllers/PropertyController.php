@@ -11,9 +11,21 @@ use App\Models\City;
 use App\Models\{Province, District, SubDistrict, PostalCode};
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class PropertyController extends Controller
+class PropertyController extends Controller implements HasMiddleware
 {
+        public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:lihat data listing', only: ['index', 'show']),
+            new Middleware('permission:tambah data listing', only: ['create', 'store']),
+            new Middleware('permission:ubah data listing', only: ['edit', 'update', 'destroyFoto']),
+            new Middleware('permission:hapus data listing', only: ['destroy']),
+        ];
+    }
+
     public function index(Request $request)
     {
         if ($request->ajax()) {
@@ -89,12 +101,10 @@ class PropertyController extends Controller
         $property->update($data);
         $this->simpanFotoTambahan($request, $property);
 
-        return redirect()->route('property.index', $property)->with('success', 'Properti berhasil diperbarui.');
+        return redirect()->route('property.index')->with('success', 'Properti berhasil diperbarui.');
     }
     public function show(PropertiDijual $property)
     {
-        abort_unless(auth()->user()->can('lihat data properti'), 403);
-
         $property->load(['fotos', 'province', 'city', 'district', 'subDistrict', 'postalCode', 'employee.user']);
 
         return view('properti-dijual.show', ['listing' => $property]);

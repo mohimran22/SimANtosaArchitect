@@ -777,7 +777,7 @@ Route::middleware(['auth'])->group(function () {
         ->parameters(['tipe-properti' => 'tipe'])
         ->only(['index', 'store', 'update', 'destroy']);
     Route::resource('property', PropertyController::class);
-        // ->parameters(['jual' => 'properti']);
+        // ->parameters(['listing' => 'property']);
 });
 
 Route::middleware(['auth', 'permission:lihat data absensi'])->group(function () {
