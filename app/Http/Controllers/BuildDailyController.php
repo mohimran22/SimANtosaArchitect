@@ -86,15 +86,19 @@ class BuildDailyController extends Controller
 
     $project = Project::findOrFail($request->project_id);
 
-    if (!$project->start_date || !$project->end_date) {
-        return back()
-            ->with('error', 'Periode proyek (tanggal mulai/selesai) belum diatur.')
-            ->withInput();
-    }
+    // if (!$project->start_date || !$project->end_date) {
+    //     return back()
+    //         ->with('error', 'Periode proyek (tanggal mulai/selesai) belum diatur.')
+    //         ->withInput();
+    // }
 
-    $tanggal = Carbon::parse($request->tanggal);
+    $tanggal = Carbon::parse($request->tanggal)->startOfDay();
+    $mulai   = Carbon::parse($project->start_date)->startOfDay();
+    $selesai = $project->end_date
+        ? Carbon::parse($project->end_date)->endOfDay()
+        : null;
 
-    if ($tanggal->lt($project->start_date) || $tanggal->gt($project->end_date)) {
+    if ($tanggal->lt($mulai) || ($selesai && $tanggal->gt($selesai))) {
         return back()
             ->with('error', 'Tanggal di luar periode proyek.')
             ->withInput();

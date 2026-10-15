@@ -16,7 +16,6 @@ class Project extends Model
     protected $keyType = 'string';
     public $incrementing = false;
     public $timestamps = false; // kalau tabel tidak punya created_at / updated_at
-
     protected $fillable = [
         'project_code',
         'parent_project_id',
