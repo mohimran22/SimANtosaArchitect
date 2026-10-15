@@ -83,31 +83,36 @@ class BuildDailyController extends Controller
             }
         }
     }
+
+    $project = Project::findOrFail($request->project_id);
+
+    if (!$project->start_date || !$project->end_date) {
+        return back()
+            ->with('error', 'Periode proyek (tanggal mulai/selesai) belum diatur.')
+            ->withInput();
+    }
+
+    $tanggal = Carbon::parse($request->tanggal);
+
+    if ($tanggal->lt($project->start_date) || $tanggal->gt($project->end_date)) {
+        return back()
+            ->with('error', 'Tanggal di luar periode proyek.')
+            ->withInput();
+    }
+
+    $exists = BuildDailyReport::where('project_id', $project->id)
+                ->whereDate('tanggal', $tanggal)
+                ->exists();
+
+    if ($exists) {
+        return back()
+            ->with('error', 'Laporan untuk tanggal ini sudah ada.')
+            ->withInput();
+    }
+
     DB::beginTransaction();
 
     try {
-
-        $project = Project::findOrFail($request->project_id);
-
-        $tanggal = Carbon::parse($request->tanggal);
-        if (
-            $tanggal->lt($project->start_date) ||
-            $tanggal->gt($project->end_date)
-        ) {
-            return back()
-                ->with('error', 'Tanggal di luar periode proyek.')
-                ->withInput();
-        }
-
-        $exists = BuildDailyReport::where('project_id', $project->id)
-                    ->whereDate('tanggal', $tanggal)
-                    ->exists();
-
-        if ($exists) {
-            return back()
-                ->with('error', 'Laporan untuk tanggal ini sudah ada.')
-                ->withInput();
-        }
 
         $report = BuildDailyReport::create([
             'project_id' => $request->project_id,
