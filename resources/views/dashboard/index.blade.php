@@ -176,7 +176,6 @@
                 </div>
             </div>
             @endcan
-        </div>
 
         <div class="row g-4 mt-2">
             @can('lihat data finance')

@@ -12,7 +12,7 @@ use App\Models\{Province, District, SubDistrict, PostalCode};
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
-class PropertyController extends Controller implements HasMiddleware
+class PropertyController extends Controller
 {
     public function __construct()
     {
