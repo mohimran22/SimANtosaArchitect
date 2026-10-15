@@ -39,18 +39,18 @@ class PropertyController extends Controller
                 ->editColumn('is_published', fn ($r) => $r->is_published ? 'Ya' : 'Draft')
                 ->addColumn('action', function ($r) {
                     $buttons = '';
-                    if (auth()->user()->can('ubah data properti')) {
+                    if (auth()->user()->can('ubah data listing')) {
                         $buttons .= '<a href="' . route('property.edit', $r->id) . '" class="btn btn-icon btn-sm btn-dark me-1" title="Ubah">
                                         <i class="ti ti-edit"></i>
                                     </a>';
                     }
-                    if (auth()->user()->can('lihat data properti')) {
+                    if (auth()->user()->can('lihat data listing')) {
                         $buttons .= '<a href="' . route('property.show', $r->id) . '" class="btn btn-icon btn-sm btn-dark me-1" title="Lihat">
                                         <i class="ti ti-eye"></i>
                                     </a>';
 
                     }
-                    if (auth()->user()->can('hapus data properti')) {
+                    if (auth()->user()->can('hapus data listing')) {
                         $buttons .= '<button data-id="' . $r->id . '" class="btn btn-icon btn-sm btn-dark delete-properties" title="Hapus">
                                         <i class="ti ti-trash"></i>
                                     </button>';

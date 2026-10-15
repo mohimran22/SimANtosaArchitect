@@ -5,7 +5,7 @@
             <div class="row g-2 align-items-center">
                 <div class="col-12 col-md-auto ms-auto d-print-none">
                     <div class="btn-list">
-                        @can('tambah data properti')       
+                        @can('tambah data listing')       
                                 <a href="{{ route("property.create") }}" class="btn btn-dark" >
                                     <!-- Download SVG icon from http://tabler-icons.io/i/plus -->
                                     <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24"
@@ -68,7 +68,7 @@
         </div>
     </div>
 </div>
-@can('tambah data properti')
+@can('tambah data listing')
 <a href="{{ route('property.create') }}"
    class="mobile-fab d-md-none">
 

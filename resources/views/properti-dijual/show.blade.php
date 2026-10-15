@@ -375,7 +375,7 @@
             </nav>
             <div class="ls-admin-act">
                 <span class="ls-pill {{ $listing->is_published ? 'on' : '' }}">{{ $listing->is_published ? 'Terbit di website' : 'Draft' }}</span>
-                @can('ubah data properti')
+                @can('ubah data listing')
                     <a href="{{ route('property.edit', $listing->id) }}" class="ls-abtn"><i class="ti ti-edit"></i> Ubah</a>
                 @endcan
                 @if ($listing->is_published && Route::has('listing.show'))
