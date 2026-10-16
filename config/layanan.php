@@ -1,6 +1,5 @@
 <?php
 
-// config/layanan.php  — key = slug URL (dari judul layanan: Str::slug('Jasa Arsitek') = jasa-arsitek)
 return [
 
     'jasa-arsitek' => [
