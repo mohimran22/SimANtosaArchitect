@@ -387,9 +387,15 @@ private function resolveInvoiceData($project): array
 private function resolveBuildData($project): array
 {
     $weeks = $project->rab?->job_duration ?? 0;
+
+    $usedDates = $project->dailyReports
+        ->pluck('tanggal')
+        ->map(fn($d) => Carbon::parse($d)->format('Y-m-d'))
+        ->toArray();
+
     $startDate = Carbon::parse($project->start_date);
 
-    // Fallback kalau end_date kosong: pakai durasi RAB (minggu), atau tanggal terakhir laporan
+    // Fallback kalau end_date kosong: pakai durasi RAB (minggu), atau 1 tahun
     $endDate = $project->end_date
         ? Carbon::parse($project->end_date)
         : ($weeks > 0
@@ -404,22 +410,8 @@ private function resolveBuildData($project): array
     ) {
         $nextDate->addDay();
     }
-    // $usedDates = $project->dailyReports
-    //     ->pluck('tanggal')
-    //     ->map(fn($d) => Carbon::parse($d)->format('Y-m-d'))
-    //     ->toArray();
-
-    // $nextDate = Carbon::parse($project->start_date);
-
-    // while (
-    //     in_array($nextDate->format('Y-m-d'), $usedDates)
-    //     && $nextDate->lte($project->end_date)
-    // ) {
-    //     $nextDate->addDay();
-    // }
 
     $reports = $project->dailyReports->sortBy('tanggal')->groupBy('minggu');
-
     $buildItems = $project->buildItems;
 
     $buildItems->each(function ($item) {
