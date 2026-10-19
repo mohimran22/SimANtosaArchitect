@@ -225,8 +225,12 @@ class ArticleController extends Controller
         $article->categories()->sync($request->input('categories', []));
 
         $tagIds = collect(explode(',', (string) $request->input('tags')))
-            ->map(fn ($t) => trim($t))->filter()->unique()
-            ->map(fn ($name) => Tag::firstOrCreate(['slug' => Str::slug($name)], ['name' => $name])->id);
+            ->map(fn ($t) => trim($t))->filter()
+            ->map(fn ($name) => [$name, Str::slug($name)])
+            ->filter(fn ($p) => $p[1] !== '')
+            ->unique(fn ($p) => $p[1])
+            ->map(fn ($p) => Tag::firstOrCreate(['slug' => $p[1]], ['name' => $p[0]])->id)
+            ->values();
 
         $article->tags()->sync($tagIds);
         $regenerate = $request->hasFile('featured_image') || $request->hasFile('og_image') || ! $article->og_auto;

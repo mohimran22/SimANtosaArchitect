@@ -1,4 +1,3 @@
-{{-- resources/views/partials/footer.blade.php (di-include oleh layouts/website.blade.php) --}}
 @php
     $ftWa = preg_replace('/^0/', '62', preg_replace('/\D/', '', (string) config('antosa.wa_marketing', '6285189523863')));
     $ftHome = url('/');
@@ -43,8 +42,16 @@
 .ft-social svg{ width:21px; height:21px; fill:currentColor; }
 @media (max-width:900px){
     .ft{ padding:60px 0; }
-    .ft-wrap{ grid-template-columns:1fr; row-gap:50px; }
-    .ft-social{ padding-right:0; }
+    .ft-wrap{ grid-template-columns:1fr; row-gap:50px; text-align:center; }
+    .ft-logo{ width:min(263px,70%); margin:0 auto 32px; }
+    .ft-addr{ margin-bottom:28px; }
+    .ft-tel{ margin-bottom:0; }
+    .ft h4{ margin-bottom:24px; }
+    .ft-menu ul{ margin:6px 0; }           /* submenu layanan ikut rata tengah */
+    /* bar bawah: copyright dan ikon sosial di tengah */
+    .ft-bar{ padding:28px 0; }
+    .ft-bar-wrap{ flex-direction:column; justify-content:center; text-align:center; gap:16px; }
+    .ft-social{ justify-content:center; padding-right:0; }
 }
 </style>
 

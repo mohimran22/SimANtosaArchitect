@@ -78,10 +78,16 @@
             linear-gradient(to bottom, rgba(0,0,0,.8), rgba(0,0,0,.6)),
             var(--hero-bg, url('{{ asset('bg-gedung.jpeg') }}')) 85% top/cover no-repeat;
     }
-    .hero-content{ width:calc(100% - 32px); }
-    .hero-buttons{ margin-top:28px; }
-    .hero-btn{ min-width:0; flex:1 1 150px; }
+    .hero-content{ width:calc(100% - 32px); text-align:center; }
     .hero h1{ margin-bottom:24px; }
+    .hero p{ margin-left:auto; margin-right:auto; }
+    .hero-buttons{
+        margin-top:28px;
+        flex-direction:column;      /* tombol bertumpuk */
+        align-items:center;
+        gap:12px;
+    }
+    .hero-btn{ min-width:0; flex:none; width:100%; max-width:320px; }
 }
 
 /* ===== Statistik ===== */
@@ -228,12 +234,50 @@
         background:url('{{ asset('images/founder.webp') }}') 83% 30%/238% auto no-repeat;
     }
 }
+/* Mobile (<=768px): Why + Founder memakai SATU gambar (founder-mobile.webp, 800x1422).
+   Atas = kolase rumah, tengah kosong = tempat teks, bawah = foto founder + label nama. */
 @media (max-width:768px){
-    .founder{ padding-top:70px; }
-    .founder h2{ font-size:28px; }
-    .founder p{ font-size:15px; }
-    .founder-quote{ font-size:15px; padding-left:30px; margin-top:32px; }
-    .founder-mobile{ height:360px; }
+    .founder{
+        position:relative;
+        aspect-ratio:800/1422;
+        padding:0;
+        overflow:hidden;
+        color:#111;
+        background:#fff url('{{ asset('images/founder-mobile.webp') }}') center top/100% 100% no-repeat;
+    }
+    .founder-text{
+        position:absolute;
+        left:6.5%;
+        top:44%;                 /* tepat di area kosong di bawah kolase rumah */
+        width:52%;               /* sisakan ruang untuk foto founder di kanan */
+        max-width:none;
+        margin:0;
+    }
+    .founder h2{
+        font-size:clamp(22px,7vw,34px);
+        line-height:1.2;
+        margin:0 0 4.5vw;
+        color:#111;
+    }
+    /* judul panjang & paragraf lisensi tetap ada untuk SEO/screen reader, tidak tampil */
+    .fd-extra,
+    .founder-text > p{
+        position:absolute; width:1px; height:1px; overflow:hidden;
+        clip:rect(0 0 0 0); white-space:nowrap; margin:0;
+    }
+    .founder-quote{
+        margin:0; padding:0;
+        font-size:clamp(11px,3.3vw,16px);
+        line-height:1.6;
+        color:#222;
+    }
+    .founder-quote::before{ display:none; }
+    .founder-mobile{ display:none; }
+
+    /* kolase rumah sekarang ada di gambar founder, jadi hilangkan potongan lama di section Why */
+    .why-mobile{ display:none; }
+    .why-body{ padding-bottom:30px; }
+    .why-list{ margin-top:0; }
 }
 
 /* ===== Legalitas ===== */
@@ -566,8 +610,8 @@ html{ scroll-behavior:smooth; }
         <h2>Rancang Kebaikan, <span class="rotating" id="rotatingText">Membangun Kehidupan</span></h2>
         <p>Antosa Architect merupakan jasa arsitek jember profesional berlisensi yang berkomitmen menghadirkan solusi hunian terbaik bagi Anda.</p>
         <div class="hero-buttons">
-            <a href="https://wa.me/6285189523863" target="_blank" rel="noopener" class="hero-btn btn-primary-hero">Konsultasi Gratis</a>
-            <a href="#" class="hero-btn btn-secondary-hero">Lihat Portofolio</a>
+            <a href="https://wa.link/1lzgs1" target="_blank" rel="noopener" class="hero-btn btn-primary-hero">Konsultasi Gratis</a>
+            <a href="{{ route('artikel.index') }}" class="hero-btn btn-secondary-hero">Lihat Portofolio</a>
         </div>
     </div>
 </section>
@@ -632,7 +676,7 @@ html{ scroll-behavior:smooth; }
 {{-- Founder --}}
 <section class="founder">
     <div class="founder-text">
-        <h2>Founder Jasa Arsitek Jember - Antosa Architect</h2>
+        <h2>Founder<span class="fd-extra"> Jasa Arsitek Jember - Antosa Architect</span></h2>
         <p><strong>Ir. Ar. Dwiantosa Ahmad Fathony, IAI., IPP</strong> telah resmi lulus lisensi Arsitek Profesional! Dengan lisensi ini, kami memastikan bahwa setiap proyek yang kami tangani mengikuti standar profesional tertinggi dalam hal desain, keamanan, dan kualitas. Tidak hanya memperkuat kredibilitas kami sebagai perusahaan arsitektur, tapi juga memberikan jaminan kepada Anda bahwa proyek hunian impian Anda berada di tangan ahli yang terpercaya.</p>
         <div class="founder-quote">"Membangun dengan penuh amanah, menjadikan setiap desain sebagai ibadah, dan mengharap ridha Allah dalam setiap karya yang kami wujudkan."</div>
     </div>
