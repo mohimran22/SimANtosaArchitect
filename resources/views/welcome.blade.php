@@ -507,9 +507,17 @@ html{ scroll-behavior:smooth; }
 .pfo-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:0; }
 .pfo-item{ position:relative; display:block; aspect-ratio:475/261; overflow:hidden; background:#000; color:#fff; text-decoration:none; }
 .pfo-item img{ width:100%; height:100%; object-fit:cover; display:block; transition:transform .5s ease; }
-.pfo-item:hover img{ transform:scale(1.05); }
-.pfo-item::after{ content:""; position:absolute; inset:0; background:rgba(0,0,0,0); transition:background .3s; }
-.pfo-item:hover::after{ background:rgba(0,0,0,.35); }
+/* hover: gambar tertutup hitam penuh + judul artikel di tengah */
+.pfo-cap{
+    position:absolute; inset:0; z-index:2;
+    display:flex; align-items:center; justify-content:center; text-align:center;
+    padding:24px 30px; background:#000; color:#fff;
+    font-family:'Saira',sans-serif; font-weight:700; font-size:clamp(20px,2.1vw,30px); line-height:1.3;
+    opacity:0; transition:opacity .3s ease;
+}
+.pfo-item:hover .pfo-cap,
+.pfo-item:focus-visible .pfo-cap{ opacity:1; }
+@media (hover:none){ .pfo-cap{ display:none; } }  /* layar sentuh: tidak ada hover */
 .pfo-text{ display:flex; align-items:center; justify-content:center; padding:24px 30px; }
 .pfo-text span{ font-family:'Saira',sans-serif; font-weight:700; font-size:clamp(20px,2.1vw,30px); line-height:1.3; }
 .pfo-btn-wrap{ margin-top:85px; }
@@ -610,8 +618,8 @@ html{ scroll-behavior:smooth; }
         <h2>Rancang Kebaikan, <span class="rotating" id="rotatingText">Membangun Kehidupan</span></h2>
         <p>Antosa Architect merupakan jasa arsitek jember profesional berlisensi yang berkomitmen menghadirkan solusi hunian terbaik bagi Anda.</p>
         <div class="hero-buttons">
-            <a href="https://wa.link/1lzgs1" target="_blank" rel="noopener" class="hero-btn btn-primary-hero">Konsultasi Gratis</a>
-            <a href="{{ route('artikel.index') }}" class="hero-btn btn-secondary-hero">Lihat Portofolio</a>
+            <a href="https://wa.me/6285189523863" target="_blank" rel="noopener" class="hero-btn btn-primary-hero">Konsultasi Gratis</a>
+            <a href="#" class="hero-btn btn-secondary-hero">Lihat Portofolio</a>
         </div>
     </div>
 </section>
@@ -863,6 +871,7 @@ html{ scroll-behavior:smooth; }
                 <a href="{{ $artUrl($a) }}" class="pfo-item {{ $img ? '' : 'pfo-text' }}" title="{{ $artTitle($a) }}">
                     @if ($img)
                         <img src="{{ $img }}" alt="{{ $artTitle($a) }}" loading="lazy">
+                        <span class="pfo-cap" aria-hidden="true">{{ $artTitle($a) }}</span>
                     @else
                         <span>{{ $artTitle($a) }}</span>
                     @endif
