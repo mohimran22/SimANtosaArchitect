@@ -618,7 +618,7 @@ html{ scroll-behavior:smooth; }
         <h2>Rancang Kebaikan, <span class="rotating" id="rotatingText">Membangun Kehidupan</span></h2>
         <p>Antosa Architect merupakan jasa arsitek jember profesional berlisensi yang berkomitmen menghadirkan solusi hunian terbaik bagi Anda.</p>
         <div class="hero-buttons">
-            <a href="https://wa.me/6285189523863" target="_blank" rel="noopener" class="hero-btn btn-primary-hero">Konsultasi Gratis</a>
+            <a href="https://wa.link/1lzgs1" target="_blank" rel="noopener" class="hero-btn btn-primary-hero">Konsultasi Gratis</a>
             <a href="#" class="hero-btn btn-secondary-hero">Lihat Portofolio</a>
         </div>
     </div>
@@ -943,7 +943,7 @@ html{ scroll-behavior:smooth; }
             <h2>Konsultasikan Kebutuhan Rumah Impian Anda</h2>
             <p><b>Gratis.</b> dengan klik tombol Whatsapp berikut ini.</p>
         </div>
-        <a href="https://wa.me/{{ $ctaWa }}?text={{ urlencode('Halo Antosa Architect, saya ingin konsultasi kebutuhan rumah impian saya.') }}" target="_blank" rel="noopener" class="cta-btn">
+        <a href="https://wa.link/1lzgs1" target="_blank" rel="noopener" class="cta-btn">
             <svg viewBox="0 0 512 512" aria-hidden="true"><path d="M164.9 24.6c-7.7-18.6-28-28.5-47.4-23.2l-88 24C12.1 30.2 0 46 0 64c0 247.4 200.6 448 448 448 18 0 33.8-12.1 38.6-29.5l24-88c5.3-19.4-4.6-39.7-23.2-47.4l-96-40c-16.3-6.8-35.2-2.1-46.3 11.6L304.7 368C234.3 334.7 177.3 277.7 144 207.3L193.3 167c13.7-11.2 18.4-30 11.6-46.3l-40-96z"/></svg>
             WhatsApp
         </a>

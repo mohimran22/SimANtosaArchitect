@@ -76,7 +76,7 @@
 
                 <a href="{{ route('artikel.index') }}">Portofolio</a>
                 <a href="#">Tentang Kami</a>
-                <a href="https://wa.me/6285189523863">Kontak Kami</a>
+                <a href="https://wa.link/1lzgs1">Kontak Kami</a>
                 <a href="{{ route('land.index') }}" target="_blank" rel="noopener"
                 class="{{ request()->routeIs('land.*') ? 'active' : '' }}">Antosa Land</a>
                 <a href="https://wa.link/1lzgs1" target="_blank" rel="noopener" class="btn-contact">Hubungi Kami</a>

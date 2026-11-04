@@ -100,6 +100,7 @@ class SeoAnalyzer
                 $outbound++;
             }
         }
+        $outbound += $xp->query('//oembed')->length;   // video yang di-embed ikut dihitung
         $r[] = $internal > 0
             ? self::c('internal', 'good', "Ada {$internal} link internal. Bagus!")
             : self::c('internal', 'ok', 'Belum ada link internal. Tautkan ke artikel atau halaman lain di situsmu.');
