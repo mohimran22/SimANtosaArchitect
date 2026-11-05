@@ -2,7 +2,7 @@
 
 @section('content')
 
-    <div class="container py-5">
+    <div class="container-fluid" style="padding-top:90px;">
         <div class="row justify-content-center">
             <div class="col-lg-8 col-md-10">
                 <div class="card border-0 shadow rounded-4 overflow-hidden">
@@ -224,7 +224,6 @@
 @push('js')
 <script>
 $('.select2').select2({
-            placeholder: "-- Pilih --",
             width: '100%'
         });
 </script>
