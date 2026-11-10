@@ -555,7 +555,7 @@ public function structure($id)
         'items' => $rab->items
     ]);
 }
-public function update(Request $request, Project $project, RabProcess $ra) {
+public function update(Request $request, Project $project, RabProcess $rab) {
 
 
     if ($rab->project_id !== $project->id) {
