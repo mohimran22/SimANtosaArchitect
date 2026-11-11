@@ -6,7 +6,7 @@
                 <th style="width:80mm">URAIAN PEKERJAAN</th>
                 <th style="width:18mm">BOBOT</th>
                 @foreach($weeks as $w)
-                    <th style="width:6mm">
+                    <th style="font-size:7px">
                         M{{ $w['week_no'] }}
                     </th>
                 @endforeach
@@ -52,19 +52,9 @@
                         @foreach($weeks as $w)
 
                             @php
-
                                 $nilai = collect($planMap[$planKey] ?? [])
                                     ->where('week_no', $w['week_no'])
-                                    ->sum(function ($week) {
-
-                                        $bobot = $week->buildPlan->bobot_percent ?? 0;
-
-                                        return (
-                                            ($week->plan_percent ?? 0) / 100
-                                        ) * $bobot;
-
-                                    });
-
+                                    ->sum('plan_percent');   // sudah dalam satuan bobot, jangan dikali lagi
                             @endphp
 
                             <td align="center">
@@ -100,7 +90,7 @@
 
                 @foreach($realisasi as $nilai)
                     <td align="center">
-                        {{ number_format($nilai,2) }}
+                        {{ $nilai !== null ? number_format($nilai, 2) : '-' }}
                     </td>
                 @endforeach
             </tr>

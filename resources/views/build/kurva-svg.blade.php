@@ -9,23 +9,6 @@
 $countWeek = max(count($weeks),1);
 @endphp
 
-@for($i=0;$i<=10;$i++)
-
-    @php
-        $y = $paddingTop + ($chartHeight/10) * $i;
-    @endphp
-
-    <line
-        x1="0"
-        y1="{{ $y }}"
-        x2="{{ $svgWidth }}"
-        y2="{{ $y }}"
-        stroke="#dddddd"
-        stroke-width="1"
-    />
-
-@endfor
-
 @for($i=0;$i<$countWeek;$i++)
 
     @php
@@ -42,6 +25,16 @@ $countWeek = max(count($weeks),1);
     />
 
 @endfor
+
+{{-- ================= LABEL SUMBU Y ================= --}}
+@for($i=0;$i<=10;$i++)
+    @php $y = $paddingTop + ($chartHeight/10) * $i; @endphp
+    <text x="{{ $paddingLeft - 6 }}" y="{{ $y + 3 }}"
+          font-size="8" text-anchor="end" fill="#000">
+        {{ round($safeMax - ($safeMax/10) * $i) }}
+    </text>
+@endfor
+
 {{-- ================= LEGEND ================= --}}
 @php
     $legendY = 12;
@@ -139,7 +132,7 @@ points="{{ $svgPlan }}"
         y="{{ $y - 10 }}"
         font-size="8"
         text-anchor="middle"
-        fill="#0000">
+        fill="#000">
 
         {{ round($value,1) }}
 
@@ -168,7 +161,7 @@ points="{{ $svgPlan }}"
         x="{{ $x }}"
         y="{{ $y + 14 }}"
         font-size="8"
-        fill="#0000">
+        fill="#000">
 
         {{ round($value,1) }}
 

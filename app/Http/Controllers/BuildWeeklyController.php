@@ -304,12 +304,9 @@ public function exportPdf(Request $request, Project $project) {
             ->where('category_name', $categoryName)
             ->get()
             ->sum(function ($plan) use ($weekNow) {
-                $persenKumulatif = $plan->weeks
+                return $plan->weeks
                     ->where('week_no', '<=', $weekNow)
-                    ->sum('plan_percent');
-                return (
-                    $persenKumulatif / 100
-                ) * $plan->bobot_percent;
+                    ->sum('plan_percent');   // tanpa / 100 * bobot_percent
             });
 
         $prestasiLalu = $items->avg(function ($item) use ($weekPrev) {
@@ -396,23 +393,11 @@ public function exportPdf(Request $request, Project $project) {
     foreach ($project->week_labels as $w) {
 
         $mingguan = BuildPlanWeek::query()
-            ->with('buildPlan')
-            ->whereHas('buildPlan', function ($q) use ($project) {
-
-                $q->where('project_id', $project->id);
-
-            })
+            ->whereHas('buildPlan', fn ($q) => $q->where('project_id', $project->id))
             ->where('week_no', $w['week_no'])
-            ->get()
-            ->sum(function ($week) {
+            ->sum('plan_percent');   // sudah dalam satuan bobot, jangan dikali lagi
 
-                return (
-                    ($week->plan_percent ?? 0) / 100
-                ) * ($week->buildPlan->bobot_percent ?? 0);
-
-            });
-
-        $jalan += $mingguan;
+        $jalan += (float) $mingguan;
 
         $plan[] = round($jalan, 3);
     }
@@ -507,11 +492,11 @@ public function exportPdf(Request $request, Project $project) {
     $chartWidth  = $svgWidth - $paddingLeft - $paddingRight;
     $chartHeight = $svgHeight - $paddingTop - $paddingBottom;
 
-    $safeMax = max(
-        collect($plan)->max() ?: 1,
-        collect($realisasi)->filter()->max() ?: 1
-    );
-
+    // $safeMax = max(
+    //     collect($plan)->max() ?: 1,
+    //     collect($realisasi)->filter()->max() ?: 1
+    // );
+    $safeMax = 100;
     $stepX = $chartWidth / max(count($allWeeks) - 1, 1);
 
     $planPoints = [];
