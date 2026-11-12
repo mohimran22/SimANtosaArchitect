@@ -65,10 +65,16 @@ public function index(Request $request)
                     ->filter()->take(2)
                     ->map(fn($w) => mb_substr($w, 0, 1))
                     ->implode('');
-                $url = route('customers.show', $row->id);
- 
+                $url   = route('customers.show', $row->id);
+                $photo = $row->user?->photo;
+
+                // Ada foto => tampilkan foto, kalau tidak => avatar inisial
+                $avatar = $photo
+                    ? '<img src="' . e(asset('storage/' . ltrim($photo, '/'))) . '" alt="" class="cust-avatar cust-avatar-img" loading="lazy">'
+                    : '<span class="cust-avatar av-' . (crc32($name) % 5) . '">' . e(strtoupper($initials)) . '</span>';
+
                 return '<div class="d-flex align-items-center">
-                            <span class="cust-avatar av-' . (crc32($name) % 5) . '">' . e(strtoupper($initials)) . '</span>
+                            ' . $avatar . '
                             <div class="ms-3">
                                 <a href="' . $url . '" class="cust-name">' . e($name) . '</a>
                                 <div class="cust-email">' . e($email) . '</div>
