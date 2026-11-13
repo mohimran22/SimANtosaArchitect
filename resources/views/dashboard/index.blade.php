@@ -178,6 +178,9 @@
             @endcan
 
         <div class="row g-4 mt-2">
+            @can('lihat data analitik')
+                @include('dashboard.partials.traffic-analytics')
+            @endcan
             @can('lihat data finance')
             <div class="col-12">
                 <div class="card shadow-sm border-0 rounded-4 h-100">

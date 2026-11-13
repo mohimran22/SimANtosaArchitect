@@ -13,7 +13,7 @@ return [
     | a conventional file to locate the various service credentials.
     |
     */
-
+    'ga4' => ['measurement_id' => env('GA4_MEASUREMENT_ID')],
     'postmark' => [
         'token' => env('POSTMARK_TOKEN'),
     ],

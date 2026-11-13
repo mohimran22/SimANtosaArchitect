@@ -56,6 +56,7 @@ use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\LayananController;
 use App\Http\Controllers\LandController;
+use App\Http\Controllers\TrafficController;
 
 $homeDomain = config('app.home_domain');
 $simDomain  = config('app.sim_domain');
@@ -72,7 +73,9 @@ Route::domain($homeDomain)->group(function () {
         ->where('layanan', implode('|', array_map('preg_quote', array_keys(config('layanan', [])))))
         ->name('layanan.show');
 });
-
+Route::get('/dashboard/traffic', TrafficController::class)
+    ->middleware(['auth', 'can:lihat data analitik'])
+    ->name('dashboard.traffic');
 // si.antosaarchitect.com langsung diarahkan ke login/dashboard
 Route::domain($simDomain)->get('/', function () {
     return redirect()->route('dashboard');
