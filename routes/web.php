@@ -81,7 +81,7 @@ Route::domain($homeDomain)
     ->post('/analytics/track', [
         \App\Http\Controllers\WebsiteAnalyticsController::class,
         'track',
-    ])
+    ])->middleware('throttle:60,1')
     ->name('analytics.track');
 Route::get('/dashboard/traffic', TrafficController::class)
     ->middleware(['auth', 'can:lihat data analitik'])

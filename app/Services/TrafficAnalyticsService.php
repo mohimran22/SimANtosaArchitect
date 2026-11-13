@@ -159,16 +159,18 @@ class TrafficAnalyticsService
 
         /*
          * Estimasi durasi sesi:
-         * jumlahkan duration_seconds dari seluruh page view
-         * dalam satu sesi, kemudian hitung rata-ratanya.
+         * jumlahkan active_seconds (waktu tab benar-benar aktif) dari
+         * seluruh page view dalam satu sesi, kemudian hitung rata-ratanya.
+         * duration_seconds tidak dipakai karena ikut menghitung tab yang
+         * dibiarkan terbuka.
          *
-         * Sesi tanpa data duration tidak dimasukkan.
+         * Sesi tanpa waktu aktif (belum ada data dari browser) tidak dimasukkan.
          */
         $sessionDurations = DB::table('website_page_views')
             ->select('session_id')
-            ->selectRaw('SUM(duration_seconds) AS total_duration')
+            ->selectRaw('SUM(active_seconds) AS total_duration')
             ->whereBetween('viewed_at', [$start, $end])
-            ->whereNotNull('duration_seconds')
+            ->where('active_seconds', '>', 0)
             ->groupBy('session_id');
 
         $averageDuration = DB::query()

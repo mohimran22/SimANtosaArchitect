@@ -25,11 +25,14 @@ public function track(Request $request)
         return response()->json(['message' => 'Invalid data'], 422);
     }
 
+    // Cukup cookie visitor (berlaku 1 tahun). Cookie sesi hanya 30 menit,
+    // sehingga bacaan panjang akan kehilangan data kalau dipakai di sini.
+    // Kepemilikan page view tetap aman karena page_view_id berupa UUID
+    // dan dicocokkan dengan visitor_id.
     $visitorKey = $request->cookie('aa_visitor');
-    $sessionKey = $request->cookie('aa_session');
 
-    if (!Str::isUuid($visitorKey) || !Str::isUuid($sessionKey)) {
-        return response()->json(['message' => 'Invalid session'], 401);
+    if (!Str::isUuid($visitorKey)) {
+        return response()->json(['message' => 'Invalid visitor'], 401);
     }
 
     $data = $validator->validated();
@@ -43,26 +46,15 @@ public function track(Request $request)
         return response()->json(['message' => 'Visitor not found'], 404);
     }
 
-    $session = DB::table('website_sessions')
-        ->where('session_key', $sessionKey)
-        ->where('visitor_id', $visitor->id)
-        ->first();
-
-    if (!$session) {
-        return response()->json(['message' => 'Session not found'], 404);
-    }
-
     return DB::transaction(function () use (
         $data,
         $visitor,
-        $session,
         $now
     ) {
         // Ambil page view dan kunci record selama transaksi.
         $pageView = DB::table('website_page_views')
             ->where('id', $data['page_view_id'])
             ->where('visitor_id', $visitor->id)
-            ->where('session_id', $session->id)
             ->lockForUpdate()
             ->first();
 
@@ -75,9 +67,11 @@ public function track(Request $request)
         // Durasi maksimal berdasarkan waktu yang diketahui server.
         $viewedAt = \Carbon\Carbon::parse($pageView->viewed_at);
 
+        // Cast ke int: Carbon 3 mengembalikan desimal, dan kolom integer
+        // di Postgres menolak nilai desimal.
         $serverDuration = max(
             0,
-            $viewedAt->diffInSeconds($now)
+            (int) $viewedAt->diffInSeconds($now)
         );
 
         // Beri toleransi 5 detik untuk perbedaan waktu client-server.
