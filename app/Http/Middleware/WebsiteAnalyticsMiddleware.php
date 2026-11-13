@@ -39,10 +39,21 @@ class WebsiteAnalyticsMiddleware
             return $response;
         }
 
-        // Abaikan bot dan crawler sederhana
+        // Abaikan bot, crawler, pengecek link preview, dan monitoring
         $userAgent = $request->userAgent() ?? '';
 
-        if (preg_match('/bot|crawler|spider|headless/i', $userAgent)) {
+        if (
+            $userAgent === '' ||
+            preg_match(
+                '/bot|crawl|spider|headless|curl|wget|python|java|go-http|scrapy|axios|node-fetch|lighthouse|pingdom|uptime|monitor|facebookexternalhit|whatsapp|preview/i',
+                $userAgent
+            )
+        ) {
+            return $response;
+        }
+
+        // Abaikan karyawan/admin yang sedang login saat membuka website publik
+        if ($request->user()) {
             return $response;
         }
 
@@ -58,6 +69,9 @@ class WebsiteAnalyticsMiddleware
         // Identitas sesi
         $sessionKey = $request->cookie('aa_session');
 
+        // Pencatatan statistik tidak boleh membuat halaman publik error.
+        // Kalau database bermasalah, laporkan saja dan tampilkan halaman seperti biasa.
+        try {
         DB::transaction(function () use (
             $request,
             $visitorKey,
@@ -121,6 +135,14 @@ if ($sessionExpired) {
         ? parse_url($referrer, PHP_URL_HOST)
         : null;
 
+    // Referrer dari domain sendiri (mis. sesi baru setelah 30 menit idle)
+    // dianggap direct, bukan sumber trafik.
+    $ownHost = (string) config('app.home_domain');
+
+    if ($referrerHost && $ownHost !== '' && str_ends_with($referrerHost, $ownHost)) {
+        $referrerHost = null;
+    }
+
     $source = $request->query('utm_source')
         ?: ($referrerHost ?: 'direct');
 
@@ -181,6 +203,11 @@ if ($sessionExpired) {
                 'updated_at' => $now,
             ]);
         });
+        } catch (\Throwable $e) {
+            report($e);
+
+            return $response;
+        }
 
         // Cookie pengunjung: berlaku satu tahun
         $response->headers->setCookie(cookie(
