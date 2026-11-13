@@ -153,7 +153,7 @@ table.pekerjaan-list td {
             dengan
     </div>
     <div class="pihak garis">
-            Ir. Ar. Dwiantosa Ahmad F., IAI., IPP
+            Ir. Ar. DWIANTOSA AHMAD FATHONY, IAI., IPP
     </div>
 </div>
 
@@ -183,7 +183,7 @@ table.pekerjaan-list td {
 </div>
 
 <table style="margin-left:1cm">
-<tr><td width="120">Nama</td><td>: {{ $offer->project->customer->display_name_with_title }}</td></tr>
+<tr><td width="120">Nama</td><td>: {{ strtoupper($offer->project->customer->user->fullname) }}</td></tr>
 <tr><td>NIK</td><td>: {{ $project->customer->user->identity_number ?? '..................' }}</td></tr>
 <tr><td>Alamat</td><td>: {{ $project->customer->user->address }}</td></tr>
 <tr><td>Telepon</td><td>: {{ $project->customer->user->phone }}</td></tr>
@@ -480,20 +480,21 @@ terhitung 3 ( Tiga ) hari sejak tanggal tanda terima pengajuan berkas termin. Ma
         Pasal 7<br>
         Perubahan
     </p>
-<div class="content">
-    <p>
-        Apabila pada waktu pengerjaan pelaksanaan konstruksi terdapat perubahan-perubahan terhadap
-        luasan, posisi dan bentuk serta penambahan material bangunan diluar dari perjanjian yang telah
-        disepakati oleh kedua belah pihak, maka <strong>Pihak Pertama</strong> wajib membayar setiap perubahan
-        pembongkaran dan pemasangan kembali yang besarnya disesuaikan dengan kondisi dan situasi yang
-        ada, serta harus dilakukan negosiasi terlebih dahulu oleh kedua belah pihak.
-    </p>
-    <p>
-        Sebaliknya apabila terjadi perubahan pengurangan volume bangunan atau pengurangan material
-        maka, dapat dilakukan addendum kontrak atau dikompensasi pekerjaan lain yang disepakati oleh
-        kedua belah pihak.
-    </p>
-</div>
+    <div class="content">
+        <p>
+            Apabila pada waktu pengerjaan pelaksanaan konstruksi terdapat perubahan-perubahan terhadap
+            luasan, posisi dan bentuk serta penambahan pekerjaan dan atau material bangunan diluar dari perjanjian yang telah
+            disepakati oleh kedua belah pihak, maka <strong>Pihak Pertama</strong> wajib membayar setiap perubahan biaya 
+            pembongkaran dan pemasangan kembali yang besarnya disesuaikan dengan kondisi dan situasi yang
+            ada, serta akan berpengaruh terhadap jangka waktu pelaksanaan yang oleh karenanya akan dilakukan
+            penyesuaian ulang sesuai bobot pekerjaan tambahannya.
+        </p>
+        <p>
+            Sebaliknya apabila terjadi perubahan pengurangan volume bangunan atau pengurangan material
+            maka, dapat dilakukan addendum kontrak atau dikompensasi pekerjaan lain yang disepakati oleh
+            kedua belah pihak.
+        </p>
+    </div>
 
 <p class="section-title text-center">
     Pasal 8<br>

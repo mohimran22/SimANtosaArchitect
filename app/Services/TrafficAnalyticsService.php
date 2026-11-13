@@ -4,14 +4,9 @@ namespace App\Services;
 
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
-use Spatie\Analytics\Facades\Analytics;
-use Spatie\Analytics\Period;
+use Illuminate\Support\Facades\DB;
 use Throwable;
 
-/**
- * Mengambil data traffic dari Google Analytics 4 (Data API)
- * dan menyiapkannya untuk kartu "Analisis Traffic" di dashboard.
- */
 class TrafficAnalyticsService
 {
     public const ALLOWED_RANGES = [7, 28, 90];
@@ -21,82 +16,207 @@ class TrafficAnalyticsService
         $days = in_array($days, self::ALLOWED_RANGES, true) ? $days : 7;
 
         try {
-            // Hanya hasil sukses yang di-cache (exception tidak ikut tersimpan).
-            return Cache::remember("traffic.summary.{$days}", now()->addMinutes(30), fn () => $this->build($days));
+            // Prefix db digunakan agar tidak membaca cache lama dari GA4.
+            return Cache::remember(
+                "traffic.db.summary.{$days}",
+                now()->addMinutes(5),
+                fn () => $this->build($days)
+            );
         } catch (Throwable $e) {
             report($e);
 
-            return ['error' => true, 'message' => 'Data traffic belum bisa diambil. Cek konfigurasi Google Analytics.'];
+            return [
+                'error' => true,
+                'message' => 'Data traffic belum bisa diambil dari database.'
+            ];
         }
     }
 
     private function build(int $days): array
     {
-        $current  = Period::days($days);
-        $previous = Period::create(
-            Carbon::today()->subDays($days * 2 - 1),
-            Carbon::today()->subDays($days)
-        );
+        $today = Carbon::today();
 
-        $metrics = ['activeUsers', 'screenPageViews', 'sessions', 'averageSessionDuration'];
+        $currentStart = $today->copy()->subDays($days - 1)->startOfDay();
+        $currentEnd = $today->copy()->endOfDay();
 
-        $now  = Analytics::get($current, $metrics)->first() ?? [];
-        $prev = Analytics::get($previous, $metrics)->first() ?? [];
+        $previousStart = $currentStart->copy()->subDays($days);
+        $previousEnd = $currentStart->copy()->subSecond();
 
-        $daily = Analytics::get($current, ['activeUsers', 'screenPageViews'], ['date'])
-            ->sortBy(fn ($r) => Carbon::parse($r['date'])->timestamp)
-            ->values();
+        $current = $this->periodSummary($currentStart, $currentEnd);
+        $previous = $this->periodSummary($previousStart, $previousEnd);
 
-        $topPages = Analytics::get($current, ['screenPageViews'], ['pageTitle'], 50)
-            ->sortByDesc('screenPageViews')
-            ->take(10)
-            ->map(fn ($r) => ['label' => $r['pageTitle'] ?: '(tanpa judul)', 'value' => (int) $r['screenPageViews']])
-            ->values();
+        $dailyRows = DB::table('website_page_views')
+            ->selectRaw('DATE(viewed_at) AS date')
+            ->selectRaw('COUNT(*) AS views')
+            ->selectRaw('COUNT(DISTINCT visitor_id) AS visitors')
+            ->whereBetween('viewed_at', [$currentStart, $currentEnd])
+            ->groupByRaw('DATE(viewed_at)')
+            ->orderByRaw('DATE(viewed_at)')
+            ->get()
+            ->keyBy('date');
 
-        $referrers = Analytics::get($current, ['sessions'], ['sessionSource'], 50)
-            ->sortByDesc('sessions')
-            ->take(10)
-            ->map(fn ($r) => ['label' => $r['sessionSource'] ?: '(direct)', 'value' => (int) $r['sessions']])
-            ->values();
+        // Mengisi tanggal kosong dengan nilai 0 agar grafik konsisten.
+        $labels = [];
+        $views = [];
+        $visitors = [];
+
+        for ($date = $currentStart->copy(); $date->lte($currentEnd); $date->addDay()) {
+            $key = $date->toDateString();
+            $row = $dailyRows->get($key);
+
+            $labels[] = $date->translatedFormat('d M');
+            $views[] = (int) ($row->views ?? 0);
+            $visitors[] = (int) ($row->visitors ?? 0);
+        }
+
+        // Halaman terpopuler berdasarkan path.
+        // Kolom title belum digunakan karena saat ini masih bernilai NULL.
+        $topPages = DB::table('website_page_views')
+            ->select('path')
+            ->selectRaw('COUNT(*) AS total')
+            ->whereBetween('viewed_at', [$currentStart, $currentEnd])
+            ->groupBy('path')
+            ->orderByDesc('total')
+            ->limit(10)
+            ->get()
+            ->map(fn ($row) => [
+                'label' => $row->path ?: '/',
+                'value' => (int) $row->total,
+            ])
+            ->values()
+            ->all();
+
+        // Sumber trafik berdasarkan source pada website_sessions.
+        $referrers = DB::table('website_sessions')
+            ->selectRaw("COALESCE(NULLIF(source, ''), 'direct') AS source")
+            ->selectRaw('COUNT(*) AS total')
+            ->whereBetween('started_at', [$currentStart, $currentEnd])
+            ->groupByRaw("COALESCE(NULLIF(source, ''), 'direct')")
+            ->orderByDesc('total')
+            ->limit(10)
+            ->get()
+            ->map(fn ($row) => [
+                'label' => $row->source,
+                'value' => (int) $row->total,
+            ])
+            ->values()
+            ->all();
 
         return [
             'error' => false,
-            'days'  => $days,
-            'kpi'   => [
-                'visitors' => $this->kpi($now, $prev, 'activeUsers'),
-                'views'    => $this->kpi($now, $prev, 'screenPageViews'),
-                'sessions' => $this->kpi($now, $prev, 'sessions'),
-                'duration' => $this->kpi($now, $prev, 'averageSessionDuration', true),
+            'days' => $days,
+
+            'kpi' => [
+                'visitors' => $this->kpi(
+                    $current['visitors'],
+                    $previous['visitors']
+                ),
+
+                'views' => $this->kpi(
+                    $current['views'],
+                    $previous['views']
+                ),
+
+                'sessions' => $this->kpi(
+                    $current['sessions'],
+                    $previous['sessions']
+                ),
+
+                'duration' => $this->kpi(
+                    $current['duration'],
+                    $previous['duration'],
+                    true
+                ),
             ],
+
             'chart' => [
-                'labels'   => $daily->map(fn ($r) => Carbon::parse($r['date'])->translatedFormat('d M'))->all(),
-                'views'    => $daily->map(fn ($r) => (int) $r['screenPageViews'])->all(),
-                'visitors' => $daily->map(fn ($r) => (int) $r['activeUsers'])->all(),
+                'labels' => $labels,
+                'views' => $views,
+                'visitors' => $visitors,
             ],
-            'top_pages' => $topPages->all(),
-            'referrers' => $referrers->all(),
+
+            'top_pages' => $topPages,
+            'referrers' => $referrers,
+
             'updated_at' => now()->translatedFormat('d M Y H:i'),
         ];
     }
 
-    private function kpi(array $now, array $prev, string $key, bool $isDuration = false): array
+    private function periodSummary(Carbon $start, Carbon $end): array
     {
-        $cur = (float) ($now[$key] ?? 0);
-        $old = (float) ($prev[$key] ?? 0);
+        $views = DB::table('website_page_views')
+            ->whereBetween('viewed_at', [$start, $end]);
 
-        $change = $old > 0 ? round((($cur - $old) / $old) * 100, 1) : null;
+        $totalViews = (clone $views)->count();
+
+        $totalVisitors = (clone $views)
+            ->distinct('visitor_id')
+            ->count('visitor_id');
+
+        $totalSessions = DB::table('website_sessions')
+            ->whereBetween('started_at', [$start, $end])
+            ->count();
+
+        /*
+         * Estimasi durasi sesi:
+         * jumlahkan duration_seconds dari seluruh page view
+         * dalam satu sesi, kemudian hitung rata-ratanya.
+         *
+         * Sesi tanpa data duration tidak dimasukkan.
+         */
+        $sessionDurations = DB::table('website_page_views')
+            ->select('session_id')
+            ->selectRaw('SUM(duration_seconds) AS total_duration')
+            ->whereBetween('viewed_at', [$start, $end])
+            ->whereNotNull('duration_seconds')
+            ->groupBy('session_id');
+
+        $averageDuration = DB::query()
+            ->fromSub($sessionDurations, 'session_durations')
+            ->avg('total_duration');
 
         return [
-            'value'  => $isDuration ? $this->duration($cur) : (int) $cur,
-            'change' => $change, // null = tidak ada pembanding
+            'visitors' => $totalVisitors,
+            'views' => $totalViews,
+            'sessions' => $totalSessions,
+            'duration' => (float) ($averageDuration ?? 0),
+        ];
+    }
+
+    private function kpi(
+        float|int $current,
+        float|int $previous,
+        bool $isDuration = false
+    ): array {
+        $change = $previous > 0
+            ? round((($current - $previous) / $previous) * 100, 1)
+            : null;
+
+        return [
+            'value' => $isDuration
+                ? $this->duration((float) $current)
+                : (int) $current,
+
+            'change' => $change,
         ];
     }
 
     private function duration(float $seconds): string
     {
-        $m = intdiv((int) $seconds, 60);
-        $s = (int) $seconds % 60;
+        $seconds = (int) round($seconds);
 
-        return $m > 0 ? "{$m}m {$s}s" : "{$s}s";
+        $hours = intdiv($seconds, 3600);
+        $minutes = intdiv($seconds % 3600, 60);
+        $remainingSeconds = $seconds % 60;
+
+        if ($hours > 0) {
+            return "{$hours}j {$minutes}m";
+        }
+
+        if ($minutes > 0) {
+            return "{$minutes}m {$remainingSeconds}s";
+        }
+
+        return "{$remainingSeconds}s";
     }
 }

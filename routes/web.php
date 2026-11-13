@@ -62,7 +62,11 @@ $homeDomain = config('app.home_domain');
 $simDomain  = config('app.sim_domain');
 
 // Homepage (didaftarkan paling awal supaya menang untuk domain utama)
-Route::domain($homeDomain)->group(function () {
+Route::domain($homeDomain)
+    ->middleware([
+        \App\Http\Middleware\WebsiteAnalyticsMiddleware::class,
+    ])
+    ->group(function () {
     Route::get('/', [HomeController::class, 'index'])->name('landing');
     Route::get('/antosa-land/{slug}', [HomeController::class, 'show'])->name('listing.show');
     Route::get('/antosa-land', [LandController::class, 'index'])->name('land.index');
@@ -73,6 +77,12 @@ Route::domain($homeDomain)->group(function () {
         ->where('layanan', implode('|', array_map('preg_quote', array_keys(config('layanan', [])))))
         ->name('layanan.show');
 });
+Route::domain($homeDomain)
+    ->post('/analytics/track', [
+        \App\Http\Controllers\WebsiteAnalyticsController::class,
+        'track',
+    ])
+    ->name('analytics.track');
 Route::get('/dashboard/traffic', TrafficController::class)
     ->middleware(['auth', 'can:lihat data analitik'])
     ->name('dashboard.traffic');

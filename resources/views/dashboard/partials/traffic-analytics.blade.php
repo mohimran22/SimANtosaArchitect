@@ -1,4 +1,3 @@
-{{-- Kartu Analisis Traffic (data dari GA4 via /dashboard/traffic) --}}
 <div class="col-12">
     <div class="card shadow-sm border-0 rounded-4" id="trafficCard">
         <div class="card-header d-flex justify-content-between align-items-center">
@@ -119,7 +118,7 @@
 
         fillList('trafficTopPages', d.top_pages);
         fillList('trafficReferrers', d.referrers);
-        $('trafficUpdated').textContent = 'Diperbarui: ' + d.updated_at + ' (cache 30 menit)';
+        $('trafficUpdated').textContent = 'Diperbarui: ' + d.updated_at + ' (cache 5 menit)';
     }
 
     async function load(days) {
