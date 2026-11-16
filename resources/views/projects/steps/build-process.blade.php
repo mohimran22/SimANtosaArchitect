@@ -225,7 +225,7 @@
                                         </strong>
                                     </td>
 
-                                    <td colspan="{{ $totalCols - 1 }}"></td>
+                                    <td colspan="{{ $totalCols - 6 }}"></td>
 
                                 </tr>
 
@@ -254,7 +254,7 @@
                                             {{ strtoupper($categoryData['category_name']) }}
                                         </td>
 
-                                        <td colspan="{{ $totalCols - 1 }}"></td>
+                                        <td colspan="{{ $totalCols - 6 }}"></td>
 
                                     </tr>
 
@@ -453,7 +453,77 @@
                                 @endforeach
 
                             @endforeach
+                            @php
+                                $justekItems = $project->technicalJustifications->flatMap->items;
 
+                                // sel kosong per kolom: kumulatif (tersembunyi) + tiap minggu + 3 kolom realisasi
+                                $emptyTail = '<td class="cumulative-col col-hidden"></td>'
+                                    . collect($project->week_labels)
+                                        ->map(fn ($w) => '<td class="week-col" data-week="'.$w['week_no'].'"></td>')
+                                        ->implode('')
+                                    . '<td></td><td></td><td></td>';
+
+                                $justekCategoryCounter = 0;
+                            @endphp
+
+                            @if($justekItems->isNotEmpty())
+
+                                <tr class="row-floor">
+                                    <td colspan="6"><strong>JUSTIFIKASI TEKNIS</strong></td>
+                                    {!! $emptyTail !!}
+                                </tr>
+
+                                @foreach($justekItems->groupBy(fn ($i) => $i->floor_name ?: '-') as $floorName => $floorItems)
+
+                                    <tr class="row-floor">
+                                        <td>{{ $loop->iteration }}</td>
+                                        <td colspan="5"><strong>{{ strtoupper($floorName) }}</strong></td>
+                                        {!! $emptyTail !!}
+                                    </tr>
+
+                                    @foreach($floorItems->groupBy(fn ($i) => $i->category_name ?: '-') as $categoryName => $categoryItems)
+
+                                        @php
+                                            $categoryNo = alphaIndex($justekCategoryCounter);
+                                            $justekCategoryCounter++;
+                                        @endphp
+
+                                        <tr class="row-category">
+                                            <td>{{ $categoryNo }}</td>
+                                            <td colspan="5">{{ strtoupper($categoryName) }}</td>
+                                            {!! $emptyTail !!}
+                                        </tr>
+
+                                        @foreach($categoryItems as $it)
+                                            {{-- JANGAN pakai data-item-id / .week-vol / .bobot-input --}}
+                                            <tr class="row-justek-item">
+                                                <td class="text-center">{{ $loop->iteration }}</td>
+                                                <td class="uraian-pekerjaan">
+                                                    {{ $it->job_name }}
+                                                    @if($it->description)
+                                                        <div class="text-muted small">{{ $it->description }}</div>
+                                                    @endif
+                                                </td>
+                                                <td class="text-center">{{ $it->satuan }}</td>
+                                                <td class="text-end">{{ rtrim(rtrim(number_format($it->volume, 5, '.', ''), '0'), '.') }}</td>
+                                                <td class="text-end">Rp {{ number_format($it->total, 0, ',', '.') }}</td>
+                                                <td class="text-end">-</td>
+                                                {!! $emptyTail !!}
+                                            </tr>
+                                        @endforeach
+
+                                    @endforeach
+
+                                @endforeach
+
+                                <tr class="fw-bold">
+                                    <td colspan="4" class="text-end">Total Justifikasi Teknis</td>
+                                    <td class="text-end">Rp {{ number_format($justekItems->sum('total'), 0, ',', '.') }}</td>
+                                    <td></td>
+                                    {!! $emptyTail !!}
+                                </tr>
+
+                            @endif
                         </tbody>
                         <tfoot>
                             <tr>
@@ -496,7 +566,9 @@
                                     </th>
 
                                 @endforeach
-
+                                <th></th>
+                                <th></th>
+                                <th></th>
                                 {{-- <th id="grand-total-pelaksanaan">
                                     0
                                 </th>
