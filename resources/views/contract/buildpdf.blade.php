@@ -5,47 +5,47 @@
 <title>Draft Kontrakk {{ $project->project_name }}</title>
 
 <style>
-@page {
-    margin: 140px 30px 110px 30px;
-}
+    @page {
+        margin: 140px 30px 110px 30px;
+    }
 
-body {
-    font-family: DejaVu Sans, sans-serif;
-    font-size: 12px;
-    line-height: 1.5;
-    margin: 0;
-    padding: 0;
-}
+    body {
+        font-family: DejaVu Sans, sans-serif;
+        font-size: 12px;
+        line-height: 1.5;
+        margin: 0;
+        padding: 0;
+    }
 
-.header {
-    position: fixed;
-    top: -110px;
-    left: 0;
-    right: 0;
-    width: 100%;
-}
+    .header {
+        position: fixed;
+        top: -110px;
+        left: 0;
+        right: 0;
+        width: 100%;
+    }
 
-.footer {
-    position: fixed;
-    bottom: -70px;
-    left: 0;
-    right: 0;
-    width: 100%;
-}
+    .footer {
+        position: fixed;
+        bottom: -70px;
+        left: 0;
+        right: 0;
+        width: 100%;
+    }
 
-.content {
-    width: 100%;
-    text-align: justify;
-}
+    .content {
+        width: 100%;
+        text-align: justify;
+    }
 
-/* Semua paragraf isi kontrak */
-.content p {
-    text-align: justify;
-    margin-top: 0;
-    margin-bottom: 12px;
-    margin-left: 1cm;
-    margin-right: 1cm;
-}
+    /* Semua paragraf isi kontrak */
+    .content p {
+        text-align: justify;
+        margin-top: 0;
+        margin-bottom: 12px;
+        margin-left: 1cm;
+        margin-right: 1cm;
+    }
     .title {
         text-align: center;
         font-weight: bold;
@@ -68,21 +68,25 @@ body {
         margin-bottom: 5px;
     }
 
-.subkop .antara,
-.subkop .dan {
-    margin: 5px 0;
-}
+    .subkop .antara,
+    .subkop .dan {
+        margin: 5px 0;
+    }
 
-.subkop .pihak {
-    margin: 5px 0;
-    font-weight: bold;
-}
-.garis {
-    display: block;
-    border-bottom: 1px solid #000;
-    padding-bottom: 6px;
-    width: 100%;
-}
+    .subkop .pihak {
+        margin: 5px 0;
+        font-weight: bold;
+    }
+    .garis {
+        display: block;
+        border-bottom: 1px solid #000;
+        padding-bottom: 6px;
+        width: 100%;
+    }
+
+    .pasal-block {
+        page-break-inside: avoid;
+    }
 
     .section-title {
         font-weight: bold;
@@ -97,27 +101,27 @@ body {
         text-align: center;
     }
     .no-border td {
-    border: none !important;
-    padding: 4px 0;
-}
-table.pekerjaan-list,
-table.pekerjaan-list tr,
-table.pekerjaan-list td {
-    border: none;
-    border-collapse: collapse;
-    padding: 0;
-    margin: 0;
-    background: none;
-}
+        border: none !important;
+        padding: 4px 0;
+    }
+    table.pekerjaan-list,
+    table.pekerjaan-list tr,
+    table.pekerjaan-list td {
+        border: none;
+        border-collapse: collapse;
+        padding: 0;
+        margin: 0;
+        background: none;
+    }
 
-table.pekerjaan-list {
-    width: 100%;
-}
+    table.pekerjaan-list {
+        width: 100%;
+    }
 
-table.pekerjaan-list td {
-    vertical-align: top;
-    padding-bottom: 3px;
-}
+    table.pekerjaan-list td {
+        vertical-align: top;
+        padding-bottom: 3px;
+    }
 
 </style>
 </head>
@@ -496,6 +500,7 @@ terhitung 3 ( Tiga ) hari sejak tanggal tanda terima pengajuan berkas termin. Ma
         </p>
     </div>
 
+<div class="pasal-block">
 <p class="section-title text-center">
     Pasal 8<br>
     Masa Pemeliharaan
@@ -515,6 +520,7 @@ Namun, <strong>Pihak Kedua</strong> dapat memperbaiki kerusakan tersebut sesuai 
 dengan biaya yang ditanggung oleh <strong>Pihak Pertama</strong> sebesar Rp. 50.000/m2 ( tidak termasuk
 biaya material yang diganti/rusak).
 </p>
+</div>
 </div>
 <p class="section-title text-center">
     Pasal 9<br>
