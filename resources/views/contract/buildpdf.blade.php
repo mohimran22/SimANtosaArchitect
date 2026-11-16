@@ -440,46 +440,47 @@ Pekerjaan {{ strtoupper($offer->project->project_name) }} tersebut.
     </tr>
 </table>
 </div>
+<div class="pasal-block">
 <p class="section-title text-center">
     Pasal 6<br>
     Jangka Waktu Pelaksanaan
 </p>
 <div class="content">
-<p>
-Jangka waktu pelaksanaan pekerjaan {{ strtoupper($offer->project->project_name) }}
-estimasi maksimal adalah <strong>{{ $job_duration }}</strong> hari kerja
-( {{ ucwords($job_duration_text) }} hari ),
-terhitung sejak disepakati awal mulai pekerjaan yaitu pada tanggal
-{{ \Carbon\Carbon::parse($project->start_date ?? now())->translatedFormat('d F Y') }}
-dan estimasi selesai pada
-{{ \Carbon\Carbon::parse($project->end_date ?? now())->translatedFormat('d F Y') }}.
-</p>
-@php
-    $contractValue = $offer->grand_total ?? 0;
+    <p>
+    Jangka waktu pelaksanaan pekerjaan {{ strtoupper($offer->project->project_name) }}
+    estimasi maksimal adalah <strong>{{ $job_duration }}</strong> hari kerja
+    ( {{ ucwords($job_duration_text) }} hari ),
+    terhitung sejak disepakati awal mulai pekerjaan yaitu pada tanggal
+    {{ \Carbon\Carbon::parse($project->start_date ?? now())->translatedFormat('d F Y') }}
+    dan estimasi selesai pada
+    {{ \Carbon\Carbon::parse($project->end_date ?? now())->translatedFormat('d F Y') }}.
+    </p>
+    @php
+        $contractValue = $offer->grand_total ?? 0;
 
-    $dailyPenalty = $contractValue * 0.0005; // 0,05%
-    $maxPenalty = $contractValue * 0.002;    // 0,2%
-@endphp
+        $dailyPenalty = $contractValue * 0.0005; // 0,05%
+        $maxPenalty = $contractValue * 0.002;    // 0,2%
+    @endphp
 
-<p>
-    Apabila terjadi keterlambatan pengerjaan dari waktu yang telah ditentukan, maka
-    <strong>Pihak Kedua</strong> wajib membayar denda kepada
-    <strong>Pihak Pertama</strong> sebesar 0,05% dari nilai kontrak untuk setiap hari
-    keterlambatan atau sebesar
-    Rp {{ number_format($dailyPenalty, 0, ',', '.') }}
-    ({{ terbilang($dailyPenalty) }} rupiah) per hari.
-    Maksimum 0,2% atau sebesar
-    Rp {{ number_format($maxPenalty, 0, ',', '.') }}
-    ({{ terbilang($maxPenalty) }} rupiah).
-</p>
+    <p>
+        Apabila terjadi keterlambatan pengerjaan dari waktu yang telah ditentukan, maka
+        <strong>Pihak Kedua</strong> wajib membayar denda kepada
+        <strong>Pihak Pertama</strong> sebesar 0,05% dari nilai kontrak untuk setiap hari
+        keterlambatan atau sebesar
+        Rp {{ number_format($dailyPenalty, 0, ',', '.') }}
+        ({{ terbilang($dailyPenalty) }} rupiah) per hari.
+        Maksimum 0,2% atau sebesar
+        Rp {{ number_format($maxPenalty, 0, ',', '.') }}
+        ({{ terbilang($maxPenalty) }} rupiah).
+    </p>
 
-<p>
-Sedangkan apabila terjadi keterlambatan pembayaran <strong>Pihak Pertama</strong> terhadap termin atau tahapan pembayaran yang diajukan oleh <strong>Pihak Kedua</strong>, 
-maka <strong>Pihak Pertama</strong> wajib membayar denda pada <strong>Pihak Kedua</strong> sebesar 0.05% dari besarnya jumlah termin yang diajukan untuk setiap hari keterlambatan, 
-terhitung 3 ( Tiga ) hari sejak tanggal tanda terima pengajuan berkas termin. Maksimum 0,2% dari jumlah termin yang diajukan.
-</p>
+    <p>
+    Sedangkan apabila terjadi keterlambatan pembayaran <strong>Pihak Pertama</strong> terhadap termin atau tahapan pembayaran yang diajukan oleh <strong>Pihak Kedua</strong>, 
+    maka <strong>Pihak Pertama</strong> wajib membayar denda pada <strong>Pihak Kedua</strong> sebesar 0.05% dari besarnya jumlah termin yang diajukan untuk setiap hari keterlambatan, 
+    terhitung 3 ( Tiga ) hari sejak tanggal tanda terima pengajuan berkas termin. Maksimum 0,2% dari jumlah termin yang diajukan.
+    </p>
 </div>
-
+</div>
     <p class="section-title text-center">
         Pasal 7<br>
         Perubahan
