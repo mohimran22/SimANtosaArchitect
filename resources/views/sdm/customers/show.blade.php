@@ -77,7 +77,7 @@
                                     </div>
                                     <div class="col-md-6">
                                         <div class="text-muted small">Telepon</div>
-                                        <div class="fw-bold">{{ $user->phone ?? '-' }}</div>
+                                        <div class="fw-bold">{{ $user->phone ?? 'Tidak diketahui' }}</div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="text-muted small">Tau Darimana?</div>
