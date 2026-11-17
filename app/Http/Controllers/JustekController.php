@@ -440,7 +440,7 @@ class JustekController extends Controller
         );
 
         $justekNumber = sprintf(
-            'PH/BLD/%d/%s/%03d',
+            'AD/BLD/%d/%s/%03d',
             $offerDate->year,
             $romanMonth,
             $sequence

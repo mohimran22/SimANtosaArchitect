@@ -34,109 +34,109 @@ class CustomersController extends Controller
         }
     }
 
-public function index(Request $request)
-{
-    $auth = auth()->user();
- 
-    // Query dasar (sudah dibatasi hak akses). Dipakai untuk tabel DAN kartu statistik.
-    $baseQuery = Customer::with(['user.roles']);
- 
-    if (!ActiveRole::hasPermission('lihat daftar customer')) {
-        $baseQuery->where('user_id', $auth->id);
-    }
-
-    if ($request->ajax()) {
-        // withCount hanya di query tabel (bukan di $baseQuery) supaya perhitungan kartu tidak terganggu
-        $query = (clone $baseQuery)->withCount('projects');
- 
-        // Filter tab (Lead, Prospek, New Customer, Silver, Gold, Platinum)
-        if ($request->filled('loyalty')) {
-            $query->where('loyalty_level', $request->loyalty);
+    public function index(Request $request)
+    {
+        $auth = auth()->user();
+    
+        // Query dasar (sudah dibatasi hak akses). Dipakai untuk tabel DAN kartu statistik.
+        $baseQuery = Customer::with(['user.roles']);
+    
+        if (!ActiveRole::hasPermission('lihat daftar customer')) {
+            $baseQuery->where('user_id', $auth->id);
         }
- 
-        $customers = $query->get();
- 
-        return DataTables::of($customers)
-            ->addIndexColumn()
-            ->addColumn('customer', function ($row) {
-                $name     = Str::title($row->user->fullname ?? '-');
-                $email    = $row->user->email ?? '-';
-                $initials = collect(explode(' ', trim($name)))
-                    ->filter()->take(2)
-                    ->map(fn($w) => mb_substr($w, 0, 1))
-                    ->implode('');
-                $url   = route('customers.show', $row->id);
-                $photo = $row->user?->photo;
 
-                // Ada foto => tampilkan foto, kalau tidak => avatar inisial
-                $avatar = $photo
-                    ? '<img src="' . e(asset('storage/' . ltrim($photo, '/'))) . '" alt="" class="cust-avatar cust-avatar-img" loading="lazy">'
-                    : '<span class="cust-avatar av-' . (crc32($name) % 5) . '">' . e(strtoupper($initials)) . '</span>';
+        if ($request->ajax()) {
+            // withCount hanya di query tabel (bukan di $baseQuery) supaya perhitungan kartu tidak terganggu
+            $query = (clone $baseQuery)->withCount('projects');
+    
+            // Filter tab (Lead, Prospek, New Customer, Silver, Gold, Platinum)
+            if ($request->filled('loyalty')) {
+                $query->where('loyalty_level', $request->loyalty);
+            }
+    
+            $customers = $query->get();
+    
+            return DataTables::of($customers)
+                ->addIndexColumn()
+                ->addColumn('customer', function ($row) {
+                    $name     = Str::title($row->user->fullname ?? '-');
+                    $email    = $row->user->email ?? '-';
+                    $initials = collect(explode(' ', trim($name)))
+                        ->filter()->take(2)
+                        ->map(fn($w) => mb_substr($w, 0, 1))
+                        ->implode('');
+                    $url   = route('customers.show', $row->id);
+                    $photo = $row->user?->photo;
 
-                return '<div class="d-flex align-items-center">
-                            ' . $avatar . '
-                            <div class="ms-3">
-                                <a href="' . $url . '" class="cust-name">' . e($name) . '</a>
-                                <div class="cust-email">' . e($email) . '</div>
-                            </div>
-                        </div>';
-            })
-            ->editColumn('channel', fn($row) => $row->readable_channel)
-            ->addColumn('category', fn($row) => $this->readableCategory($row->category))
-            ->addColumn('created_at', fn($row) => $row->created_at
-                ? $row->created_at->locale('id')->diffForHumans()   // "3 hari yang lalu"
-                : '-')
-             ->addColumn('last_contact', fn($row) => $row->last_contact
-                    ? $row->last_contact->locale('id')->diffForHumans()   // "3 hari yang lalu"
+                    // Ada foto => tampilkan foto, kalau tidak => avatar inisial
+                    $avatar = $photo
+                        ? '<img src="' . e(asset('storage/' . ltrim($photo, '/'))) . '" alt="" class="cust-avatar cust-avatar-img" loading="lazy">'
+                        : '<span class="cust-avatar av-' . (crc32($name) % 5) . '">' . e(strtoupper($initials)) . '</span>';
+
+                    return '<div class="d-flex align-items-center">
+                                ' . $avatar . '
+                                <div class="ms-3">
+                                    <a href="' . $url . '" class="cust-name">' . e($name) . '</a>
+                                    <div class="cust-email">' . e($email) . '</div>
+                                </div>
+                            </div>';
+                })
+                ->editColumn('channel', fn($row) => $row->readable_channel)
+                ->addColumn('category', fn($row) => $this->readableCategory($row->category))
+                ->addColumn('created_at', fn($row) => $row->created_at
+                    ? $row->created_at->locale('id')->diffForHumans()   // "3 hari yang lalu"
                     : '-')
-            ->addColumn('orders', fn($row) => (int) $row->projects_count)
-            ->addColumn('loyalty', function ($row) {
-                // NOTE: pakai angka loyalty_level untuk warna (bukan teks),
-                // karena sebelumnya match('1','2',...) tidak pernah cocok dengan teks "Lead", dst.
-                $level = (int) $row->loyalty_level;
-                return '<span class="lv-badge lv-' . $level . '">' . e($row->readable_loyalty_level) . '</span>';
-            })
-            ->addColumn('action', function ($customer) {
-                $buttons = '<div class="d-flex justify-content-end gap-1">';
-                if (ActiveRole::hasPermission('ubah data customer')) {
-                    $buttons .= '<a href="' . route('customers.edit', $customer->id) . '" class="btn btn-icon btn-sm btn-ghost-dark" title="Ubah"><i class="ti ti-edit"></i></a>';
-                }
-                if (ActiveRole::hasPermission('lihat data customer')) {
-                    $buttons .= '<a href="' . route('customers.show', $customer->id) . '" class="btn btn-icon btn-sm btn-ghost-dark" title="Lihat"><i class="ti ti-eye"></i></a>';
-                }
-                // if (auth()->user()->can('lihat data crm')) {
-                //     $buttons .= '<a href="' . route('crm.customers.show', $customer->id) . '" class="btn btn-icon btn-sm btn-ghost-dark" title="CRM"><i class="ti ti-address-book"></i></a>';
-                // }
-                if (ActiveRole::hasPermission('hapus data customer')) {
-                    $buttons .= '<button data-id="' . $customer->id . '" class="btn btn-icon btn-sm btn-ghost-danger delete-customer" title="Hapus"><i class="ti ti-trash"></i></button>';
-                }
-                return $buttons . '</div>';
-            })
-            ->rawColumns(['customer', 'loyalty', 'action'])
-            ->with('stats', $this->loyaltyStats($baseQuery)) // supaya kartu ikut ter-update setelah hapus
-            ->make(true);
+                ->addColumn('last_contact', fn($row) => $row->last_contact
+                        ? $row->last_contact->locale('id')->diffForHumans()   // "3 hari yang lalu"
+                        : '-')
+                ->addColumn('orders', fn($row) => (int) $row->projects_count)
+                ->addColumn('loyalty', function ($row) {
+                    // NOTE: pakai angka loyalty_level untuk warna (bukan teks),
+                    // karena sebelumnya match('1','2',...) tidak pernah cocok dengan teks "Lead", dst.
+                    $level = (int) $row->loyalty_level;
+                    return '<span class="lv-badge lv-' . $level . '">' . e($row->readable_loyalty_level) . '</span>';
+                })
+                ->addColumn('action', function ($customer) {
+                    $buttons = '<div class="d-flex justify-content-end gap-1">';
+                    if (ActiveRole::hasPermission('ubah data customer')) {
+                        $buttons .= '<a href="' . route('customers.edit', $customer->id) . '" class="btn btn-icon btn-sm btn-ghost-dark" title="Ubah"><i class="ti ti-edit"></i></a>';
+                    }
+                    if (ActiveRole::hasPermission('lihat data customer')) {
+                        $buttons .= '<a href="' . route('customers.show', $customer->id) . '" class="btn btn-icon btn-sm btn-ghost-dark" title="Lihat"><i class="ti ti-eye"></i></a>';
+                    }
+                    // if (auth()->user()->can('lihat data crm')) {
+                    //     $buttons .= '<a href="' . route('crm.customers.show', $customer->id) . '" class="btn btn-icon btn-sm btn-ghost-dark" title="CRM"><i class="ti ti-address-book"></i></a>';
+                    // }
+                    if (ActiveRole::hasPermission('hapus data customer')) {
+                        $buttons .= '<button data-id="' . $customer->id . '" class="btn btn-icon btn-sm btn-ghost-danger delete-customer" title="Hapus"><i class="ti ti-trash"></i></button>';
+                    }
+                    return $buttons . '</div>';
+                })
+                ->rawColumns(['customer', 'loyalty', 'action'])
+                ->with('stats', $this->loyaltyStats($baseQuery)) // supaya kartu ikut ter-update setelah hapus
+                ->make(true);
+        }
+    
+        return view('customers.index', [
+            'stats' => $this->loyaltyStats($baseQuery),
+        ]);
     }
- 
-    return view('customers.index', [
-        'stats' => $this->loyaltyStats($baseQuery),
-    ]);
-}
-private function loyaltyStats($baseQuery): array
-{
-    $counts = (clone $baseQuery)
-        ->toBase()
-        ->reorder()
-        ->selectRaw('loyalty_level, COUNT(*) as total')
-        ->groupBy('loyalty_level')
-        ->pluck('total', 'loyalty_level');
- 
-    $stats = [];
-    foreach (range(1, 6) as $level) {
-        $stats[$level] = (int) ($counts[$level] ?? 0);
+    private function loyaltyStats($baseQuery): array
+    {
+        $counts = (clone $baseQuery)
+            ->toBase()
+            ->reorder()
+            ->selectRaw('loyalty_level, COUNT(*) as total')
+            ->groupBy('loyalty_level')
+            ->pluck('total', 'loyalty_level');
+    
+        $stats = [];
+        foreach (range(1, 6) as $level) {
+            $stats[$level] = (int) ($counts[$level] ?? 0);
+        }
+    
+        return $stats;
     }
- 
-    return $stats;
-}
     private function readableCategory($value)
     {
         return match ((int) $value) {
@@ -208,7 +208,6 @@ private function loyaltyStats($baseQuery): array
         'role.*' => 'string|exists:roles,name',
         'category' => 'nullable|in:1,2,3,4',
         'channel' => ['nullable', Rule::in(array_keys(Customer::CHANNELS))],
-        'loyalty_level' => 'nullable|in:1,2,3,4,5,6'
     ]);
 
 if ($request->hasFile('photo')) {
@@ -293,9 +292,7 @@ if ($request->hasFile('photo')) {
             'postal_code_id' => $validated['postal_code_id'],
             'category' => $validated['category'] ?? null,
             'channel' => $validated['channel'] ?? null,
-            'loyalty_level' => !empty($validated['loyalty_level'])
-                ? (int) $validated['loyalty_level']
-                : 1,
+            'loyalty_level' => 1,
             'photo' => $validated['photo'] ?? null,
         ]);
     });
