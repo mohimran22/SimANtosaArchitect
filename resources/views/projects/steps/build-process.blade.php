@@ -370,21 +370,18 @@
                                             </td>
 
                                                 @foreach($project->week_labels as $w)
-
+                                                    @if(!empty($w['is_justek']))
+                                                        <td class="week-col table-warning"
+                                                            data-week="{{ $w['week_no'] }}"
+                                                            data-vol="0"></td>
+                                                        @continue
+                                                    @endif
                                                     @php
-                                                        $weekly = $item->weeklyProgresses
-                                                            ->firstWhere('week_no', $w['week_no']);
-
-                                                        $weeklyVol = $weekly
-                                                            ? (float) $weekly->volume
-                                                            : 0;
+                                                        $weekly = $item->weeklyProgresses->firstWhere('week_no', $w['week_no']);
+                                                        $weeklyVol = $weekly ? (float) $weekly->volume : 0;
                                                     @endphp
 
-                                                    <td
-                                                        class="week-col"
-                                                        data-week="{{ $w['week_no'] }}"
-                                                        data-vol="{{ $weeklyVol }}"
-                                                    >
+                                                    <td class="week-col" data-week="{{ $w['week_no'] }}" data-vol="{{ $weeklyVol }}">
                                                         @if(!$isReadOnly)
 
                                                             <input
@@ -460,7 +457,7 @@
 
                                 $emptyTail = '<td class="cumulative-col col-hidden"></td>'
                                     . collect($project->week_labels)
-                                        ->map(fn ($w) => '<td class="week-col" data-week="'.$w['week_no'].'"></td>')
+                                        ->map(fn ($w) => '<td class="week-col'.(!empty($w['is_justek']) ? ' table-warning' : '').'" data-week="'.$w['week_no'].'"></td>')
                                         ->implode('')
                                     . '<td></td><td></td><td></td>';
                             @endphp
@@ -563,15 +560,11 @@
                                 </th>
 
                                 @foreach($project->week_labels as $w)
-
-                                    <th
-                                        class="week-foot"
-                                        data-week="{{ $w['week_no'] }}"
-                                        id="sum-bobot-{{ $w['week_no'] }}"
-                                    >
-                                        0
-                                    </th>
-
+                                    @if(!empty($w['is_justek']))
+                                        <th class="week-foot table-warning" data-week="{{ $w['week_no'] }}"></th>
+                                    @else
+                                        <th class="week-foot" data-week="{{ $w['week_no'] }}" id="sum-bobot-{{ $w['week_no'] }}">0</th>
+                                    @endif
                                 @endforeach
                                 <th></th>
                                 <th></th>
@@ -1562,7 +1555,10 @@
                 let cols = '';
 
                 WEEK_LABELS.forEach(w => {
-
+                    if (w.is_justek) {
+                        cols += `<td class="week-col table-warning" data-week="${w.week_no}" data-vol="0"></td>`;
+                        return;
+                    }
                     cols += `
                         <td
                             class="week-col"
