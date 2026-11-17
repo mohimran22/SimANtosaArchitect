@@ -5,6 +5,8 @@
     $colsTotal = 3;
     $totalCols = $colsFixed + ($weekCount * $colsPerWeek) + $colsTotal;
     $plans = $project->weeklyPlans->keyBy('week_no');
+        $contractWeeks = collect($project->week_labels)->where('is_justek', false);
+    $justekWeeks   = collect($project->week_labels)->where('is_justek', true);
 @endphp
 
         <x-collapse-card title="Tahap Pelaksanaan Proyek" target="proyek-build-body">
@@ -144,31 +146,19 @@
                                         Total s.d<br>Minggu Lalu
                                     </div>
                                 </th>
+                                    @foreach($contractWeeks as $w)
+                                        <th rowspan="2" class="text-center align-middle week-head" data-week="{{ $w['week_no'] }}">
+                                            <div>M{{ $w['week_no'] }}</div>
+                                        </th>
+                                    @endforeach
 
-                                @foreach($project->week_labels as $w)
+                                    @if($justekWeeks->isNotEmpty())
+                                        <th colspan="{{ $justekWeeks->count() }}" class="text-center align-middle table-warning">
+                                            JUSTEK
+                                        </th>
+                                    @endif
 
-                                    <th
-                                        rowspan="2"
-                                        class="text-center align-middle week-head"
-                                        data-week="{{ $w['week_no'] }}"
-                                    >
-                                        <div>
-                                            M{{ $w['week_no'] }}
-                                        </div>
-
-                                        {{-- <small class="text-muted">
-                                            {{ $w['start'] }} - {{ $w['end'] }}
-                                        </small> --}}
-                                    </th>
-
-                                @endforeach
-
-
-                                {{-- PERUBAHAN VOLUME --}}
-                                <th colspan="3" class="align-middle text-center">
-                                    Realisasi
-                                </th>
-
+                                    <th colspan="3" class="align-middle text-center">Realisasi</th>
                             </tr>
 
                             <tr>
@@ -188,6 +178,12 @@
                                 <th class="align-middle text-center">
                                     Bobot<br>(%)
                                 </th>
+                                @foreach($justekWeeks as $w)
+                                    <th class="text-center align-middle table-warning week-head justek-week"
+                                        data-week="{{ $w['week_no'] }}">
+                                        M{{ $w['week_no'] }}
+                                    </th>
+                                @endforeach
                                 <th class="text-center">
                                     Total<br>Vol
                                 </th>
@@ -378,7 +374,10 @@
                                                             ? (float) $weekly->volume
                                                             : 0;
                                                     @endphp
-
+                                                    @if(!empty($w['is_justek']))
+                                                        <td class="week-col table-light" data-week="{{ $w['week_no'] }}" data-vol="0"></td>
+                                                        @continue
+                                                    @endif
                                                     <td
                                                         class="week-col"
                                                         data-week="{{ $w['week_no'] }}"
@@ -454,54 +453,61 @@
 
                             @endforeach
                             @php
-                                $justekItems = $project->technicalJustifications->flatMap->items;
+                                $justeks = $project->technicalJustifications
+                                    ->filter(fn ($j) => $j->items->isNotEmpty());
 
-                                // sel kosong per kolom: kumulatif (tersembunyi) + tiap minggu + 3 kolom realisasi
                                 $emptyTail = '<td class="cumulative-col col-hidden"></td>'
                                     . collect($project->week_labels)
                                         ->map(fn ($w) => '<td class="week-col" data-week="'.$w['week_no'].'"></td>')
                                         ->implode('')
                                     . '<td></td><td></td><td></td>';
-
-                                $justekCategoryCounter = 0;
                             @endphp
 
-                            @if($justekItems->isNotEmpty())
+                            @if($justeks->isNotEmpty())
 
                                 <tr class="row-floor">
-                                    <td colspan="6"><strong>JUSTIFIKASI TEKNIS</strong></td>
+                                    <td colspan="6">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary me-2 btn-justek-all">−</button>
+                                        <strong>JUSTIFIKASI TEKNIS</strong>
+                                    </td>
                                     {!! $emptyTail !!}
                                 </tr>
 
-                                @foreach($justekItems->groupBy(fn ($i) => $i->floor_name ?: '-') as $floorName => $floorItems)
+                                @foreach($justeks as $justek)
 
-                                    <tr class="row-floor">
-                                        <td>{{ $loop->iteration }}</td>
-                                        <td colspan="5"><strong>{{ strtoupper($floorName) }}</strong></td>
+                                    <tr class="row-category justek-row justek-head" data-justek="{{ $justek->id }}">
+                                        <td>{{ alphaIndex($loop->index) }}</td>
+                                        <td colspan="5">
+                                            <button type="button" class="btn btn-sm btn-outline-secondary me-2 btn-justek-one"
+                                                    data-justek="{{ $justek->id }}">−</button>
+                                            {{ $justek->justek_number }}
+                                            @if($justek->offer_date)
+                                                ({{ \Carbon\Carbon::parse($justek->offer_date)->format('d/m/Y') }})
+                                            @endif
+                                        </td>
                                         {!! $emptyTail !!}
                                     </tr>
 
-                                    @foreach($floorItems->groupBy(fn ($i) => $i->category_name ?: '-') as $categoryName => $categoryItems)
+                                    @foreach($justek->items->groupBy('floor_name') as $floorName => $floorItems)
 
-                                        @php
-                                            $categoryNo = alphaIndex($justekCategoryCounter);
-                                            $justekCategoryCounter++;
-                                        @endphp
+                                        @if($floorName)
+                                            <tr class="justek-row justek-child" data-justek="{{ $justek->id }}">
+                                                <td></td>
+                                                <td colspan="5"><strong>{{ strtoupper($floorName) }}</strong></td>
+                                                {!! $emptyTail !!}
+                                            </tr>
+                                        @endif
 
-                                        <tr class="row-category">
-                                            <td>{{ $categoryNo }}</td>
-                                            <td colspan="5">{{ strtoupper($categoryName) }}</td>
-                                            {!! $emptyTail !!}
-                                        </tr>
-
-                                        @foreach($categoryItems as $it)
-                                            {{-- JANGAN pakai data-item-id / .week-vol / .bobot-input --}}
-                                            <tr class="row-justek-item">
+                                        @foreach($floorItems as $it)
+                                            <tr class="row-justek-item justek-row justek-child" data-justek="{{ $justek->id }}">
                                                 <td class="text-center">{{ $loop->iteration }}</td>
                                                 <td class="uraian-pekerjaan">
                                                     {{ $it->job_name }}
                                                     @if($it->description)
                                                         <div class="text-muted small">{{ $it->description }}</div>
+                                                    @endif
+                                                    @if($it->category_name)
+                                                        <div class="text-muted small">{{ $it->category_name }}</div>
                                                     @endif
                                                 </td>
                                                 <td class="text-center">{{ $it->satuan }}</td>
@@ -514,15 +520,14 @@
 
                                     @endforeach
 
+                                    <tr class="fw-bold justek-row justek-total" data-justek="{{ $justek->id }}">
+                                        <td colspan="4" class="text-end">Total {{ $justek->justek_number }}</td>
+                                        <td class="text-end">Rp {{ number_format($justek->grand_total, 0, ',', '.') }}</td>
+                                        <td></td>
+                                        {!! $emptyTail !!}
+                                    </tr>
+
                                 @endforeach
-
-                                <tr class="fw-bold">
-                                    <td colspan="4" class="text-end">Total Justifikasi Teknis</td>
-                                    <td class="text-end">Rp {{ number_format($justekItems->sum('total'), 0, ',', '.') }}</td>
-                                    <td></td>
-                                    {!! $emptyTail !!}
-                                </tr>
-
                             @endif
                         </tbody>
                         <tfoot>
@@ -556,7 +561,9 @@
                                 </th>
 
                                 @foreach($project->week_labels as $w)
-
+                                        @if(!empty($w['is_justek']))
+                                            <th class="week-foot table-warning" data-week="{{ $w['week_no'] }}"></th>
+                                        @else
                                     <th
                                         class="week-foot"
                                         data-week="{{ $w['week_no'] }}"
@@ -564,6 +571,7 @@
                                     >
                                         0
                                     </th>
+                                    @endif
 
                                 @endforeach
                                 <th></th>
@@ -864,11 +872,16 @@
 
                     calcCumulativePrev(activeWeek);
                 }
+                const grp = document.querySelector('.justek-group-head');
+                if (grp) {
+                    const visible = [...document.querySelectorAll('th.justek-week')]
+                        .filter(th => !th.classList.contains('col-hidden')).length;
 
+                    grp.classList.toggle('col-hidden', visible === 0);
+                    grp.colSpan = visible || 1;
+                }
             }
 
-            // expose supaya bisa dipanggil ulang dari listener input minggu
-            // (yang berada di blok script terpisah) tiap kali volume diedit
             window.__recalcCumulativePrevIfActive = function () {
                 if (activeWeek) {
                     calcCumulativePrev(activeWeek);
@@ -1827,4 +1840,54 @@
             });
         });
     </script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+        const allBtn = document.querySelector('.btn-justek-all');
+        if (!allBtn) return;
+
+        let allCollapsed = true;
+        const collapsed = {};   // { justekId: true/false }
+
+        function apply() {
+
+            document.querySelectorAll('tr.justek-row').forEach(tr => {
+
+                const id = tr.dataset.justek;
+                let hide = allCollapsed;
+
+                // minimize per Justek: sembunyikan isi, kepala & total tetap tampil
+                if (!hide && tr.classList.contains('justek-child') && collapsed[id]) {
+                    hide = true;
+                }
+
+                tr.classList.toggle('d-none', hide);
+            });
+
+            allBtn.textContent = allCollapsed ? '+' : '−';
+
+            document.querySelectorAll('.btn-justek-one').forEach(b => {
+                b.textContent = collapsed[b.dataset.justek] ? '+' : '−';
+            });
+        }
+
+        allBtn.addEventListener('click', function () {
+            allCollapsed = !allCollapsed;
+            apply();
+        });
+
+        document.addEventListener('click', function (e) {
+
+            const btn = e.target.closest('.btn-justek-one');
+            if (!btn) return;
+
+            const id = btn.dataset.justek;
+            collapsed[id] = !collapsed[id];
+            apply();
+        });
+
+        // default: terbuka. Untuk default tertutup, ubah jadi allCollapsed = true; lalu apply();
+        apply();
+    });
+</script>
 @endpush

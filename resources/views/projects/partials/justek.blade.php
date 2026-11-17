@@ -15,18 +15,22 @@
 
     <h4 class="fw-bold mb-3">Informasi Pembuatan Justifikasi Teknis</h4>
     <div class="row g-3">
-        <div class="col-md-4">
+        <div class="col-md-3">
             <label class="form-label">Nomor Penawaran</label>
             <input type="text" name="offer_number" class="form-control" value="{{ old('offer_number') ?? '' }}" placeholder="AUTO GENARATE" readonly>
 
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
             <label class="form-label required">Tanggal Penawaran</label>
             <input type="date" name="offer_date" class="form-control" required>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
             <label class="form-label">Nama Customer</label>
             <input type="text" name="contact_name" value="{{ $project->customer->user->fullname }}" class="form-control" readonly>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Durasi Pekerjaan</label>
+            <input type="text" name="job_duration" class="form-control">
         </div>
     </div>
     <div class="row mb-4 mt-3">

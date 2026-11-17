@@ -2,20 +2,25 @@
 <div class="card-body">
 
     <div class="row g-4">
-        <div class="col-md-4">
+        <div class="col-md-3">
             <label class="fw-semibold">Nomor Penawaran</label>
             <input type="text" class="form-control" readonly
                    value="{{ $technicalJustification->justek_number }}">
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
             <label class="fw-semibold">Tanggal Penawaran</label>
             <input type="text" class="form-control" readonly
                    value="{{ \Carbon\Carbon::parse($technicalJustification->offer_date)->format('d/m/Y') }}">
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
             <label class="fw-semibold">Nama Customer</label>
             <input type="text" class="form-control" readonly
                    value="{{ $technicalJustification->contact_name }}">
+        </div>
+        <div class="col-md-3">
+            <label class="fw-semibold">Durasi Pekerjaan</label>
+            <input type="text" class="form-control" readonly
+                   value="{{ $technicalJustification->job_duration }}">
         </div>
     </div>
 

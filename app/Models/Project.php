@@ -122,65 +122,65 @@ class Project extends Model
         return $this->hasMany(InvoiceBuild::class);
     }
 
-    public function tasks()
-{
-    return $this->hasMany(ProjectTask::class);
-}
+        public function tasks()
+    {
+        return $this->hasMany(ProjectTask::class);
+    }
 
-    public function rab()
-{
-    return $this->hasOne(RabProcess::class);
-}
+        public function rab()
+    {
+        return $this->hasOne(RabProcess::class);
+    }
 
-    public function finalDocument()
-{
-    return $this->hasOne(FinalProject::class);
-}
+        public function finalDocument()
+    {
+        return $this->hasOne(FinalProject::class);
+    }
 
-    public function finalBuild()
-{
-    return $this->hasOne(FinalBuild::class);
-}
+        public function finalBuild()
+    {
+        return $this->hasOne(FinalBuild::class);
+    }
 
-public function buildItems()
-{
-    return $this->hasMany(BuildProcessItem::class);
-}
+    public function buildItems()
+    {
+        return $this->hasMany(BuildProcessItem::class);
+    }
 
-public function dailyReports()
-{
-    return $this->hasMany(BuildDailyReport::class,'project_id')
-                ->orderBy('tanggal','desc');
-}
+    public function dailyReports()
+    {
+        return $this->hasMany(BuildDailyReport::class,'project_id')
+                    ->orderBy('tanggal','desc');
+    }
 
-public function weeklyPlans()
-{
-    return $this->hasMany(BuildPlans::class);
-}
+    public function weeklyPlans()
+    {
+        return $this->hasMany(BuildPlans::class);
+    }
 
-public function weeklyReports()
-{
-    return $this->hasMany(WeeklyReport::class);
-}
+    public function weeklyReports()
+    {
+        return $this->hasMany(WeeklyReport::class);
+    }
 
-public function progressSnapshots()
-{
-    return $this->hasMany(BuildProgressSnapshot::class);
-}
+    public function progressSnapshots()
+    {
+        return $this->hasMany(BuildProgressSnapshot::class);
+    }
 
-public function buildTermins()
-{
-    return $this->hasMany(BuildTermin::class)
-        ->orderBy('termin_no');
-}
+    public function buildTermins()
+    {
+        return $this->hasMany(BuildTermin::class)
+            ->orderBy('termin_no');
+    }
 
-public function technicalJustifications(): HasMany
-{
-    return $this->hasMany(
-        TechnicalJustification::class,
-        'project_id'
-    );
-}
+    public function technicalJustifications(): HasMany
+    {
+        return $this->hasMany(
+            TechnicalJustification::class,
+            'project_id'
+        );
+    }
 
     public function getCurrentLevelAttribute()
     {
@@ -206,153 +206,181 @@ public function technicalJustifications(): HasMany
         });
     }
 
-    public function getCustomerNameAttribute()
-{
-    return $this->customer?->display_name ?? '-';
-}
+        public function getCustomerNameAttribute()
+    {
+        return $this->customer?->display_name ?? '-';
+    }
 
-public function getEmployeeNameAttribute()
-{
-    return $this->employee?->display_name ?? '-';
-}
+    public function getEmployeeNameAttribute()
+    {
+        return $this->employee?->display_name ?? '-';
+    }
 
-public function latestSurveyInvoice()
-{
-    return $this->invoices()
-        ->where('invoice_type', Invoice::TYPE_SURVEY)
-        ->where('status', '!=', 'obsolete')
-        ->latest() 
-        ->first();
-}
+    public function latestSurveyInvoice()
+    {
+        return $this->invoices()
+            ->where('invoice_type', Invoice::TYPE_SURVEY)
+            ->where('status', '!=', 'obsolete')
+            ->latest() 
+            ->first();
+    }
 
-public function generateLevels()
-{
-    $levels = match ((int) $this->project_type) {
-        1 => [
-                ['level_order' => 1, 'level_name' => 'Konsultasi'],
-                ['level_order' => 2, 'level_name' => 'Rencana Survei'],
-                ['level_order' => 3, 'level_name' => 'Survei'],
-                ['level_order' => 4, 'level_name' => 'Penawaran Jasa Desain'],
-                ['level_order' => 5, 'level_name' => 'Kontrak Desain'],
-                ['level_order' => 6, 'level_name' => 'Invoice Desain DP'],
-                ['level_order' => 7, 'level_name' => 'Proses Pengerjaan'],
-                ['level_order' => 8, 'level_name' => 'Invoice Pelunasan Desain'],
-                ['level_order' => 9, 'level_name' => 'Cetak & Softcopy'],
-            ],
-        2 => [
-                ['level_order' => 1, 'level_name' => 'Konsultasi'],
-                ['level_order' => 2, 'level_name' => 'Rencana Survei'],
-                ['level_order' => 3, 'level_name' => 'Survei'],
-                ['level_order' => 4, 'level_name' => 'Penawaran Pembuatan RAB'],
-                ['level_order' => 5, 'level_name' => 'Invoice RAB'],
-                ['level_order' => 6, 'level_name' => 'Proses Pengerjaan RAB'],
-            ],
-        3 => [
-                ['level_order' => 1, 'level_name' => 'Konsultasi'],
-                ['level_order' => 2, 'level_name' => 'Rencana Survei'],
-                ['level_order' => 3, 'level_name' => 'Survei'],
-                ['level_order' => 4, 'level_name' => 'Penawaran Jasa Build'],
-                ['level_order' => 5, 'level_name' => 'Setting Termin'],
-                ['level_order' => 6, 'level_name' => 'Kontrak Kerja'],
-                ['level_order' => 7, 'level_name' => 'Invoice Termin'],
-                ['level_order' => 8, 'level_name' => 'Pelaksanaan'],
-                ['level_order' => 9, 'level_name' => 'Serah Terima'],
-            ],
-        default => throw new \Exception('Jenis proyek tidak valid'),
-    };
+    public function generateLevels()
+    {
+        $levels = match ((int) $this->project_type) {
+            1 => [
+                    ['level_order' => 1, 'level_name' => 'Konsultasi'],
+                    ['level_order' => 2, 'level_name' => 'Rencana Survei'],
+                    ['level_order' => 3, 'level_name' => 'Survei'],
+                    ['level_order' => 4, 'level_name' => 'Penawaran Jasa Desain'],
+                    ['level_order' => 5, 'level_name' => 'Kontrak Desain'],
+                    ['level_order' => 6, 'level_name' => 'Invoice Desain DP'],
+                    ['level_order' => 7, 'level_name' => 'Proses Pengerjaan'],
+                    ['level_order' => 8, 'level_name' => 'Invoice Pelunasan Desain'],
+                    ['level_order' => 9, 'level_name' => 'Cetak & Softcopy'],
+                ],
+            2 => [
+                    ['level_order' => 1, 'level_name' => 'Konsultasi'],
+                    ['level_order' => 2, 'level_name' => 'Rencana Survei'],
+                    ['level_order' => 3, 'level_name' => 'Survei'],
+                    ['level_order' => 4, 'level_name' => 'Penawaran Pembuatan RAB'],
+                    ['level_order' => 5, 'level_name' => 'Invoice RAB'],
+                    ['level_order' => 6, 'level_name' => 'Proses Pengerjaan RAB'],
+                ],
+            3 => [
+                    ['level_order' => 1, 'level_name' => 'Konsultasi'],
+                    ['level_order' => 2, 'level_name' => 'Rencana Survei'],
+                    ['level_order' => 3, 'level_name' => 'Survei'],
+                    ['level_order' => 4, 'level_name' => 'Penawaran Jasa Build'],
+                    ['level_order' => 5, 'level_name' => 'Setting Termin'],
+                    ['level_order' => 6, 'level_name' => 'Kontrak Kerja'],
+                    ['level_order' => 7, 'level_name' => 'Invoice Termin'],
+                    ['level_order' => 8, 'level_name' => 'Pelaksanaan'],
+                    ['level_order' => 9, 'level_name' => 'Serah Terima'],
+                ],
+            default => throw new \Exception('Jenis proyek tidak valid'),
+        };
 
-    $this->levels()->createMany($levels);
-}
-public function getKurvaSData()
-{
-    $weeks = count($this->week_labels);
+        $this->levels()->createMany($levels);
+    }
+    public function getKurvaSData()
+    {
+        $weeks = count($this->week_labels);
 
-    $items = $this->buildItems()
-        ->with('weeklyProgresses')
-        ->get();
+        $items = $this->buildItems()
+            ->with('weeklyProgresses')
+            ->get();
 
-    $data = [];
+        $data = [];
 
-    for ($w=1; $w <= $weeks; $w++) {
+        for ($w=1; $w <= $weeks; $w++) {
 
-        $total = 0;
+            $total = 0;
 
-        foreach ($items as $item) {
+            foreach ($items as $item) {
 
-            $sum = $item->weeklyProgresses
-                ->filter(fn($p) => $p->week_no <= $w)
-                ->sum('progress_percent');
+                $sum = $item->weeklyProgresses
+                    ->filter(fn($p) => $p->week_no <= $w)
+                    ->sum('progress_percent');
 
-            $total += $sum * ($item->bobot_percent / 100);
+                $total += $sum * ($item->bobot_percent / 100);
+            }
+
+            $data[] = [
+                'week' => $w,
+                'progress' => round($total, 2)
+            ];
         }
 
-        $data[] = [
-            'week' => $w,
-            'progress' => round($total, 2)
-        ];
+        return $data;
     }
+    public function getKurvaRencanaData()
+    {
+        $weeks = count($this->week_labels);
+        $plans = $this->weeklyPlans->keyBy('week_no');
 
-    return $data;
-}
-public function getKurvaRencanaData()
-{
-    $weeks = count($this->week_labels);
-    $plans = $this->weeklyPlans->keyBy('week_no');
+        $jalan = 0;
+        $data = [];
 
-    $jalan = 0;
-    $data = [];
+        for ($w=1; $w<=$weeks; $w++) {
+            $jalan += $plans[$w]->bobot_percent ?? 0;
 
-    for ($w=1; $w<=$weeks; $w++) {
-        $jalan += $plans[$w]->bobot_percent ?? 0;
+            $data[] = [
+                'week'=>$w,
+                'progress'=>round($jalan,2)
+            ];
+        }
 
-        $data[] = [
-            'week'=>$w,
-            'progress'=>round($jalan,2)
-        ];
+        return $data;
     }
+    public function getWeekLabelsAttribute()
+    {
+        if (!$this->start_date || !$this->end_date) return [];
 
-    return $data;
-}
-public function getWeekLabelsAttribute()
-{
-    if (!$this->start_date || !$this->end_date) return [];
+        $start = Carbon::parse($this->start_date);
+        $end   = Carbon::parse($this->end_date);
 
-    $start = \Carbon\Carbon::parse($this->start_date);
-    $end   = \Carbon\Carbon::parse($this->end_date);
+        $labels = [];
+        $w = 1;
 
-    $labels = [];
-    $w = 1;
+        // ===== minggu kontrak (logika lama, tidak diubah) =====
+        while ($start <= $end) {
 
-    while ($start <= $end) {
+            $weekEnd = $start->copy()->addDays(6)->min($end);
 
-        $weekEnd = $start->copy()->addDays(6)->min($end);
+            $labels[] = [
+                'week_no'   => $w,
+                'start'     => $start->format('d/m/Y'),
+                'end'       => $weekEnd->format('d/m/Y'),
+                'label'     => $start->format('d M') . ' - ' . $weekEnd->format('d M Y'),
+                'is_justek' => false,
+            ];
 
-        $labels[] = [
-            'week_no' => $w,
-            'start'   => $start->format('d/m/Y'),   
-            'end'     => $weekEnd->format('d/m/Y'), 
-            'label'   => $start->format('d M') . ' - ' . $weekEnd->format('d M Y'),
-        ];
+            $start->addWeek();
+            $w++;
+        }
 
-        $start->addWeek();
-        $w++;
+        // ===== minggu tambahan dari job_duration Justek =====
+        $extraDays = $this->technicalJustifications
+            ->sum(fn ($j) => (int) preg_replace('/\D/', '', (string) $j->job_duration));
+
+        if ($extraDays > 0) {
+
+            $extraStart = $end->copy()->addDay();
+            $extraEnd   = $end->copy()->addDays($extraDays);
+
+            while ($extraStart <= $extraEnd) {
+
+                $weekEnd = $extraStart->copy()->addDays(6)->min($extraEnd);
+
+                $labels[] = [
+                    'week_no'   => $w,
+                    'start'     => $extraStart->format('d/m/Y'),
+                    'end'       => $weekEnd->format('d/m/Y'),
+                    'label'     => $extraStart->format('d M') . ' - ' . $weekEnd->format('d M Y'),
+                    'is_justek' => true,
+                ];
+
+                $extraStart->addWeek();
+                $w++;
+            }
+        }
+
+        return $labels;
     }
-
-    return $labels;
-}
-public function getFinalRouteAttribute()
-{
-    return $this->project_type == 3
-        ? route('projects.finals-build.store', $this->id)
-        : route('projects.finals.store', $this->id);
-}
-public function getJobDurationAttribute()
-{
-    if (!$this->start_date || !$this->end_date) {
-        return null;
+    public function getFinalRouteAttribute()
+    {
+        return $this->project_type == 3
+            ? route('projects.finals-build.store', $this->id)
+            : route('projects.finals.store', $this->id);
     }
+    public function getJobDurationAttribute()
+    {
+        if (!$this->start_date || !$this->end_date) {
+            return null;
+        }
 
-    return Carbon::parse($this->start_date)
-        ->diffInDays(Carbon::parse($this->end_date)) + 1;
-}
+        return Carbon::parse($this->start_date)
+            ->diffInDays(Carbon::parse($this->end_date)) + 1;
+    }
 }

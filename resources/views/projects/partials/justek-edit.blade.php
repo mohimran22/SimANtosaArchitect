@@ -36,7 +36,7 @@
 
         <div class="row g-3 mb-4">
 
-            <div class="col-md-4">
+            <div class="col-md-3">
 
                 <label class="form-label">
                     Nomor Penawaran
@@ -50,7 +50,7 @@
             </div>
 
 
-            <div class="col-md-4">
+            <div class="col-md-3">
 
                 <label class="form-label required">
                     Tanggal Penawaran
@@ -66,8 +66,7 @@
 
             </div>
 
-
-            <div class="col-md-4">
+            <div class="col-md-3">
 
                 <label class="form-label">
                     Nama Customer
@@ -79,7 +78,17 @@
                        readonly>
 
             </div>
+            <div class="col-md-3">
 
+                <label class="form-label">
+                    Durasi Pekerjaan
+                </label>
+
+                <input type="text" name="job_duration"
+                       class="form-control"
+                       value="{{ $technicalJustification->job_duration }}">
+
+            </div>
         </div>
 
         <div class="rab-detail-header mb-3">
