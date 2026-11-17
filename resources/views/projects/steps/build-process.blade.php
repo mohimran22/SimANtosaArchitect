@@ -1410,6 +1410,7 @@
                         Math.round(hargaPelaksanaan)
                             .toLocaleString('id-ID');
                 }
+                const bobotKumulatifCell = row.querySelector('.bobot-kumulatif');
                 if (bobotKumulatifCell) {
                     grandTotalBobotKumulatif +=
                         parseFloat(

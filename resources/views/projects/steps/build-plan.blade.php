@@ -1,17 +1,15 @@
 @php
     $isReadOnly = !$canEdit;
 
-    $weekCount = count($project->week_labels);
+    $weekCount = count($project->week_labels);          // total (termasuk Justek), dipakai Kurva S
+    $planWeeks = collect($project->week_labels)->where('is_justek', false)->values();
+    $planWeekCount = $planWeeks->count();               // hanya minggu kontrak
+
     $colsFixed   = 6;
     $colsPerWeek = 1;
-    $colsTotal   = 0;
+    $totalCols   = $colsFixed + ($planWeekCount * $colsPerWeek);
 
-    $weekCount = count($project->week_labels);
-
-    $totalCols = $colsFixed + ($weekCount * $colsPerWeek);
-
-    $plans = $project->weeklyPlans
-        ->keyBy('week_no');
+    $plans = $project->weeklyPlans->keyBy('week_no');
 @endphp
 
     <x-collapse-card title="Tahap Perencanaan Proyek" target="proyek-build-plan-body">
@@ -76,7 +74,7 @@
                                 <col style="width:260px"> 
                                 <col style="width:80px">  
 
-                                @foreach($project->week_labels as $w)
+                                @foreach($planWeeks as $w)
                                     <col style="width:95px">
                                 @endforeach
                             </colgroup>
@@ -86,7 +84,7 @@
                                     <th rowspan="2" class="align-middle text-center">Uraian Pekerjaan</th>
 
                                     <th rowspan="2" class="align-middle text-center">BOBOT</th>
-                                    @foreach($project->week_labels as $w)
+                                    @foreach($planWeeks as $w)
                                         <th class="text-center" data-week="{{ $w['week_no'] }}">
                                             <div>M{{ $w['week_no'] }}</div>
                                         </th>
@@ -94,7 +92,7 @@
                                 </tr>
                                 <tr>
 
-                                    @foreach($project->week_labels as $w)
+                                    @foreach($planWeeks as $w)
                                         <th class="align-middle text-center">Bobot<br>(%)</th>
                                     @endforeach
                                 </tr>
@@ -109,7 +107,7 @@
                                         {{ number_format($buildPlans->sum('bobot_percent'),2) }}
                                     </th>
 
-                                    @foreach($project->week_labels as $w)
+                                    @foreach($planWeeks as $w)
                                         <th class="week-foot text-center fw-bold"
                                             data-week="{{ $w['week_no'] }}"
                                             id="total-plan-{{ $w['week_no'] }}">
@@ -124,7 +122,7 @@
                                     <th class="text-center">
                                         {{ number_format($buildPlans->sum('bobot_percent'),2) }}
                                     </th>
-                                    @foreach($project->week_labels as $w)
+                                    @foreach($planWeeks as $w)
                                         <th class="week-foot text-center fw-bold"
                                             id="kumulatif-plan-{{ $w['week_no'] }}">
                                             0
@@ -478,6 +476,8 @@
     }
 </script>
 <script>
+    const TOTAL_WEEKS = {{ $weekCount }};
+    const PLAN_WEEKS  = {{ $planWeekCount }};
     document.addEventListener('DOMContentLoaded', () => {
         $(document).on('focus', '.week-plan', function(){
             this.dataset.old = this.value || 0;
@@ -593,26 +593,12 @@
     }
 
     function getPlanKumulatif(){
-
-        let weekCount = {{ $weekCount }};
-        let jalan = 0;
-        let data = [];
-
-        for(let w = 1; w <= weekCount; w++){
-
-            jalan += getWeeklyPlanTotal(w);
-
-            data.push(jalan);
-
-        }
-
-        return data;
-
+        return rebuildKurvaPlanFromTable();
     }
 
     function calculateFooterPlan(){
 
-        let weekCount = {{ $weekCount }};
+        let weekCount = PLAN_WEEKS;
 
         let kumulatif = 0;
 
@@ -659,25 +645,20 @@ function updateKurvaPlanRealtime(){
 
     window.kurvaChart.update();
 }
-function rebuildKurvaPlanFromTable(){
+    function rebuildKurvaPlanFromTable(){
+        let jalan = 0;
+        const data = [];
 
-    let weekCount = {{ $weekCount }};
-
-    let kumulatif = [];
-
-    let jalan = 0;
-
-    for(let w = 1; w <= weekCount; w++){
-
-        const total = getWeeklyPlanTotal(w);
-
-        jalan += total;
-
-        kumulatif.push(jalan);
+        for (let w = 1; w <= TOTAL_WEEKS; w++) {
+            if (w > PLAN_WEEKS) {
+                data.push(null);          // minggu Justek: garis berhenti
+                continue;
+            }
+            jalan += getWeeklyPlanTotal(w);
+            data.push(jalan);
+        }
+        return data;
     }
-
-    return kumulatif;
-}
     function updateKurvaChartRealtime(){
         if(!window.kurvaChart) return;
         window.kurvaChart.data.datasets[0].data = rebuildKurvaFromTable();
@@ -685,7 +666,7 @@ function rebuildKurvaPlanFromTable(){
     }
     function validatePlanTotal(){
         let total = 0;
-        let weekCount = {{ $weekCount }};
+        let weekCount = PLAN_WEEKS;
         for(let w = 1; w <= weekCount; w++){
             total += getWeeklyPlanTotal(w);
         }
@@ -769,7 +750,7 @@ function rebuildKurvaPlanFromTable(){
     }
 </script>
 <script>
-    let weeks = @json($project->week_labels);
+    let weeks = @json($planWeeks);
 
     let columns = [
         {

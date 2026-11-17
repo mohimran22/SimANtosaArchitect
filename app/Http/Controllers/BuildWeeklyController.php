@@ -391,7 +391,7 @@ public function exportPdf(Request $request, Project $project) {
     $jalan = 0;
 
     foreach ($project->week_labels as $w) {
-
+    if (!empty($w['is_justek'])) continue;
         $mingguan = BuildPlanWeek::query()
             ->whereHas('buildPlan', fn ($q) => $q->where('project_id', $project->id))
             ->where('week_no', $w['week_no'])
