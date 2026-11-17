@@ -5,8 +5,6 @@
     $colsTotal = 3;
     $totalCols = $colsFixed + ($weekCount * $colsPerWeek) + $colsTotal;
     $plans = $project->weeklyPlans->keyBy('week_no');
-        $contractWeeks = collect($project->week_labels)->where('is_justek', false);
-    $justekWeeks   = collect($project->week_labels)->where('is_justek', true);
 @endphp
 
         <x-collapse-card title="Tahap Pelaksanaan Proyek" target="proyek-build-body">
@@ -146,19 +144,32 @@
                                         Total s.d<br>Minggu Lalu
                                     </div>
                                 </th>
-                                    @foreach($contractWeeks as $w)
-                                        <th rowspan="2" class="text-center align-middle week-head" data-week="{{ $w['week_no'] }}">
-                                            <div>M{{ $w['week_no'] }}</div>
-                                        </th>
-                                    @endforeach
 
-                                    @if($justekWeeks->isNotEmpty())
-                                        <th colspan="{{ $justekWeeks->count() }}" class="text-center align-middle table-warning">
-                                            JUSTEK
-                                        </th>
-                                    @endif
+                                @foreach($project->week_labels as $w)
 
-                                    <th colspan="3" class="align-middle text-center">Realisasi</th>
+                                    {{-- <th
+                                        rowspan="2"
+                                        class="text-center align-middle week-head"
+                                        data-week="{{ $w['week_no'] }}"
+                                    > --}}
+                                    <th rowspan="2"
+                                        class="text-center align-middle week-head {{ !empty($w['is_justek']) ? 'table-warning' : '' }}"
+                                        data-week="{{ $w['week_no'] }}">
+                                        <div>M{{ $w['week_no'] }}</div>
+                                        @if(!empty($w['is_justek']))
+                                            <small class="text-muted">Justek</small>
+                                        @endif
+                                        {{-- <div>
+                                            M{{ $w['week_no'] }}
+                                        </div> --}}
+                                    </th>
+
+                                @endforeach
+
+                                <th colspan="3" class="align-middle text-center">
+                                    Realisasi
+                                </th>
+
                             </tr>
 
                             <tr>
@@ -178,12 +189,6 @@
                                 <th class="align-middle text-center">
                                     Bobot<br>(%)
                                 </th>
-                                @foreach($justekWeeks as $w)
-                                    <th class="text-center align-middle table-warning week-head justek-week"
-                                        data-week="{{ $w['week_no'] }}">
-                                        M{{ $w['week_no'] }}
-                                    </th>
-                                @endforeach
                                 <th class="text-center">
                                     Total<br>Vol
                                 </th>
@@ -374,10 +379,7 @@
                                                             ? (float) $weekly->volume
                                                             : 0;
                                                     @endphp
-                                                    @if(!empty($w['is_justek']))
-                                                        <td class="week-col table-light" data-week="{{ $w['week_no'] }}" data-vol="0"></td>
-                                                        @continue
-                                                    @endif
+
                                                     <td
                                                         class="week-col"
                                                         data-week="{{ $w['week_no'] }}"
@@ -561,9 +563,7 @@
                                 </th>
 
                                 @foreach($project->week_labels as $w)
-                                        @if(!empty($w['is_justek']))
-                                            <th class="week-foot table-warning" data-week="{{ $w['week_no'] }}"></th>
-                                        @else
+
                                     <th
                                         class="week-foot"
                                         data-week="{{ $w['week_no'] }}"
@@ -571,7 +571,6 @@
                                     >
                                         0
                                     </th>
-                                    @endif
 
                                 @endforeach
                                 <th></th>
@@ -872,16 +871,11 @@
 
                     calcCumulativePrev(activeWeek);
                 }
-                const grp = document.querySelector('.justek-group-head');
-                if (grp) {
-                    const visible = [...document.querySelectorAll('th.justek-week')]
-                        .filter(th => !th.classList.contains('col-hidden')).length;
 
-                    grp.classList.toggle('col-hidden', visible === 0);
-                    grp.colSpan = visible || 1;
-                }
             }
 
+            // expose supaya bisa dipanggil ulang dari listener input minggu
+            // (yang berada di blok script terpisah) tiap kali volume diedit
             window.__recalcCumulativePrevIfActive = function () {
                 if (activeWeek) {
                     calcCumulativePrev(activeWeek);

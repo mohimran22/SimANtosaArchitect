@@ -47,11 +47,20 @@ class CustomersController extends Controller
 
         if ($request->ajax()) {
             // withCount hanya di query tabel (bukan di $baseQuery) supaya perhitungan kartu tidak terganggu
-            $query = (clone $baseQuery)->withCount('projects');
+            $query = (clone $baseQuery)
+                ->select('customers.*')
+                ->selectRaw(Customer::levelSql() . ' AS auto_level')
+                ->withCount('projects');
     
             // Filter tab (Lead, Prospek, New Customer, Silver, Gold, Platinum)
             if ($request->filled('loyalty')) {
-                $query->where('loyalty_level', $request->loyalty);
+                $lvl = (int) $request->loyalty;
+
+                if ($lvl === 2) {
+                    $query->whereRaw(Customer::hasProjectSql());
+                } else {
+                    $query->whereRaw('(' . Customer::levelSql() . ') = ?', [$lvl]);
+                }
             }
     
             $customers = $query->get();
@@ -82,7 +91,7 @@ class CustomersController extends Controller
                             </div>';
                 })
                 ->editColumn('channel', fn($row) => $row->readable_channel)
-                ->addColumn('category', fn($row) => $this->readableCategory($row->category))
+                ->addColumn('category', fn($row) => $row->readable_category)
                 ->addColumn('created_at', fn($row) => $row->created_at
                     ? $row->created_at->locale('id')->diffForHumans()   // "3 hari yang lalu"
                     : '-')
@@ -91,9 +100,7 @@ class CustomersController extends Controller
                         : '-')
                 ->addColumn('orders', fn($row) => (int) $row->projects_count)
                 ->addColumn('loyalty', function ($row) {
-                    // NOTE: pakai angka loyalty_level untuk warna (bukan teks),
-                    // karena sebelumnya match('1','2',...) tidak pernah cocok dengan teks "Lead", dst.
-                    $level = (int) $row->loyalty_level;
+                    $level = $row->effective_loyalty_level;
                     return '<span class="lv-badge lv-' . $level . '">' . e($row->readable_loyalty_level) . '</span>';
                 })
                 ->addColumn('action', function ($customer) {
@@ -113,12 +120,14 @@ class CustomersController extends Controller
                     return $buttons . '</div>';
                 })
                 ->rawColumns(['customer', 'loyalty', 'action'])
-                ->with('stats', $this->loyaltyStats($baseQuery)) // supaya kartu ikut ter-update setelah hapus
+                ->with('stats', $this->loyaltyStats($baseQuery))
+                ->with('total', (clone $baseQuery)->count())
                 ->make(true);
         }
     
         return view('customers.index', [
             'stats' => $this->loyaltyStats($baseQuery),
+            'total' => (clone $baseQuery)->count(),
         ]);
     }
     private function loyaltyStats($baseQuery): array
@@ -126,39 +135,19 @@ class CustomersController extends Controller
         $counts = (clone $baseQuery)
             ->toBase()
             ->reorder()
-            ->selectRaw('loyalty_level, COUNT(*) as total')
-            ->groupBy('loyalty_level')
-            ->pluck('total', 'loyalty_level');
-    
+            ->selectRaw(Customer::levelSql() . ' AS lvl, COUNT(*) AS total')
+            ->groupBy('lvl')
+            ->pluck('total', 'lvl');
+
         $stats = [];
         foreach (range(1, 6) as $level) {
             $stats[$level] = (int) ($counts[$level] ?? 0);
         }
-    
-        return $stats;
-    }
-    private function readableCategory($value)
-    {
-        return match ((int) $value) {
-            1 => 'Individu',
-            2 => 'Perusahaan',
-            3 => 'Instansi',
-            4 => 'Lainnya',
-            default => '-',
-        };
-    }
 
-    private function readableLoyaltyLevel($value)
-    {
-        return match ((int) $value) {
-            1 => 'Lead',
-            2 => 'Prospek',
-            3 => 'New Customer',
-            4 => 'Silver',
-            5 => 'Gold',
-            6 => 'Platinum',
-            default => '-',
-        };
+        // Prospek kumulatif: semua yang punya project (level 2 ke atas)
+        $stats[2] = $stats[2] + $stats[3] + $stats[4] + $stats[5] + $stats[6];
+
+        return $stats;
     }
 
     public function create(Customer $customer)
