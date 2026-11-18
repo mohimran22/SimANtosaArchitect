@@ -38,10 +38,9 @@ class CustomersController extends Controller
     {
         $auth = auth()->user();
     
-        // Query dasar (sudah dibatasi hak akses). Dipakai untuk tabel DAN kartu statistik.
+        $canViewAll = ActiveRole::hasPermission('lihat daftar customer');
         $baseQuery = Customer::with(['user.roles']);
-    
-        if (!ActiveRole::hasPermission('lihat daftar customer')) {
+        if (!$canViewAll) {
             $baseQuery->where('user_id', $auth->id);
         }
 
@@ -65,7 +64,7 @@ class CustomersController extends Controller
     
             $customers = $query->get();
     
-            return DataTables::of($customers)
+            $dt = DataTables::of($customers)
                 ->addIndexColumn()
                 ->addColumn('customer', function ($row) {
                     $name     = Str::title($row->user->fullname ?? '-');
@@ -119,15 +118,18 @@ class CustomersController extends Controller
                     }
                     return $buttons . '</div>';
                 })
-                ->rawColumns(['customer', 'loyalty', 'action'])
-                ->with('stats', $this->loyaltyStats($baseQuery))
-                ->with('total', (clone $baseQuery)->count())
-                ->make(true);
+                ->rawColumns(['customer', 'loyalty', 'action']);
+                if ($canViewAll) {
+                    $dt->with('stats', $this->loyaltyStats($baseQuery))
+                    ->with('total', (clone $baseQuery)->count());
+                }
+                return $dt->make(true);
         }
     
         return view('customers.index', [
-            'stats' => $this->loyaltyStats($baseQuery),
-            'total' => (clone $baseQuery)->count(),
+            'canViewAll' => $canViewAll,
+            'stats'      => $canViewAll ? $this->loyaltyStats($baseQuery) : [],
+            'total'      => $canViewAll ? (clone $baseQuery)->count() : 0,
         ]);
     }
     private function loyaltyStats($baseQuery): array
