@@ -54,13 +54,7 @@ class CustomersController extends Controller
     
             // Filter tab (Lead, Prospek, New Customer, Silver, Gold, Platinum)
             if ($request->filled('loyalty')) {
-                $lvl = (int) $request->loyalty;
-
-                if ($lvl === 2) {
-                    $query->whereRaw(Customer::hasProjectSql());
-                } else {
-                    $query->whereRaw('(' . Customer::levelSql() . ') = ?', [$lvl]);
-                }
+                $query->whereRaw('(' . Customer::levelSql() . ') = ?', [(int) $request->loyalty]);
             }
     
             $customers = $query->get();
@@ -135,25 +129,26 @@ class CustomersController extends Controller
             'filteredTotal' => $canViewAll ? (clone $baseQuery)->count() : 0,
         ]);
     }
-    private function loyaltyStats($baseQuery): array
-    {
-        $counts = (clone $baseQuery)
-            ->toBase()
-            ->reorder()
-            ->selectRaw(Customer::levelSql() . ' AS lvl, COUNT(*) AS total')
-            ->groupBy('lvl')
-            ->pluck('total', 'lvl');
+private function loyaltyStats($baseQuery): array
+{
+    $counts = (clone $baseQuery)
+        ->toBase()
+        ->reorder()
+        ->selectRaw(Customer::levelSql() . ' AS lvl, COUNT(*) AS total')
+        ->groupBy('lvl')
+        ->pluck('total', 'lvl');
 
-        $stats = [];
-        foreach (range(1, 6) as $level) {
-            $stats[$level] = (int) ($counts[$level] ?? 0);
-        }
-
-        // Prospek kumulatif: semua yang punya project (level 2 ke atas)
-        $stats[2] = $stats[2] + $stats[3] + $stats[4] + $stats[5] + $stats[6];
-
-        return $stats;
+    $exclusive = [];
+    foreach (range(1, 6) as $level) {
+        $exclusive[$level] = (int) ($counts[$level] ?? 0);
     }
+
+    $stats = $exclusive;
+    $stats[2] = $exclusive[2] + $exclusive[3] + $exclusive[4] + $exclusive[5] + $exclusive[6]; 
+    $stats[1] = $exclusive[1] + $stats[2];                                                     
+
+    return $stats;
+}
         private function applyDateRange($query, Request $request)
     {
         $request->validate([
