@@ -50,7 +50,7 @@ class CustomersController extends Controller
         $query = (clone $baseQuery)
             ->select('customers.*')
             ->selectRaw(Customer::levelSql() . ' AS auto_level')
-            ->selectRaw(Customer::lastTransactionSql() . ' AS last_transaction_at')
+            ->selectRaw(Customer::lastContactSql() . ' AS last_contact_at')
             ->withCount('projects');
     
             // Filter tab (Lead, Prospek, New Customer, Silver, Gold, Platinum)
@@ -87,18 +87,12 @@ class CustomersController extends Controller
                 })
                 ->editColumn('channel', fn($row) => $row->readable_channel)
                 ->addColumn('category', fn($row) => $row->readable_category)
-                ->addColumn('created_at', fn($row) => $row->created_at
-                    ? $row->created_at->locale('id')->diffForHumans()   // "3 hari yang lalu"
-                    : '-')
+
                 ->addColumn('last_contact', function ($row) {
-                    if (!$row->last_transaction_at) {
-                        return '-';
-                    }
+                    $date = Carbon::parse($row->last_contact_at)->locale('id');
 
-                    $date = Carbon::parse($row->last_transaction_at);
-
-                    return '<span title="' . e($date->translatedFormat('d F Y, H:i')) . '">'
-                        . e($date->locale('id')->diffForHumans()) . '</span>';
+                    return '<div>' . e($date->diffForHumans()) . '</div>'
+                        . '<div class="text-secondary small">' . e($date->translatedFormat('d M Y, H:i')) . '</div>';
                 })
                 ->addColumn('orders', fn($row) => (int) $row->projects_count)
                 ->addColumn('loyalty', function ($row) {

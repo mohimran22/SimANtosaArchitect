@@ -249,6 +249,11 @@ public function getReadableChannelAttribute()
         // GREATEST di PostgreSQL mengabaikan NULL, jadi aman kalau salah satu kosong
         return "GREATEST($inv, $bld)";
     }
+    public static function lastContactSql(): string
+{
+    // Transaksi terakhir; kalau belum pernah bertransaksi, pakai tanggal customer dibuat
+    return "COALESCE(" . self::lastTransactionSql() . ", customers.created_at)";
+}
     use HasFactory, HasUuids;
 
     protected $table = 'customers';
