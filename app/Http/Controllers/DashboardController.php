@@ -201,6 +201,7 @@ class DashboardController extends Controller
         $since = $since ? Carbon::parse($since)->startOfDay() : null;
 
         return (object) [
+            'id'          => $project->id,   
             'name'        => $project->project_name,
             'type'        => match ((int) $project->project_type) {
                 Project::TYPE_DESIGN => 'Desain',

@@ -43,6 +43,7 @@ class CustomersController extends Controller
         if (!$canViewAll) {
             $baseQuery->where('user_id', $auth->id);
         }
+        $totalQuery = clone $baseQuery; 
         $this->applyDateRange($baseQuery, $request);
         if ($request->ajax()) {
             // withCount hanya di query tabel (bukan di $baseQuery) supaya perhitungan kartu tidak terganggu
@@ -121,15 +122,17 @@ class CustomersController extends Controller
                 ->rawColumns(['customer', 'loyalty', 'action']);
                 if ($canViewAll) {
                     $dt->with('stats', $this->loyaltyStats($baseQuery))
-                    ->with('total', (clone $baseQuery)->count());
+                    ->with('total', (clone $totalQuery)->count())
+                    ->with('filtered_total', (clone $baseQuery)->count());
                 }
                 return $dt->make(true);
         }
     
         return view('customers.index', [
-            'canViewAll' => $canViewAll,
-            'stats'      => $canViewAll ? $this->loyaltyStats($baseQuery) : [],
-            'total'      => $canViewAll ? (clone $baseQuery)->count() : 0,
+            'canViewAll'    => $canViewAll,
+            'stats'         => $canViewAll ? $this->loyaltyStats($baseQuery) : [],
+            'total'         => $canViewAll ? (clone $totalQuery)->count() : 0,
+            'filteredTotal' => $canViewAll ? (clone $baseQuery)->count() : 0,
         ]);
     }
     private function loyaltyStats($baseQuery): array

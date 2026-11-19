@@ -356,22 +356,30 @@
                         <div class="zh-subtitle">Pantau tahap proyek</div>
 
                         <div class="zh-stage-wrap">
-                            <table class="table align-middle mb-0">
+                            <table class="table align-middle mb-0" id="stageTable">
                                 <thead>
                                     <tr>
-                                        <th>Proyek</th>
-                                        <th>Tahap</th>
-                                        <th>Di tahap ini sejak</th>
-                                        <th class="text-end">Status</th>
+                                        <th data-sort="name" data-sort-type="text">Proyek</th>
+                                        <th data-sort="stage" data-sort-type="num">Tahap</th>
+                                        <th data-sort="since" data-sort-type="num">Di tahap ini sejak</th>
+                                        <th data-sort="days" data-sort-type="num">Status</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @forelse($projectStages as $p)
                                         @php $days = $p->days_idle; @endphp
-                                        <tr>
+                                        <tr data-name="{{ strtolower($p->name) }}"
+                                            data-stage="{{ $p->stage_no }}"
+                                            data-since="{{ $p->since?->timestamp ?? 0 }}"
+                                            data-days="{{ $p->days_idle ?? -1 }}">
                                             <td>
-                                                <div class="fw-semibold">{{ $p->name }}</div>
-                                                <span class="badge bg-secondary-lt">{{ $p->type }}</span>
+                                                <a href="{{ route('projects.continue', $p->id) }}"
+                                                class="fw-semibold text-decoration-none text-reset">
+                                                    {{ $p->name }}
+                                                </a>
+                                                <div>
+                                                    <span class="badge bg-secondary-lt">{{ $p->type }}</span>
+                                                </div>
                                             </td>
                                             <td>
                                                 <span class="badge bg-blue-lt">{{ $p->stage }}</span>
@@ -738,6 +746,38 @@ initCamera({
 
 });
 </script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const table = document.getElementById('stageTable');
+    if (!table) return;
+
+    const tbody = table.querySelector('tbody');
+    const state = {};
+
+    table.querySelectorAll('th[data-sort]').forEach(th => {
+        th.style.cursor = 'pointer';
+        th.title = 'Klik untuk mengurutkan';
+
+        th.addEventListener('click', () => {
+            const key = th.dataset.sort;
+            const isNum = th.dataset.sortType === 'num';
+            const asc = state[key] = !state[key];
+
+            const rows = [...tbody.querySelectorAll('tr[data-name]')];
+            rows.sort((a, b) => {
+                const x = a.dataset[key], y = b.dataset[key];
+                const cmp = isNum ? x - y : x.localeCompare(y, 'id');
+                return asc ? cmp : -cmp;
+            });
+            rows.forEach(r => tbody.appendChild(r));
+
+            table.querySelectorAll('th[data-sort]').forEach(h =>
+                h.textContent = h.textContent.replace(/ [▲▼]$/, ''));
+            th.textContent += asc ? ' ▲' : ' ▼';
+        });
+    });
+});
+</script>
 @endpush
 <style>
 .footer.footer-transparent {
@@ -754,4 +794,5 @@ initCamera({
     margin-left: 0 !important;
     margin-right: 0 !important;
 }
+.zh-stage-wrap a:hover { text-decoration: underline !important; }
 </style>
