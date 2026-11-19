@@ -175,61 +175,79 @@ public function getReadableChannelAttribute()
     public const LEVEL_GOLD     = 4;
     public const LEVEL_PLATINUM = 7;
 
-public static function levelSql(): string
-{
-    $qualified = "(SELECT COUNT(*) FROM projects p
-        WHERE p.customer_id = customers.id
-          AND (EXISTS (SELECT 1 FROM invoices i
-                       WHERE i.project_id = p.id
-                         AND i.status <> 'obsolete'
-                         AND COALESCE(i.invoice_type, '') <> 'survey'
-                         AND (i.approved_at IS NOT NULL OR i.status = 'paid'))
-            OR EXISTS (SELECT 1 FROM invoice_builds b
-                       WHERE b.project_id = p.id
-                         AND b.approved_at IS NOT NULL)))";
+    public static function levelSql(): string
+    {
+        $qualified = "(SELECT COUNT(*) FROM projects p
+            WHERE p.customer_id = customers.id
+            AND (EXISTS (SELECT 1 FROM invoices i
+                        WHERE i.project_id = p.id
+                            AND i.status <> 'obsolete'
+                            AND COALESCE(i.invoice_type, '') <> 'survey'
+                            AND (i.approved_at IS NOT NULL OR i.status = 'paid'))
+                OR EXISTS (SELECT 1 FROM invoice_builds b
+                        WHERE b.project_id = p.id
+                            AND b.approved_at IS NOT NULL)))";
 
-    return "CASE
-        WHEN $qualified >= " . self::LEVEL_PLATINUM . " THEN 6
-        WHEN $qualified >= " . self::LEVEL_GOLD     . " THEN 5
-        WHEN $qualified >= " . self::LEVEL_SILVER   . " THEN 4
-        WHEN $qualified >= 1 THEN 3
-        WHEN " . self::hasProjectSql() . " THEN 2
-        ELSE 1
-    END";
-}
-public function getEffectiveLoyaltyLevelAttribute(): int
-{
-    if (isset($this->attributes['auto_level'])) {
-        return (int) $this->attributes['auto_level'];
+        return "CASE
+            WHEN $qualified >= " . self::LEVEL_PLATINUM . " THEN 6
+            WHEN $qualified >= " . self::LEVEL_GOLD     . " THEN 5
+            WHEN $qualified >= " . self::LEVEL_SILVER   . " THEN 4
+            WHEN $qualified >= 1 THEN 3
+            WHEN " . self::hasProjectSql() . " THEN 2
+            ELSE 1
+        END";
     }
+    public function getEffectiveLoyaltyLevelAttribute(): int
+    {
+        if (isset($this->attributes['auto_level'])) {
+            return (int) $this->attributes['auto_level'];
+        }
 
-    $ids = $this->projects()->pluck('id');
+        $ids = $this->projects()->pluck('id');
 
-    $qualified = $ids->filter(fn ($id) =>
-        DB::table('invoices')
-            ->where('project_id', $id)
-            ->where('status', '<>', 'obsolete')
-            ->where(fn ($q) => $q->whereNull('invoice_type')->orWhere('invoice_type', '<>', 'survey'))
-            ->where(fn ($q) => $q->whereNotNull('approved_at')->orWhere('status', 'paid'))
-            ->exists()
-        || DB::table('invoice_builds')
-            ->where('project_id', $id)
-            ->whereNotNull('approved_at')
-            ->exists()
-    )->count();
+        $qualified = $ids->filter(fn ($id) =>
+            DB::table('invoices')
+                ->where('project_id', $id)
+                ->where('status', '<>', 'obsolete')
+                ->where(fn ($q) => $q->whereNull('invoice_type')->orWhere('invoice_type', '<>', 'survey'))
+                ->where(fn ($q) => $q->whereNotNull('approved_at')->orWhere('status', 'paid'))
+                ->exists()
+            || DB::table('invoice_builds')
+                ->where('project_id', $id)
+                ->whereNotNull('approved_at')
+                ->exists()
+        )->count();
 
-    return match (true) {
-        $qualified >= self::LEVEL_PLATINUM => 6,
-        $qualified >= self::LEVEL_GOLD     => 5,
-        $qualified >= self::LEVEL_SILVER   => 4,
-        $qualified >= 1                    => 3,
-        $ids->isNotEmpty()                 => 2,
-        default                            => 1,
-    };
-}
+        return match (true) {
+            $qualified >= self::LEVEL_PLATINUM => 6,
+            $qualified >= self::LEVEL_GOLD     => 5,
+            $qualified >= self::LEVEL_SILVER   => 4,
+            $qualified >= 1                    => 3,
+            $ids->isNotEmpty()                 => 2,
+            default                            => 1,
+        };
+    }
     public static function hasProjectSql(): string
     {
         return "EXISTS (SELECT 1 FROM projects p WHERE p.customer_id = customers.id)";
+    }
+        public static function lastTransactionSql(): string
+    {
+        $inv = "(SELECT MAX(COALESCE(i.approved_at, i.updated_at))
+                FROM invoices i
+                JOIN projects p ON p.id = i.project_id
+                WHERE p.customer_id = customers.id
+                AND i.status <> 'obsolete'
+                AND (i.approved_at IS NOT NULL OR i.status = 'paid'))";
+
+        $bld = "(SELECT MAX(b.approved_at)
+                FROM invoice_builds b
+                JOIN projects p ON p.id = b.project_id
+                WHERE p.customer_id = customers.id
+                AND b.approved_at IS NOT NULL)";
+
+        // GREATEST di PostgreSQL mengabaikan NULL, jadi aman kalau salah satu kosong
+        return "GREATEST($inv, $bld)";
     }
     use HasFactory, HasUuids;
 
