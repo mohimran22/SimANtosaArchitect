@@ -263,4 +263,26 @@ class ArticleController extends Controller
             $request->integer('article_id') ?: null,
         ));
     }
+        public function uploadImage(Request $request)
+{
+    $request->validate([
+        'upload' => ['required', 'file', 'image', 'mimes:jpg,jpeg,png,webp,gif', 'max:5120'],   // maks 5 MB
+    ]);
+
+    $file = $request->file('upload');
+    $path = $file->store('articles/content', 'public');
+
+    // Kecilkan dan ubah ke WebP (GIF dibiarkan agar animasinya tidak hilang).
+    // Kalau class ImageVariants belum ada, gambar asli yang dipakai.
+    if (strtolower($file->extension()) !== 'gif' && class_exists(\App\Support\ImageVariants::class)) {
+        $web = \App\Support\ImageVariants::web($path, null, 1600, 82);
+
+        if ($web) {
+            Storage::disk('public')->delete($path);   // buang file asli yang besar
+            $path = $web;
+        }
+    }
+
+    return response()->json(['url' => '/storage/' . $path]);
+}
 }

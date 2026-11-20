@@ -879,4 +879,5 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('tags', TagController::class)->except(['create', 'show']);
     Route::post('articles/bulk', [AdminArticleController::class, 'bulk'])->name('articles.bulk');
     Route::post('articles/analyze', [AdminArticleController::class, 'analyze'])->name('articles.analyze');
+    Route::post('articles/upload-image', [AdminArticleController::class, 'uploadImage'])->name('articles.upload-image');
 });
