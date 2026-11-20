@@ -18,7 +18,8 @@ class ArticleController extends Controller
     {
         $this->middleware('permission:lihat data artikel')->only(['index']);
         $this->middleware('permission:tambah data artikel')->only(['create', 'store']);
-        $this->middleware('permission:ubah data artikel')->only(['edit', 'update', 'analyze']);
+        $this->middleware('permission:ubah data artikel')->only(['edit', 'update']);
+        $this->middleware('permission:tambah data artikel|ubah data artikel')->only(['analyze', 'uploadImage']);
         $this->middleware('permission:hapus data artikel')->only(['destroy']);
     }
 
@@ -129,12 +130,15 @@ class ArticleController extends Controller
             'cta_text'   => 'nullable|string|max:300',
             'cta_button' => 'required_if:cta_enabled,1|nullable|string|max:60',
             'cta_url'    => ['required_if:cta_enabled,1', 'nullable', 'string', 'max:255', 'regex:~^(https?://|/|tel:|mailto:)~i'],
+            'published_at' => 'nullable|date',
         ]);
 
         $data['content'] = \App\Support\VideoEmbed::sanitize($data['content']);          // sanitasi HTML (mews/purifier)
         $data['noindex'] = $request->boolean('noindex');
         $data['cta_enabled'] = $request->boolean('cta_enabled');
-        
+        if (! $request->user()->can('publikasi data artikel')) {
+            $data['status'] = $article?->status ?? 'draft';
+        }
         if ($data['status'] === 'published') {
             $data['published_at'] = $request->input('published_at') ?: ($article?->published_at ?? now());
         } else {

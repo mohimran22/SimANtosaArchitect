@@ -426,9 +426,10 @@
 
                                 <div class="d-flex justify-content-between">
 
-                                    <span>
+                                    <a href="{{ route('projects.continue', $project->id) }}"
+                                    class="text-decoration-none text-reset">
                                         {{ $project->project_name }}
-                                    </span>
+                                    </a>
 
                                     <span>
                                         {{ number_format($project->progress,0) }}%
@@ -795,4 +796,5 @@ document.addEventListener('DOMContentLoaded', () => {
     margin-right: 0 !important;
 }
 .zh-stage-wrap a:hover { text-decoration: underline !important; }
+.progress-link:hover { text-decoration: underline !important; }
 </style>
