@@ -520,8 +520,23 @@
 
         }
         const dataAwal = @json($project->getKurvaSData() ?? []);
-        const labels = []; for(let i = 1; i <= {{ $weekCount }}; i++){ labels.push('M' + i); }
-        const realisasi = []; for(let i = 1; i <= {{ $weekCount }}; i++){ const found = dataAwal.find(d => d.week == i); realisasi.push( found ? found.progress : 0 ); }
+        const labels = [];
+        for (let i = 1; i <= {{ $weekCount }}; i++) { labels.push('M' + i); }
+
+        // minggu terakhir di mana progres kumulatif benar-benar naik
+        let lastWeek = 0, prev = 0;
+        dataAwal.forEach(d => {
+            if (d.progress > prev + 0.0001) lastWeek = d.week;
+            prev = d.progress;
+        });
+
+        const realisasi = [];
+        for (let i = 1; i <= {{ $weekCount }}; i++) {
+            const found = dataAwal.find(d => d.week == i);
+            realisasi.push(found && i <= lastWeek ? found.progress : null);
+        }
+        // const labels = []; for(let i = 1; i <= {{ $weekCount }}; i++){ labels.push('M' + i); }
+        // const realisasi = []; for(let i = 1; i <= {{ $weekCount }}; i++){ const found = dataAwal.find(d => d.week == i); realisasi.push( found ? found.progress : 0 ); }
 
         window.kurvaChart = new Chart(ctx, {
 
@@ -553,7 +568,8 @@
                 animation:false,
                 responsive:true,
                 maintainAspectRatio:false,
-
+                interaction: { mode: 'index', intersect: false },
+                elements: { point: { hitRadius: 24, hoverRadius: 6 } },
                 scales:{
                     x:{
                         ticks:{

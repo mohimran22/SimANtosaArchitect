@@ -414,9 +414,11 @@ private function customerDashboard($user, string $greeting)
             );
             $item->progress = min(round($progress, 1), 100);
 
-            // minggu terakhir yang sudah ada laporan; setelah itu garis realisasi berhenti
+            // minggu terakhir yang benar-benar ada progres (> 0); setelah itu garis realisasi
+            // berhenti. Baris laporan bernilai 0 untuk minggu yang belum terisi diabaikan.
             $lastWeek = (int) $project->buildItems
                 ->flatMap->weeklyProgresses
+                ->filter(fn ($p) => (float) $p->progress_percent > 0)
                 ->max('week_no');
 
             $labels = collect($project->week_labels)

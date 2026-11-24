@@ -32,7 +32,7 @@
             @if (config('tablar.use_route_url', true))
                 @php( $profile_url = $profile_url ? route($profile_url) : '' )
                 @php( $logout_url = $logout_url ? route($logout_url) : '' )
-                @php( $setting_url = $setting_url ? route($setting_url) : '' )
+                {{-- @php( $setting_url = $setting_url ? route($setting_url) : '' ) --}}
             @else
                 @php( $profile_url = $profile_url ? url($profile_url) : '' )
                 @php( $logout_url = $logout_url ? url($logout_url) : '' )
