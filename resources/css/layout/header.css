@@ -36,13 +36,10 @@ header.navbar .d-flex {
     align-items:center;
 }
 @media (max-width: 1200px){
-
-    .mobile-header{
-        display:none !important;
-    }
+    .mobile-header{ display:none !important; }
 
     header.navbar{
-        margin-left: 50px !important;
+        margin-left: 0 !important;   /* sebelumnya 50px */
         border-radius: 12px;
         display:flex !important;
     }

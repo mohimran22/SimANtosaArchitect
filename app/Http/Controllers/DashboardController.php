@@ -56,14 +56,6 @@ class DashboardController extends Controller
         $incompleteAffiliator = collect($requiredAffiliatorFields)->contains(fn($field) => empty($user->$field));
 
         $profileComplete = !$incompleteProfile && !$incompleteAffiliator;
-        $attendanceToday = null;
-
-        if (auth()->user()->isInternal() && auth()->user()->employee) {
-            $attendanceToday = Attendance::with('overtime')
-                ->where('employee_id', auth()->user()->employee->id)
-                ->whereDate('attendance_date', today())
-                ->first();
-        }
         $hour = now()->hour;
 
         $greeting = match (true) {
@@ -72,6 +64,17 @@ class DashboardController extends Controller
             $hour >= 15 && $hour < 18 => 'Selamat Sore',
             default                   => 'Selamat Malam',
         };
+        $attendanceToday = null;
+
+        if (auth()->user()->isInternal() && auth()->user()->employee) {
+            $attendanceToday = Attendance::with('overtime')
+                ->where('employee_id', auth()->user()->employee->id)
+                ->whereDate('attendance_date', today())
+                ->first();
+        }
+        if (! $user->isInternal()) {
+            return $this->customerDashboard($user, $greeting);
+        }
         $attendances = Attendance::with([
                 'employee.user',
                 'overtime'
@@ -143,17 +146,15 @@ class DashboardController extends Controller
         ->where('project_type', Project::TYPE_BUILD)
         ->get();
 
+        // Rumus sama dengan customerDashboard() dan Project::getKurvaSData():
+        // progress_percent per item dikali bobot_percent item / 100
         $buildProjects = $buildProjects->map(function ($project) {
 
-            $target = $project->buildItems->sum('bobot_percent');
+            $progress = $project->buildItems->sum(
+                fn ($bi) => $bi->weeklyProgresses->sum('progress_percent') * ($bi->bobot_percent / 100)
+            );
 
-            $realisasi = $project->buildItems
-                ->flatMap->weeklyProgresses
-                ->sum('bobot_percent');
-
-            $project->progress = $target > 0
-                ? round(($realisasi / $target) * 100, 1)
-                : 0;
+            $project->progress = min(round($progress, 1), 100);
 
             return $project;
         });
@@ -361,5 +362,103 @@ class DashboardController extends Controller
             });
 
         });
+}
+private function customerDashboard($user, string $greeting)
+{
+    $projects = Project::with([
+            'levels',
+            'buildItems.weeklyProgresses',
+            'weeklyPlans.weeks',
+            'technicalJustifications',
+        ])
+        // projects.customer_id berisi customers.id (bukan users.id).
+        // Kalau user belum punya record customer, hasilnya kosong (bukan error).
+        ->where('customer_id', $user->customer?->id)
+        ->orderBy('project_name')
+        ->get()
+        ->map(function ($project) {
+            $type = (int) $project->project_type;
+
+            $item = (object) [
+                'id'         => $project->id,
+                'name'       => $project->project_name,
+                'type'       => $type,
+                'type_label' => match ($type) {
+                    Project::TYPE_DESIGN => 'Desain',
+                    Project::TYPE_RAB    => 'RAB',
+                    Project::TYPE_BUILD  => 'Build',
+                    default              => '-',
+                },
+                // sesuaikan nama route detail proyek untuk customer
+                'url'      => route('projects.show', $project->id),
+                'status'   => null,
+                'progress' => null,
+                'scurve'   => null,
+            ];
+
+            // Design & RAB: nama proyek + status (tahap yang sedang berjalan)
+            if ($type !== Project::TYPE_BUILD) {
+                $current = $project->levels
+                    ->sortBy('level_order')
+                    ->firstWhere('is_completed', false);
+
+                $item->status = $current ? $current->level_name : 'Selesai';
+
+                return $item;
+            }
+
+            // BUILD: pakai rumus yang sama dengan Project::getKurvaSData()
+            // (progress_percent per item dikali bobot_percent item / 100)
+            $progress = $project->buildItems->sum(
+                fn ($bi) => $bi->weeklyProgresses->sum('progress_percent') * ($bi->bobot_percent / 100)
+            );
+            $item->progress = min(round($progress, 1), 100);
+
+            // minggu terakhir yang sudah ada laporan; setelah itu garis realisasi berhenti
+            $lastWeek = (int) $project->buildItems
+                ->flatMap->weeklyProgresses
+                ->max('week_no');
+
+            $labels = collect($project->week_labels)
+                ->map(fn ($l) => 'M' . $l['week_no'])
+                ->values()
+                ->all();
+
+            $realisasi = collect($project->getKurvaSData())
+                ->map(fn ($r) => $r['week'] <= $lastWeek ? min($r['progress'], 100) : null)
+                ->values()
+                ->all();
+
+            // Rencana kumulatif per minggu (sumber: BuildPlanWeek, lihat model Project)
+            $rencanaRaw = collect($project->getKurvaRencanaData())->pluck('progress');
+
+            // Berakhir di 100%: normalisasi terhadap total rencana (kalau total > 0)
+            $totalRencana = (float) $rencanaRaw->filter(fn ($v) => $v !== null)->max();
+
+            $rencana = $rencanaRaw
+                ->map(fn ($v) => $v === null
+                    ? null
+                    : ($totalRencana > 0 ? min(round($v / $totalRencana * 100, 2), 100) : $v))
+                ->values()
+                ->all();
+
+            $item->scurve = [
+                'labels' => $labels,
+                'values' => $realisasi,
+                'plan'   => $rencana,
+            ];
+
+            return $item;
+        });
+
+    $incompleteProfile = collect([
+        'fullname', 'gender', 'birth_place', 'birth_date', 'religion_id',
+        'identity_number', 'phone', 'address', 'province_id', 'city_id',
+        'district_id', 'sub_district_id', 'postal_code_id', 'photo',
+    ])->contains(fn ($field) => empty($user->$field));
+
+    return view('dashboard.customer', compact(
+        'user', 'greeting', 'projects', 'incompleteProfile'
+    ));
 }
 }

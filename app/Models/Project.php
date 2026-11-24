@@ -294,55 +294,36 @@ class Project extends Model
 
         return $data;
     }
+
     public function getKurvaRencanaData()
-{
-    $plans = $this->weeklyPlans->keyBy('week_no');
+    {
+        $this->loadMissing('weeklyPlans.weeks');
 
-    $jalan = 0;
-    $data = [];
+        $perMinggu = $this->weeklyPlans
+            ->flatMap->weeks
+            ->groupBy('week_no')
+            ->map(fn ($rows) => (float) $rows->sum('plan_percent'));
 
-    foreach ($this->week_labels as $label) {
+        $jalan = 0.0;
+        $data  = [];
 
-        $w = $label['week_no'];
+        foreach ($this->week_labels as $label) {
 
-        // minggu Justek: tidak ada rencana, garis berhenti
-        if (!empty($label['is_justek'])) {
-            $data[] = [
-                'week'     => $w,
-                'progress' => null,
-            ];
-            continue;
+            $w = $label['week_no'];
+
+            if (!empty($label['is_justek'])) {
+                $data[] = ['week' => $w, 'progress' => null];
+                continue;
+            }
+
+            $jalan += (float) $perMinggu->get($w, 0);
+
+            $data[] = ['week' => $w, 'progress' => round($jalan, 2)];
         }
 
-        $jalan += $plans[$w]->bobot_percent ?? 0;
-
-        $data[] = [
-            'week'     => $w,
-            'progress' => round($jalan, 2),
-        ];
+        return $data;
     }
 
-    return $data;
-}
-    // public function getKurvaRencanaData()
-    // {
-    //     $weeks = count($this->week_labels);
-    //     $plans = $this->weeklyPlans->keyBy('week_no');
-
-    //     $jalan = 0;
-    //     $data = [];
-
-    //     for ($w=1; $w<=$weeks; $w++) {
-    //         $jalan += $plans[$w]->bobot_percent ?? 0;
-
-    //         $data[] = [
-    //             'week'=>$w,
-    //             'progress'=>round($jalan,2)
-    //         ];
-    //     }
-
-    //     return $data;
-    // }
     public function getWeekLabelsAttribute()
     {
         if (!$this->start_date || !$this->end_date) return [];

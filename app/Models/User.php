@@ -199,7 +199,7 @@ public function isInternal(): bool
 public function isExternal(): bool
 {
     return $this->roles()
-        ->where('role_group', 'External')
+        ->where('role_group', 'Eksternal')
         ->exists();
 }
 }
