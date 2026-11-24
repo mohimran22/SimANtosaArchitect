@@ -3,6 +3,7 @@
 @push('css')
 <style>
     /* Semua class diawali "cd-" supaya tidak bergantung pada Tailwind */
+    
     .cd-wrap { padding-top: 5.5rem; padding-bottom: 2rem; }
     .cd-card {
         background: #fff; border-radius: 14px; padding: 1.5rem;
@@ -47,6 +48,29 @@
         align-items: center; justify-content: center; color: #6b7280;
     }
     .cd-chart-empty.is-show { display: flex; }
+/* HP */
+@media (max-width: 767.98px) {
+    .page-body.cd-wrap {
+        padding-top: 5rem !important;
+        padding-bottom: 2rem;
+    }
+    .cd-modal { padding: .5rem; }
+    .cd-modal-box { height: auto; max-height: 92vh; padding: 1rem; }
+    .cd-chart { flex: none; height: 320px; }
+}
+
+/* Tablet (portrait & landscape) */
+@media (min-width: 768px) and (max-width: 1023.98px) {
+    .cd-modal-box {
+        max-width: 760px;
+        height: auto;
+        max-height: 90vh;
+        padding: 1.25rem;
+    }
+    /* maksimal 420px, tapi mengecil otomatis di landscape */
+    .cd-chart { flex: none; height: min(420px, 55vh); }
+    .cd-grid { grid-template-columns: repeat(2, 1fr); }
+}
 </style>
 @endpush
 
@@ -120,8 +144,15 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1"></script>
 <script>
     let scurveChart = null;
-
+    function chartSize() {
+        const w = window.innerWidth;
+        if (w < 768)  return { bw: 2,   pr: 2, font: 11, ticks: 7,  step: 20 };  // HP
+        if (w < 1024) return { bw: 2.5, pr: 3, font: 12, ticks: 10, step: 10 };  // tablet
+        return               { bw: 3,   pr: 3, font: 13, ticks: 14, step: 10 };  // desktop
+    }
+    let lastScurve = null;
     function openScurve(name, progress, data) {
+        lastScurve = { name, progress, data }
         document.getElementById('scurveTitle').textContent = name;
         document.getElementById('scurveProgress').textContent = progress;
         document.getElementById('scurveModal').classList.add('is-open');
@@ -130,6 +161,8 @@
         document.getElementById('scurveEmpty').classList.toggle('is-show', !hasData);
         if (scurveChart) { scurveChart.destroy(); scurveChart = null; }
         if (!hasData) return;
+
+        const s = chartSize();
 
         scurveChart = new Chart(document.getElementById('scurveChart'), {
             type: 'line',
@@ -141,10 +174,10 @@
                         data: data.values,
                         borderColor: 'rgb(54, 162, 235)',
                         backgroundColor: 'rgba(54, 162, 235, 0.5)',
-                        borderWidth: 3,
-                        pointRadius: 3,
+                        borderWidth: s.bw,
+                        pointRadius: s.pr,
                         fill: false,
-                        tension: 0.3,
+                        tension: 0.2,
                         spanGaps: false,
                     },
                     {
@@ -152,10 +185,10 @@
                         data: data.plan || [],
                         borderColor: 'rgb(255, 99, 132)',
                         backgroundColor: 'rgba(255, 99, 132, 0.5)',
-                        borderWidth: 3,
-                        pointRadius: 3,
+                        borderWidth: s.bw,
+                        pointRadius: s.pr,
                         fill: false,
-                        tension: 0.3,
+                        tension: 0.2,
                         spanGaps: false,
                     }
                 ]
@@ -163,19 +196,17 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                // Tap/hover di mana pun pada kolom minggu menampilkan nilai kedua garis
-                // (nyaman untuk layar sentuh, tidak perlu mengenai titik tepat).
                 interaction: { mode: 'index', intersect: false },
                 elements: { point: { hitRadius: 24, hoverRadius: 6 } },
                 plugins: {
-                    legend: { position: window.innerWidth < 576 ? 'bottom' : 'top' },
-                    tooltip: {
-                        callbacks: {
-                            label: ctx => ctx.dataset.label + ': ' + ctx.parsed.y
-                        }
+                    legend: {
+                        labels: { usePointStyle: true, boxWidth: 8, font: { size: s.font } }
                     }
                 },
-                scales: { y: { min: 0, max: 100, ticks: { stepSize: 10 } } }
+                scales: {
+                    x: { ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: s.ticks, font: { size: s.font } } },
+                    y: { min: 0, max: 100, ticks: { stepSize: s.step, font: { size: s.font } } }
+                }
             }
         });
     }
@@ -187,6 +218,20 @@
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeScurve(); });
     document.getElementById('scurveModal').addEventListener('click', e => {
         if (e.target.id === 'scurveModal') closeScurve();
+    });
+    // di bagian bawah script:
+    let resizeTimer;
+    let lastBreakpoint = chartSize().ticks;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+            const now = chartSize().ticks;
+            if (now === lastBreakpoint) return;      // hanya address bar bergerak: abaikan
+            lastBreakpoint = now;
+            if (lastScurve && document.getElementById('scurveModal').classList.contains('is-open')) {
+                openScurve(lastScurve.name, lastScurve.progress, lastScurve.data);
+            }
+        }, 250);
     });
 </script>
 @endpush
