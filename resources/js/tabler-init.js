@@ -10,7 +10,7 @@ Import the jQuery
 Import the Tabler Js with Demo theme
 */
 import '../../node_modules/@tabler/core/dist/js/tabler';
-import '../../vendor/takielias/tablar/assets/demo-theme.js';
+// import '../../vendor/takielias/tablar/assets/demo-theme.js';
 
 
 // import DataTable from 'datatables.net';
