@@ -16,6 +16,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
             'activerole'  => \App\Http\Middleware\ActiveRoleMiddleware::class,
+            'active.permission' => \App\Http\Middleware\ActivePermission::class,
+            'active.role'       => \App\Http\Middleware\ActiveRoleIs::class,
         ]);
 
         // Domain utama hanya boleh menampilkan homepage

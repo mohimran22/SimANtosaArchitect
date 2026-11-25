@@ -201,7 +201,7 @@ Route::middleware(['auth', 'permission:lihat daftar tukang|lihat data tukang', '
    Route::resource('/workers', WorkerController::class);
 });
 
-Route::middleware(['auth', 'permission:lihat daftar kontraktor|lihat data kontraktor', 'activerole:Mitra Kontraktor'])->group(function () {
+Route::middleware(['auth', 'active.permission:lihat daftar kontraktor|lihat data kontraktor', 'active.role:Mitra Kontraktor'])->group(function () {
     Route::get('/contractors/generate-SupplierId', [ContractorController::class, 'generateContractorIdAjax'])->name('contractors.generateContractorId');
     Route::resource('/contractors', ContractorController::class);
 });

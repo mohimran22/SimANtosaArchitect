@@ -391,22 +391,27 @@ private function customerDashboard($user, string $greeting)
 
 /**
  * Kontraktor: hanya proyek BUILD yang ditugaskan kepadanya, tanpa data keuangan.
- * Memakai view yang sama dengan customer (kartu nama + progres, klik -> kurva S).
+ * Kartu nama + progres, klik -> langsung buka halaman proyek (tanpa kurva S).
  */
 private function contractorDashboard($user, string $greeting)
 {
     $contractorIds = array_filter([$user->contractor?->id]);
 
-    $projects = $this->portalProjectsQuery()
+    // tanpa data kurva S (tidak dihitung dan tidak ditampilkan); relasi rencana/justek tidak perlu dimuat
+    $projects = Project::with(['levels', 'buildItems.weeklyProgresses'])
         ->where('project_type', Project::TYPE_BUILD)
         ->whereHas('contractors', fn ($q) => $q->whereIn('contractors.id', $contractorIds))
         ->orderBy('project_name')
         ->get()
-        ->map(fn ($project) => $this->portalProjectItem($project));
+        ->map(fn ($project) => $this->portalProjectItem(
+            $project,
+            withScurve: false,
+            url: route('projects.create', ['project_id' => $project->id]),
+        ));
 
     $incompleteProfile = false;
 
-    return view('dashboard.customer', compact(
+    return view('dashboard.contractor', compact(
         'user', 'greeting', 'projects', 'incompleteProfile'
     ));
 }
@@ -424,9 +429,9 @@ private function portalProjectsQuery()
 /**
  * Satu kartu proyek untuk dashboard customer/kontraktor.
  */
-private function portalProjectItem(Project $project): object
+private function portalProjectItem(Project $project, bool $withScurve = true, ?string $url = null): object
 {
-            $type = (int) $project->project_type;
+    $type = (int) $project->project_type;
 
     $item = (object) [
         'id'         => $project->id,
@@ -439,7 +444,7 @@ private function portalProjectItem(Project $project): object
             default              => '-',
         },
         // sesuaikan nama route detail proyek untuk customer
-        'url'      => route('projects.show', $project->id),
+        'url'      => $url ?? route('projects.show', $project->id),
         'status'   => null,
         'progress' => null,
         'scurve'   => null,
@@ -462,6 +467,10 @@ private function portalProjectItem(Project $project): object
         fn ($bi) => $bi->weeklyProgresses->sum('progress_percent') * ($bi->bobot_percent / 100)
     );
     $item->progress = min(round($progress, 1), 100);
+
+    if (! $withScurve) {
+        return $item;
+    }
 
     // minggu terakhir yang benar-benar ada progres (> 0); setelah itu garis realisasi
     // berhenti. Baris laporan bernilai 0 untuk minggu yang belum terisi diabaikan.

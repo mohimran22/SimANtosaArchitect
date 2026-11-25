@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Helpers\ActiveRole;
 use App\Models\Contractor;
 use App\Models\User;
 use App\Models\Religion;
@@ -26,69 +27,75 @@ class ContractorController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
-    {
-        $auth = auth()->user();
 
-        $query = Contractor::with(['user.roles']);
+public function index(Request $request)
+{
+    $auth = auth()->user();
 
-        if ($auth->can('lihat data kontraktor') && !$auth->can('lihat daftar kontraktor')) {
-            $query->where('user_id', $auth->id);
-        }
+    // Hak akses
+    $canViewAll = ActiveRole::hasPermission('lihat daftar kontraktor');
 
-        if ($request->ajax()) {
-            $contractors = $query->get();
+    // Query dasar
+    $baseQuery = Contractor::with(['user.roles']);
+
+    // Batasi data berdasarkan hak akses
+    if (!$canViewAll) {
+        $baseQuery->where('user_id', $auth->id);
+    }
+
+    if ($request->ajax()) {
+        $contractors = (clone $baseQuery)->get();
 
         return DataTables::of($contractors)
-                ->addIndexColumn()
-                ->addColumn('fullname', function ($row) {
-                    return $row->user->fullname ?? '-';
-                })
-                ->addColumn('email', function ($row) {
-                    return $row->user->email ?? '-';
-                })
-                // ->addColumn('membership', function ($row) {
-                //     $level = ucfirst($row->readableMembership);
-                //     $color = match ($row->readableMembership) {
-                //         '1' => 'secondary',
-                //         '2' => 'warning',
-                //         '3' => 'info',
-                //         default => 'secondary',
-                //     };
-                //     return '<span class="badge bg-' . $color . '">' . $level . '</span>';
-                // })
-                ->editColumn('fullname', function ($row) {
-                    $url = route('contractors.show', $row->id);
-                    $name = Str::title($row->user->fullname ?? '-');
-                    return '<a href="'.$url.'">'.e($name).'</a>';
-                })
-                
-                ->addColumn('action', function ($contractor) {
-                    $buttons = '';
-                    if (auth()->user()->can('ubah data kontraktor')) {
-                        $buttons .= '<a href="' . route('contractors.edit', $contractor->id) . '" class="btn btn-icon btn-sm btn-dark me-1" title="Ubah">
-                                        <i class="ti ti-edit"></i>
-                                    </a>';
-                    }
-                    if (auth()->user()->can('lihat data kontraktor')) {
-                        $buttons .= '<a href="' . route('contractors.show', $contractor->id) . '" class="btn btn-icon btn-sm btn-dark me-1" title="Lihat">
-                                        <i class="ti ti-eye"></i>
-                                    </a>';
+            ->addIndexColumn()
 
-                    }
-                    if (auth()->user()->can('hapus data kontraktor')) {
-                        $buttons .= '<button data-id="' . $contractor->id . '" class="btn btn-icon btn-sm btn-dark delete-kontraktor" title="Hapus">
-                                        <i class="ti ti-trash"></i>
-                                    </button>';
-                    }
-                    return $buttons;
-                })
-                ->rawColumns(['fullname', 'action', 'membership'])
-                ->make(true);
-        }
+            ->addColumn('fullname', function ($row) {
+                $url = route('contractors.show', $row->id);
+                $name = Str::title($row->user->fullname ?? '-');
 
-        return view('contractors.index');
+                return '<a href="' . $url . '">' . e($name) . '</a>';
+            })
+
+            ->addColumn('email', function ($row) {
+                return e($row->user->email ?? '-');
+            })
+
+            ->addColumn('action', function ($contractor) {
+                $buttons = '';
+
+                if (ActiveRole::hasPermission('ubah data kontraktor')) {
+                    $buttons .= '<a href="' . route('contractors.edit', $contractor->id) . '"
+                        class="btn btn-icon btn-sm btn-dark me-1" title="Ubah">
+                        <i class="ti ti-edit"></i>
+                    </a>';
+                }
+
+                if (ActiveRole::hasPermission('lihat data kontraktor')) {
+                    $buttons .= '<a href="' . route('contractors.show', $contractor->id) . '"
+                        class="btn btn-icon btn-sm btn-dark me-1" title="Lihat">
+                        <i class="ti ti-eye"></i>
+                    </a>';
+                }
+
+                if (ActiveRole::hasPermission('hapus data kontraktor')) {
+                    $buttons .= '<button data-id="' . $contractor->id . '"
+                        class="btn btn-icon btn-sm btn-dark delete-kontraktor" title="Hapus">
+                        <i class="ti ti-trash"></i>
+                    </button>';
+                }
+
+                return $buttons;
+            })
+
+            ->rawColumns(['fullname', 'action'])
+            ->make(true);
     }
+
+    return view('contractors.index', [
+        'canViewAll' => $canViewAll,
+    ]);
+}
+
     
         public function create()
     {

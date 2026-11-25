@@ -65,6 +65,19 @@ class ContractorScope
         ],
     ];
 
+    /**
+     * Halaman data kontraktor: hanya milik sendiri. Dicocokkan per NAMA route
+     * (bukan wildcard path) supaya contractors/create dan contractors.destroy
+     * tidak ikut terbuka. contractors.index sudah memfilter ke data sendiri
+     * di controller bila role tidak punya izin 'lihat daftar kontraktor'.
+     */
+    private const OWN_CONTRACTOR_ROUTES = [
+        'contractors.index',
+        'contractors.show',
+        'contractors.edit',
+        'contractors.update',
+    ];
+
     public function handle(Request $request, Closure $next): Response
     {
         $user = $request->user();
@@ -77,6 +90,17 @@ class ContractorScope
         $method = $request->isMethod('HEAD') ? 'GET' : $request->method();
 
         if (Str::is(self::ALLOWED, $path)) {
+            return $next($request);
+        }
+
+        $routeName = $request->route()?->getName();
+
+        if (in_array($routeName, self::OWN_CONTRACTOR_ROUTES, true)) {
+
+            if ($routeName !== 'contractors.index' && ! $this->isOwnContractor($request, $user)) {
+                abort(403, 'Anda hanya dapat mengakses data kontraktor milik sendiri.');
+            }
+
             return $next($request);
         }
 
@@ -109,6 +133,17 @@ class ContractorScope
         $input = $request->input('project_id');
 
         return is_string($input) && $input !== '' ? $input : null;
+    }
+
+    private function isOwnContractor(Request $request, $user): bool
+    {
+        $param = $request->route('contractor');
+
+        $id = $param instanceof Model ? $param->getKey() : $param;
+
+        $ownId = $user->contractor?->id;
+
+        return $id !== null && $ownId !== null && (string) $id === (string) $ownId;
     }
 
     private function isAssigned(string $projectId, $user): bool
