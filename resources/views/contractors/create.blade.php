@@ -5,7 +5,7 @@
     <div class="container-xl">
         <div class="row align-items-center">
             <div class="col d-flex align-items-center">
-                <a href="{{ route('customers.index') }}" class="btn btn-dark d-flex align-items-center" style="margin-left: 30px;">
+                <a href="{{ route('contractors.index') }}" class="btn btn-dark d-flex align-items-center">
                     <i class="ti ti-arrow-left"></i>
                 </a>
                 
@@ -35,17 +35,13 @@
 
                     <div class="text-center mb-5">
                     <div class="position-relative d-inline-block">
-                        @if ($user->photo)
-                            <img id="previewImage" src="{{ asset('storage/photos/'.$user->photo) }}" alt="Profile" 
-                                 class="rounded-3 shadow-sm border" width="150" height="150"
-                                 style="object-fit: cover;">
-                        @else
+                       
                             <div id="previewImage"
                                  class="rounded-3 shadow-sm bg-light d-flex align-items-center justify-content-center"
                                  style="width:150px; height:150px;">
                                  <i class="ti ti-user" style="font-size: 64px; color:#aaa;"></i>
                             </div>
-                        @endif
+                        
                         <label for="photo"
                                class="btn btn-sm btn-dark position-absolute bottom-0 end-0 translate-middle rounded-circle"
                                title="Ganti Foto">
@@ -79,10 +75,8 @@
                                 @enderror
                             </div>
                             <div class="col-md-2">
-                                <label class="form-label required">Jenis Kelamin</label>
-                                <select name="gender" 
-                                        class="form-select @error('gender') is-invalid @enderror" 
-                                        required>
+                                <label class="form-label">Jenis Kelamin</label>
+                                <select name="gender" class="form-select select2 @error('gender') is-invalid @enderror">
                                     <option value="">-- Pilih --</option>
                                     <option value="1" {{ old('gender') == '1' ? 'selected' : '' }}>Laki-laki</option>
                                     <option value="2" {{ old('gender') == '2' ? 'selected' : '' }}>Perempuan</option>
@@ -93,21 +87,21 @@
                             </div>
 
                             <div class="col-md-4">
-                                <label class="form-label required">Tempat Lahir</label>
-                                <input type="text" name="birth_place" class="form-control @error('birth_place') is-invalid @enderror" value="{{ old('birth_place') }}" required>
+                                <label class="form-label">Tempat Lahir</label>
+                                <input type="text" name="birth_place" class="form-control @error('birth_place') is-invalid @enderror" value="{{ old('birth_place') }}">
                                 @error('birth_place')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label required">Tanggal Lahir</label>
-                                            <input type="date" name="birth_date" class="form-control" required
+                                <label class="form-label">Tanggal Lahir</label>
+                                            <input type="date" name="birth_date" class="form-control"
                                                 value="{{ old('birth_date') }}"
                                                 pattern="\d{4}-\d{2}-\d{2}" placeholder="YYYY-MM-DD">
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label required">Agama</label>
-                                <select name="religion_id" class="form-select select2" required>
+                                <label class="form-label">Agama</label>
+                                <select name="religion_id" class="form-select select2">
                                     <option value="">-- Pilih Agama --</option>
                                     @foreach($religions as $religion)
                                         <option value="{{ $religion->id }}" {{ old('religion_id') == $religion->id ? 'selected' : '' }}>
@@ -121,8 +115,8 @@
                             </div>
                             
                             <div class="col-md-4">
-                                <label class="form-label required">Nomor KTP</label>
-                                <input type="text" class="form-control @error('identity_number') is-invalid @enderror" name="identity_number" maxlength="16" inputmode="numeric" pattern="\d{16}" value="{{ old('identity_number') }}" required>
+                                <label class="form-label">Nomor KTP</label>
+                                <input type="text" class="form-control @error('identity_number') is-invalid @enderror" name="identity_number" maxlength="16" inputmode="numeric" pattern="\d{16}" value="{{ old('identity_number') }}">
                                 @error('identity_number')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -156,8 +150,8 @@
                                 @enderror
                             </div>
                             <div class="col-12">
-                                <label class="form-label required">Alamat Lengkap</label>
-                                <textarea name="address" rows="2" class="form-control @error('address') is-invalid @enderror" required>{{ old('address') }}</textarea>
+                                <label class="form-label">Alamat Lengkap</label>
+                                <textarea name="address" rows="2" class="form-control @error('address') is-invalid @enderror">{{ old('address') }}</textarea>
                                 @error('address')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -165,9 +159,9 @@
                         </div>
                         <div class="row g-4 mt-2">
                             <div class="col-md-6">
-                                <label class="form-label required">Provinsi</label>
+                                <label class="form-label">Provinsi</label>
                                 <select name="user_province_id" id="user_province" 
-                                        class="form-select select2 @error('user_province_id') is-invalid @enderror" required>
+                                        class="form-select select2 @error('user_province_id') is-invalid @enderror">
                                     <option value="">-- Pilih Provinsi --</option>
                                     @foreach($provinces as $province)
                                         <option value="{{ $province->id }}" {{ old('user_province_id') == $province->id ? 'selected' : '' }}>
@@ -181,9 +175,9 @@
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label required">Kabupaten/Kota</label>
+                                <label class="form-label">Kabupaten/Kota</label>
                                 <select name="user_city_id" id="user_city" 
-                                        class="form-select select2 @error('user_city_id') is-invalid @enderror" required>
+                                        class="form-select select2 @error('user_city_id') is-invalid @enderror">
                                     <option value="">-- Pilih Kota --</option>
                                 </select>
                                 @error('user_city_id')
@@ -192,9 +186,9 @@
                             </div>
 
                             <div class="col-md-5">
-                                <label class="form-label required">Kecamatan</label>
+                                <label class="form-label">Kecamatan</label>
                                 <select name="user_district_id" id="user_district" 
-                                        class="form-select select2 @error('user_district_id') is-invalid @enderror" required>
+                                        class="form-select select2 @error('user_district_id') is-invalid @enderror">
                                     <option value="">-- Pilih Kecamatan --</option>
                                 </select>
                                 @error('user_district_id')
@@ -203,9 +197,9 @@
                             </div>
 
                             <div class="col-md-5">
-                                <label class="form-label required">Kelurahan</label>
+                                <label class="form-label">Kelurahan</label>
                                 <select name="user_sub_district_id" id="user_sub_district" 
-                                        class="form-select select2 @error('user_sub_district_id') is-invalid @enderror" required>
+                                        class="form-select select2 @error('user_sub_district_id') is-invalid @enderror">
                                     <option value="">-- Pilih Kelurahan --</option>
                                 </select>
                                 @error('user_sub_district_id')
@@ -214,9 +208,9 @@
                             </div>
 
                             <div class="col-md-2">
-                                <label class="form-label required">Kode Pos</label>
+                                <label class="form-label">Kode Pos</label>
                                 <select name="user_postal_code_id" id="user_postal_code" 
-                                        class="form-select select2 @error('user_postal_code_id') is-invalid @enderror" required>
+                                        class="form-select select2 @error('user_postal_code_id') is-invalid @enderror">
                                     <option value="">-- Pilih Kode Pos --</option>
                                 </select>
                                 @error('user_postal_code_id')
@@ -233,7 +227,7 @@
                         <div class="row g-4">
                             <div class="col-md-4">
                                 <label class="form-label" for="bank_id">Nama Bank</label>
-                                <select id="bank_id" name="bank_id" class="form-select">
+                                <select id="bank_id" name="bank_id" class="form-select select2">
                                     <option value="">Pilih Bank</option>
                                 </select>
                             </div>
@@ -259,23 +253,23 @@
                         <h3 class="fw-semibold mb-3 border-bottom pb-2">Data Kontraktor</h3>
                         <div class="row g-4">
                             <div class="col-md-4">
-                                <label class="form-label required">ID Kontraktor</label>
+                                <label class="form-label required">Nomor Identitas Kontraktor</label>
                                 <input type="text" id="contractor_id" name="contractor_id" class="form-control" required readonly>
                                 @error('contractor_id')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
                             <div class="col-md-4">
-                                    <label class="form-label required">Nama Usaha</label>
-                                    <input type="text" name="contractor_name" class="form-control @error('contractor_name') is-invalid @enderror" value="{{ old('contractor_name') }}" required>
+                                    <label class="form-label">Nama Usaha</label>
+                                    <input type="text" name="contractor_name" class="form-control @error('contractor_name') is-invalid @enderror" value="{{ old('contractor_name') }}">
                                     @error('contractor_name')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                             </div>
 
                             <div class="col-md-4">
-                                    <label class="form-label required">Nomor Handphone</label>
-                                    <input type="number" name="contractor_phone" class="form-control @error('contractor_phone') is-invalid @enderror" value="{{ old('contractor_phone') }}" required>
+                                    <label class="form-label">Nomor Handphone</label>
+                                    <input type="number" name="contractor_phone" class="form-control @error('contractor_phone') is-invalid @enderror" value="{{ old('contractor_phone') }}">
                                     @error('contractor_phone')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -299,7 +293,7 @@
                     {{-- ========== SECTION 3: OPSI ALAMAT PENGIRIMAN ========== --}}
                     <div class="section-block mb-3">
                         <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="same_address" name="same_address">
+                            <input class="form-check-input" type="checkbox" id="same_address" name="same_address" {{ old('same_address') ? 'checked' : '' }}>
                             <label class="form-check-label fw-semibold" for="same_address">
                                 Nama, Telpon, Alamat Usaha sama dengan milik pengguna?
                             </label>
@@ -313,7 +307,7 @@
                                 
                                 
                                 <div class="col-12">
-                                    <label class="form-label required">Alamat Lengkap</label>
+                                    <label class="form-label">Alamat Lengkap</label>
                                     <textarea name="contractor_address" rows="2" class="form-control @error('contractor_address') is-invalid @enderror">{{ old('contractor_address') }}</textarea>
                                     @error('contractor_address')
                                         <div class="invalid-feedback">{{ $message }}</div>
@@ -322,8 +316,8 @@
                             </div>
                             <div class="row g-4 mt-2">
                                 <div class="col-md-6">
-                                    <label class="form-label required">Provinsi</label>
-                                    <select name="province_id" id="province" class="form-select select2" required>
+                                    <label class="form-label">Provinsi</label>
+                                    <select name="province_id" id="province" class="form-select select2">
                                         <option value="">-- Pilih Provinsi --</option>
                                         @foreach($provinces as $province)
                                             <option value="{{ $province->id }}">{{ $province->name }}</option>
@@ -331,26 +325,26 @@
                                     </select>
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label required">Kabupaten/Kota</label>
-                                    <select name="city_id" id="city" class="form-select select2" value="{{ old('city') }}" required>
+                                    <label class="form-label">Kabupaten/Kota</label>
+                                    <select name="city_id" id="city" class="form-select select2" value="{{ old('city') }}">
                                         <option value="">-- Pilih Kota --</option>
                                     </select>
                                 </div>
                                 <div class="col-md-5">
-                                    <label class="form-label required">Kecamatan</label>
-                                    <select name="district_id" id="district" class="form-select select2" value="{{ old('district') }}" required>
+                                    <label class="form-label">Kecamatan</label>
+                                    <select name="district_id" id="district" class="form-select select2" value="{{ old('district') }}">
                                         <option value="">-- Pilih Kecamatan --</option>
                                     </select>
                                 </div>
                                 <div class="col-md-5">
-                                    <label class="form-label required">Kelurahan</label>
-                                    <select name="sub_district_id" id="sub_district" class="form-select select2" value="{{ old('sub_district') }}" required>
+                                    <label class="form-label">Kelurahan</label>
+                                    <select name="sub_district_id" id="sub_district" class="form-select select2" value="{{ old('sub_district') }}">
                                         <option value="">-- Pilih Kelurahan --</option>
                                     </select>
                                 </div>
                                 <div class="col-md-2">
-                                    <label class="form-label required">Kode Pos</label>
-                                    <select name="postal_code_id" id="postal_code" class="form-select select2" value="{{ old('postal_code') }}" required>
+                                    <label class="form-label">Kode Pos</label>
+                                    <select name="postal_code_id" id="postal_code" class="form-select select2" value="{{ old('postal_code') }}">
                                         <option value="">-- Pilih Kode Pos --</option>
                                     </select>
                                 </div>
@@ -375,7 +369,6 @@
     <script>
         $(document).ready(function() {
             $('.select2').select2({
-                placeholder: "-- Pilih --",
                 width: '100%'
             });
         });
@@ -409,9 +402,6 @@
     });
 </script>
 
-
-
-
     <script>
         document.getElementById('photo').addEventListener('change', function (event) {
         const input = event.target;
@@ -439,69 +429,6 @@
         }
     });
     </script>
-
-    
-
-<script>
-    $('#user_province').change(function () {
-    var id = $(this).val();
-    $('#user_city').html('<option>Loading...</option>');
-    $('#user_district').html('<option value="">-- Pilih kecamatan --</option>');
-    $('#user_sub_district').html('<option value="">-- Pilih kelurahan --</option>');
-
-    if (id) {
-    $.get('/api/cities/' + id, function (data) {
-    $('#user_city').empty().append('<option value="">-- Pilih city --</option>');
-    $.each(data, function (i, city) {
-        $('#user_city').append('<option value="' + city.id + '">' + city.name + '</option>');
-            });
-        });
-        }
-    });
-
-    $('#user_city').change(function () {
-    var id = $(this).val();
-    $('#user_district').html('<option>Loading...</option>');
-    $('#user_sub_district').html('<option value="">-- Pilih kelurahan --</option>');
-
-    if (id) {
-        $.get('/api/districts/' + id, function (data) {
-            $('#user_district').empty().append('<option value="">-- Pilih kecamatan --</option>');
-            $.each(data, function (i, district) {
-                $('#user_district').append('<option value="' + district.id + '">' + district.name + '</option>');
-                    });
-                });
-            }
-        });
-
-    $('#user_district').change(function () {
-    var id = $(this).val();
-    $('#user_sub_district').html('<option>Loading...</option>');
-
-        if (id) {
-            $.get('/api/sub_districts/' + id, function (data) {
-                $('#user_sub_district').empty().append('<option value="">-- Pilih kelurahan --</option>');
-                $.each(data, function (i, sub_district) {
-                    $('#user_sub_district').append('<option value="' + sub_district.id + '">' + sub_district.name + '</option>');
-                });
-            });
-        }
-    });
-
-    $('#user_sub_district').change(function () {
-    var id = $(this).val();
-    $('#user_postal_code').html('<option>Loading...</option>');
-
-    if (id) {
-        $.get('/api/postal_codes/' + id, function (data) {
-            $('#user_postal_code').empty().append('<option value="">-- Pilih kode pos --</option>');
-            $.each(data, function (i, postal_code) {
-                $('#user_postal_code').append('<option value="' + postal_code.id + '">' + postal_code.postal_code + '</option>');
-            });
-        });
-        }
-    });
-</script>
 
 <script>
     $('#province').change(function () {
@@ -564,66 +491,88 @@
     });
 </script>
 
-
 <script>
 $(document).ready(function() {
+
+    const companyFields = '#province, #city, #district, #sub_district, #postal_code, ' +
+        '[name="contractor_name"], [name="contractor_phone"], [name="contractor_address"]';
+
+    function lockCompanyFields(lock = true) {
+        if (lock) {
+            $(companyFields).attr('readonly', true).addClass('bg-light text-muted');
+        } else {
+            $(companyFields).attr('readonly', false).removeClass('bg-light text-muted');
+        }
+    }
+
+    // Ganti isi select dengan satu option (bukan menambah)
+    function setSelect($el, val, text) {
+        text = (text || '').trim();
+        $el.empty();
+        if (val && text !== 'Loading...') {
+            $el.append(new Option(text, val, true, true));
+        } else {
+            $el.append(new Option('', '', true, true));
+        }
+        $el.trigger('change.select2'); // hanya update tampilan select2, tidak memicu AJAX
+    }
+
+    // Format 62...: 08xx → 628xx, 62xx tetap, selain itu apa adanya
+    function copyPhone() {
+        let n = ($('[name="phone"]').val() || '').replace(/\D/g, '');
+        if (n.startsWith('0')) n = '62' + n.replace(/^0+/, '');
+        $('[name="contractor_phone"]').val(n);
+    }
+
+    function copyRegion() {
+        setSelect($('#province'),     $('#user_province').val(),     $('#user_province option:selected').text());
+        setSelect($('#city'),         $('#user_city').val(),         $('#user_city option:selected').text());
+        setSelect($('#district'),     $('#user_district').val(),     $('#user_district option:selected').text());
+        setSelect($('#sub_district'), $('#user_sub_district').val(), $('#user_sub_district option:selected').text());
+        setSelect($('#postal_code'),  $('#user_postal_code').val(),  $('#user_postal_code option:selected').text());
+    }
+
+    function copyAll() {
+        copyRegion();
+        $('[name="contractor_name"]').val($('[name="fullname"]').val());
+        $('[name="contractor_address"]').val($('[name="address"]').val());
+        copyPhone();
+    }
+
     $('#same_address').on('change', function() {
         if ($(this).is(':checked')) {
-
-            // Ambil data dari wilayah user
-            let province = $('#user_province').val();
-            let city = $('#user_city').val();
-            let district = $('#user_district').val();
-            let subdistrict = $('#user_sub_district').val();
-            let postal = $('#user_postal_code').val();
-
-            // Ambil data teks (untuk select2 append manual)
-            let provinceText = $('#user_province option:selected').text();
-            let cityText = $('#user_city option:selected').text();
-            let districtText = $('#user_district option:selected').text();
-            let subdistrictText = $('#user_sub_district option:selected').text();
-            let postalText = $('#user_postal_code option:selected').text();
-
-            // 1️⃣ Province
-            $('#province').append(new Option(provinceText, province, true, true)).trigger('change.select2');
-
-            // 2️⃣ Tunggu AJAX kota selesai, lalu isi City
-            setTimeout(() => {
-                $('#city').append(new Option(cityText, city, true, true)).trigger('change.select2');
-            }, 400);
-
-            // 3️⃣ Isi District
-            setTimeout(() => {
-                $('#district').append(new Option(districtText, district, true, true)).trigger('change.select2');
-            }, 800);
-
-            // 4️⃣ Isi SubDistrict
-            setTimeout(() => {
-                $('#sub_district').append(new Option(subdistrictText, subdistrict, true, true)).trigger('change.select2');
-            }, 1200);
-
-            // 5️⃣ Isi Postal Code
-            setTimeout(() => {
-                $('#postal_code').append(new Option(postalText, postal, true, true)).trigger('change.select2');
-            }, 1500);
-
-            // Copy alamat, nama, dan telepon
-            $('[name="shipping_address"]').val($('[name="address"]').val());
-            $('[name="shipping_name"]').val($('[name="fullname"]').val());
-            $('[name="shipping_phone"]').val($('[name="phone"]').val());
-
-            // Disable field
-            $('#province, #city, #district, #sub_district, #postal_code, [name="shipping_address"], [name="shipping_name"], [name="shipping_phone"]')
-                .attr('readonly', true)
-                .addClass('bg-light text-muted');
-
+            copyAll();
+            lockCompanyFields(true);
         } else {
-            // Aktifkan kembali jika user batal
-            $('#province, #city, #district, #sub_district, #postal_code, [name="shipping_address"], [name="shipping_name"], [name="shipping_phone"]')
-                .attr('readonly', false)
-                .removeClass('bg-light text-muted');
+            lockCompanyFields(false);
         }
     });
+
+    // Sinkron saat teks/telepon pengguna berubah
+    $('[name="fullname"], [name="address"], [name="phone"]').on('input change', function () {
+        if ($('#same_address').is(':checked')) copyAll();
+    });
+
+    // Sinkron saat wilayah pengguna berubah
+    $('#user_province, #user_city, #user_district, #user_sub_district, #user_postal_code').on('change', function () {
+        if ($('#same_address').is(':checked')) copyRegion();
+    });
+
+    // Setelah AJAX wilayah pengguna selesai, sinkron lagi
+    let syncTimer;
+    $(document).ajaxComplete(function () {
+        if (!$('#same_address').is(':checked')) return;
+        clearTimeout(syncTimer);
+        syncTimer = setTimeout(copyRegion, 150);
+    });
+        // Saat halaman dimuat kembali (misalnya setelah gagal validasi) dengan switch sudah aktif
+    if ($('#same_address').is(':checked')) {
+        lockCompanyFields(true);
+        copyPhone();
+        $('[name="contractor_name"]').val($('[name="fullname"]').val());
+        $('[name="contractor_address"]').val($('[name="address"]').val());
+        // Wilayah disalin oleh ajaxComplete setelah dropdown pengguna selesai dimuat
+    }
 });
 </script>
 

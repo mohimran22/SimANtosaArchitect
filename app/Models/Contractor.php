@@ -15,6 +15,15 @@ class Contractor extends Model
 }
 
 
+    /**
+     * Proyek yang ditugaskan ke kontraktor ini (tabel pivot project_contractor).
+     */
+    public function projects()
+    {
+        return $this->belongsToMany(Project::class, 'project_contractor')
+            ->withTimestamps();
+    }
+
     public function province() {
 
     return $this->belongsTo(Province::class);

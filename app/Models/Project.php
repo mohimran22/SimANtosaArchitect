@@ -82,6 +82,15 @@ class Project extends Model
         return $this->belongsTo(Affiliator::class, 'affiliator_id');
     }
 
+    /**
+     * Kontraktor yang ditugaskan ke proyek ini (hanya relevan untuk proyek Build).
+     */
+    public function contractors()
+    {
+        return $this->belongsToMany(Contractor::class, 'project_contractor')
+            ->withTimestamps();
+    }
+
     public function levels()
     {
         return $this->hasMany(ProjectLevel::class);
@@ -294,7 +303,11 @@ class Project extends Model
 
         return $data;
     }
-
+    /**
+     * Kurva rencana kumulatif per minggu.
+     * Sumber: BuildPlanWeek (plan_percent per item per minggu), bukan BuildPlans.
+     * Minggu Justek tidak punya rencana (progress = null, garis berhenti).
+     */
     public function getKurvaRencanaData()
     {
         $this->loadMissing('weeklyPlans.weeks');
@@ -323,7 +336,25 @@ class Project extends Model
 
         return $data;
     }
+    // public function getKurvaRencanaData()
+    // {
+    //     $weeks = count($this->week_labels);
+    //     $plans = $this->weeklyPlans->keyBy('week_no');
 
+    //     $jalan = 0;
+    //     $data = [];
+
+    //     for ($w=1; $w<=$weeks; $w++) {
+    //         $jalan += $plans[$w]->bobot_percent ?? 0;
+
+    //         $data[] = [
+    //             'week'=>$w,
+    //             'progress'=>round($jalan,2)
+    //         ];
+    //     }
+
+    //     return $data;
+    // }
     public function getWeekLabelsAttribute()
     {
         if (!$this->start_date || !$this->end_date) return [];

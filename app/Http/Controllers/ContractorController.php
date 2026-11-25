@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
 use Yajra\DataTables\Facades\DataTables;
+use Illuminate\Validation\Rule;
 
 class ContractorController extends Controller
 {
@@ -100,24 +101,37 @@ class ContractorController extends Controller
 
     public function store(Request $request)
 {
+    $normalizePhone = function ($value) {
+        $n = preg_replace('/\D/', '', $value ?? '');
+        if ($n !== '' && str_starts_with($n, '0')) {
+            $n = '62' . ltrim($n, '0');
+        }
+        return $n !== '' ? $n : null;
+    };
+
+    $request->merge([
+        'phone'            => $normalizePhone($request->phone),
+        'contractor_phone' => $normalizePhone($request->contractor_phone),
+    ]);
+
     $validated = $request->validate([
         'user_id' => 'nullable|exists:users,id',
         'fullname' => 'required|string|max:255',
         'nickname' => 'nullable|string|max:100',
-        'gender' => 'required|in:1,2',
+        'gender' => 'nullable|in:1,2',
         'email' => 'required|email|unique:users,email',
         'birth_place' => 'nullable|string|max:100',
-        'birth_date' => 'required|date_format:Y-m-d',
-        'identity_number' => 'required|string|max:16',
-        'religion_id' => 'required|exists:religions,id',
-        'npwp' => 'nullable|numeric|max:30',
-        'phone' => 'required|string|max:20',
-        'address' => 'required|string|max:255',
-        'user_province_id' => 'required|exists:provinces,id',
-        'user_city_id' => 'required|exists:cities,id',
-        'user_district_id' => 'required|exists:districts,id',
-        'user_sub_district_id' => 'required|exists:sub_districts,id',
-        'user_postal_code_id' => 'required|exists:postal_codes,id',
+        'birth_date' => 'nullable|date_format:Y-m-d',
+        'identity_number' => 'nullable|string|max:16',
+        'religion_id' => 'nullable|exists:religions,id',
+        'npwp' => 'nullable|string|max:30',
+        'phone' => ['required', 'regex:/^[1-9][0-9]{7,14}$/'],
+        'address' => 'nullable|string|max:255',
+        'user_province_id' => 'nullable|exists:provinces,id',
+        'user_city_id' => 'nullable|exists:cities,id',
+        'user_district_id' => 'nullable|exists:districts,id',
+        'user_sub_district_id' => 'nullable|exists:sub_districts,id',
+        'user_postal_code_id' => 'nullable|exists:postal_codes,id',
         'bank_id' => 'nullable|uuid|exists:banks,id',
         'account_number' => 'nullable|string|max:50',
         'account_holder' => 'nullable|string|max:50',
@@ -125,35 +139,41 @@ class ContractorController extends Controller
 
         // --- data contractor ---
         'contractor_id' => 'required|unique:contractors,contractor_id',
-        'contractor_name' => 'required|string|max:255',
-        'contractor_phone' => 'required|string|max:20',
-        'contractor_address' => 'required|string|max:255',
-        'province_id' => 'required|exists:provinces,id',
-        'city_id' => 'required|exists:cities,id',
-        'district_id' => 'required|exists:districts,id',
-        'sub_district_id' => 'required|exists:sub_districts,id',
-        'postal_code_id' => 'required|exists:postal_codes,id',
+        'contractor_name' => 'nullable|string|max:255',
+        'contractor_phone' => ['nullable', 'regex:/^[1-9][0-9]{7,14}$/'],
+        'contractor_address' => 'nullable|string|max:255',
+        'province_id' => 'nullable|exists:provinces,id',
+        'city_id' => 'nullable|exists:cities,id',
+        'district_id' => 'nullable|exists:districts,id',
+        'sub_district_id' => 'nullable|exists:sub_districts,id',
+        'postal_code_id' => 'nullable|exists:postal_codes,id',
         'role' => 'required|array',
         'role.*' => 'string|exists:roles,name',
     ]);
 
     if ($request->hasFile('photo')) {
-        $file = $request->file('photo');
-        $filename = Str::uuid().'.'.$file->getClientOriginalExtension();
-        $file->storeAs('photos', $filename, 'public');
-        $validated['photo'] = $filename;
+        $filename = Str::uuid().'.'.$request->file('photo')->getClientOriginalExtension();
+
+        $path = $request->file('photo')->storeAs(
+            'photos',
+            $filename,
+            'public'
+        );
+
+        // simpan full relative path
+        $validated['photo'] = $path;   // → photos/uuid.jpg
     }
 
     // Jika alamat pengiriman sama dengan domisili user
         if ($request->has('same_address')) {
-            $validated['province_id'] = $validated['user_province_id'];
-            $validated['city_id'] = $validated['user_city_id'];
-            $validated['district_id'] = $validated['user_district_id'];
-            $validated['sub_district_id'] = $validated['user_sub_district_id'];
-            $validated['postal_code_id'] = $validated['user_postal_code_id'];
-            $validated['contractor_address'] = $validated['address'];
-            $validated['contractor_name'] = $validated['fullname'];
-            $validated['contractor_phone'] = $validated['phone'];
+            $validated['province_id']        = $validated['user_province_id'] ?? null;
+            $validated['city_id']            = $validated['user_city_id'] ?? null;
+            $validated['district_id']        = $validated['user_district_id'] ?? null;
+            $validated['sub_district_id']    = $validated['user_sub_district_id'] ?? null;
+            $validated['postal_code_id']     = $validated['user_postal_code_id'] ?? null;
+            $validated['contractor_address'] = $validated['address'] ?? null;
+            $validated['contractor_name']    = $validated['fullname'];
+            $validated['contractor_phone']   = $validated['phone'];
         }
 
     DB::transaction(function () use ($validated, $request) {
@@ -179,6 +199,7 @@ class ContractorController extends Controller
                 'sub_district_id' => $validated['user_sub_district_id'],
                 'postal_code_id' => $validated['user_postal_code_id'],
                 'email' => $validated['email'],
+                'email_verified_at' => now(),
                 'password' => Hash::make($password),
                 'phone' => $validated['phone'] ?? null,
                 'gender' => $validated['gender'] ?? null,
@@ -200,9 +221,6 @@ class ContractorController extends Controller
             }
         }
 
-        
-
-        // 🔹 Simpan contractor
         Contractor::create([
             'id' => Str::uuid(),
             'user_id' => $user->id,
@@ -245,46 +263,83 @@ public function generateContractorIdAjax()
             'contractor' => $contractor
         ]);
     }
+  
+public function edit($id)
+{
+    $contractor = Contractor::with(['user.roles', 'user.bank'])->findOrFail($id);
+    $user = $contractor->user;
+    $religions = Religion::all();
+    $provinces = Province::all();
+    $roles = Role::all();
+    $selectedRoles = $user->roles->pluck('name')->toArray();
 
-   
-    public function edit($id)
-    {
-        $contractor = contractor::with(['user.roles', 'user.bank'])->findOrFail($id);
-        $user = $contractor->user;
-        $religions = Religion::all();
-        $provinces = Province::all();
-        $roles = Role::all();
-        $selectedRoles = $user->roles->pluck('name')->toArray();
-        $cities = City::where('province_id', $user->province_id)->get();
-        $districts = District::where('city_id', $user->city_id)->get();
-        $subDistricts = SubDistrict::where('district_id', $user->district_id)->get();
-        $postalCodes = PostalCode::where('sub_district_id', $user->sub_district_id)->get();
-        
-        return view('contractors.edit', compact('user', 'roles', 'selectedRoles', 'contractor',
-        'religions', 'provinces', 'cities', 'districts', 'subDistricts', 'postalCodes'));
+    // Wilayah domisili pengguna
+    $cities       = City::where('province_id', $user->province_id)->get();
+    $districts    = District::where('city_id', $user->city_id)->get();
+    $subDistricts = SubDistrict::where('district_id', $user->district_id)->get();
+    $postalCodes  = PostalCode::where('sub_district_id', $user->sub_district_id)->get();
+
+    // Wilayah usaha
+    $ctrCities       = City::where('province_id', $contractor->province_id)->get();
+    $ctrDistricts    = District::where('city_id', $contractor->city_id)->get();
+    $ctrSubDistricts = SubDistrict::where('district_id', $contractor->district_id)->get();
+    $ctrPostalCodes  = PostalCode::where('sub_district_id', $contractor->sub_district_id)->get();
+
+    return view('contractors.edit', compact(
+        'user', 'roles', 'selectedRoles', 'contractor', 'religions', 'provinces',
+        'cities', 'districts', 'subDistricts', 'postalCodes',
+        'ctrCities', 'ctrDistricts', 'ctrSubDistricts', 'ctrPostalCodes'
+    ));
+}
+
+public function update(Request $request, Contractor $contractor)
+{
+    // Normalisasi telepon: buang non-angka, awalan 0 → 62
+    $normalizePhone = function ($value) {
+        $n = preg_replace('/\D/', '', $value ?? '');
+        if ($n !== '' && str_starts_with($n, '0')) {
+            $n = '62' . ltrim($n, '0');
+        }
+        return $n !== '' ? $n : null;
+    };
+
+    $request->merge([
+        'phone'            => $normalizePhone($request->phone),
+        'contractor_phone' => $normalizePhone($request->contractor_phone),
+    ]);
+
+    // Data usaha sama dengan pengguna: server mengisi sebelum validasi
+    if ($request->has('same_address')) {
+        $request->merge([
+            'contractor_name'    => $request->fullname,
+            'contractor_phone'   => $request->phone,
+            'contractor_address' => $request->address,
+            'province_id'        => $request->user_province_id,
+            'city_id'            => $request->user_city_id,
+            'district_id'        => $request->user_district_id,
+            'sub_district_id'    => $request->user_sub_district_id,
+            'postal_code_id'     => $request->user_postal_code_id,
+        ]);
     }
 
-   
-    public function update(Request $request, Contractor $contractor)
-{
     $validated = $request->validate([
         // --- data user ---
         'fullname' => 'required|string|max:255',
         'nickname' => 'nullable|string|max:100',
-        'gender' => 'required|in:1,2',
+        'gender' => 'nullable|in:1,2',
         'email' => 'required|email|unique:users,email,' . $contractor->user_id,
         'birth_place' => 'nullable|string|max:100',
         'birth_date' => 'nullable|date_format:Y-m-d',
-        'identity_number' => 'required|string|max:16',
-        'religion_id' => 'required|exists:religions,id',
+        'identity_number' => 'nullable|string|max:16',
+        'religion_id' => 'nullable|exists:religions,id',
         'npwp' => 'nullable|string|max:30',
-        'phone' => 'required|string|max:20',
-        'address' => 'required|string|max:255',
-        'user_province_id' => 'required|exists:provinces,id',
-        'user_city_id' => 'required|exists:cities,id',
-        'user_district_id' => 'required|exists:districts,id',
-        'user_sub_district_id' => 'required|exists:sub_districts,id',
-        'user_postal_code_id' => 'required|exists:postal_codes,id',
+        'phone' => ['required', 'regex:/^[1-9][0-9]{7,14}$/'],
+        'address' => 'nullable|string|max:255',
+        'user_province_id' => 'nullable|exists:provinces,id',
+        'user_city_id' => 'nullable|exists:cities,id',
+        'user_district_id' => 'nullable|exists:districts,id',
+        'user_sub_district_id' => 'nullable|exists:sub_districts,id',
+        'user_postal_code_id' => 'nullable|exists:postal_codes,id',
         'bank_id' => 'nullable|uuid|exists:banks,id',
         'account_number' => 'nullable|string|max:50',
         'account_holder' => 'nullable|string|max:50',
@@ -292,98 +347,97 @@ public function generateContractorIdAjax()
 
         // --- data contractor ---
         'contractor_id' => 'required|string|max:50|unique:contractors,contractor_id,' . $contractor->id,
-        'contractor_name' => 'required|string|max:255',
-        'contractor_phone' => 'required|string|max:20',
-        'contractor_address' => 'required|string|max:255',
-        'province_id' => 'required|exists:provinces,id',
-        'city_id' => 'required|exists:cities,id',
-        'district_id' => 'required|exists:districts,id',
-        'sub_district_id' => 'required|exists:sub_districts,id',
-        'postal_code_id' => 'required|exists:postal_codes,id',
+        'contractor_name' => 'nullable|string|max:255',
+        'contractor_phone' => ['nullable', 'regex:/^[1-9][0-9]{7,14}$/'],
+        'contractor_address' => 'nullable|string|max:255',
+        'province_id' => 'nullable|exists:provinces,id',
+        'city_id' => 'nullable|exists:cities,id',
+        'district_id' => 'nullable|exists:districts,id',
+        'sub_district_id' => 'nullable|exists:sub_districts,id',
+        'postal_code_id' => 'nullable|exists:postal_codes,id',
         'role' => 'nullable|array',
-        'role.*' => 'string|exists:roles,name',
+        'role.*' => ['string', Rule::exists('roles', 'name')->where('role_group', 'Eksternal')],
     ]);
 
-    if ($request->has('same_address')) {
-            $validated['province_id'] = $validated['user_province_id'];
-            $validated['city_id'] = $validated['user_city_id'];
-            $validated['district_id'] = $validated['user_district_id'];
-            $validated['sub_district_id'] = $validated['user_sub_district_id'];
-            $validated['postal_code_id'] = $validated['user_postal_code_id'];
-            $validated['contractor_address'] = $validated['address'];
-            $validated['contractor_name'] = $validated['fullname'];
-            $validated['contractor_phone'] = $validated['phone'];
-        }
+    $newPhotoPath = null;   // foto baru yang baru diunggah
+    $oldPhotoPath = null;   // foto lama, dihapus setelah transaksi berhasil
 
-    DB::transaction(function () use ($validated, $contractor, $request) {
-        $user = $contractor->user;
+    try {
+        DB::transaction(function () use ($validated, $contractor, $request, &$newPhotoPath, &$oldPhotoPath) {
+            $user = $contractor->user;
 
-        // 🔹 Upload foto baru (hapus lama jika ada)
-        if ($request->hasFile('photo')) {
-            if ($user->photo && Storage::disk('public')->exists('photos/' . $user->photo)) {
-                Storage::disk('public')->delete('photos/' . $user->photo);
+            if ($request->hasFile('photo')) {
+                $newPhotoPath = $request->file('photo')->storeAs(
+                    'photos',
+                    Str::uuid() . '.' . $request->file('photo')->getClientOriginalExtension(),
+                    'public'
+                );
+
+                // Data lama bisa berupa nama file saja (tanpa folder)
+                $old = $user->photo;
+                $oldPhotoPath = $old && !str_contains($old, '/') ? 'photos/' . $old : $old;
+
+                $validated['photo'] = $newPhotoPath;   // → photos/uuid.jpg
             }
-            $file = $request->file('photo');
-            $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
-            $file->storeAs('photos', $filename, 'public');
-            $validated['photo'] = $filename;
-        }
 
-        // 🔹 Update user data
-        $user->update([
-            'fullname' => $validated['fullname'],
-            'nickname' => $validated['nickname'],
-            'birth_place' => $validated['birth_place'],
-            'birth_date' => $validated['birth_date'],
-            'identity_number' => $validated['identity_number'],
-            'religion_id' => $validated['religion_id'],
-            'npwp' => $validated['npwp'],
-            'address' => $validated['address'],
-            'province_id' => $validated['user_province_id'],
-            'city_id' => $validated['user_city_id'],
-            'district_id' => $validated['user_district_id'],
-            'sub_district_id' => $validated['user_sub_district_id'],
-            'postal_code_id' => $validated['user_postal_code_id'],
-            'email' => $validated['email'],
-            'phone' => $validated['phone'],
-            'gender' => $validated['gender'],
-            'bank_id' => $validated['bank_id'] ?? null,
-            'account_number' => $validated['account_number'] ?? null,
-            'account_holder' => $validated['account_holder'] ?? null,
-            'photo' => $validated['photo'] ?? $user->photo,
-        ]);
+            $user->update([
+                'fullname' => $validated['fullname'],
+                'nickname' => $validated['nickname'] ?? null,
+                'birth_place' => $validated['birth_place'] ?? null,
+                'birth_date' => $validated['birth_date'] ?? null,
+                'identity_number' => $validated['identity_number'] ?? null,
+                'religion_id' => $validated['religion_id'] ?? null,
+                'npwp' => $validated['npwp'] ?? null,
+                'address' => $validated['address'] ?? null,
+                'province_id' => $validated['user_province_id'] ?? null,
+                'city_id' => $validated['user_city_id'] ?? null,
+                'district_id' => $validated['user_district_id'] ?? null,
+                'sub_district_id' => $validated['user_sub_district_id'] ?? null,
+                'postal_code_id' => $validated['user_postal_code_id'] ?? null,
+                'email' => $validated['email'],
+                'phone' => $validated['phone'],
+                'gender' => $validated['gender'] ?? null,
+                'bank_id' => $validated['bank_id'] ?? null,
+                'account_number' => $validated['account_number'] ?? null,
+                'account_holder' => $validated['account_holder'] ?? null,
+                'photo' => $validated['photo'] ?? $user->photo,
+            ]);
 
-        // 🔹 Role management: tetap multi-role aman
-        if (!empty($validated['role'])) {
-            foreach ($validated['role'] as $r) {
-                if (!$user->hasRole($r)) {
-                    $user->assignRole($r);
+            // Role: multi-role tetap aman
+            if (!empty($validated['role'])) {
+                foreach ($validated['role'] as $r) {
+                    if (!$user->hasRole($r)) {
+                        $user->assignRole($r);
+                    }
                 }
-            }
-        } else {
-            // Pastikan minimal masih punya role contractor
-            if (!$user->hasRole('Mitra Kontraktor')) {
+            } elseif (!$user->hasRole('Mitra Kontraktor')) {
                 $user->assignRole('Mitra Kontraktor');
             }
+
+            $contractor->update([
+                'contractor_id' => $validated['contractor_id'],
+                'contractor_name' => $validated['contractor_name'] ?? null,
+                'contractor_phone' => $validated['contractor_phone'] ?? null,
+                'contractor_address' => $validated['contractor_address'] ?? null,
+                'province_id' => $validated['province_id'] ?? null,
+                'city_id' => $validated['city_id'] ?? null,
+                'district_id' => $validated['district_id'] ?? null,
+                'sub_district_id' => $validated['sub_district_id'] ?? null,
+                'postal_code_id' => $validated['postal_code_id'] ?? null,
+            ]);
+        });
+    } catch (\Throwable $e) {
+        // Transaksi gagal: buang foto baru supaya tidak jadi file yatim
+        if ($newPhotoPath && Storage::disk('public')->exists($newPhotoPath)) {
+            Storage::disk('public')->delete($newPhotoPath);
         }
+        throw $e;
+    }
 
-        
-
-
-        // 🔹 Update data contractor
-        $contractor->update([
-            'contractor_id' => $validated['contractor_id'],
-            'contractor_name' => $validated['contractor_name'],
-            'contractor_phone' => $validated['contractor_phone'],
-            'contractor_address' => $validated['contractor_address'],
-            'province_id' => $validated['province_id'],
-            'city_id' => $validated['city_id'],
-            'district_id' => $validated['district_id'],
-            'sub_district_id' => $validated['sub_district_id'],
-            'postal_code_id' => $validated['postal_code_id'],
-            'photo' => $validated['photo'] ?? $contractor->photo,
-        ]);
-    });
+    // Transaksi berhasil: baru hapus foto lama
+    if ($oldPhotoPath && Storage::disk('public')->exists($oldPhotoPath)) {
+        Storage::disk('public')->delete($oldPhotoPath);
+    }
 
     return redirect()
         ->route('contractors.show', $contractor->id)

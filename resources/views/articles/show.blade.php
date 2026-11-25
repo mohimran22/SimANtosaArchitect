@@ -21,6 +21,8 @@
     .article-content figure.table { overflow-x: auto; margin: 1.5rem 0; }
     .article-content table { width: 100%; border-collapse: collapse; }
     .article-content th, .article-content td { border: 1px solid #dee2e6; padding: .5rem .75rem; text-align: left; }
+    .article-content figure.video-embed { margin: 1.5rem 0; }
+    .article-content figure.video-embed iframe { border-radius: .5rem; }
 </style>
 @endpush
 

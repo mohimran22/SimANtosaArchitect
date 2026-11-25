@@ -23,6 +23,9 @@ use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
+    // Nama role Spatie untuk kontraktor. Sesuaikan dengan nama role di database Anda.
+    private const ROLE_CONTRACTOR = 'Mitra Kontraktor';
+
     public function index()
     {
         $user = auth()->user();
@@ -71,6 +74,9 @@ class DashboardController extends Controller
                 ->where('employee_id', auth()->user()->employee->id)
                 ->whereDate('attendance_date', today())
                 ->first();
+        }
+        if ($this->isContractorContext($user)) {
+            return $this->contractorDashboard($user, $greeting);
         }
         if (! $user->isInternal()) {
             return $this->customerDashboard($user, $greeting);
@@ -365,93 +371,14 @@ class DashboardController extends Controller
 }
 private function customerDashboard($user, string $greeting)
 {
-    $projects = Project::with([
-            'levels',
-            'buildItems.weeklyProgresses',
-            'weeklyPlans.weeks',
-            'technicalJustifications',
-        ])
-        // projects.customer_id berisi customers.id (bukan users.id).
-        // Kalau user belum punya record customer, hasilnya kosong (bukan error).
-        ->where('customer_id', $user->customer?->id)
+    // projects.customer_id berisi customers.id (bukan users.id).
+    // array_filter: kalau user belum punya record customer -> whereIn([]) -> tidak ada proyek
+    // (hindari where('customer_id', null) yang justru cocok dengan proyek tanpa customer).
+    $projects = $this->portalProjectsQuery()
+        ->whereIn('customer_id', array_filter([$user->customer?->id]))
         ->orderBy('project_name')
         ->get()
-        ->map(function ($project) {
-            $type = (int) $project->project_type;
-
-            $item = (object) [
-                'id'         => $project->id,
-                'name'       => $project->project_name,
-                'type'       => $type,
-                'type_label' => match ($type) {
-                    Project::TYPE_DESIGN => 'Desain',
-                    Project::TYPE_RAB    => 'RAB',
-                    Project::TYPE_BUILD  => 'Build',
-                    default              => '-',
-                },
-                // sesuaikan nama route detail proyek untuk customer
-                'url'      => route('projects.show', $project->id),
-                'status'   => null,
-                'progress' => null,
-                'scurve'   => null,
-            ];
-
-            // Design & RAB: nama proyek + status (tahap yang sedang berjalan)
-            if ($type !== Project::TYPE_BUILD) {
-                $current = $project->levels
-                    ->sortBy('level_order')
-                    ->firstWhere('is_completed', false);
-
-                $item->status = $current ? $current->level_name : 'Selesai';
-
-                return $item;
-            }
-
-            // BUILD: pakai rumus yang sama dengan Project::getKurvaSData()
-            // (progress_percent per item dikali bobot_percent item / 100)
-            $progress = $project->buildItems->sum(
-                fn ($bi) => $bi->weeklyProgresses->sum('progress_percent') * ($bi->bobot_percent / 100)
-            );
-            $item->progress = min(round($progress, 1), 100);
-
-            // minggu terakhir yang benar-benar ada progres (> 0); setelah itu garis realisasi
-            // berhenti. Baris laporan bernilai 0 untuk minggu yang belum terisi diabaikan.
-            $lastWeek = (int) $project->buildItems
-                ->flatMap->weeklyProgresses
-                ->filter(fn ($p) => (float) $p->progress_percent > 0)
-                ->max('week_no');
-
-            $labels = collect($project->week_labels)
-                ->map(fn ($l) => 'M' . $l['week_no'])
-                ->values()
-                ->all();
-
-            $realisasi = collect($project->getKurvaSData())
-                ->map(fn ($r) => $r['week'] <= $lastWeek ? min($r['progress'], 100) : null)
-                ->values()
-                ->all();
-
-            // Rencana kumulatif per minggu (sumber: BuildPlanWeek, lihat model Project)
-            $rencanaRaw = collect($project->getKurvaRencanaData())->pluck('progress');
-
-            // Berakhir di 100%: normalisasi terhadap total rencana (kalau total > 0)
-            $totalRencana = (float) $rencanaRaw->filter(fn ($v) => $v !== null)->max();
-
-            $rencana = $rencanaRaw
-                ->map(fn ($v) => $v === null
-                    ? null
-                    : ($totalRencana > 0 ? min(round($v / $totalRencana * 100, 2), 100) : $v))
-                ->values()
-                ->all();
-
-            $item->scurve = [
-                'labels' => $labels,
-                'values' => $realisasi,
-                'plan'   => $rencana,
-            ];
-
-            return $item;
-        });
+        ->map(fn ($project) => $this->portalProjectItem($project));
 
     $incompleteProfile = collect([
         'fullname', 'gender', 'birth_place', 'birth_date', 'religion_id',
@@ -462,5 +389,128 @@ private function customerDashboard($user, string $greeting)
     return view('dashboard.customer', compact(
         'user', 'greeting', 'projects', 'incompleteProfile'
     ));
+}
+
+/**
+ * Kontraktor: hanya proyek BUILD yang ditugaskan kepadanya, tanpa data keuangan.
+ * Memakai view yang sama dengan customer (kartu nama + progres, klik -> kurva S).
+ */
+private function contractorDashboard($user, string $greeting)
+{
+    $contractorIds = array_filter([$user->contractor?->id]);
+
+    $projects = $this->portalProjectsQuery()
+        ->where('project_type', Project::TYPE_BUILD)
+        ->whereHas('contractors', fn ($q) => $q->whereIn('contractors.id', $contractorIds))
+        ->orderBy('project_name')
+        ->get()
+        ->map(fn ($project) => $this->portalProjectItem($project));
+
+    $incompleteProfile = false;
+
+    return view('dashboard.customer', compact(
+        'user', 'greeting', 'projects', 'incompleteProfile'
+    ));
+}
+
+private function isContractorContext($user): bool
+{
+    // active_role = role yang sedang dipakai (user bisa punya beberapa role)
+    if ($user->active_role) {
+        return $user->active_role === self::ROLE_CONTRACTOR;
+    }
+
+    return $user->hasRole(self::ROLE_CONTRACTOR);
+}
+
+private function portalProjectsQuery()
+{
+    return Project::with([
+        'levels',
+        'buildItems.weeklyProgresses',
+        'weeklyPlans.weeks',
+        'technicalJustifications',
+    ]);
+}
+
+/**
+ * Satu kartu proyek untuk dashboard customer/kontraktor.
+ */
+private function portalProjectItem(Project $project): object
+{
+            $type = (int) $project->project_type;
+
+    $item = (object) [
+        'id'         => $project->id,
+        'name'       => $project->project_name,
+        'type'       => $type,
+        'type_label' => match ($type) {
+            Project::TYPE_DESIGN => 'Desain',
+            Project::TYPE_RAB    => 'RAB',
+            Project::TYPE_BUILD  => 'Build',
+            default              => '-',
+        },
+        // sesuaikan nama route detail proyek untuk customer
+        'url'      => route('projects.show', $project->id),
+        'status'   => null,
+        'progress' => null,
+        'scurve'   => null,
+    ];
+
+    // Design & RAB: nama proyek + status (tahap yang sedang berjalan)
+    if ($type !== Project::TYPE_BUILD) {
+        $current = $project->levels
+            ->sortBy('level_order')
+            ->firstWhere('is_completed', false);
+
+        $item->status = $current ? $current->level_name : 'Selesai';
+
+        return $item;
+    }
+
+    // BUILD: pakai rumus yang sama dengan Project::getKurvaSData()
+    // (progress_percent per item dikali bobot_percent item / 100)
+    $progress = $project->buildItems->sum(
+        fn ($bi) => $bi->weeklyProgresses->sum('progress_percent') * ($bi->bobot_percent / 100)
+    );
+    $item->progress = min(round($progress, 1), 100);
+
+    // minggu terakhir yang benar-benar ada progres (> 0); setelah itu garis realisasi
+    // berhenti. Baris laporan bernilai 0 untuk minggu yang belum terisi diabaikan.
+    $lastWeek = (int) $project->buildItems
+        ->flatMap->weeklyProgresses
+        ->filter(fn ($p) => (float) $p->progress_percent > 0)
+        ->max('week_no');
+
+    $labels = collect($project->week_labels)
+        ->map(fn ($l) => 'M' . $l['week_no'])
+        ->values()
+        ->all();
+
+    $realisasi = collect($project->getKurvaSData())
+        ->map(fn ($r) => $r['week'] <= $lastWeek ? min($r['progress'], 100) : null)
+        ->values()
+        ->all();
+
+    // Rencana kumulatif per minggu (sumber: BuildPlanWeek, lihat model Project)
+    $rencanaRaw = collect($project->getKurvaRencanaData())->pluck('progress');
+
+    // Berakhir di 100%: normalisasi terhadap total rencana (kalau total > 0)
+    $totalRencana = (float) $rencanaRaw->filter(fn ($v) => $v !== null)->max();
+
+    $rencana = $rencanaRaw
+        ->map(fn ($v) => $v === null
+            ? null
+            : ($totalRencana > 0 ? min(round($v / $totalRencana * 100, 2), 100) : $v))
+        ->values()
+        ->all();
+
+    $item->scurve = [
+        'labels' => $labels,
+        'values' => $realisasi,
+        'plan'   => $rencana,
+    ];
+
+    return $item;
 }
 }

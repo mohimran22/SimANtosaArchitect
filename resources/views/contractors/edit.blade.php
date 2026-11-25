@@ -5,7 +5,7 @@
     <div class="container-xl">
         <div class="row align-items-center">
             <div class="col d-flex align-items-center">
-                <a href="{{ route('contractors.index') }}" class="btn btn-dark d-flex align-items-center" style="margin-left: 30px;">
+                <a href="{{ route('contractors.index') }}" class="btn btn-dark d-flex align-items-center">
                     <i class="ti ti-arrow-left"></i>
                 </a>
                 
@@ -37,7 +37,7 @@
                     <div class="text-center mb-5">
                         <div class="position-relative d-inline-block">
                             @if ($user->photo)
-                                <img id="previewImage" src="{{ asset('storage/photos/'.$user->photo) }}" alt="Profile" 
+                                <img id="previewImage" src="{{ asset('storage/'.$user->photo) }}" alt="Profile" 
                                     class="rounded-3 shadow-sm border" width="150" height="150"
                                     style="object-fit: cover;">
                             @else
@@ -81,8 +81,8 @@
                                     @enderror
                                 </div>
                                 <div class="col-md-2">
-                                    <label class="form-label required">Jenis Kelamin</label>
-                                    <select name="gender" class="form-select" value="{{ old('gender') }}" required>
+                                    <label class="form-label">Jenis Kelamin</label>
+                                    <select name="gender" class="form-select select2" value="{{ old('gender') }}">
                                         <option value="">-- Pilih --</option>
                                         <option value="1" {{ old('gender', $user->gender) == 1 ? 'selected' : '' }}>Laki-laki</option>
                                         <option value="2" {{ old('gender', $user->gender) == 2 ? 'selected' : '' }}>Perempuan</option>
@@ -96,14 +96,14 @@
                                     @enderror
                                 </div>
                                 <div class="col-md-4">
-                                    <label class="form-label required">Tanggal Lahir</label>
-                                                <input type="date" name="birth_date" class="form-control" required
+                                    <label class="form-label">Tanggal Lahir</label>
+                                                <input type="date" name="birth_date" class="form-control"
                                                     value="{{ old('birth_date', $user->birth_date) }}"
                                                     pattern="\d{4}-\d{2}-\d{2}" placeholder="YYYY-MM-DD">
                                 </div>
                                 <div class="col-md-4">
-                                    <label class="form-label required">Agama</label>
-                                    <select name="religion_id" class="form-select select2" required>
+                                    <label class="form-label">Agama</label>
+                                    <select name="religion_id" class="form-select select2">
                                         <option value="">-- Pilih Agama --</option>
                                         @foreach($religions as $religion)
                                             <option value="{{ $religion->id }}" {{ old('religion_id', $user->religion_id) == $religion->id ? 'selected' : '' }}>
@@ -160,64 +160,64 @@
                             </div>
                             <div class="row g-4 mt-2">
                                 <div class="col-md-6">
-                                    <label class="required">Provinsi</label>
-                                        <select name="user_province_id" id="user_province" class="form-select select2" required>
-                                            <option value="">-- Pilih Provinsi --</option>
-                                            @foreach($provinces as $province)
-                                                <option value="{{ $province->id }}"
-                                                    {{ $user->province_id == $province->id ? 'selected' : '' }}>
-                                                    {{ $province->name }}
-                                                </option>
-                                            @endforeach
-                                        </select>
+                                    <label class="form-label">Provinsi</label>
+                                    <select name="user_province_id" id="user_province" class="form-select select2">
+                                        <option value="">-- Pilih Provinsi --</option>
+                                        @foreach($provinces as $province)
+                                            <option value="{{ $province->id }}"
+                                                {{ $user->province_id == $province->id ? 'selected' : '' }}>
+                                                {{ $province->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="required">Kabupaten/Kota</label>
-                                                <select name="user_city_id" id="user_city" class="form-select select2" required>
-                                                    <option value="">-- Pilih Kota --</option>
-                                                    @foreach($cities as $city)
-                                                        <option value="{{ $city->id }}"
-                                                            {{ $user->city_id == $city->id ? 'selected' : '' }}>
-                                                            {{ $city->name }}
-                                                        </option>
-                                                    @endforeach
-                                                </select>
+                                    <label class="form-label">Kabupaten/Kota</label>
+                                    <select name="user_city_id" id="user_city" class="form-select select2">
+                                        <option value="">-- Pilih Kota --</option>
+                                        @foreach($cities as $city)
+                                            <option value="{{ $city->id }}"
+                                                {{ $user->city_id == $city->id ? 'selected' : '' }}>
+                                                {{ $city->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
                                 </div>
                                 <div class="col-md-5">
-                                    <label class="required">Kecamatan</label>
-                                                <select name="user_district_id" id="user_district" class="form-select select2" required>
-                                                    <option value="">-- Pilih Kecamatan --</option>
-                                                    @foreach($districts as $district)
-                                                        <option value="{{ $district->id }}"
-                                                            {{ $user->district_id == $district->id ? 'selected' : '' }}>
-                                                            {{ $district->name }}
-                                                        </option>
-                                                    @endforeach
-                                                </select>
+                                    <label class="form-label">Kecamatan</label>
+                                    <select name="user_district_id" id="user_district" class="form-select select2">
+                                        <option value="">-- Pilih Kecamatan --</option>
+                                        @foreach($districts as $district)
+                                            <option value="{{ $district->id }}"
+                                                {{ $user->district_id == $district->id ? 'selected' : '' }}>
+                                                {{ $district->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
                                 </div>
                                 <div class="col-md-5">
-                                    <label class="required">Kelurahan</label>
-                                                <select name="user_sub_district_id" id="user_sub_district" class="form-select select2" required>
-                                                    <option value="">-- Pilih kelurahan --</option>
-                                                    @foreach($subDistricts as $sub_district)
-                                                        <option value="{{ $sub_district->id }}"
-                                                            {{ $user->sub_district_id == $sub_district->id ? 'selected' : '' }}>
-                                                            {{ $sub_district->name }}
-                                                        </option>
-                                                    @endforeach
-                                                </select>
+                                    <label class="form-label">Kelurahan</label>
+                                    <select name="user_sub_district_id" id="user_sub_district" class="form-select select2">
+                                        <option value="">-- Pilih kelurahan --</option>
+                                        @foreach($subDistricts as $sub_district)
+                                            <option value="{{ $sub_district->id }}"
+                                                {{ $user->sub_district_id == $sub_district->id ? 'selected' : '' }}>
+                                                {{ $sub_district->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
                                 </div>
                                 <div class="col-md-2">
-                                    <label class="required">Kode Pos</label>
-                                                <select name="user_postal_code_id" id="user_postal_code" class="form-select select2" required>
-                                                    <option value="">-- Pilih kelurahan --</option>
-                                                    @foreach($postalCodes as $postal_code)
-                                                        <option value="{{ $postal_code->id }}"
-                                                            {{ $user->postal_code_id == $postal_code->id ? 'selected' : '' }}>
-                                                            {{ $postal_code->postal_code }}
-                                                        </option>
-                                                    @endforeach
-                                                </select>
+                                    <label class="form-label">Kode Pos</label>
+                                    <select name="user_postal_code_id" id="user_postal_code" class="form-select select2">
+                                        <option value="">-- Pilih kelurahan --</option>
+                                        @foreach($postalCodes as $postal_code)
+                                            <option value="{{ $postal_code->id }}"
+                                                {{ $user->postal_code_id == $postal_code->id ? 'selected' : '' }}>
+                                                {{ $postal_code->postal_code }}
+                                            </option>
+                                        @endforeach
+                                    </select>
                                 </div>
                             </div>
                         </div>
@@ -228,7 +228,7 @@
                             <div class="row g-4">
                                 <div class="col-md-4">
                                     <label class="form-label" for="bank_id">Nama Bank</label>
-                                        <select id="bank_id" name="bank_id" class="form-select"
+                                        <select id="bank_id" name="bank_id" class="form-select select2"
                                         value="{{ old('bank_id', auth()->user()->bank_id) }}">
                                             <option value="">Pilih Bank</option>
                                         </select>
@@ -252,10 +252,10 @@
                     
 
                     <div class="section-block mb-5">
-                        <h3 class="fw-semibold mb-3 border-bottom pb-2">Data Pelanggan</h3>
+                        <h3 class="fw-semibold mb-3 border-bottom pb-2">Data Kontraktor</h3>
                         <div class="row g-4">
                             <div class="col-md-4">
-                                <label class="form-label required">Nomor Identitas contractor </label>
+                                <label class="form-label required">Nomor Identitas Kontraktor </label>
                                 <input type="text" id="contractor_id" name="contractor_id" class="form-control" value="{{ old('contractor_id', $contractor->contractor_id) }}" readonly>
                                 @error('contractor_id')
                                     <div class="invalid-feedback">{{ $message }}</div>
@@ -294,14 +294,22 @@
                     </div>
 
                     <div class="form-check form-switch mb-3">
-                        <input class="form-check-input" type="checkbox" id="same_address" name="same_address"
-                            @if(
-                                $contractor->province_id == $user->province_id &&
-                                $contractor->city_id == $user->city_id &&
-                                $contractor->district_id == $user->district_id &&
-                                $contractor->sub_district_id == $user->sub_district_id &&
-                                $contractor->postal_code_id == $user->postal_code_id
-                            ) checked @endif>
+                        @php
+                            $digits = fn($v) => preg_replace('/\D/', '', $v ?? '');
+                            $isSame = session()->hasOldInput()
+                                ? old('same_address') !== null
+                                : (
+                                    $contractor->province_id     == $user->province_id &&
+                                    $contractor->city_id         == $user->city_id &&
+                                    $contractor->district_id     == $user->district_id &&
+                                    $contractor->sub_district_id == $user->sub_district_id &&
+                                    $contractor->postal_code_id  == $user->postal_code_id &&
+                                    $contractor->contractor_name == $user->fullname &&
+                                    $contractor->contractor_address == $user->address &&
+                                    $digits($contractor->contractor_phone) === $digits($user->phone)
+                                );
+                        @endphp
+                        <input class="form-check-input" type="checkbox" id="same_address" name="same_address" {{ $isSame ? 'checked' : '' }}>
                         <label class="form-check-label fw-semibold" for="same_address">
                             Alamat usaha sama dengan domisili pengguna
                         </label>
@@ -312,7 +320,7 @@
                         <div class="row g-4">
                             
                             <div class="col-12">
-                                <label class="form-label required">Alamat Lengkap</label>
+                                <label class="form-label">Alamat Lengkap</label>
                                 <textarea name="contractor_address" rows="2" class="form-control @error('contractor_address') is-invalid @enderror">{{ old('contractor_address', $contractor->contractor_address) }}</textarea>
                                 @error('contractor_address')
                                     <div class="invalid-feedback">{{ $message }}</div>
@@ -321,64 +329,64 @@
 
                             <div class="row g-4 mt-2">
                                 <div class="col-md-6">
-                                    <label class="required">Provinsi</label>
-                                        <select name="province_id" id="province" class="form-select select2" required>
-                                            <option value="">-- Pilih Provinsi --</option>
-                                            @foreach($provinces as $province)
-                                                <option value="{{ $province->id }}"
-                                                    {{ $user->province_id == $province->id ? 'selected' : '' }}>
-                                                    {{ $province->name }}
-                                                </option>
-                                            @endforeach
-                                        </select>
+                                    <label class="form-label">Provinsi</label>
+                                    <select name="province_id" id="province" class="form-select select2">
+                                        <option value="">-- Pilih Provinsi --</option>
+                                        @foreach($provinces as $province)
+                                            <option value="{{ $province->id }}"
+                                                {{ old('province_id', $contractor->province_id) == $province->id ? 'selected' : '' }}>
+                                                {{ $province->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="required">Kabupaten/Kota</label>
-                                                <select name="city_id" id="city" class="form-select select2" required>
-                                                    <option value="">-- Pilih Kota --</option>
-                                                    @foreach($cities as $city)
-                                                        <option value="{{ $city->id }}"
-                                                            {{ $user->city_id == $city->id ? 'selected' : '' }}>
-                                                            {{ $city->name }}
-                                                        </option>
-                                                    @endforeach
-                                                </select>
+                                    <label class="form-label">Kabupaten/Kota</label>
+                                    <select name="city_id" id="city" class="form-select select2">
+                                        <option value="">-- Pilih Kota --</option>
+                                        @foreach($ctrCities as $city)
+                                            <option value="{{ $city->id }}"
+                                                {{ old('city_id', $contractor->city_id) == $city->id ? 'selected' : '' }}>
+                                                {{ $city->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
                                 </div>
                                 <div class="col-md-5">
-                                    <label class="required">Kecamatan</label>
-                                                <select name="district_id" id="district" class="form-select select2" required>
-                                                    <option value="">-- Pilih Kecamatan --</option>
-                                                    @foreach($districts as $district)
-                                                        <option value="{{ $district->id }}"
-                                                            {{ $user->district_id == $district->id ? 'selected' : '' }}>
-                                                            {{ $district->name }}
-                                                        </option>
-                                                    @endforeach
-                                                </select>
+                                    <label class="form-label">Kecamatan</label>
+                                    <select name="district_id" id="district" class="form-select select2">
+                                        <option value="">-- Pilih Kecamatan --</option>
+                                        @foreach($ctrDistricts as $district)
+                                            <option value="{{ $district->id }}"
+                                                {{ old('district_id', $contractor->district_id) == $district->id ? 'selected' : '' }}>
+                                                {{ $district->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
                                 </div>
                                 <div class="col-md-5">
-                                    <label class="required">Kelurahan</label>
-                                                <select name="sub_district_id" id="sub_district" class="form-select select2" required>
-                                                    <option value="">-- Pilih kelurahan --</option>
-                                                    @foreach($subDistricts as $sub_district)
-                                                        <option value="{{ $sub_district->id }}"
-                                                            {{ $user->sub_district_id == $sub_district->id ? 'selected' : '' }}>
-                                                            {{ $sub_district->name }}
-                                                        </option>
-                                                    @endforeach
-                                                </select>
+                                    <label class="form-label">Kelurahan</label>
+                                    <select name="sub_district_id" id="sub_district" class="form-select select2">
+                                        <option value="">-- Pilih kelurahan --</option>
+                                        @foreach($ctrSubDistricts as $sub_district)
+                                            <option value="{{ $sub_district->id }}"
+                                                {{ old('sub_district_id', $contractor->sub_district_id) == $sub_district->id ? 'selected' : '' }}>
+                                                {{ $sub_district->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
                                 </div>
                                 <div class="col-md-2">
-                                    <label class="required">Kode Pos</label>
-                                                <select name="postal_code_id" id="postal_code" class="form-select select2" required>
-                                                    <option value="">-- Pilih kelurahan --</option>
-                                                    @foreach($postalCodes as $postal_code)
-                                                        <option value="{{ $postal_code->id }}"
-                                                            {{ $user->postal_code_id == $postal_code->id ? 'selected' : '' }}>
-                                                            {{ $postal_code->postal_code }}
-                                                        </option>
-                                                    @endforeach
-                                                </select>
+                                    <label class="form-label">Kode Pos</label>
+                                    <select name="postal_code_id" id="postal_code" class="form-select select2">
+                                        <option value="">-- Pilih kelurahan --</option>
+                                        @foreach($ctrPostalCodes as $postal_code)
+                                            <option value="{{ $postal_code->id }}"
+                                                {{ old('postal_code_id', $contractor->postal_code_id) == $postal_code->id ? 'selected' : '' }}>
+                                                {{ $postal_code->postal_code }}
+                                            </option>
+                                        @endforeach
+                                    </select>
                                 </div>
                             </div>
                         </div>
@@ -561,54 +569,76 @@
 <script>
 $(document).ready(function() {
 
-    function lockShippingFields(lock = true) {
-        const fields = $('#province, #city, #district, #sub_district, #postal_code, [name="address"], [name="name"], [name="phone"]');
+    const companyFields = '#province, #city, #district, #sub_district, #postal_code, ' +
+        '[name="contractor_name"], [name="contractor_phone"], [name="contractor_address"]';
+
+    function lockCompanyFields(lock = true) {
         if (lock) {
-            fields.attr('readonly', true).addClass('bg-light text-muted');
+            $(companyFields).attr('readonly', true).addClass('bg-light text-muted');
         } else {
-            fields.attr('readonly', false).removeClass('bg-light text-muted');
+            $(companyFields).attr('readonly', false).removeClass('bg-light text-muted');
         }
     }
 
-    // Saat checkbox diubah
+    function setSelect($el, val, text) {
+        text = (text || '').trim();
+        $el.empty();
+        if (val && text !== 'Loading...') {
+            $el.append(new Option(text, val, true, true));
+        } else {
+            $el.append(new Option('', '', true, true));
+        }
+        $el.trigger('change.select2'); // hanya update tampilan select2, tidak memicu AJAX
+    }
+
+    function copyPhone() {
+        let n = ($('[name="phone"]').val() || '').replace(/\D/g, '');
+        if (n.startsWith('0')) n = '62' + n.replace(/^0+/, '');
+        $('[name="contractor_phone"]').val(n);
+    }
+
+    function copyRegion() {
+        setSelect($('#province'),     $('#user_province').val(),     $('#user_province option:selected').text());
+        setSelect($('#city'),         $('#user_city').val(),         $('#user_city option:selected').text());
+        setSelect($('#district'),     $('#user_district').val(),     $('#user_district option:selected').text());
+        setSelect($('#sub_district'), $('#user_sub_district').val(), $('#user_sub_district option:selected').text());
+        setSelect($('#postal_code'),  $('#user_postal_code').val(),  $('#user_postal_code option:selected').text());
+    }
+
+    function copyAll() {
+        copyRegion();
+        $('[name="contractor_name"]').val($('[name="fullname"]').val());
+        $('[name="contractor_address"]').val($('[name="address"]').val());
+        copyPhone();
+    }
+
     $('#same_address').on('change', function() {
         if ($(this).is(':checked')) {
-
-            // Ambil data domisili user
-            let province = $('#user_province').val();
-            let city = $('#user_city').val();
-            let district = $('#user_district').val();
-            let subdistrict = $('#user_sub_district').val();
-            let postal = $('#user_postal_code').val();
-
-            let provinceText = $('#user_province option:selected').text();
-            let cityText = $('#user_city option:selected').text();
-            let districtText = $('#user_district option:selected').text();
-            let subdistrictText = $('#user_sub_district option:selected').text();
-            let postalText = $('#user_postal_code option:selected').text();
-
-            // Isi select2 usaha langsung
-            $('#province').append(new Option(provinceText, province, true, true)).trigger('change.select2');
-            setTimeout(() => { $('#city').append(new Option(cityText, city, true, true)).trigger('change.select2'); }, 400);
-            setTimeout(() => { $('#district').append(new Option(districtText, district, true, true)).trigger('change.select2'); }, 800);
-            setTimeout(() => { $('#sub_district').append(new Option(subdistrictText, subdistrict, true, true)).trigger('change.select2'); }, 1200);
-            setTimeout(() => { $('#postal_code').append(new Option(postalText, postal, true, true)).trigger('change.select2'); }, 1500);
-
-            // Copy field teks
-            $('[name="shipping_address"]').val($('[name="address"]').val());
-            $('[name="shipping_name"]').val($('[name="fullname"]').val());
-            $('[name="shipping_phone"]').val($('[name="phone"]').val());
-
-            lockShippingFields(true);
-
+            copyAll();
+            lockCompanyFields(true);
         } else {
-            lockShippingFields(false);
+            lockCompanyFields(false);
         }
     });
 
-    // Saat halaman pertama kali dimuat (mode edit)
+    $('[name="fullname"], [name="address"], [name="phone"]').on('input change', function () {
+        if ($('#same_address').is(':checked')) copyAll();
+    });
+
+    $('#user_province, #user_city, #user_district, #user_sub_district, #user_postal_code').on('change', function () {
+        if ($('#same_address').is(':checked')) copyRegion();
+    });
+
+    let syncTimer;
+    $(document).ajaxComplete(function () {
+        if (!$('#same_address').is(':checked')) return;
+        clearTimeout(syncTimer);
+        syncTimer = setTimeout(copyRegion, 150);
+    });
+
+    // Saat halaman dimuat (edit): hanya kunci field, jangan menimpa data tersimpan
     if ($('#same_address').is(':checked')) {
-        lockShippingFields(true);
+        lockCompanyFields(true);
     }
 });
 </script>
