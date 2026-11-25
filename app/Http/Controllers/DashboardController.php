@@ -23,10 +23,8 @@ use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
-    // Nama role Spatie untuk kontraktor. Sesuaikan dengan nama role di database Anda.
-    private const ROLE_CONTRACTOR = 'Mitra Kontraktor';
 
-    public function index()
+public function index()
     {
         $user = auth()->user();
 
@@ -75,7 +73,7 @@ class DashboardController extends Controller
                 ->whereDate('attendance_date', today())
                 ->first();
         }
-        if ($this->isContractorContext($user)) {
+        if ($user->isContractorContext()) {
             return $this->contractorDashboard($user, $greeting);
         }
         if (! $user->isInternal()) {
@@ -411,16 +409,6 @@ private function contractorDashboard($user, string $greeting)
     return view('dashboard.customer', compact(
         'user', 'greeting', 'projects', 'incompleteProfile'
     ));
-}
-
-private function isContractorContext($user): bool
-{
-    // active_role = role yang sedang dipakai (user bisa punya beberapa role)
-    if ($user->active_role) {
-        return $user->active_role === self::ROLE_CONTRACTOR;
-    }
-
-    return $user->hasRole(self::ROLE_CONTRACTOR);
 }
 
 private function portalProjectsQuery()

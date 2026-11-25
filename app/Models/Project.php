@@ -91,6 +91,24 @@ class Project extends Model
             ->withTimestamps();
     }
 
+    /**
+     * Apakah proyek ini proyek Build yang ditugaskan ke kontraktor (user) tersebut.
+     */
+    public function isAssignedToContractorUser(User $user): bool
+    {
+        if ((int) $this->project_type !== self::TYPE_BUILD) {
+            return false;
+        }
+
+        $contractorId = $user->contractor?->id;
+
+        if (! $contractorId) {
+            return false;
+        }
+
+        return $this->contractors()->whereKey($contractorId)->exists();
+    }
+
     public function levels()
     {
         return $this->hasMany(ProjectLevel::class);
@@ -336,25 +354,7 @@ class Project extends Model
 
         return $data;
     }
-    // public function getKurvaRencanaData()
-    // {
-    //     $weeks = count($this->week_labels);
-    //     $plans = $this->weeklyPlans->keyBy('week_no');
 
-    //     $jalan = 0;
-    //     $data = [];
-
-    //     for ($w=1; $w<=$weeks; $w++) {
-    //         $jalan += $plans[$w]->bobot_percent ?? 0;
-
-    //         $data[] = [
-    //             'week'=>$w,
-    //             'progress'=>round($jalan,2)
-    //         ];
-    //     }
-
-    //     return $data;
-    // }
     public function getWeekLabelsAttribute()
     {
         if (!$this->start_date || !$this->end_date) return [];

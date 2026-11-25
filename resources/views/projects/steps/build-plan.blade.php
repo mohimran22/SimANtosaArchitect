@@ -1,5 +1,7 @@
 @php
-    $isReadOnly = !$canEdit;
+    $isContractor = auth()->user()?->isContractorContext() ?? false;
+    // kontraktor mengisi progres pelaksanaan, jadi tidak read-only
+    $isReadOnly = !$canEdit && !$isContractor;
 
     $weekCount = count($project->week_labels);          // total (termasuk Justek), dipakai Kurva S
     $planWeeks = collect($project->week_labels)->where('is_justek', false)->values();
@@ -12,6 +14,7 @@
     $plans = $project->weeklyPlans->keyBy('week_no');
 @endphp
 
+    @unless($isContractor)
     <x-collapse-card title="Tahap Perencanaan Proyek" target="proyek-build-plan-body">
             <div class="card-body">
                 <div class="row mb-3">
@@ -341,12 +344,90 @@
                     @endif
             </div>
     </x-collapse-card>
+    @endunless
     <div id="build-process">
         @include('projects.steps.build-process')
     </div>
     @vite('resources/js/pages/justekrab.js')
     @vite('resources/js/pages/justekedit.js')
 @push('js')
+@if($isContractor)
+{{-- Kontraktor: tabel perencanaan tidak ditampilkan, jadi Kurva S dibangun dari data server --}}
+<script>
+    const TOTAL_WEEKS = {{ $weekCount }};
+
+    // realisasi kumulatif per minggu dari input volume di tabel pelaksanaan
+    // (rumus sama dengan Project::getKurvaSData); null setelah minggu terakhir yang berprogres
+    function rebuildKurvaFromTable() {
+        const perWeek = {};
+        let lastWeek = 0;
+
+        document.querySelectorAll('tr[data-item-id]').forEach(tr => {
+            const vol   = parseFloat(tr.dataset.itemVol)   || 0;
+            const bobot = parseFloat(tr.dataset.itemBobot) || 0;
+
+            tr.querySelectorAll('.week-vol').forEach(inp => {
+                const w = parseInt(inp.dataset.week, 10);
+                const v = parseFloat(inp.value) || 0;
+
+                if (vol > 0 && v > 0) {
+                    perWeek[w] = (perWeek[w] || 0) + (v / vol) * bobot;
+                    if (w > lastWeek) lastWeek = w;
+                }
+            });
+        });
+
+        const out = [];
+        let run = 0;
+        for (let w = 1; w <= TOTAL_WEEKS; w++) {
+            run += perWeek[w] || 0;
+            out.push(w <= lastWeek ? Math.min(Number(run.toFixed(2)), 100) : null);
+        }
+        return out;
+    }
+
+    function initKurvaChart() {
+        const ctx = document.getElementById('kurvaSChart');
+        if (!ctx || typeof Chart === 'undefined') return;
+
+        const rencana = @json(collect($project->getKurvaRencanaData())->pluck('progress')->values());
+        const labels = [];
+        for (let i = 1; i <= TOTAL_WEEKS; i++) labels.push('M' + i);
+
+        window.kurvaChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    { label: 'Realisasi (%)', data: rebuildKurvaFromTable(), tension: 0.3, spanGaps: false },
+                    { label: 'Rencana (%)',   data: rencana,                 tension: 0.3, spanGaps: false }
+                ]
+            },
+            options: {
+                animation: false,
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                elements: { point: { hitRadius: 24, hoverRadius: 6 } },
+                scales: {
+                    x: { ticks: { autoSkip: true, maxTicksLimit: 5 } },
+                    y: { beginAtZero: true, max: 100 }
+                },
+                plugins: { legend: { position: window.innerWidth < 576 ? 'bottom' : 'top' } }
+            }
+        });
+    }
+
+    // dipanggil oleh script tahap pelaksanaan setiap volume diubah
+    function updateKurvaChartRealtime() {
+        if (!window.kurvaChart) return;
+        window.kurvaChart.data.datasets[0].data = rebuildKurvaFromTable();
+        window.kurvaChart.update();
+    }
+
+    document.addEventListener('DOMContentLoaded', initKurvaChart);
+</script>
+@else
 <script>
 
     const buildPlanTable = document.querySelector("#buildPlanTable");
@@ -520,23 +601,8 @@
 
         }
         const dataAwal = @json($project->getKurvaSData() ?? []);
-        const labels = [];
-        for (let i = 1; i <= {{ $weekCount }}; i++) { labels.push('M' + i); }
-
-        // minggu terakhir di mana progres kumulatif benar-benar naik
-        let lastWeek = 0, prev = 0;
-        dataAwal.forEach(d => {
-            if (d.progress > prev + 0.0001) lastWeek = d.week;
-            prev = d.progress;
-        });
-
-        const realisasi = [];
-        for (let i = 1; i <= {{ $weekCount }}; i++) {
-            const found = dataAwal.find(d => d.week == i);
-            realisasi.push(found && i <= lastWeek ? found.progress : null);
-        }
-        // const labels = []; for(let i = 1; i <= {{ $weekCount }}; i++){ labels.push('M' + i); }
-        // const realisasi = []; for(let i = 1; i <= {{ $weekCount }}; i++){ const found = dataAwal.find(d => d.week == i); realisasi.push( found ? found.progress : 0 ); }
+        const labels = []; for(let i = 1; i <= {{ $weekCount }}; i++){ labels.push('M' + i); }
+        const realisasi = []; for(let i = 1; i <= {{ $weekCount }}; i++){ const found = dataAwal.find(d => d.week == i); realisasi.push( found ? found.progress : 0 ); }
 
         window.kurvaChart = new Chart(ctx, {
 
@@ -568,8 +634,7 @@
                 animation:false,
                 responsive:true,
                 maintainAspectRatio:false,
-                interaction: { mode: 'index', intersect: false },
-                elements: { point: { hitRadius: 24, hoverRadius: 6 } },
+
                 scales:{
                     x:{
                         ticks:{
@@ -983,4 +1048,5 @@ function updateKurvaPlanRealtime(){
         }
     });
 </script>
+@endif
 @endpush

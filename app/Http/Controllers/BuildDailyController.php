@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Http\Controllers\Concerns\AuthorizesContractorProject;
 use App\Models\BuildDailyReport;
 use App\Models\BuildDailyWorker;
 use App\Models\BuildDailyWork;
@@ -19,6 +20,8 @@ use DB;
 
 class BuildDailyController extends Controller
 {
+    use AuthorizesContractorProject;
+
     public function store(Request $request)
 {
     $isLibur = $request->has('is_libur');
@@ -85,6 +88,7 @@ class BuildDailyController extends Controller
     }
 
     $project = Project::findOrFail($request->project_id);
+    $this->assertProjectAccess($project);
 
     // if (!$project->start_date || !$project->end_date) {
     //     return back()
@@ -320,17 +324,26 @@ public function detail($id)
         'kontraktorEmployee.user'
     ])->findOrFail($id);
             
-    $workerOptions = Worker::with('user')
+    $this->assertProjectAccess($daily->project_id);
+
+    $workerOptions = Worker::with($this->isContractor() ? 'user:id,fullname' : 'user')
         ->orderBy('id')
         ->get();
 
     $project = $daily->project;
+    if ($this->isContractor()) {
+        // jangan ikut-kan kolom proyek lain (mis. nilai) ke JSON
+        $project?->setVisible(['id', 'project_name', 'project_type', 'start_date', 'end_date']);
+    }
     $rabItems = RabProcessItem::whereHas('rab.project', function ($q) use ($project) {
             $q->where('customer_id', $project->customer_id);
         })
         ->orderBy('order_no')
         ->get()
         ->values();
+    if ($this->isContractor()) {
+        $rabItems->makeHidden($this->contractorHiddenAttributes());
+    }
     // $rabItems = RabProcessItem::whereHas('rab.project', function ($q) use ($project) {
     //         $q->where('customer_id', $project->customer_id);
     //     })
@@ -356,24 +369,32 @@ public function detail($id)
 }
 public function deleteWork($id)
 {
-    BuildDailyWork::findOrFail($id)->delete();
+    $work = BuildDailyWork::findOrFail($id);
+    $this->assertProjectAccess($this->reportProjectId($work->build_daily_report_id));
+    $work->delete();
     return response()->json(['success' => true]);
 }
 
 public function deleteWorker($id)
 {
-    BuildDailyWorker::findOrFail($id)->delete();
+    $worker = BuildDailyWorker::findOrFail($id);
+    $this->assertProjectAccess($this->reportProjectId($worker->daily_report_id));
+    $worker->delete();
     return response()->json(['success' => true]);
 }
 
 public function deleteMaterial($id)
 {
-    BuildDailyMaterial::findOrFail($id)->delete();
+    $material = BuildDailyMaterial::findOrFail($id);
+    $this->assertProjectAccess($this->reportProjectId($material->daily_report_id));
+    $material->delete();
     return response()->json(['success' => true]);
 }
 
 public function updateAll(Request $request, $id)
 {
+    $this->assertProjectAccess($this->reportProjectId($id));
+
     DB::beginTransaction();
 
     try {
@@ -444,7 +465,7 @@ public function updateAll(Request $request, $id)
 
                 $requestWorkIds[] = $work['id'];
 
-                BuildDailyWork::where('id', $work['id'])->update([
+                BuildDailyWork::where('id', $work['id'])->where('build_daily_report_id', $daily->id)->update([
                     'rab_process_item_id' => $work['rab_process_item_id'] != 'manual'
                         ? ($work['rab_process_item_id'] ?: null)
                         : null,
@@ -490,7 +511,7 @@ public function updateAll(Request $request, $id)
 
                 $requestWorkerIds[] = $worker['id'];
 
-                BuildDailyWorker::where('id', $worker['id'])->update([
+                BuildDailyWorker::where('id', $worker['id'])->where('daily_report_id', $daily->id)->update([
                     'worker_id' => ($worker['worker_id'] ?? null) === 'manual'
                         ? null
                         : ($worker['worker_id'] ?? null),
@@ -532,7 +553,7 @@ public function updateAll(Request $request, $id)
 
                 $requestMaterialIds[] = $material['id'];
 
-                BuildDailyMaterial::where('id', $material['id'])->update([
+                BuildDailyMaterial::where('id', $material['id'])->where('daily_report_id', $daily->id)->update([
                     'diterima' => $material['diterima'],
                     'ditolak'  => $material['ditolak'],
                 ]);
@@ -572,7 +593,7 @@ public function updateAll(Request $request, $id)
 
                 $requestWorkTimeIds[] = $jam['id'];
 
-                BuildDailyWorkTime::where('id', $jam['id'])->update([
+                BuildDailyWorkTime::where('id', $jam['id'])->where('build_daily_report_id', $daily->id)->update([
                     'jam_mulai'  => $jamMulai,
                     'jam_selesai'=> $jamSelesai,
                     'total_jam'  => $totalJam,
@@ -618,6 +639,7 @@ public function updateAll(Request $request, $id)
 public function deleteDocumentation($id)
 {
     $doc = DailyDocumentation::findOrFail($id);
+    $this->assertProjectAccess($this->reportProjectId($doc->build_daily_report_id));
 
     Storage::disk('public')->delete($doc->file_path);
 
@@ -628,6 +650,8 @@ public function deleteDocumentation($id)
 
 public function destroy($id)
 {
+    abort_if($this->isContractor(), 403, 'Kontraktor tidak dapat menghapus laporan.');
+
     $report = BuildDailyReport::findOrFail($id);
     $report->delete();
 
@@ -636,6 +660,11 @@ public function destroy($id)
         'message' => 'Data berhasil dihapus'
     ]);
 }
+private function reportProjectId($reportId): ?string
+{
+    return BuildDailyReport::whereKey($reportId)->value('project_id');
+}
+
 public function nextDate($projectId)
 {
     if(!$projectId || $projectId === 'undefined'){
@@ -644,6 +673,7 @@ public function nextDate($projectId)
         ]);
     }
     $project = Project::findOrFail($projectId);
+    $this->assertProjectAccess($project);
 
     $lastReport = BuildDailyReport::where('project_id',$projectId)
                     ->orderByDesc('tanggal')

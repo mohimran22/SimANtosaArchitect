@@ -189,6 +189,23 @@ public function getShortNameAttribute()
         ->take(2)
         ->implode(' ');
 }
+public const ROLE_CONTRACTOR = 'Mitra Kontraktor';
+
+/**
+ * Apakah user sedang memakai role Mitra Kontraktor.
+ * active_role berisi ID role (relasi activeRole), jadi dibandingkan lewat nama role.
+ */
+public function isContractorContext(): bool
+{
+    $active = $this->activeRole?->name;
+
+    if ($active) {
+        return $active === self::ROLE_CONTRACTOR;
+    }
+
+    return $this->hasRole(self::ROLE_CONTRACTOR);
+}
+
 public function isInternal(): bool
 {
     return $this->roles()

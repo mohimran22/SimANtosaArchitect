@@ -453,8 +453,8 @@
                             <thead class="table-light">
                                 <tr>
                                     <th>Jenis Bahan</th>
-                                    <th width="150">Diterima</th>
-                                    <th width="150">Ditolak</th>
+                                    <th width="150">Jumlah</th>
+                                    <th width="150">Satuan</th>
                                     <th width="40"></th>
                                 </tr>
                             </thead>

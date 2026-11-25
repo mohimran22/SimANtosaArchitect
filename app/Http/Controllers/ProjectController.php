@@ -31,6 +31,7 @@ use App\Services\ProjectNotifier;
 use App\Services\BuildPlanSyncService;
 use App\Services\BuildProcessSyncService;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Concerns\AuthorizesContractorProject;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Yajra\DataTables\Facades\DataTables;
@@ -38,6 +39,8 @@ use DB;
 
 class ProjectController extends Controller
 {
+    use AuthorizesContractorProject;
+
        public function index(Request $request)
 {
     $auth = auth()->user();
@@ -63,10 +66,19 @@ class ProjectController extends Controller
             ->limit(1),
     ]);
 
+    // Kontraktor: hanya proyek Build yang ditugaskan kepadanya
+    if ($auth->isContractorContext()) {
+        $contractorIds = array_filter([$auth->contractor?->id]);
+
+        $query->where('projects.project_type', Project::TYPE_BUILD)
+            ->whereHas('contractors', fn ($q) => $q->whereIn('contractors.id', $contractorIds));
+    }
+
     // Jika ada hak akses untuk membatasi data
 if (
     $auth->can('lihat data proyek') &&
-    !$auth->can('lihat daftar proyek')
+    !$auth->can('lihat daftar proyek') &&
+    !$auth->isContractorContext()
 ) {
     $query->where(function ($q) use ($auth) {
         $q->whereHas('customer', function ($qq) use ($auth) {
@@ -218,23 +230,35 @@ if ($request->filled('filter_project_type')) {
 
 public function create(Request $request)
 {
+    $isContractor = $this->isContractor();
+
+    // kontraktor tidak boleh membuka form proyek baru, dan hanya proyek miliknya
+    abort_if($isContractor && ! $request->filled('project_id'), 403);
+
     $project = null;
     if ($request->has('project_id')) {
+        $this->assertProjectAccess($request->project_id);
         $project = $this->loadBaseProject($request->project_id);
     }
     $activeStep  = $this->getCurrentStep($project);
     $projectType = $project?->project_type;
     if ($project) {
         $extra = $this->resolveExtraRelations($activeStep, $projectType);
+        if ($isContractor) {
+            // kontraktor hanya perlu data pelaksanaan (tanpa konsultasi, survei, penawaran, RAB)
+            $extra = array_values(array_filter($extra, fn ($r) =>
+                $r !== 'buildItems.jobCategory'
+                && (str_starts_with($r, 'buildItems') || str_starts_with($r, 'dailyReports'))));
+        }
         if (!empty($extra)) {
             $project->load($extra);
         }
     }
-    $canEdit = auth()->user()->can('lihat daftar proyek');
+    $canEdit = ! $this->isContractor() && auth()->user()->can('lihat daftar proyek');
     $justekId = request('justek_id');
 
     // List semua justek milik project ini (untuk tabel Riwayat)
-    $technicalJustifications = $project
+    $technicalJustifications = ($project && ! $isContractor)
         ? TechnicalJustification::where('project_id', $project->id)->get()
         : collect();
 
@@ -270,7 +294,7 @@ public function create(Request $request)
         'project', 'activeStep', 'canEdit', 'technicalJustification', 'technicalJustifications'
     ));
 
-    if ($activeStep >= 3 && $project) {
+    if ($activeStep >= 3 && $project && ! $isContractor) {
         $surveyData = $this->resolveSurveyData($project, $activeStep);
         $viewData   = array_merge($viewData, $surveyData);
         // Mungkin activeStep berubah jadi 4
@@ -279,7 +303,7 @@ public function create(Request $request)
 
     $viewData['timelineSteps'] = $this->buildTimelineSteps($project, $activeStep);
 
-    if ($activeStep >= 6 && $project) {
+    if ($activeStep >= 6 && $project && ! $isContractor) {
         $viewData = array_merge($viewData, $this->resolveInvoiceData($project));
     }
 
@@ -287,11 +311,15 @@ public function create(Request $request)
         $viewData = array_merge($viewData, $this->resolveBuildData($project));
     }
 
-    if ($projectType == 3 && $activeStep >= 8 && $project) {
+    if ($projectType == 3 && $activeStep >= 8 && $project && ! $isContractor) {
         $viewData = array_merge($viewData, $this->resolveBuildPlanData($project));
     }
+    $viewData['isContractor'] = $isContractor;
+
     return view('projects.create', array_merge(
-        $this->formData($project, $activeStep, $projectType),
+        $isContractor
+            ? $this->contractorFormData($project)
+            : $this->formData($project, $activeStep, $projectType),
         $viewData
     ));
 }
@@ -480,6 +508,7 @@ private function resolveBuildData($project): array
 
     public function store(ProjectRequest $request)
 {
+        abort_if($this->isContractor(), 403);
     abort_if(auth()->user()->cannot('lihat daftar proyek'), 403);
 
     $project = DB::transaction(function () use ($request) {
@@ -570,6 +599,8 @@ private function resolveBuildData($project): array
 
     public function continue(Project $project, Request $request)
 {
+    $this->assertProjectAccess($project);
+
     $project->load([
         'customer.user',
         'employee',
@@ -633,6 +664,7 @@ private function stepKeyMap()
 
 public function update(Request $request, Project $project)
 {
+        abort_if($this->isContractor(), 403);
     abort_if(auth()->user()->cannot('lihat daftar proyek'), 403);
     
     $project->update($request->all());
@@ -645,6 +677,7 @@ public function show(Project $project)
 }
      public function destroy(Project $project) 
     {
+        abort_if($this->isContractor(), 403);
         if ($project) {
             $project->delete();
             return response()->json(['status' => 'success', 'message' => 'Project deleted successfully']);
@@ -670,6 +703,39 @@ private function buildTimelineSteps($project, int $activeStep): \Illuminate\Supp
             ];
         })
         ->values();
+}
+/**
+ * Data form untuk kontraktor: tanpa daftar customer/karyawan/affiliator dan tanpa harga.
+ * Kunci yang kosong tetap disediakan supaya view tidak error karena variabel tidak ada.
+ */
+private function contractorFormData(?Project $project): array
+{
+    $rabItemsGrouped = collect();
+
+    if ($project?->customer_id) {
+        $rabItemsGrouped = RabProcessItem::whereHas('rab.project', function ($q) use ($project) {
+                $q->where('customer_id', $project->customer_id);
+            })
+            ->orderBy('order_no')
+            ->get()
+            ->makeHidden($this->contractorHiddenAttributes())
+            ->unique(function ($item) {
+                return $item->floor_name.'|'.$item->category_name.'|'.$item->description.'|'.$item->job_name.'|'.$item->volume.'|'.$item->satuan;
+            })
+            ->groupBy(['floor_name', 'category_name', 'description']);
+    }
+
+    return [
+        'projectStatus'   => [1 => 'Proses', 2 => 'Revisi', 3 => 'Butuh Persetujuan', 4 => 'Selesai'],
+        'employees'       => collect(),
+        'customers'       => collect(),
+        'affiliators'     => collect(),
+        'provinces'       => collect(),
+        'jobCategories'   => collect(),
+        'rabProcesses'    => collect(),
+        'rabItemsGrouped' => $rabItemsGrouped,
+        'workers'         => Worker::with('user:id,fullname')->get(['id', 'user_id']),
+    ];
 }
 private function formData($project = null, int $activeStep = 1, ?int $projectType = null, array $merge = []): array
 {
@@ -727,6 +793,7 @@ private function formData($project = null, int $activeStep = 1, ?int $projectTyp
 }
     public function invoicePanel(Project $project)
 {
+        abort_if($this->isContractor(), 403);
     $project->load('invoiceBuilds');
 
     return view('projects.partials.invoice_panel',
@@ -735,6 +802,7 @@ private function formData($project = null, int $activeStep = 1, ?int $projectTyp
 
 public function loadTambahan(BuildProcessItem $item)
 {
+        abort_if($this->isContractor(), 403);
     $item->load([
         'tambahan.weeklyProgresses'
     ]);
@@ -755,6 +823,7 @@ public function loadTambahan(BuildProcessItem $item)
 }
 public function syncBuildPlan(Project $project)
 {
+        abort_if($this->isContractor(), 403);
     app(BuildPlanSyncService::class)->syncFull($project);
     app(BuildProcessSyncService::class)->syncFull($project);
 
@@ -769,6 +838,7 @@ public function syncBuildPlan(Project $project)
 }
 public function syncBuildProcess(Project $project)
 {
+        abort_if($this->isContractor(), 403);
     app(BuildProcessSyncService::class)
         ->syncFull($project);
 
@@ -782,6 +852,7 @@ public function syncBuildProcess(Project $project)
 }
 public function data(Project $project)
 {
+        abort_if($this->isContractor(), 403);
     $weeks = $project->week_labels;
     $query = BuildPlans::query()
         ->with('weeks')
@@ -837,7 +908,7 @@ public function data(Project $project)
 
 private function resolveBuildPlanData($project): array
 {
-    $canEdit = auth()->user()->can('lihat daftar proyek');
+    $canEdit = ! $this->isContractor() && auth()->user()->can('lihat daftar proyek');
 
     $buildPlans = BuildPlans::query()
         ->where('project_id', $project->id)
@@ -896,6 +967,8 @@ private function resolveBuildPlanData($project): array
 // Route: GET /projects/{project}/build-process-data
 public function buildProcessPartial(Project $project)
 {
+    $this->assertProjectAccess($project);
+
     $project->load([
         'city',
         'weeklyPlans',
@@ -908,14 +981,13 @@ public function buildProcessPartial(Project $project)
 
     $buildData = $this->resolveBuildData($project);
 
-    $formData = $this->formData(
-        $project,
-        8,
-        3
-    );
+    $formData = $this->isContractor()
+        ? $this->contractorFormData($project)
+        : $this->formData($project, 8, 3);
 
-    $canEdit = auth()->user()->can('lihat daftar proyek');
-    $isReadOnly = !$canEdit;
+    $canEdit = ! $this->isContractor() && auth()->user()->can('lihat daftar proyek');
+    // kontraktor mengisi progres pelaksanaan, jadi tidak read-only
+    $isReadOnly = !$canEdit && ! $this->isContractor();
 
     return view(
         'projects.steps.build-process',

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Http\Controllers\Concerns\AuthorizesContractorProject;
 use Illuminate\Support\Facades\Http;
 use App\Models\Project;
 use App\Models\BuildDailyReport;
@@ -17,8 +18,12 @@ use DB;
 
 class BuildWeeklyController extends Controller
 {
+    use AuthorizesContractorProject;
+
     public function store(Request $request, Project $project)
 {
+    $this->assertProjectAccess($project);
+
     $request->validate([
         'minggu'   => ['required', 'integer'],
         'capaian'  => ['nullable'],
@@ -47,6 +52,12 @@ public function update(Request $r)
 {
 
     $item = BuildProcessItem::findOrFail($r->item_id);
+
+    $this->assertProjectAccess($item->project_id);
+
+    $isContractor = $this->isContractor();
+    // kontraktor hanya mengisi volume pekerjaan kontrak, bukan item tambahan / justek
+    abort_if($isContractor && $item->is_tambahan, 403);
 
     $progress = BuildWeeklyProgress::firstOrCreate([
         'build_process_item_id' => $item->id,
@@ -97,15 +108,15 @@ public function update(Request $r)
         $progress->bobot_percent = $bobot;
     }
 
-    if ($r->has('just_kurang')) {
+    if (! $isContractor && $r->has('just_kurang')) {
         $progress->just_kurang = floatval($r->just_kurang ?? 0);
     }
 
-    if ($r->has('just_tambah')) {
+    if (! $isContractor && $r->has('just_tambah')) {
         $progress->just_tambah = floatval($r->just_tambah ?? 0);
     }
 
-    if ($r->has('just_baru')) {
+    if (! $isContractor && $r->has('just_baru')) {
         $progress->just_baru = floatval($r->just_baru ?? 0);
     }
 
@@ -132,6 +143,7 @@ public function update(Request $r)
 }
 
 public function exportPdf(Request $request, Project $project) {
+    abort_if($this->isContractor(), 403);
     $week = $request->week;
     $date = $request->date;
     

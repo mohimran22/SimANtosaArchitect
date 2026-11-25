@@ -22,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             \App\Http\Middleware\HomepageOnly::class,
         ]);
+        $middleware->web(append: [\App\Http\Middleware\ContractorScope::class]);
 
         // Wajib di Railway agar URL yang dihasilkan memakai https
         $middleware->trustProxies(at: '*');

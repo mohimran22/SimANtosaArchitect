@@ -1,4 +1,5 @@
 @php
+    $hideFinancial = auth()->user()?->isContractorContext() ?? false;
     $weekCount = count($project->week_labels);
     $colsFixed = 7;
     $colsPerWeek = 1;
@@ -63,7 +64,7 @@
                                 Reset
                             </button>
 
-                            @if(!$isReadOnly)
+                            @if(!$isReadOnly && !$hideFinancial)
                             <form action="{{ route('projects.sync-build', $project->id) }}"
                                 method="POST"
                                 class="d-inline">
@@ -74,11 +75,13 @@
                             </form>
                             @endif
 
+                            @unless($hideFinancial)
                             <button type="button"
                                     id="btn-export-pdf"
                                     class="btn btn-dark">
                                 Export PDF
                             </button>
+                            @endunless
 
                         </div>
                     </div>
@@ -331,16 +334,10 @@
 
                                             <td
                                                 class="harga-kontrak text-end"
-                                                data-price="{{ $item->price }}"
+                                                @unless($hideFinancial) data-price="{{ $item->price }}" @endunless
                                             >
 
-                                                Rp
-                                                {{ number_format(
-                                                    $item->price,
-                                                    0,
-                                                    ',',
-                                                    '.'
-                                                ) }}
+                                                @if($hideFinancial) - @else Rp {{ number_format($item->price, 0, ',', '.') }} @endif
 
                                             </td>
 
@@ -511,7 +508,7 @@
                                                 </td>
                                                 <td class="text-center">{{ $it->satuan }}</td>
                                                 <td class="text-end">{{ rtrim(rtrim(number_format($it->volume, 5, '.', ''), '0'), '.') }}</td>
-                                                <td class="text-end">Rp {{ number_format($it->total, 0, ',', '.') }}</td>
+                                                <td class="text-end">@if($hideFinancial) - @else Rp {{ number_format($it->total, 0, ',', '.') }} @endif</td>
                                                 <td class="text-end">-</td>
                                                 {!! $emptyTail !!}
                                             </tr>
@@ -521,7 +518,7 @@
 
                                     <tr class="fw-bold justek-row justek-total" data-justek="{{ $justek->id }}">
                                         <td colspan="4" class="text-end">Total {{ $justek->justek_number }}</td>
-                                        <td class="text-end">Rp {{ number_format($justek->grand_total, 0, ',', '.') }}</td>
+                                        <td class="text-end">@if($hideFinancial) - @else Rp {{ number_format($justek->grand_total, 0, ',', '.') }} @endif</td>
                                         <td></td>
                                         {!! $emptyTail !!}
                                     </tr>
@@ -537,7 +534,7 @@
                                 </th>
 
                                 <th>
-                                    {{ $isReadOnly
+                                    {{ ($isReadOnly || $hideFinancial)
                                         ? ''
                                         : 'Rp '.number_format(
                                             $buildItems->sum('total'),
@@ -591,9 +588,11 @@
                 <canvas id="kurvaSChart"></canvas>
             </div>
         </x-collapse-card>
+    @unless($hideFinancial)
     <div id="invoice-panel">
         @include('projects.partials.justek')
     </div>
+    @endunless
     <div id="daily-reports">
         @include('projects.partials.daily_reports')
     </div>
@@ -1772,7 +1771,7 @@
 
     <script>
 
-        document.getElementById('btn-export-pdf').addEventListener('click', function(e){
+        document.getElementById('btn-export-pdf')?.addEventListener('click', function(e){
 
             e.preventDefault();
 
