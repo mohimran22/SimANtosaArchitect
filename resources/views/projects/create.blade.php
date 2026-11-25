@@ -28,7 +28,8 @@
                             ? $project?->finalDocument 
                             : $project?->finalBuild;
                     
-                    $ReadOnly = !$canEdit;
+                    $isContractor = $isContractor ?? false;
+                    $ReadOnly = !$canEdit || $isContractor;
                         $offerTitle =
                             $project?->project_type == 1
                                 ? '4. Penawaran Jasa Desain'
@@ -66,7 +67,7 @@
                             $level9 = $project?->levels->firstWhere('level_order', 9);
 
                 @endphp
-            @if($activeStep == 1)
+            @if($activeStep == 1 && !$isContractor)
             <div id="project" class="step-section">
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body px-5 py-4">
@@ -79,7 +80,7 @@
             @if($activeStep >= 2)
                     <x-collapse-card title="Proyek" target="project-body">
                         <x-slot:actions>
-                            @can('ubah data proyek')
+                            @if(!$isContractor && auth()->user()->can('ubah data proyek'))
                             <div class="btn-group">
                                 <button type="button" id="btn-edit-project"
                                     class="btn btn-sm btn-dark me-2"
@@ -87,17 +88,19 @@
                                     <i class="ti ti-edit"></i>
                                 </button>
                             </div>
-                            @endcan
+                            @endif
                         </x-slot:actions>
                         <div id="project-view">
                             @include('projects.details.project')
                         </div>
+                        @if(!$isContractor)
                         <div id="project-edit" style="display:none;">
                             @include('projects.edit.project-form')    
                         </div>
+                        @endif
                     </x-collapse-card>
 
-                @if($activeStep == 2)
+                @if($activeStep == 2 && !$isContractor)
                 <div id="form-konsultasi" class="step-section">
                     <div class="card shadow-sm border-0 mb-4">
                         <div class="card-body px-5 py-4">
@@ -108,6 +111,7 @@
                 </div>  
                 @endif
             @endif
+            @unless($isContractor)
             @if($activeStep >= 3)   
             <div id="detail-konsultasi" class="step-section">      
                 <x-collapse-card title="1. Tahap Konsultasi" target="consultation-body">
@@ -587,6 +591,7 @@
                 </x-collapse-card>
             </div>
             @endif
+@endunless
             @if(
                 ($project?->project_type == 1 && $activeStep >= 8 && $project->offer->approved_at)
                 ||
@@ -620,6 +625,7 @@
             </div>
             @endif
             
+@unless($isContractor)
             @if(
                 ($project?->project_type == 1 && $activeStep >= 9)
                 ||
@@ -786,6 +792,7 @@
                     </x-collapse-card>
             </div>
             @endif
+            @endunless
         </div>
     </div>
 @endsection
@@ -1315,12 +1322,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const view = document.getElementById("project-view");
     const edit = document.getElementById("project-edit");
 
-    document.getElementById("btn-edit-project").addEventListener("click", () => {
+    document.getElementById("btn-edit-project")?.addEventListener("click", () => {
         view.style.display = "none";
         edit.style.display = "block";
     });
 
-    document.getElementById("btn-cancel-project").addEventListener("click", () => {
+    document.getElementById("btn-cancel-project")?.addEventListener("click", () => {
         edit.style.display = "none";
         view.style.display = "block";
     });
@@ -1333,12 +1340,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const view = document.getElementById("consultation-view");
     const edit = document.getElementById("consultation-edit");
 
-    document.getElementById("btn-edit-consultation").addEventListener("click", () => {
+    document.getElementById("btn-edit-consultation")?.addEventListener("click", () => {
         view.style.display = "none";
         edit.style.display = "block";
     });
 
-    document.getElementById("btn-cancel-consultation").addEventListener("click", () => {
+    document.getElementById("btn-cancel-consultation")?.addEventListener("click", () => {
         edit.style.display = "none";
         view.style.display = "block";
     });
@@ -1351,12 +1358,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const view = document.getElementById("planning-view");
     const edit = document.getElementById("planning-edit");
 
-    document.getElementById("btn-edit-planning").addEventListener("click", () => {
+    document.getElementById("btn-edit-planning")?.addEventListener("click", () => {
         view.style.display = "none";
         edit.style.display = "block";
     });
 
-    document.getElementById("btn-cancel-planning").addEventListener("click", () => {
+    document.getElementById("btn-cancel-planning")?.addEventListener("click", () => {
         edit.style.display = "none";
         view.style.display = "block";
     });
@@ -1369,12 +1376,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const view = document.getElementById("survey-view");
     const edit = document.getElementById("survey-edit");
 
-    document.getElementById("btn-edit-survey").addEventListener("click", () => {
+    document.getElementById("btn-edit-survey")?.addEventListener("click", () => {
         view.style.display = "none";
         edit.style.display = "block";
     });
 
-    document.getElementById("btn-cancel-survey").addEventListener("click", () => {
+    document.getElementById("btn-cancel-survey")?.addEventListener("click", () => {
         edit.style.display = "none";
         view.style.display = "block";
     });

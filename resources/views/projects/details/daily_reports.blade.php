@@ -37,6 +37,7 @@
                                         </td>
                                         <td class="text-center">
                                             {{-- @if($items->where('is_libur', true)->count() >= 7) --}}
+                                            @unless($isContractor ?? false)
                                             <button
                                                 class="btn btn-sm btn-dark btn-weekly-note"
                                                 data-week="{{ $minggu }}"
@@ -46,6 +47,7 @@
                                                 data-rencana="{{ $weeklyReport?->rencana }}">
                                                 <i class="ti ti-{{ isset($weeklyReports[$minggu]) ? 'pencil' : 'plus' }}"></i>
                                             </button>
+                                            @endunless
                                         </td>
                                     </tr>
 
@@ -72,10 +74,12 @@
                                                     data-id="{{ $report->id }}">
                                                     <i class="ti ti-eye"></i>
                                                 </button>
+                                                @unless($isContractor ?? false)
                                                 <button class="btn btn-sm btn-dark btn-hapus" title="Hapus"
                                                     data-id="{{ $report->id }}">
                                                     <i class="ti ti-trash"></i>
                                                 </button>
+                                                @endunless
                                             </td>
                                         </tr>
                                     @endforeach
@@ -126,6 +130,7 @@
                         </div>
                     </div>
                 </div>
+                @unless($isContractor ?? false)
                 <div class="modal fade" id="weeklyModal" tabindex="-1">
                     <div class="modal-dialog modal-lg">
                         <div class="modal-content">
@@ -163,6 +168,7 @@
                         </div>
                     </div>
                 </div>
+                @endunless
             </div>
         </div>
     </x-collapse-card>
@@ -328,7 +334,7 @@
                 </td>
 
                 <td>
-                    <input type="number"
+                    <input type="text"
                         name="materials[${materialIndex}][ditolak]"
                         class="form-control">
                 </td>
@@ -665,8 +671,8 @@
                             <thead class="table-light">
                                 <tr>
                                     <th>Nama Bahan</th>
-                                    <th>Diterima</th>
-                                    <th>Ditolak</th>
+                                    <th>Jumlah</th>
+                                    <th>Satuan</th>
                                 </tr>
                             </thead>
                             <tbody>${materialRows}</tbody>
@@ -920,8 +926,8 @@
                                 <tr>
                                     <th width="50">No</th>
                                     <th>Nama Bahan</th>
-                                    <th>Diterima</th>
-                                    <th>Ditolak</th>
+                                    <th>Jumlah</th>
+                                    <th>Satuan</th>
                                     <th width="80">Aksi</th>
                                 </tr>
                             </thead>
@@ -944,7 +950,7 @@
                                         value="${m.diterima}">
                                 </td>
                                 <td>
-                                    <input type="number"
+                                    <input type="text"
                                         name="materials[${i}][ditolak]"
                                         class="form-control"
                                         value="${m.ditolak}">

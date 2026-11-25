@@ -121,6 +121,23 @@
                     <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
             </div>
+
+            <div class="col-md-4" id="contractor-wrapper" style="display:none;">
+                <label class="form-label required">Kontraktor</label>
+                <select name="contractor_ids[]" id="contractor_ids" multiple disabled
+                        class="form-select select2 @error('contractor_ids') is-invalid @enderror"
+                        data-placeholder="-- Pilih Kontraktor --">
+                    @foreach(($contractors ?? []) as $contractor)
+                        <option value="{{ $contractor->id }}"
+                            {{ in_array($contractor->id, old('contractor_ids', [])) ? 'selected' : '' }}>
+                            {{ $contractor->display_name ?? $contractor->user?->fullname }}
+                        </option>
+                    @endforeach
+                </select>
+                @error('contractor_ids')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
         </div>         
     </div>
 
@@ -217,6 +234,14 @@
 @push('js')
     <script>
 $(function () {
+
+    function toggleContractor() {
+        const isBuild = $('select[name="project_type"]').val() === '3';
+        $('#contractor-wrapper').toggle(isBuild);
+        $('#contractor_ids').prop('disabled', !isBuild).prop('required', isBuild);
+    }
+    $('select[name="project_type"]').on('change', toggleContractor);
+    toggleContractor();
     initLocationCascade({
         prefix: '',
         oldProvince: "{{ old('province_id') }}",

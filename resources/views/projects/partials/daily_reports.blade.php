@@ -471,7 +471,7 @@
                                         <input type="number" name="diterima[]" class="form-control" value="{{ old('diterima.'.$i) }}">
                                     </td>
                                     <td>
-                                        <input type="number" name="ditolak[]" class="form-control" value="{{ old('ditolak.'.$i) }}">
+                                        <input type="text" name="ditolak[]" class="form-control" value="{{ old('ditolak.'.$i) }}">
                                     </td>
                                     <td>
                                         <button type="button" class="btn btn-danger btn-sm removeMaterial">
@@ -684,6 +684,7 @@
                 </div>
             </div>
         </div> --}}
+        @unless($isContractor ?? false)
         <div class="card shadow-sm border-0 mb-4">
             <div class="card-header fw-bold">
                 Pengesahan
@@ -731,6 +732,7 @@
                 </div>
             </div>
         </div>
+        @endunless
         <div class="text-end mt-4">
             <button type="submit" class="btn btn-dark">
                 <i class="ti ti-device-floppy me-1"></i> Simpan Laporan Harian

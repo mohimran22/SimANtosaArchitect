@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ProjectRequest;
 use App\Models\Employee;
 use App\Models\Customer;
+use App\Models\Contractor;
 use App\Models\Affiliator;
 use App\Models\Worker;
 use App\Models\Invoice;
@@ -511,9 +512,19 @@ private function resolveBuildData($project): array
         abort_if($this->isContractor(), 403);
     abort_if(auth()->user()->cannot('lihat daftar proyek'), 403);
 
-    $project = DB::transaction(function () use ($request) {
+    // penugasan kontraktor: wajib untuk proyek Build
+    $contractorIds = $request->validate([
+        'contractor_ids'   => ['required_if:project_type,3', 'array'],
+        'contractor_ids.*' => ['exists:contractors,id'],
+    ])['contractor_ids'] ?? [];
+
+    $project = DB::transaction(function () use ($request, $contractorIds) {
 
         $project = Project::create($request->validated());
+
+        if ((int) $project->project_type === Project::TYPE_BUILD) {
+            $project->contractors()->sync($contractorIds);
+        }
 
         $project->generateLevels();
 
@@ -667,7 +678,22 @@ public function update(Request $request, Project $project)
         abort_if($this->isContractor(), 403);
     abort_if(auth()->user()->cannot('lihat daftar proyek'), 403);
     
-    $project->update($request->all());
+    $isBuild = (int) $project->project_type === Project::TYPE_BUILD;
+
+    // penugasan kontraktor hanya diubah kalau form edit mengirim penanda sync_contractors
+    $syncContractors = $isBuild && $request->boolean('sync_contractors');
+    $contractorIds = $syncContractors
+        ? ($request->validate([
+            'contractor_ids'   => ['required', 'array', 'min:1'],
+            'contractor_ids.*' => ['exists:contractors,id'],
+        ])['contractor_ids'])
+        : [];
+
+    $project->update($request->except(['contractor_ids', 'sync_contractors']));
+
+    if ($syncContractors) {
+        $project->contractors()->sync($contractorIds);
+    }
 
     return back()->with('success', 'Data proyek berhasil diperbarui!');
 }
@@ -752,6 +778,7 @@ private function formData($project = null, int $activeStep = 1, ?int $projectTyp
         $data['employees']   = Employee::with('user:id,fullname')->get(['id', 'user_id']);
         $data['customers']   = Customer::with('user:id,fullname')->get(['id', 'user_id']);
         $data['affiliators'] = Affiliator::with('user:id,fullname')->get(['id', 'user_id']);
+        $data['contractors'] = Contractor::with('user:id,fullname')->get(['id', 'user_id']);
         $data['provinces']   = Province::all();
     }
 

@@ -44,23 +44,44 @@
                 </div>
 
                 <div class="col-md-4">
-                    <label class="fw-semibold">Customer</label>
+                    <label class="form-label">Customer</label>
                     <input type="text" class="form-control"
                         value="{{ $project->customer->display_name }}" readonly>
                 </div>
 
                 <div class="col-md-4">
-                    <label class="fw-semibold">Karyawan</label>
+                    <label class="form-label">Karyawan</label>
                     <input type="text" class="form-control"
                         value="{{ $project->employee->display_name }}" readonly>
                 </div>
+
+                @if((int) $project->project_type === 3)
+                <div class="col-md-4">
+                    <label class="form-label required">Kontraktor</label>
+                    <input type="hidden" name="sync_contractors" value="1">
+                    <select name="contractor_ids[]" multiple required
+                            class="form-select select2 @error('contractor_ids') is-invalid @enderror"
+                            data-placeholder="-- Pilih Kontraktor --">
+                        @php $assignedContractors = old('contractor_ids', $project->contractors->pluck('id')->all()); @endphp
+                        @foreach(($contractors ?? []) as $contractor)
+                            <option value="{{ $contractor->id }}"
+                                {{ in_array($contractor->id, $assignedContractors) ? 'selected' : '' }}>
+                                {{ $contractor->display_name ?? $contractor->user?->fullname }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('contractor_ids')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+                @endif
 
                 <div class="col-12 mt-3">
                     <label class="fw-semibold">Alamat Lokasi</label>
                     <textarea name="project_location" class="form-control" rows="3">{{ $project->project_location }}</textarea>
                 </div>
 
-                <div class="row mb-3">
+                <div class="row g-2">
                     <div class="col-md-6">
                         <label class="form-label required">Provinsi</label>
                         <select id="edit_province" name="province_id" class="form-select select2">
@@ -81,7 +102,7 @@
                     </div>
                 </div>
 
-                <div class="row mb-3">
+                <div class="row g-2">
                     <div class="col-md-5">
                         <label class="form-label required">Kecamatan</label>
                             <select id="edit_district" name="district_id" class="form-select select2">
@@ -101,7 +122,7 @@
                 
                     <div class="col-12">
                         <label class="form-label">Ringkasan Kegiatan</label>
-                        <textarea name="description" rows="3" class="form-control @error('description') is-invalid @enderror" required>{{ old('description') }} </textarea>
+                        <textarea name="description" rows="3" class="form-control @error('description') is-invalid @enderror">{{ old('description', $project->description) }}</textarea>
                         @error('description')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -228,4 +249,3 @@ $(document).ready(function () {
 });
 </script>
 @endpush
-

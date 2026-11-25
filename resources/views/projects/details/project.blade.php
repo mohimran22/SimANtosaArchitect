@@ -56,7 +56,24 @@
                 <label class="fw-semibold">Karyawan</label>
                 <input type="text" class="form-control" value="{{ $project->employee_name }}" readonly>
             </div>
-
+            @php
+                $project->loadMissing('contractors.user');
+                $assignedContractors = $project->contractors;
+                if ($isContractor ?? false) {
+                    // kontraktor hanya melihat dirinya sendiri, bukan kontraktor lain di proyek yang sama
+                    $assignedContractors = $assignedContractors->where('id', auth()->user()->contractor?->id);
+                }
+                $contractorNames = $assignedContractors
+                    ->map(fn ($c) => $c->display_name ?? $c->user?->fullname)
+                    ->filter()
+                    ->implode(', ');
+            @endphp
+            @if($contractorNames !== '')
+            <div class="col-md-4">
+                <label class="fw-semibold">Kontraktor</label>
+                <input type="text" class="form-control" value="{{ $contractorNames }}" readonly>
+            </div>
+            @endif
             <div class="col-12 mt-3">
                 <label class="fw-semibold">Alamat Lokasi</label>
                 <textarea id="project_location" class="form-control" rows="3" readonly>{{ $project->project_location }}</textarea>

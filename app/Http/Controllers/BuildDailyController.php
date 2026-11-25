@@ -56,7 +56,7 @@ class BuildDailyController extends Controller
         'ket.*' => 'nullable|string|max:255',
         'bahan.*' => 'nullable|string|max:150',
         'diterima.*' => 'nullable|numeric|min:0',
-        'ditolak.*' => 'nullable|numeric|min:0',
+        'ditolak.*' => 'nullable|string|min:50',
         'documentation_tenaga' => 'nullable|array',
         'documentation_tenaga.*' => 'nullable|file|mimes:jpg,jpeg,png,pdf',
 
