@@ -316,14 +316,14 @@ document.querySelectorAll('[data-submenu-l3]').forEach(toggle => {
     overflow: visible;
 
     transition:
-        max-height .25s ease,
+        max-height .2s ease,
         opacity .2s ease;
 
     opacity: 0;
 }
 
 .submenu.show {
-    max-height: 500px;
+    max-height: 2000px;
     opacity: 1;
 }
 
@@ -574,11 +574,11 @@ document.querySelectorAll('[data-submenu-l3]').forEach(toggle => {
     max-height: 0;
     overflow: hidden;
     opacity: 0;
-    transition: max-height .25s ease, opacity .2s ease;
+    transition: max-height .2s ease, opacity .2s ease;
 }
 
 .submenu-l3.show {
-    max-height: 300px;
+    max-height: 1000px;
     opacity: 1;
 }
 
