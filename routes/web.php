@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DashboardFinanceController;
+use App\Http\Controllers\FinanceTargetController;
 use App\Http\Controllers\AccountingAccountController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\AttendanceOvertimeController;
@@ -109,7 +110,11 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 Route::get('/dashboard-finance', [DashboardFinanceController::class, 'index'])
+    ->middleware(['auth'])
     ->name('dashboard-finance');
+Route::post('/dashboard-finance/target', [FinanceTargetController::class, 'store'])
+    ->middleware(['auth'])
+    ->name('dashboard-finance.target.store');
 Route::middleware(['auth', 'role:Super-Admin'])->group(function () {
     Route::resource('/menus', MenuController::class);
 });
