@@ -2,6 +2,7 @@
 @section('content')
 @php
     $rp  = fn ($v) => 'Rp ' . number_format($v, 0, ',', '.');
+    $rpS = fn ($v) => ($v < 0 ? '-' : '') . 'Rp ' . number_format(abs($v), 0, ',', '.');
     $pct = fn ($v) => number_format($v, 1, ',', '.') . '%';
     $warnaProgress = fn ($v) => $v >= 100 ? 'good' : ($v >= 70 ? 'mid' : 'bad');
     $warnaTumbuh   = fn ($v) => $v >= 100 ? 'good' : 'bad';
@@ -50,13 +51,67 @@
     .df-input span{padding:0 10px;color:var(--muted);background:var(--head);align-self:stretch;display:flex;align-items:center;font-size:13px}
     .df-input input{border:0;outline:0;padding:9px 10px;width:100%;text-align:right;font-variant-numeric:tabular-nums}
     .df-input:focus-within{border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft)}
+    .df-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:0 18px 24px}
+
+@media (max-width: 991.98px) {
+    .df-head {
+        margin-left: 14px;
+        margin-right: 14px;
+    }
+
+    .df-card {
+        margin-left: 14px;
+        margin-right: 14px;
+    }
+}
+
+@media (max-width: 575.98px) {
+
+    .df table {
+        min-width: 1300px;           /* 12 bulan x ~95px + label + total */
+    }
+
+    .df th,
+    .df td {
+        padding: 10px 8px;
+        font-size: 12px;
+    }
+
+    /* Kolom bulan: kasih lebar minimum supaya angka tidak terpotong */
+    .df th:not(:first-child):not(.tot),
+    .df td:not(:first-child):not(.tot) {
+        min-width: 100px;
+    }
+
+    /* Kolom label: lebih ramping, tetap sticky */
+    .df th:first-child,
+    .df td:first-child {
+        min-width: 92px;
+        max-width: 92px;
+        white-space: normal;         /* label boleh turun baris */
+        padding-left: 8px;
+        padding-right: 6px;
+    }
+
+    /* Kolom Total: TIDAK sticky di mobile, ikut digeser */
+    .df .tot {
+        position: static;
+        min-width: 120px;
+        border-left: 1px solid var(--line);
+    }
+
+    .df .bar {
+        width: 80px;
+    }
+}
+
 </style>
 
 <div class="df" style="width:100%;min-width:0;margin:0;padding:90px 0 64px">
     <div class="df-head">
         <div>
             <h1>Dashboard Finance</h1>
-            <div style="color:var(--muted)">Omset dan target bulanan {{ $year }}</div>
+            {{-- <div style="color:var(--muted)">Omset dan target bulanan {{ $year }}</div> --}}
         </div>
         <div style="display:flex;gap:10px;align-items:center">
             <button type="button" class="df-btn" data-bs-toggle="modal" data-bs-target="#modalTarget">Atur Target</button>
@@ -157,6 +212,130 @@
         <h2 class="page-title">Kurva</h2>
         <div class="df-card df-chart"><canvas id="kurvaFinance"></canvas></div>
     </div>
+
+    <div class="df-sec">
+        <h2 class="page-title">Cost</h2>
+        <div class="df-card">
+            <div class="df-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th></th>
+                            @foreach ($rows as $r)
+                                <th>{{ $r['label'] }}</th>
+                            @endforeach
+                            <th class="tot">Total {{ $year }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="lbl"><b>Cost {{ $year - 1 }}</b><small>pembanding</small></td>
+                            @foreach ($rows as $r)
+                                <td>{{ $rp($r['cost_lalu']) }}</td>
+                            @endforeach
+                            <td class="tot">{{ $rp($total['cost_lalu']) }}</td>
+                        </tr>
+
+                        <tr>
+                            <td class="lbl"><b>Cost</b><small>realisasi {{ $year }}</small></td>
+                            @foreach ($rows as $r)
+                                <td>{!! $r['cost'] === null ? '<span class="dash">–</span>' : $rp($r['cost']) !!}</td>
+                            @endforeach
+                            <td class="tot">{!! $total['cost'] === null ? '<span class="dash">–</span>' : $rp($total['cost']) !!}</td>
+                        </tr>
+
+                        <tr>
+                            <td class="lbl"><b>Rasio Cost</b><small>cost ÷ omset</small></td>
+                            @foreach (array_merge($rows, ['total' => $total]) as $key => $r)
+                                <td class="{{ $key === 'total' ? 'tot' : '' }}">
+                                    @if ($r['rasio_cost'] === null)
+                                        <span class="dash">–</span>
+                                    @else
+                                        <span class="pct">{{ $pct($r['rasio_cost']) }}</span>
+                                    @endif
+                                </td>
+                            @endforeach
+                        </tr>
+
+                        <tr>
+                            <td class="lbl"><b>Pertumbuhan</b><small>cost ÷ cost {{ $year - 1 }}</small></td>
+                            @foreach (array_merge($rows, ['total' => $total]) as $key => $r)
+                                <td class="{{ $key === 'total' ? 'tot' : '' }}">
+                                    @if ($r['cost_tumbuh'] === null)
+                                        <span class="dash">–</span>
+                                    @else
+                                        <span class="pct">{{ $pct($r['cost_tumbuh']) }}</span>
+                                    @endif
+                                </td>
+                            @endforeach
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="df-sec">
+        <h2 class="page-title">Profit</h2>
+        <div class="df-card">
+            <div class="df-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th></th>
+                            @foreach ($rows as $r)
+                                <th>{{ $r['label'] }}</th>
+                            @endforeach
+                            <th class="tot">Total {{ $year }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="lbl"><b>Omset</b><small>realisasi {{ $year }}</small></td>
+                            @foreach ($rows as $r)
+                                <td>{!! $r['omset'] === null ? '<span class="dash">–</span>' : $rp($r['omset']) !!}</td>
+                            @endforeach
+                            <td class="tot">{!! $total['omset'] === null ? '<span class="dash">–</span>' : $rp($total['omset']) !!}</td>
+                        </tr>
+
+                        <tr>
+                            <td class="lbl"><b>Cost</b><small>HPP + beban</small></td>
+                            @foreach ($rows as $r)
+                                <td>{!! $r['cost'] === null ? '<span class="dash">–</span>' : $rp($r['cost']) !!}</td>
+                            @endforeach
+                            <td class="tot">{!! $total['cost'] === null ? '<span class="dash">–</span>' : $rp($total['cost']) !!}</td>
+                        </tr>
+
+                        <tr>
+                            <td class="lbl"><b>Profit</b><small>omset − cost</small></td>
+                            @foreach (array_merge($rows, ['total' => $total]) as $key => $r)
+                                <td class="{{ $key === 'total' ? 'tot' : '' }}">
+                                    @if ($r['profit'] === null)
+                                        <span class="dash">–</span>
+                                    @else
+                                        <span class="pct {{ $r['profit'] >= 0 ? 'good' : 'bad' }}">{{ $rpS($r['profit']) }}</span>
+                                    @endif
+                                </td>
+                            @endforeach
+                        </tr>
+
+                        <tr>
+                            <td class="lbl"><b>Margin</b><small>profit ÷ omset</small></td>
+                            @foreach (array_merge($rows, ['total' => $total]) as $key => $r)
+                                <td class="{{ $key === 'total' ? 'tot' : '' }}">
+                                    @if ($r['margin'] === null)
+                                        <span class="dash">–</span>
+                                    @else
+                                        <span class="pct {{ $r['margin'] >= 0 ? 'good' : 'bad' }}">{{ $pct($r['margin']) }}</span>
+                                    @endif
+                                </td>
+                            @endforeach
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>
 
 {{-- Modal input target --}}
@@ -227,31 +406,81 @@
         total();
     })();
 </script>
-@endpush
-@push('js')
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+{{-- <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script> --}}
 <script>
     const labels = @json(collect($rows)->pluck('label')->values());
     const jt = a => a.map(v => v === null ? null : v / 1e6);
+    const labelOmset = {
+        id: 'labelOmset',
+        afterDatasetsDraw(chart) {
+            const {ctx} = chart;
+            const mobile = window.innerWidth < 576;
 
+            chart.data.datasets.forEach((ds, i) => {
+                if (ds.type !== 'bar') return;
+
+                chart.getDatasetMeta(i).data.forEach((bar, idx) => {
+                    const v = ds.data[idx];
+                    if (v === null || v === undefined || v <= 0) return;
+
+                    const {x, y, base} = bar.getProps(['x', 'y', 'base'], true);
+                    const tinggi = Math.abs(base - y);
+                    const txt = Math.round(v).toLocaleString('id-ID') + (mobile ? '' : ' jt');
+
+                    ctx.save();
+                    ctx.font = '600 ' + (mobile ? 9 : 11) + 'px system-ui, sans-serif';
+                    ctx.textBaseline = 'middle';
+
+                    const muat = ctx.measureText(txt).width + 12 <= tinggi;
+                    ctx.translate(x, muat ? y + 6 : y - 4);
+                    ctx.rotate(-Math.PI / 2);
+
+                    if (muat) {            // batang cukup tinggi: tulis di dalam (putih)
+                        ctx.textAlign = 'right';
+                        ctx.fillStyle = '#fff';
+                    } else {               // batang pendek: tulis di atas batang (hitam)
+                        ctx.textAlign = 'left';
+                        ctx.fillStyle = '#000';
+                    }
+                    ctx.fillText(txt, 0, 0);
+                    ctx.restore();
+                });
+            });
+        }
+    };
     new Chart(document.getElementById('kurvaFinance'), {
         data: {
             labels,
             datasets: [
-                {type:'bar',  label:'Omset {{ $year }}',  data: jt(@json(collect($rows)->pluck('omset')->values())),
-                 backgroundColor:'#000', borderRadius:6, maxBarThickness:34, order:3},
+                {type:'bar',  label:'Omset {{ $year }}', data: jt(@json(collect($rows)->pluck('omset')->values())),
+                backgroundColor:'#000', hoverBackgroundColor:'#333', borderRadius:6, maxBarThickness:34, order:3},
+
                 {type:'line', label:'Target {{ $year }}', data: jt(@json(collect($rows)->pluck('target')->values())),
-                 borderColor:'#c4c4c4', backgroundColor:'#c4c4c4', cubicInterpolationMode:'monotone', borderWidth:2.5, pointRadius:3, order:1},
+                borderColor:'#c4c4c4', backgroundColor:'#c4c4c4', cubicInterpolationMode:'monotone', borderWidth:2.5,
+                pointRadius:3, pointHoverRadius:6, pointHitRadius:16, order:1},
+
                 {type:'line', label:'Omset {{ $year - 1 }}', data: jt(@json(collect($rows)->pluck('omset_lalu')->values())),
-                 borderColor:'#c3bbb0', borderDash:[6,5], cubicInterpolationMode:'monotone', borderWidth:2, pointRadius:0, order:2},
+                borderColor:'#c3bbb0', borderDash:[6,5], cubicInterpolationMode:'monotone', borderWidth:2,
+                pointRadius:2, pointHoverRadius:6, pointHitRadius:16, order:2},
+
+                {type:'line', label:'Cost {{ $year }}', data: jt(@json(collect($rows)->pluck('cost')->values())),
+                borderColor:'#C2410C', backgroundColor:'#C2410C', cubicInterpolationMode:'monotone', borderWidth:2.5,
+                pointRadius:3, pointHoverRadius:6, pointHitRadius:16, order:0},
             ]
         },
         options: {
             responsive:true, maintainAspectRatio:false,
-            interaction:{mode:'index', intersect:false},
+            events:['click','touchstart','touchmove'],         // respons ke sentuhan
+            interaction:{mode:'nearest', intersect:true},      // hanya elemen yang disentuh
             plugins:{
                 legend:{labels:{usePointStyle:true}},
-                tooltip:{callbacks:{label:c => `${c.dataset.label}: Rp ${Math.round((c.parsed.y||0)*1e6).toLocaleString('id-ID')}`}}
+                tooltip:{
+                    displayColors:true,
+                    callbacks:{
+                        label:c => `${c.dataset.label}: Rp ${Math.round((c.parsed.y||0)*1e6).toLocaleString('id-ID')}`
+                    }
+                }
             },
             scales:{
                 x:{grid:{display:false}},

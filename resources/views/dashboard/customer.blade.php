@@ -141,7 +141,7 @@
 @endsection
 
 @push('js')
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1"></script>
+{{-- <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1"></script> --}}
 <script>
     let scurveChart = null;
     function chartSize() {
