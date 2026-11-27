@@ -78,7 +78,7 @@
                                 <col style="width:80px">  
 
                                 @foreach($planWeeks as $w)
-                                    <col style="width:95px">
+                                    <col style="width:120px">
                                 @endforeach
                             </colgroup>
                             <thead class="table-light">
@@ -351,6 +351,54 @@
     @vite('resources/js/pages/justekrab.js')
     @vite('resources/js/pages/justekedit.js')
 @push('js')
+<style>
+    .kurva-legend{--line:#DCE4E2;--head:#F6F9F8;--ink:#13211F;display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:0 0 12px}
+    .kurva-toggle{--c:#000;--k:#fff;display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:999px;padding:5px 14px 5px 6px;font:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:opacity .15s,background .15s,border-color .15s}
+    .kurva-toggle:hover{border-color:var(--c)}
+    .kurva-toggle:focus-visible{outline:2px solid var(--c);outline-offset:2px}
+    .kurva-toggle .box{width:20px;height:20px;border-radius:50%;background:var(--c);border:2px solid var(--c);color:var(--k);display:grid;place-items:center;transition:background .15s}
+    .kurva-toggle .box svg{width:11px;height:11px;transition:opacity .15s}
+    .kurva-toggle[aria-pressed="false"]{opacity:.6;background:var(--head)}
+    .kurva-toggle[aria-pressed="false"] .box{background:transparent}
+    .kurva-toggle[aria-pressed="false"] .box svg{opacity:0}
+</style>
+<script>
+    const KURVA_WARNA = { realisasi: 'rgb(54, 162, 235)', rencana: 'rgb(255, 99, 132)' };
+
+    // Legenda kustom Kurva S: chip centang untuk tampil/sembunyi tiap garis
+    function buildKurvaLegend(chart) {
+        const box = chart.canvas.parentElement;
+        if (!box || !box.parentNode) return;
+
+        const lama = document.getElementById('kurvaLegend');
+        if (lama) lama.remove();
+
+        const wrap = document.createElement('div');
+        wrap.id = 'kurvaLegend';
+        wrap.className = 'kurva-legend';
+        wrap.setAttribute('role', 'group');
+        wrap.setAttribute('aria-label', 'Tampilkan atau sembunyikan garis kurva');
+
+        chart.data.datasets.forEach((ds, i) => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'kurva-toggle';
+            btn.style.setProperty('--c', ds.borderColor);
+            btn.setAttribute('aria-pressed', chart.isDatasetVisible(i));
+            btn.innerHTML = '<span class="box"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.5l2.5 2.5 4.5-5.5"/></svg></span><span></span>';
+            btn.lastElementChild.textContent = ds.label;
+            btn.addEventListener('click', () => {
+                const tampil = !chart.isDatasetVisible(i);
+                chart.setDatasetVisibility(i, tampil);
+                btn.setAttribute('aria-pressed', tampil);
+                chart.update();
+            });
+            wrap.appendChild(btn);
+        });
+
+        box.parentNode.insertBefore(wrap, box);
+    }
+</script>
 @if($isContractor)
 {{-- Kontraktor: tabel perencanaan tidak ditampilkan, jadi Kurva S dibangun dari data server --}}
 <script>
@@ -399,8 +447,8 @@
             data: {
                 labels: labels,
                 datasets: [
-                    { label: 'Realisasi (%)', data: rebuildKurvaFromTable(), tension: 0.3, spanGaps: false },
-                    { label: 'Rencana (%)',   data: rencana,                 tension: 0.3, spanGaps: false }
+                    { label: 'Realisasi (%)', data: rebuildKurvaFromTable(), tension: 0.3, spanGaps: false, borderColor: KURVA_WARNA.realisasi, backgroundColor: KURVA_WARNA.realisasi },
+                    { label: 'Rencana (%)',   data: rencana,                 tension: 0.3, spanGaps: false, borderColor: KURVA_WARNA.rencana, backgroundColor: KURVA_WARNA.rencana }
                 ]
             },
             options: {
@@ -413,9 +461,10 @@
                     x: { ticks: { autoSkip: true, maxTicksLimit: 5 } },
                     y: { beginAtZero: true, max: 100 }
                 },
-                plugins: { legend: { position: window.innerWidth < 576 ? 'bottom' : 'top' } }
+                plugins: { legend: { display: false } }
             }
         });
+        buildKurvaLegend(window.kurvaChart);
     }
 
     // dipanggil oleh script tahap pelaksanaan setiap volume diubah
@@ -435,6 +484,11 @@
     const freezeCounts = 3;
     function applyFreeze() {
         if (!buildPlanTable) return;
+
+        // DataTables menambah <colgroup> kedua. Dua colgroup dihitung berurutan,
+        // jadi grid tabel jadi 34 kolom: 17 kolom asli + 17 kolom hantu kosong di kanan.
+        // Sisakan hanya colgroup pertama.
+        buildPlanTable.querySelectorAll('colgroup').forEach((cg, i) => { if (i > 0) cg.remove(); });
             const firstColgroup = buildPlanTable.querySelector('colgroup:first-of-type');
             const allColgroups = buildPlanTable.querySelectorAll('colgroup');
             if (allColgroups.length > 1 && firstColgroup) {
@@ -534,6 +588,32 @@
                 firstCell.style.zIndex = "20";
                 firstCell.style.background = "#fff";
             });
+
+            // Baris Lantai & Kategori: sel pembungkusnya membentang selebar seluruh tabel (colspan),
+            // jadi sel itu sendiri tidak bisa "menempel" (sticky hanya bergerak di dalam
+            // induknya, dan induknya sudah sama lebar). Yang ditempelkan adalah teks labelnya.
+            buildPlanTable.querySelectorAll("tr.row-floor, tr.row-category").forEach(row => {
+                const cell = row.querySelector("td");
+                if (!cell) return;
+
+                cell.classList.remove("sticky-col");
+                cell.style.left = "";
+                cell.style.width = "";
+                cell.style.zIndex = "";
+                cell.style.background = "";
+
+                let label = cell.querySelector(".band-label");
+                if (!label) {
+                    label = document.createElement("span");
+                    label.className = "band-label";
+                    while (cell.firstChild) label.appendChild(cell.firstChild);
+                    cell.appendChild(label);
+                }
+                label.style.display = "inline-block";
+                label.style.position = "sticky";
+                label.style.left = "12px";
+                label.style.zIndex = "20";
+            });
         }
         const HEADER_ROW_HEIGHT = 45;
 
@@ -629,13 +709,17 @@
                     {
                         label:'Realisasi (%)',
                         data: realisasi,
-                        tension:0.3
+                        tension:0.3,
+                        borderColor: KURVA_WARNA.realisasi,
+                        backgroundColor: KURVA_WARNA.realisasi
                     },
 
                     {
                         label:'Rencana (%)',
                         data:getPlanKumulatif(),
-                        tension:0.3
+                        tension:0.3,
+                        borderColor: KURVA_WARNA.rencana,
+                        backgroundColor: KURVA_WARNA.rencana
                     }
 
                 ]
@@ -660,14 +744,11 @@
                         max:100
                     }
                 },
-                plugins:{
-                    legend:{
-                        position: window.innerWidth < 576 ? 'bottom' : 'top'
-                    }
-                },
+                plugins:{ legend:{ display:false } },
             }
 
         });
+        buildKurvaLegend(window.kurvaChart);
     }
     function getWeeklyPlanTotal(week) {
 
@@ -865,7 +946,7 @@ function updateKurvaPlanRealtime(){
     weeks.forEach(function(w){
         columns.push({
             data:'week_values.'+w.week_no,
-            width:"95px",
+            width:"120px",
             className:"text-center",
             defaultContent:'',
             orderable:false,
