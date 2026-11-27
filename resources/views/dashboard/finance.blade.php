@@ -211,13 +211,22 @@
                  backgroundColor:'#2563EB', hoverBackgroundColor:'#1D4ED8', order:3},
 
                 // Line: Target & Omset tahun lalu
-                {type:'line', label:'Target {{ $year }}', data: jt(@json(collect($o)->pluck('target')->values())),
+                {type:'line', label:'Target Omset {{ $year }}', data: jt(@json(collect($o)->pluck('target')->values())),
                  borderColor:'#c3bbb0', backgroundColor:'#c3bbb0', cubicInterpolationMode:'monotone', borderWidth:2.5,
                  pointRadius:3, pointHoverRadius:6, pointHitRadius:16, order:1},
 
+                // Target Cost & Profit (garis putus-putus, awalnya disembunyikan; aktifkan lewat chip)
+                {type:'line', label:'Target Cost {{ $year }}', data: jt(@json(collect($c)->pluck('target')->values())),
+                 borderColor:'#C2410C', backgroundColor:'#C2410C', borderDash:[4,4], cubicInterpolationMode:'monotone', borderWidth:2.5,
+                 pointRadius:3, pointHoverRadius:6, pointHitRadius:16, order:1, hidden:true},
+
+                {type:'line', label:'Target Profit {{ $year }}', data: jt(@json(collect($p)->pluck('target')->values())),
+                 borderColor:'#2563EB', backgroundColor:'#2563EB', borderDash:[4,4], cubicInterpolationMode:'monotone', borderWidth:2.5,
+                 pointRadius:3, pointHoverRadius:6, pointHitRadius:16, order:1, hidden:true},
+
                 {type:'line', label:'Omset {{ $year - 1 }}', data: jt(@json(collect($o)->pluck('lalu')->values())),
                  borderColor:'#c4c4c4', borderDash:[6,5], cubicInterpolationMode:'monotone', borderWidth:2,
-                 pointRadius:2, pointHoverRadius:6, pointHitRadius:16, order:2},
+                 pointRadius:2, pointHoverRadius:6, pointHitRadius:16, order:2, hidden:true},
             ]
         },
         options: {
