@@ -16,10 +16,10 @@ class PropertyController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('permission:lihat data artikel')->only(['index']);
-        $this->middleware('permission:tambah data artikel')->only(['create', 'store']);
-        $this->middleware('permission:ubah data artikel')->only(['edit', 'update', 'analyze']);
-        $this->middleware('permission:hapus data artikel')->only(['destroy']);
+        $this->middleware('permission:lihat data listing')->only(['index']);
+        $this->middleware('permission:tambah data listing')->only(['create', 'store']);
+        $this->middleware('permission:ubah data listing')->only(['edit', 'update', 'analyze']);
+        $this->middleware('permission:hapus data listing')->only(['destroy']);
     }
 
     public function index(Request $request)
